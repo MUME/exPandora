@@ -9,7 +9,7 @@
 
 #include "defines.h"
 #include "struct.h"
-#include "characterTable.h"
+#include "CharacterTable.h"
 #include "utils.h"
 #include "event.h"
 #include "dispatch.h"

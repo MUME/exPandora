@@ -11,6 +11,7 @@ LIBS 		+= $$CLIBS_VAR
 
 CONFIG		+= console qt opengl warn_on release debug
 
+HEADERS		+= CharacterTable.h
 HEADERS		+= config_reader.h
 HEADERS		+= defines.h
 HEADERS		+= dispatch.h
@@ -28,6 +29,7 @@ HEADERS		+= utils.h
 HEADERS		+= xml2.h 
 
 SOURCES		+= auda.cpp 
+SOURCES		+= CharacterTable.cpp
 SOURCES		+= config_reader.cpp 
 SOURCES		+= dispatch.cpp 
 SOURCES		+= engine.cpp 
