@@ -18,13 +18,13 @@ $Id$
 #define XML_ROOMNAME    (1 << 0)
 #define XML_DESC        (1 << 1)
 #define XML_NOTE        (1 << 2)
-
+/*
 typedef struct Exit {
 	int SourceId;
 	int dir;
 	int DestId;
 } Exit;
-
+*/
 class StructureParser: public QXmlDefaultHandler
 {
 public:
@@ -46,11 +46,13 @@ private:
     int i;
     struct Troom *r;
 
+    /*
     ParseEvent * rooomProps;
     Coordinate * c;    
     stack<Exit> exits;
     Property * prop;
     int id;
+    */
 };
 
 
@@ -107,7 +109,7 @@ bool StructureParser::characters( const QString& ch)
     //prop = pmm.activate();
     //prop->add(data);	
     //if(flag != XML_NOTE) roomProps->push(prop);
-    //else roomProps->pushOptional(propr);
+    //else roomProps->pushOptional(prop);
     
     if (ch == NULL || ch == "")
         return TRUE;
@@ -180,15 +182,13 @@ bool StructureParser::startElement( const QString& , const QString& ,
       s = attributes.value("dir");
       strncpy( data, (const char*) s, s.length() );
       data[ s.length() ] = 0;
+      // char d = data[0];
       dir = numbydir(data[0]);
       
       s = attributes.value("to");
       strncpy( data, (const char*) s, s.length() );
       data[ s.length() ] = 0;
       
-      // exits.push(new Exit {id, dir, to});
-      // we'll have to find out which exits are actually doors and then pushOptional() them later ...
-      /* cringe */
       
       i = 0;
       to = 0;
@@ -203,15 +203,31 @@ bool StructureParser::startElement( const QString& , const QString& ,
       
       r->exits[dir] = to;
 
+      
+      
       s = attributes.value("door");
       strncpy( data, (const char*) s, s.length() );
       data[ s.length() ] = 0;
 
-      //prop = pmm.activate();
-      //prop.add(data);
-      //roomProps->pushOptional(prop);
+      /* if there is a door, then the exit (represented by d) is an optional property else it is a required property */
+      // prop = pmm.activate()
+      // prop->add(d); 
+      // if (data[0] == 0) {
+      // 	roomProps->push(prop);
+      // }
+      // else {
+      // 	roomProps->pushOptional(prop);
+      // }
+      // 
+      // Exit e = {id, dir, to};
+      // exits.push(e);
+      
       
       if (s.length() != 0) {
+      	/* all doors are optional properties */
+      	//prop = pmm.activate();
+      	//prop.add(data);
+      	//roomProps->pushOptional(prop);
         r->doors[dir] = strdup(data);
         if (!r->doors[dir]) {
           printf("XML: Error while allocating memory in readbase function!");
