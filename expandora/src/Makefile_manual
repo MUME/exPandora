@@ -6,7 +6,7 @@ NOBS=SearchTreeNode.o Room.o RoomAdmin.o CharacterTable.o IntermediateNode.o Roo
 
 all: ${OBS}
 	g++ ${CXXFLAGS} ${LDFLAGS} -o pandora ${OBS}
-	cp pandora ../
+	mv pandora ../
 
 nobs: ${NOBS}
 
@@ -16,3 +16,12 @@ moc_renderer.cpp: Makefile renderer.h
 %.o: %.cpp  Makefile
 	g++ ${CXXFLAGS} -c $< -o $@
 
+
+mud.yy.cc: mud.lex
+	flex++ mud.lex
+	mv lex.yy.cc mud.yy.cc
+
+
+player.yy.cc: player.lex
+	flex++ player.lex
+	mv lex.yy.cc player.yy.cc

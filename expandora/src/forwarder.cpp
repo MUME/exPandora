@@ -405,7 +405,7 @@ int proxy_loop(void)
 
               #ifdef DEBUG
                 intbuff[rd] = 0;
-                fprintf(debug_file, "\r\n<-sent_to_user(len %i)-%s", rd);
+                //fprintf(debug_file, "\r\n<-sent_to_user(len %i)-%s", rd);
                 fwrite(intbuff, rd, 1, debug_file);
                 fflush(debug_file);
               #endif
