@@ -13,17 +13,19 @@ class ObjectRecycler : private queue<T *> {
 
 template <class T>
 void ObjectRecycler<T>::deactivate(T * obj) {
-	//printf("deactivating ...\n");
+	printf("deactivating ... old queue size: %i\n", size());
 	obj->clear();
 	push(obj);
+	printf("deactivating ... new queue size: %i\n", size());
 }
 
 template <class T>
 T * ObjectRecycler<T>::activate() {
-	//printf("acitvating ...\n");
+	printf("acitvating ... old queue size: %i\n", size());
 	if (!empty()) {
 		T * ret = front();
 		pop();
+		printf("acitvating ... new queue size: %i\n", size());
 		return ret;
 	}
 	else return new T();

@@ -33,9 +33,9 @@ using namespace std;
 
 #ifdef NEW_ENGINE
 typedef struct Exit {
-	int SourceId;
+	int sourceId;
 	int dir;
-	int DestId;
+	int destId;
 } Exit;
 #endif
 
@@ -58,16 +58,17 @@ private:
 
 
     int i;
+#ifndef NEW_ENGINE
     struct Troom *r;
     
-#ifdef NEW_ENGINE
+#else
     double timeFromString(QString &);
    
     double ts; 
     Terrain * t;
     ParseEvent * roomProps;
     Coordinate * c;    
-    stack<Exit> exits;
+    stack<Exit *> exits;
     Property * prop;
     int id;
 #endif
@@ -106,8 +107,14 @@ void xml_readbase( char *filename)
 StructureParser::StructureParser()
                 : QXmlDefaultHandler()
 {
+#ifdef NEW_ENGINE
 	roomProps = 0;
 	prop = 0;
+	c = 0;
+	ts = 0;
+	t = 0;
+	id = 0;
+#endif
 }
 
 
@@ -121,6 +128,8 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
 	Room * room = roomAdmin.insertRoom(roomProps, id, c, t);
 	room->resetTime(ts);
 	pemm.deactivate(roomProps);
+	roomProps = 0;
+	printf("inserted room: %i\n", id);
 #endif
     }        
     flag = 0;    
@@ -135,9 +144,14 @@ bool StructureParser::characters( const QString& ch)
 #ifdef NEW_ENGINE	
     prop = pmm.activate();
     prop->add(data);	
-    if (flag == XML_NOTE) roomProps->pushOptional(prop);
-    else if(flag != 0) roomProps->push(prop);
-    else pmm.deactivate(prop);
+    if (roomProps != 0 && flag != 0) {
+    	if (flag == XML_NOTE) roomProps->pushOptional(prop);
+    	else roomProps->push(prop);
+    }
+    else {
+	    pmm.deactivate(prop);
+	    prop = 0;
+    }
     return true;
 #else
     if (ch == NULL || ch == "")
@@ -256,15 +270,18 @@ bool StructureParser::startElement( const QString& , const QString& ,
        	roomProps->pushOptional(prop);
       }
        
-      Exit e = {id, dir, to};
+      Exit  * e = new Exit;
+	e->sourceId = id;
+	e->dir = dir;
+	e->destId = to;
       exits.push(e);
 #endif 
       
       if (s.length() != 0) {
-#ifdef NEW_ENGING
+#ifdef NEW_ENGINE
 	      /* all doors are optional properties */
       	prop = pmm.activate();
-      	prop.add(data);
+      	prop->add(data);
       	roomProps->pushOptional(prop);
 #else
         r->doors[dir] = strdup(data);

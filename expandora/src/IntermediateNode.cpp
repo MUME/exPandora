@@ -1,9 +1,12 @@
 #include "IntermediateNode.h"
 
 
-IntermediateNode::IntermediateNode(ParseEvent * event) : SearchTreeNode((char *)0,(TinyList *)0) {
+IntermediateNode::IntermediateNode(ParseEvent * event) : SearchTreeNode((char *)0) {
  	Property * prop = event->next();
- 	if (prop != 0) myChars = prop->rest();
+	if (prop != 0) {
+ 		myChars = new char[strlen(prop->rest())];
+		strcpy(myChars, prop->rest());
+	}
 	else myChars = "";
 	rooms = 0;
 	event->prev();

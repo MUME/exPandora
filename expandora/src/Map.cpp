@@ -60,9 +60,9 @@ void Map::set(Coordinate *cm, Room *room) {
 	Coordinate * c = cmm.activate();
 	c->add(cm);
 	vector<vector<vector<Room *> > > & segment = getSegment(c);
-	if (segment.capacity() <= (unsigned int)c->x) segment.resize((unsigned int)c->x + 1);
-	if (segment[(unsigned int)c->x].capacity() <= (unsigned int)c->y) segment[(unsigned int)c->x].resize((unsigned int)c->y + 1);
-	if (segment[(unsigned int)c->x][(unsigned int)c->y].capacity() <= (unsigned int)c->z) segment[(unsigned int)c->x][(unsigned int)c->y].resize((unsigned int)c->z + 1);
+	if (segment.size() <= (unsigned int)c->x) segment.resize((unsigned int)c->x + 1);
+	if (segment[(unsigned int)c->x].size() <= (unsigned int)c->y) segment[(unsigned int)c->x].resize((unsigned int)c->y + 1);
+	if (segment[(unsigned int)c->x][(unsigned int)c->y].size() <= (unsigned int)c->z) segment[(unsigned int)c->x][(unsigned int)c->y].resize((unsigned int)c->z + 1, 0);
 	segment[c->x][c->y][c->z] = room;
 	cmm.deactivate(c);
 }

@@ -22,7 +22,7 @@ int Property::size() {
 
 void Property::clear() {
 	used = 0;
-	currentOffset = -1;
+	currentOffset = 0;
 }
 
 void Property::copy(Property & other) {
@@ -37,7 +37,7 @@ Property::Property() {
 	used = 0;
 	length = 0;
 	begin = 0;
-	currentOffset = -1;
+	currentOffset = 0;
 }
 
 Property::Property(char * in) {
@@ -97,7 +97,7 @@ void Property::enlarge(int neededSpace) {
 }
 
 char Property::operator[](int offset) {
-	if (offset > length) enlarge(offset);
+	if (offset >= length) enlarge(offset+1);
 	else if (offset < 0) return begin[length - 1];
 	return begin[offset];
 }
