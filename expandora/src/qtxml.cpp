@@ -148,6 +148,8 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
 	room->resetTime(ts);
 	pemm.deactivate(roomProps);
 	roomProps = 0;
+	cmm.deactivate(c);
+	c = 0;
 	printf("inserted room: %i\n", id);
 #endif
     }        
@@ -171,7 +173,7 @@ bool StructureParser::characters( const QString& ch)
 	    pmm.deactivate(prop);
 	    prop = 0;
     }
-    return true;
+    return TRUE;
 #else
     if (ch == NULL || ch == "")
         return TRUE;
@@ -320,7 +322,8 @@ bool StructureParser::startElement( const QString& , const QString& ,
     if ( attributes.length() > 0 ) {
 	for ( int i = 0 ; i < attributes.length(); i++ ) {
             s = attributes.value(i);
-            strncpy( data, (const char*) s, s.length() );
+            //strcpy(data, (const char *)s);
+	    strncpy( data, (const char*) s, s.length() );
             data[ s.length() ] = 0;
 
             if (attributes.qName(i) == "id") {
@@ -384,8 +387,8 @@ bool StructureParser::startElement( const QString& , const QString& ,
 #ifndef NEW_ENGINE
 		    strcpy(r->timestamp, data);
 #else
-		    ts = 0;
-		    //ts = timeFromString(s);
+		    //ts = 0;
+		    ts = timeFromString(s);
 #endif
 		    continue;
             }
@@ -405,16 +408,19 @@ bool StructureParser::startElement( const QString& , const QString& ,
  */
 double StructureParser::timeFromString(QString & s) {
 //"dd.MM.yyyy - hh:mm:ss"
-	s[3] = 0;
-	s[6] = 0;
-	s[9] = 0;
-	double ret = (strtod((const char *)s + 6, (char **)NULL) - 1970) * 60 * 60 * 24 * 365.25;
-	ret += strtod((const char *)s + 3, (char **)NULL) * 60 * 60 * 24 * 30.4375;
-	ret += strtod((const char *)s, (char **)NULL) * 60 * 60 * 24;
+	printf("original timestamp: %s\n", (const char *)s);
+	s[2] = 0;
+	s[5] = 0;
+	s[10] = 0;
+	double ret = (strtod((const char *)s + 6, (char **)0) - 1970) * 60 * 60 * 24 * 365.25;
+	ret += strtod((const char *)s + 3, (char **)0) * 60 * 60 * 24 * 30.4375;
+	ret += strtod((const char *)s, (char **)0) * 60 * 60 * 24;
 	ret += 60 * 60 * 24; // just add one day to get 2000 not being a Schaltjahr right
-	s[3] = '.';
-	s[6] = '.';
-	s[9] = ' ';
+	//printf("modified timestamp: %s\n", s);
+	
+	s[2] = '.';
+	s[5] = '.';
+	s[10] = ' ';
 	return ret;
 }
 #endif

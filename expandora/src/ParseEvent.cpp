@@ -20,6 +20,9 @@ ParseEvent::~ParseEvent() {
 }
 
 void ParseEvent::copy(ParseEvent * other) {
+	timestamp = other->timestamp;
+	type = other->type;
+	pos = 0;
 	list<Property *> & otherProps = other->getProperties();
 	list<Property *>::iterator p = otherProps.begin();
 	list<Property *>::iterator otherPos = other->getPos();

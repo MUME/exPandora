@@ -1,9 +1,10 @@
+#include <qstring.h>
 #include <stdio.h>
-#include "ParseEvent.h"
+#include "../ParseEvent.h"
 
 
 int main(int argc, char **argv) {
-	ParseEvent * event;
+	/*ParseEvent * event;
 	ObjectRecycler<ParseEvent> mm;
 	for(int i = 0; i< 10; i++) {
 		event = new ParseEvent();
@@ -16,6 +17,9 @@ int main(int argc, char **argv) {
 		event = mm.activate();
 		//event = event->mm.activate();
 		printf("activated event: %i\n", event);
-	}
+	}*/
+	printf("ParseEvent: %i", sizeof(ParseEvent));
+	printf("Property: %i", sizeof(Property));
+	printf("QString: %i", sizeof(QString));
 	return 0;
 }

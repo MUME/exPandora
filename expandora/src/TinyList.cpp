@@ -33,7 +33,7 @@ void TinyList::put(char c, RoomSearchNode * object) {
 	if (c < 0) c+=128;
 	if (c >= listSize) {
 		char i;
-		RoomSearchNode ** nlist = new (RoomSearchNode *)[c+1];
+		RoomSearchNode ** nlist = new RoomSearchNode *[c+1];
 		for (i = 0; i < listSize; i++) nlist[i] = list[i];
 		listSize = c+1;
 		for (; i < c; i++) nlist[i] = 0;

@@ -1,7 +1,6 @@
 #include "Property.h"
 #include <string.h>
 
-Property NO_PROPERTY; // 0,0,0,0
 ObjectRecycler<Property> pmm;
 
 char * Property::rest() {
@@ -91,7 +90,7 @@ void Property::enlarge(int neededSpace) {
 		char * newBegin = new char[length];
 		for (int i = 0 ; i < used; i++) newBegin[i] = begin[i];
 		for (int i = used; i <length; i++) newBegin[i] = 0;
-		delete(begin);
+		delete[] begin;
 		begin = newBegin;
 	}
 }
