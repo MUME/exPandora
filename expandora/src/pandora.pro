@@ -59,7 +59,6 @@ SOURCES		+=Room.cpp
 SOURCES		+=RoomAdmin.cpp
 SOURCES		+=RoomCollection.cpp
 SOURCES		+=SearchTreeNode.cpp
-SOURCES		+=TinyList.cpp
 SOURCES		+=auda.cpp
 SOURCES		+=config_reader.cpp
 SOURCES		+=dispatch.cpp
