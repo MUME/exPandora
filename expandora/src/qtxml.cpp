@@ -49,7 +49,8 @@ public:
                        const QXmlAttributes& );
     bool endElement( const QString&, const QString&, const QString& );
 #ifdef NEW_ENGINE
-    void addExits();
+  void addExits();
+
 #endif
 private:
     /* some flags */
@@ -65,6 +66,7 @@ private:
     
 #else
     double timeFromString(QString &);
+    void buildProperties(char * roomDesc);
    
     double ts; 
     Terrain * t;
@@ -121,6 +123,22 @@ void StructureParser::addExits() {
 		
 	}
 }
+
+void StructureParser::buildProperties(char * desc) {
+  char * lastLineBegin = desc;
+  for (int i = 0; desc[i] != 0; i++) {
+    if (desc[i] == '|') {
+      desc[i] = 0;
+      prop->add(lastLineBegin);
+      roomProps->add(prop);
+      prop = pmm.activate();
+      lastLineBegin = desc+i+1;
+    }
+  }
+  prop->add(lastLineBegin);
+  roomProps->add(prop);
+  prop = pmm.activate();
+}
 #endif
 
 
@@ -165,10 +183,11 @@ bool StructureParser::characters( const QString& ch)
     data[ ch.length() ] = 0;
 #ifdef NEW_ENGINE	
     prop = pmm.activate();
-    prop->add(data);	
+    if (flag != XML_DESC) prop->add(data);	
+    else buildProperties(data);
     if (roomProps != 0 && flag != 0) {
     	if (flag == XML_NOTE) roomProps->pushOptional(prop);
-    	else roomProps->push(prop);
+    	else if (flag == XML_ROOMNAME) roomProps->push(prop);
     }
     else {
 	    pmm.deactivate(prop);

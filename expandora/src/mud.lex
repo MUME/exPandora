@@ -74,11 +74,9 @@ ROOMCOL		\33\[32m
 <EXITS>"up"     |
 <EXITS>"down"   append(YYText()[0]);
 <EXITS>")"[.,]  |
-<EXITS>"]"[.,]  append(YYText()[0]); pushOptional();
-<EXITS>"=)"[.,] |
-<EXITS>"=]"[.,] |
+<EXITS>"]"[.,]  pushOptional();
 <EXITS>")="[.,] |
-<EXITS>"]="[.,] append(YYText(), YYText()+2); pushOptional();
+<EXITS>"]="[.,] append(YYText()[1]); pushOptional();
 <EXITS>"="[.,]  append(YYText()[0]); pushProperty();
 <EXITS>[.,]     pushProperty();
 
