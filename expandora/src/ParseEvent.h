@@ -6,8 +6,8 @@
 #define UKNOWN_NUMBER 0
 
 //event types
-#define ROOM 253 
-#define NOTE 252
+#define ROOM -3 
+#define NOTE -4
 
 #include "ObjectRecycler.h"
 #include "Property.h"

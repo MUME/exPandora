@@ -1,12 +1,13 @@
 #ifndef EXIT
 #define EXIT
+#include "Roomcollection.h"
 
 class Room;
 
 class Exit {
-	private:
+	public:
 		Room * comingFrom;
-		Room * goingTo;	
+		RoomCollection * goingTo;	
 };
 
 #endif

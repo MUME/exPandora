@@ -14,7 +14,7 @@ class RoomCollection;
 class Room {
 	public:
 		bool experimental;
-		Room * go(BaseEvent * event);
+		RoomCollection * go(BaseEvent * event);
 		Room();
 		void init(ParseEvent * event);
 		void setId(int _id) {id = _id;};

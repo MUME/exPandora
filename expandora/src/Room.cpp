@@ -8,6 +8,10 @@ void Room::init(ParseEvent * event) {
 	optionalProperties = event->getOptionals();
 }
 
+RoomCollection * Room::go(BaseEvent * dir) {
+	if (dir->type < 0) return 0;
+	else return exits[dir->type]->goingTo;
+}
 /*
  * return all properties to pmm and remove this room from the room collection
  */
