@@ -11,7 +11,7 @@ using namespace std;
 class RoomCollection : public RoomSearchNode {
 	public:
 		RoomCollection() {};
-		virtual ~RoomCollection();
+		virtual ~RoomCollection() {} // implement it !
 		virtual int numRooms() {return rooms.size();} //let's hope this is implemented in some efficient way ...
 		Room * insertRoom(ParseEvent * event);
 		RoomCollection * filterByOptionals(ParseEvent * event);

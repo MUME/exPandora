@@ -53,10 +53,14 @@ void xml_readbase( char *filename)
     StructureParser * handler = new StructureParser();
     reader.setContentHandler( handler );
     
+	
+    printf("---------->starting xml parsing<----------\n");
     
     reader.parse( source );
+    printf("---------->parsed xml - now starting sort<---------\n");
 
     roomer.resort_rooms();
+    printf("--------->done sorting<----------\n");
 
     
     return;

@@ -3,16 +3,15 @@
 #include "ParseEvent.h"
 #include "Room.h"
 
-class RoomCollection;  //RoomCollection is a derived class of this one, so we can't include it here
 
 class RoomSearchNode {
 	public:
 		virtual int numRooms() {return -1;}
 		virtual RoomSearchNode * merge(RoomSearchNode * other) {return other;}
-		virtual RoomSearchNode * getRooms(ParseEvent * event);
-		virtual Room * insertRoom(ParseEvent * event);
+		virtual RoomSearchNode * getRooms(ParseEvent * event) {return 0;}
+		virtual Room * insertRoom(ParseEvent * event) {return 0;}
 		virtual void setChild(char position, RoomSearchNode * child) {;}
-		virtual RoomSearchNode * skipDown(ParseEvent * event);
+		virtual RoomSearchNode * skipDown(ParseEvent * event) {return 0;}
 };
 
 #endif

@@ -2,7 +2,6 @@
 #define SEARCHTREENODE
 #include "TinyList.h"
 #include "RoomSearchNode.h"
-#include "RoomSearchNode.h"
 #include "Room.h"
 #include <vector>
 using namespace std;
@@ -21,7 +20,7 @@ class SearchTreeNode : public RoomSearchNode {
 	public:
 		SearchTreeNode(ParseEvent * event, TinyList * children = new TinyList());
 		SearchTreeNode(char * string, TinyList * children = new TinyList());
-		virtual ~SearchTreeNode();
+		virtual ~SearchTreeNode() {}
 		virtual RoomSearchNode * getRooms(ParseEvent * event);
 		virtual Room * insertRoom(ParseEvent * event);
 		virtual void setChild(char, RoomSearchNode *);

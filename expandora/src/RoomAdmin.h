@@ -11,7 +11,7 @@ using namespace std;
 class RoomAdmin : public SearchTreeNode {
 	public:
 		RoomAdmin();
-		~RoomAdmin();
+		~RoomAdmin() {} // implement it ...
 		
 		
 		RoomSearchNode * getRooms(ParseEvent * event);

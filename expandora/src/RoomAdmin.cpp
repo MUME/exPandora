@@ -1,6 +1,8 @@
 #include "RoomAdmin.h"
 #include "IntermediateNode.h"
 
+RoomAdmin roomAdmin;
+
 RoomAdmin::RoomAdmin() : SearchTreeNode("") {
 	greatestUsedId = -1;
 	rooms = 0;
