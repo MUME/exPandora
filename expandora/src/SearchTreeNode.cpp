@@ -4,7 +4,7 @@
 using namespace std;
 
 
-SearchTreeNode::SearchTreeNode(ParseEvent * event, TinyList * _children) {
+SearchTreeNode::SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode> * _children) {
 	myChars = new char[strlen(event->current()->rest())];
 	strcpy(myChars, event->current()->rest()); 	// we copy the string so that we can remove rooms independetly of tree nodes
 							// of courxe that needs memory
@@ -12,7 +12,7 @@ SearchTreeNode::SearchTreeNode(ParseEvent * event, TinyList * _children) {
 }
 
 
-SearchTreeNode::SearchTreeNode(char * _myChars, TinyList * _children) {
+SearchTreeNode::SearchTreeNode(char * _myChars, TinyList<RoomSearchNode> * _children) {
 	myChars = _myChars; 
 	children = _children;
 }
@@ -47,7 +47,7 @@ Room * SearchTreeNode::insertRoom(ParseEvent * event) {
 			// we have to split, as we encountered a difference in the strings ...	
 			selectedChild = new SearchTreeNode(myChars + i + 1, children);	// first build the lower part of this node	
 			//printf("string transferred to lower node: %s\n", myChars + i + 1);
-			children = new TinyList();	// and update the upper part of this node
+			children = new TinyList<RoomSearchNode>();	// and update the upper part of this node
 			children->put(myChars[i], selectedChild);
 		
 			if (c == 0) selectedChild = new IntermediateNode(event);	// then build the branch

@@ -12,15 +12,15 @@ using namespace std;
 
 class SearchTreeNode : public RoomSearchNode {
 	protected:
-		TinyList * children; 
+		TinyList<RoomSearchNode> * children; 
 		//RoomSearchNode * parent;
 		char * myChars;
 		//int start; // position of the first character of myChars
 		//int next; // position of the first character after myChars
 	public:
-		SearchTreeNode(ParseEvent * event, TinyList * children = new TinyList());
-		SearchTreeNode(char * string, TinyList * children = new TinyList());
-		virtual ~SearchTreeNode() {}
+		SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode> * children = new TinyList<RoomSearchNode>());
+		SearchTreeNode(char * string, TinyList<RoomSearchNode> * children = new TinyList<RoomSearchNode>());
+		virtual ~SearchTreeNode() {printf("warning: SearchTreeNode destroyed");}
 		virtual RoomSearchNode * getRooms(ParseEvent * event);
 		virtual Room * insertRoom(ParseEvent * event);
 		virtual void setChild(char, RoomSearchNode *);
