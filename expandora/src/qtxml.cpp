@@ -1,4 +1,4 @@
-//#define NEW_ENGINE
+#define NEW_ENGINE
 /*
 $Id$
 */
@@ -88,10 +88,14 @@ void xml_readbase( char *filename)
     
 	
     
+    printf("reading xml ...\n");
+    
     reader.parse( source );
 
 #ifndef NEW_ENGINE
+	printf("sorting rooms... \n");
     roomer.resort_rooms();
+    printf("done sorting. \n");
 #else
     //pop all the exits and addExit(...) them into the rooms
 #endif
@@ -102,6 +106,8 @@ void xml_readbase( char *filename)
 StructureParser::StructureParser()
                 : QXmlDefaultHandler()
 {
+	roomProps = 0;
+	prop = 0;
 }
 
 
@@ -126,11 +132,12 @@ bool StructureParser::characters( const QString& ch)
 {
     strncpy( data, (const char*) ch, ch.length() );
     data[ ch.length() ] = 0;
-#ifdef NEW_ENGINE
+#ifdef NEW_ENGINE	
     prop = pmm.activate();
     prop->add(data);	
-    if(flag != XML_NOTE) roomProps->push(prop);
-    else roomProps->pushOptional(prop);
+    if (flag == XML_NOTE) roomProps->pushOptional(prop);
+    else if(flag != 0) roomProps->push(prop);
+    else pmm.deactivate(prop);
     return true;
 #else
     if (ch == NULL || ch == "")
@@ -229,8 +236,9 @@ bool StructureParser::startElement( const QString& , const QString& ,
       if (!to)
         to = atoi( (const char *) data);
       
+#ifndef NEW_ENGINE
       r->exits[dir] = to;
-
+#endif
       
       
       s = attributes.value("door");

@@ -1,8 +1,12 @@
 #include "IntermediateNode.h"
 
 
-IntermediateNode::IntermediateNode(ParseEvent * event) : SearchTreeNode(event->next()->rest()) {
+IntermediateNode::IntermediateNode(ParseEvent * event) : SearchTreeNode((char *)0,(TinyList *)0) {
+ 	Property * prop = event->next();
+ 	if (prop != 0) myChars = prop->rest();
+	else myChars = "";
 	rooms = 0;
+	event->prev();
 }
 
 Room * IntermediateNode::insertRoom(ParseEvent * event) {

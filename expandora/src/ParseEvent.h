@@ -25,6 +25,7 @@ using namespace std;
  */
 class ParseEvent : public BaseEvent {
 	public:
+		~ParseEvent();
 		ParseEvent() {pos = 0; type = 0;}
 		ParseEvent(ParseEvent * other);
 		

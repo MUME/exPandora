@@ -31,6 +31,7 @@ void RoomAdmin::assignId(Room * room) {
 	}
 	
 	room->setId(id);
+	if (roomIndex.size() <= id) roomIndex.resize(id + 1);
 	roomIndex[id] = room;
 }
 
@@ -39,7 +40,6 @@ Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Coordinate * c, Terrain
 	Room * room = insertRoom(event, t);
 	map.setNearest(c, room);
 	room->setCoordinate(c);
-	assignId(room);
 	return room;
 }
 

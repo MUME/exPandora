@@ -3,7 +3,7 @@ TEMPLATE	= app
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
-CONFIG		+= console qt opengl warn_on release
+CONFIG		+= console qt opengl warn_on debug 
 
 LEXSOURCES	+=mud.lex
 LEXSOURCES	+=player.lex

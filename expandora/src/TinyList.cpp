@@ -10,14 +10,16 @@
  *	- only need 3 lines to access an element
  */
 
+
+
 TinyList::TinyList() {
-	list = (RoomSearchNode **)malloc(sizeof(RoomSearchNode *));
+	list = new(RoomSearchNode *)[1];
 	listSize = 1;
 	listLast = -1;
 }
 
 TinyList::~TinyList() {
-	free(list);
+	delete(list);
 }
 
 
@@ -31,9 +33,12 @@ void TinyList::put(char c, RoomSearchNode * object) {
 	if (c < 0) c+=128;
 	if (c >= listSize) {
 		char i;
-		list = (RoomSearchNode **)realloc(list, c+1);
+		RoomSearchNode ** nlist = new (RoomSearchNode *)[c+1];
 		listSize = c+1;
-		for (i = listLast + 1; i < c; i++) list[i] = 0;
+		for (i = 0; i <= listLast; i++) nlist[i] = list[i];
+		for (i = listLast + 1; i < c; i++) nlist[i] = 0;
+		delete(list);
+		list  = nlist;
 		listLast = c;
 	}
 	else if (c > listLast) listLast = c;

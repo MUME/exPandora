@@ -16,6 +16,8 @@ void ParseEvent::clear() {
 	pos = 0;
 }
 
+ParseEvent::~ParseEvent() {
+}
 
 void ParseEvent::copy(ParseEvent * other) {
 	list<Property *> & otherProps = other->getProperties();
