@@ -1,0 +1,27 @@
+CXXFLAGS=-g -I/Users/alve/Library/qt/include -I. -I/usr/include/libxml2
+;CXXFLAGS=-O3 -pipe -maltivec -mabi=altivec -mcpu=7450 -mpowerpc-gfxopt -I/Users/alve/Library/qt/include -I. -I/usr/include/libxml2
+LDFLAGS=-lm -lqt-mt -L/Users/alve/Library/qt/lib -L/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/ -lGLU -lGL -lxml2
+OBS=CharacterTable.o auda.o engine.o forwarder.o rooms.o userfunc.o config_reader.o event.o interface.o stacks.o utils.o dispatch.o exits.o renderer.o tree.o xml2.o moc_renderer.o
+NOBS=SearchTreeNode.o Room.o RoomAdmin.o CharacterTable.o IntermediateNode.o RoomCollection.o TinyList.o
+
+all: ${OBS}
+	g++ ${CXXFLAGS} ${LDFLAGS} -o pandora ${OBS}
+	mv pandora ../
+
+nobs: ${NOBS}
+
+moc_renderer.cpp: Makefile renderer.h
+	moc renderer.h -o moc_renderer.cpp
+
+%.o: %.cpp  Makefile
+	g++ ${CXXFLAGS} -c $< -o $@
+
+
+mud.yy.cc: mud.lex
+	flex++ mud.lex
+	mv lex.yy.cc mud.yy.cc
+
+
+player.yy.cc: player.lex
+	flex++ player.lex
+	mv lex.yy.cc player.yy.cc
