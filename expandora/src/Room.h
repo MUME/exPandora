@@ -17,10 +17,10 @@ class Exit;
 
 class Room {
 	public:
-		Room(vector<char *> properties);
+		Room(vector<char *> & properties);
 		void setId(int _id) {id = _id;};
-		int containsOptionals(vector<char *> optionals);
-		int fastCompare(vector<char *> imps, int tolerance);
+		int containsOptionals(vector<char *> & optionals);
+		int fastCompare(vector<char *> & imps, int tolerance);
 	private:
 		vector<char *> properties;		/* name, desc, exit names - properties we need for tree searching */
 		vector<char *> doors;			/* pointers to the parts of the properties defining exit names, by convention the last ones */

@@ -21,9 +21,9 @@ class SearchTreeNode : public RoomSearchNode, protected TinyList {
 	public:
 		SearchTreeNode(char * _myChars, RoomSearchNode * _parent, int _start);
 		~SearchTreeNode();
-		virtual RoomCollection * getRooms(vector<char *> properties, int pos);
-		virtual Room * insertRoom(vector<char *> properties, int pos);
-		Room * insertMatchingRoom(vector<char *> properties, int pos);
+		virtual RoomCollection * getRooms(vector<char *> & properties, int pos);
+		virtual Room * insertRoom(vector<char *> & properties, int pos);
+		Room * insertMatchingRoom(vector<char *> & properties, int pos);
 		void setChild(char, RoomSearchNode *);
 };
 #endif

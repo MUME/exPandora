@@ -5,7 +5,7 @@ IntermediateNode::IntermediateNode(char * _myChars, RoomSearchNode * _parent) : 
 	rooms = 0;
 }
 
-Room * IntermediateNode::insertRoom(vector<char *> properties, int pos) {
+Room * IntermediateNode::insertRoom(vector<char *> & properties, int pos) {
 	pos++;
 	if (pos == properties.size()) {
 		if (rooms == 0) rooms = new RoomCollection();
@@ -38,7 +38,7 @@ Room * IntermediateNode::insertRoom(vector<char *> properties, int pos) {
 
 
 
-RoomCollection * IntermediateNode::getRooms(vector<char *> properties, int pos) {
+RoomCollection * IntermediateNode::getRooms(vector<char *> & properties, int pos) {
 	pos++;
 	if (pos == properties.size()) return rooms;
 	else return SearchTreeNode::getRooms(properties, pos);

@@ -3,7 +3,7 @@
 #include <stdexcept>
 using namespace std;
 
-Room * RoomCollection::insertRoom(vector<char *> properties) {
+Room * RoomCollection::insertRoom(vector<char *> & properties) {
 	Room * room = new Room(properties);
 	
 	rooms.push_back(room);
@@ -11,7 +11,7 @@ Room * RoomCollection::insertRoom(vector<char *> properties) {
 }
 
 
-RoomCollection * RoomCollection::filterByOptionals(vector<char *> optionalProperties) {
+RoomCollection * RoomCollection::filterByOptionals(vector<char *> & optionalProperties) {
 	RoomCollection * filtered = new RoomCollection();
 	Room * room;
 	int i;

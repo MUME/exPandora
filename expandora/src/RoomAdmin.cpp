@@ -6,7 +6,7 @@ RoomAdmin::RoomAdmin() : SearchTreeNode("", this, 0) {
 	rooms = 0;
 }
 
-Room * RoomAdmin::insertRoom(vector<char *> properties) {
+Room * RoomAdmin::insertRoom(vector<char *> & properties) {
 	Room * newRoom; 
 	if (properties.size() == 0) {
 		if(rooms == 0) rooms = new RoomCollection();
@@ -40,12 +40,12 @@ Room * RoomAdmin::insertRoom(vector<char *> properties) {
 	return newRoom;	
 }
 
-Room * RoomAdmin::insertRoom(vector<char *> properties, int id) {
+Room * RoomAdmin::insertRoom(vector<char *> & properties, int id) {
 	unusedIds.push(id);
 	return insertRoom(properties);
 }
 
-RoomCollection * RoomAdmin::getRooms(vector<char *> properties) {
+RoomCollection * RoomAdmin::getRooms(vector<char *> & properties) {
 	if (properties.size() == 0) return rooms;
 	char next = properties[0][0];
 	selectedChild = get(next);

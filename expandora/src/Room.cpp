@@ -1,7 +1,7 @@
 #include "Room.h"
 #include "Exit.h"
 
-Room::Room(vector<char *> _properties) {
+Room::Room(vector<char *> & _properties) {
 	properties = _properties;
 	int num = properties.size();
 	int i = 0;
@@ -13,7 +13,7 @@ Room::Room(vector<char *> _properties) {
 /** compare the optional properties that are not present in the search tree
  * perhaps we should allow a tolerance, too?
  */
-int Room::containsOptionals(vector<char *> optionals) {
+int Room::containsOptionals(vector<char *> & optionals) {
 	if (optionals.size() > optionalProperties.size()) return 0;
 	int j = 0;
 	int i = 0;
@@ -34,7 +34,7 @@ int Room::containsOptionals(vector<char *> optionals) {
 /** we only compare the first num properties only to this room here
  * we allow a tolerance for typoes and such like pandora does
  */
-int Room::fastCompare(vector<char *> imps, int tolerance) {
+int Room::fastCompare(vector<char *> & imps, int tolerance) {
 	for (int i = imps.size(); i > 0; --i) {
 		tolerance -= abs(strcmp(imps[i], properties[i]));
 		if (tolerance <= 0) return 0;

@@ -4,7 +4,7 @@
 /**
  * finds all rooms matching the string name
  */
-RoomCollection * SearchTreeNode::getRooms(vector<char *> properties, int pos) {
+RoomCollection * SearchTreeNode::getRooms(vector<char *> & properties, int pos) {
 	if (strcmp(properties[pos]+start, myChars)) return 0;
 	
 	selectedChild = get(properties[pos][next]);
@@ -21,7 +21,7 @@ void SearchTreeNode::setChild(char position, RoomSearchNode * node) {
 
 /**
  */
-Room * SearchTreeNode::insertRoom(vector<char *> properties, int pos) {
+Room * SearchTreeNode::insertRoom(vector<char *> & properties, int pos) {
 	char * othersChars;
 	for (int i = start; i < next; i++) {
 		if (myChars[i-start] != properties[pos][i]) {
@@ -41,7 +41,7 @@ Room * SearchTreeNode::insertRoom(vector<char *> properties, int pos) {
 	return insertMatchingRoom(properties, pos); 
 }
 
-Room * SearchTreeNode::insertMatchingRoom(vector<char *> properties, int pos) { 
+Room * SearchTreeNode::insertMatchingRoom(vector<char *> & properties, int pos) { 
 	
 	char * othersChars;
 	RoomSearchNode * selectedChild = get(properties[pos][next]);
