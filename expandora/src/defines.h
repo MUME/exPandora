@@ -1,4 +1,11 @@
 
+/* choose one of thouse */
+#define LINUX
+//#define MAC_OS
+//#define WINDOWS
+
+
+
 #define TRUE            1
 #define FALSE           0
 

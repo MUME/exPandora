@@ -1,5 +1,14 @@
 //#include <GL/gl.h>
-#include <OpenGL/gl.h>
+
+/*
+#ifdef MAC_OS
+  #include <OpenGL/gl.h>
+#else
+  #include <GL/gl.h>
+#endif
+*/
+
+#include <qgl.h>
 
 #define MAX_ROOMS       30000		/* maximal amount of rooms */
 #define EXIT_UNDEFINED  (MAX_ROOMS+1)
