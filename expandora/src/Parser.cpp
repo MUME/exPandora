@@ -45,7 +45,9 @@ void Parser::event(BaseEvent * ev) {
 
 void Parser::checkQueues() {
 	if (mudEvents.empty()) return;
-	if (playerEvents.empty() && state != SYNCING) state = SYNCING;	
+	if (playerEvents.empty()) {
+	  if (state != SYNCING) state = SYNCING;
+	}
 	else while (mudEvents.front()->timestamp < playerEvents.front()->timestamp && !(mudEvents.empty())) {
 		mudPop();
 		state = SYNCING;
@@ -147,14 +149,15 @@ void Parser::mudPop() {
 }
 
 void Parser::syncing() {
-	if (playerEvents.front()->type == UNIQUE) {
+  if (mudEvents.empty()) return;
+  if (!(playerEvents.empty()) && (playerEvents.front()->type == UNIQUE)) {
 		// unique doesn't work when syncing ...
 		playerPop();
 		return;
 	}
-	if (mudEvents.front()->type == MOVE_FAIL) {
+  if (mudEvents.front()->type == MOVE_FAIL) {
 		mudPop();
-		playerPop();
+		if (!playerEvents.empty()) playerPop();
 		return;
 	}
 	
@@ -167,7 +170,7 @@ void Parser::syncing() {
 		rcmm.deactivate((RoomCollection *)possible);
 	}
 	else if (possible->numRooms() == 0) rcmm.deactivate((RoomCollection *)possible);
-	playerPop();
+	if (!playerEvents.empty()) playerPop();
 	mudPop();
 
 }	
