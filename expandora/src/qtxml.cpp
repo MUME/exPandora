@@ -1,4 +1,4 @@
-//#define NEW_ENGINE
+#define NEW_ENGINE
 /*
 $Id$
 */
@@ -48,7 +48,9 @@ public:
     bool startElement( const QString&, const QString&, const QString& ,
                        const QXmlAttributes& );
     bool endElement( const QString&, const QString&, const QString& );
-
+#ifdef NEW_ENGINE
+    void addExits();
+#endif
 private:
     /* some flags */
     int flag;
@@ -99,9 +101,26 @@ void xml_readbase( char *filename)
     printf("done sorting. \n");
 #else
     //pop all the exits and addExit(...) them into the rooms
+    handler->addExits();	  
 #endif
     return;
 }
+
+#ifdef NEW_ENGINE
+void StructureParser::addExits() {
+	Exit * e;
+    	Room * from;
+    	Room * to;
+    	while (!(exits.empty())) {
+	    e = exits.top();
+	    exits.pop();
+	    from = roomAdmin.getRoom(e->sourceId);
+	    to = roomAdmin.getRoom(e->destId);
+	    from->addExit(e->dir, to);
+		printf("added exit from %i to %i in dir %i\n", from, to, e->dir);
+	}
+}
+#endif
 
 
 StructureParser::StructureParser()
@@ -242,15 +261,16 @@ bool StructureParser::startElement( const QString& , const QString& ,
       i = 0;
       to = 0;
       while (room_flags[i].name) { 
-        if (strcmp(data, room_flags[i].xml_name) == 0) {
+        if (strcmp(data, room_flags[i].xml_name) == 0) { // EVIL!!! completely unnecessary strcmp in inner loop; time to redesign the xml syntax ...
           to = room_flags[i].flag;
         }
         i++;
       }
       if (!to)
         to = atoi( (const char *) data);
-      
-#ifndef NEW_ENGINE
+#ifdef NEW_ENGINE
+      else to = INT_MAX;
+#else
       r->exits[dir] = to;
 #endif
       
@@ -269,12 +289,13 @@ bool StructureParser::startElement( const QString& , const QString& ,
       else {
        	roomProps->pushOptional(prop);
       }
-       
-      Exit  * e = new Exit;
+      if (to != INT_MAX) { 
+      	Exit  * e = new Exit;
 	e->sourceId = id;
 	e->dir = dir;
 	e->destId = to;
-      exits.push(e);
+      	exits.push(e);
+      }
 #endif 
       
       if (s.length() != 0) {

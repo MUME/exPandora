@@ -31,7 +31,7 @@ void RoomAdmin::assignId(Room * room) {
 	}
 	
 	room->setId(id);
-	if (roomIndex.size() <= id) roomIndex.resize(id + 1);
+	if (roomIndex.size() <= id) roomIndex.resize(id + 1, 0);
 	roomIndex[id] = room;
 }
 
