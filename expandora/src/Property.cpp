@@ -25,12 +25,35 @@ void Property::clear() {
   currentOffset = -1;
 }
 
-void Property::copy(Property & other) {
-  for (int i = 0; other[i] != 0; i++) {
-    add(other[i]);
+char * Property::getText() {
+  return begin;
+}
+
+char Property::get(int offset) {
+  if (used >= 0 && offset < used && offset >= 0) return begin[offset];
+  else return 0;
+}
+
+void Property::copy(Property * other) {
+  currentOffset = other->getOffset();
+  char * text = other->getText();
+  used = other->size();
+  if (text >= 0) {
+    begin = new char[used+1];
+    strncpy(begin, text, used);
+    begin[used] = 0;
+    length = used+1;
   }
-  add('\0');
-  currentOffset = other.getOffset();
+  else {
+    begin = 0;
+    length = 0;
+  }
+}
+
+Property * Property::copy() {
+  Property * other = pmm.activate();
+  other->copy(this);
+  return other;
 }
 
 Property::Property() {
@@ -47,16 +70,8 @@ Property::Property(char * in) {
   currentOffset = -1;
 }
 
-int Property::comp(Property & other) {
-  int ret = 0;
-  for (int i = 0; i<used; i++) if (begin[i] != other[i]) ret++;
-  return ret;
-}
-
-int Property::operator==(Property & other) {
-  if (used != other.size()) return 0;
-  for (int i = 0; i<used; i++) if (begin[i] != other[i]) return 0;
-  return 1;
+int Property::comp(Property * other) {
+  return strcmp(begin, other->getText());
 }
 
 void Property::add(char c) {
@@ -68,7 +83,7 @@ void Property::add(char c) {
 }
 
 void Property::add(char * string) {
-  int needed = used + strlen(string) + 1;
+  int needed = used + strlen(string);
   enlarge(needed);
 	
   for (int i = used; i < needed; i++) {
@@ -78,7 +93,7 @@ void Property::add(char * string) {
 }
 
 void Property::add(const char * other, const char * end) {
-  int needed = used + other - end;
+  int needed = used + end - other;
   enlarge(needed);
 
   for (int i = used; i < needed; i++) {
@@ -94,29 +109,22 @@ void Property::enlarge(int neededSpace) {
     char * newBegin = new char[length];
     for (int i = 0 ; i < used; i++) newBegin[i] = begin[i];
     for (int i = used; i <length; i++) newBegin[i] = 0;
-    delete[] begin;
+    if (begin != 0) delete[] begin;
     begin = newBegin;
   }
   begin[neededSpace] = 0;
 }
 
-char Property::operator[](int offset) {
-  if (offset >= length) enlarge(offset+1);
-  else if (offset < 0) return begin[length - 1];
-  return begin[offset];
-}
-
-
 char Property::current() {
   if(currentOffset == -1) currentOffset = 0;
-  return operator[](currentOffset);
+  return get(currentOffset);
 }
 		
 char Property::next() {
-  return operator[](++currentOffset);
+  return get(++currentOffset);
 }
 		
 char Property::prev() {
-  return operator[](--currentOffset);
+  return get(--currentOffset);
 }
 

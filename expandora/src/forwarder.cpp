@@ -185,7 +185,7 @@ int proxy_init()
 #define WSVERS MAKEWORD(2,2)
 #endif
 
-    fprintf(stderr, "Proxy initialising\n");
+    //fprintf(stderr, "Proxy initialising\n");
     
 #ifdef Q_OS_WIN32
     if (WSAStartup(WSVERS, &wsadata) != 0)
@@ -365,7 +365,7 @@ int proxy_loop(void)
             if (rd>0) {
               #ifdef DEBUG
                 intbuff[rd] = 0;
-                fprintf(debug_file, "\r\n-received_from_user(len %i)->", rd);
+                //fprintf(debug_file, "\r\n-received_from_user(len %i)->", rd);
                 fwrite(intbuff, rd, 1, debug_file);
                 fflush(debug_file);
               #endif
@@ -380,7 +380,7 @@ int proxy_loop(void)
 
                 #ifdef DEBUG
                   intbuff[rd] = 0;
-                  fprintf(debug_file, "\r\n-sent_to_mud(len %i)->", rd);
+                  //fprintf(debug_file, "\r\n-sent_to_mud(len %i)->", rd);
                   fwrite(intbuff, rd, 1, debug_file);
                   fflush(debug_file);
                 #endif
@@ -409,7 +409,7 @@ int proxy_loop(void)
             if (rd>0) {
               #ifdef DEBUG
                 intbuff[rd] = 0;
-                fprintf(debug_file, "\r\n<-receive_from_mud(len %i)-", rd);
+                //fprintf(debug_file, "\r\n<-receive_from_mud(len %i)-", rd);
                 fwrite(intbuff, rd, 1, debug_file);
                 fflush(debug_file);
               #endif
@@ -423,7 +423,7 @@ int proxy_loop(void)
 
               #ifdef DEBUG
                 intbuff[rd] = 0;
-                fprintf(debug_file, "\r\n<-sent_to_user(len %i)-", rd);
+                //fprintf(debug_file, "\r\n<-sent_to_user(len %i)-", rd);
                 fwrite(intbuff, rd, 1, debug_file);
                 fflush(debug_file);
               #endif

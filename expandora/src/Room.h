@@ -9,6 +9,7 @@
 
 #include <list>
 #include <vector>
+//#include <dmalloc.h>
 
 using namespace std;
 
@@ -28,10 +29,10 @@ class Room {
   Room();
   void setUnique(){unique = true;};
   bool isUnique(){return unique;};
-  void addOptional(Property * note) {optionalProperties.push_back(note);}
+  void addOptional(Property * note) {optionalProperties.push_back(note->copy());}
   void init(ParseEvent * event, RoomCollection * _home);
   void setId(int _id) {id = _id;};
-  bool containsOptionals(list<Property *> & optionals);
+  bool containsOptionals(list<Property *> * optionals);
   bool fastCompare(ParseEvent * props, int tolerance = defaultTolerance);
   void clear();
   void setCoordinate(Coordinate * _c) {c = _c;};
@@ -55,5 +56,5 @@ class Room {
 
 };
 
-extern ObjectRecycler<Room> rmm;
+//extern ObjectRecycler<Room> rmm;
 #endif

@@ -8,6 +8,7 @@
 #include "Coordinate.h"
 #include <queue>
 #include <list>
+//#include <dmalloc.h>
 using namespace std;
 
 #define APPROVED 0
@@ -43,5 +44,7 @@ class Parser {
 		Coordinate * getExpectedCoordinate(Room * base);
 };	
 
+
 extern Parser parser;
+
 #endif

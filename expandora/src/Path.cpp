@@ -58,11 +58,6 @@ void Path::deny() {
   if (!children.empty()) return;
   if (room != 0) room->release(admin);
   room = 0;
-  /*set<Path *>::iterator i = children.begin();
-  for(; i != children.end(); i++) {
-    (*i)->cutDeadBranch();
-    }*/
-  children.clear();
   if (parent != 0) {
     parent->removeChild(this);
     parent->deny();

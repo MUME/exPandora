@@ -18,7 +18,6 @@ class RoomCollection : public RoomSearchNode {
 		void addRoom(Room * room);
 		RoomCollection * merge(RoomSearchNode * other);
 		void clear();
-		set<Room *> & getRooms() {return rooms;};
 		void removeRoom(Room * room); 
 		void checkConsistency(); // checks if any rooms are deactivated
 		Room * matchOne(ParseEvent * ev);	// narrows the Collection by the event and returns a Room if exactly one is left otherwise returns 0

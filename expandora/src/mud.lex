@@ -30,8 +30,10 @@ ROOMCOL		\33\[32m
 {ROOMCOL}				BEGIN(ROOMNAME);
 
 <*>{OTHERCOL}[^\33]*{ENDCOL}			/* throw away some message in other colors*/
-<*>"It's pitch black ...\n"		                        skipSomeProperties(); BEGIN(PROMPT);
+<*>"You just see a dense fog around you..."                     |
+<*>"It is pitch black..."		                        skipSomeProperties(); BEGIN(PROMPT);
 
+<*>"The ".*" seems to be closed."                               |
 <*>"Alas, you cannot go that way..."				|
 <*>"You need to swim to go there."				|
 <*>"You need to swim there."					|
@@ -60,7 +62,7 @@ ROOMCOL		\33\[32m
 
 <DESC>.                 append(YYText()[0]);
 <DESC>"\r\n"            clearProperty();
-<DESC>"\n\r"		pushProperty();
+<DESC>"\n\r"	        pushProperty();
 <DESC>"Exits:"		clearProperty(); BEGIN(EXITS);
 
 

@@ -5,7 +5,7 @@
 
 int defaultTolerance = 1;
 
-ObjectRecycler<Room> rmm;
+//ObjectRecycler<Room> rmm;
 
 
 Room::Room() {
@@ -23,28 +23,27 @@ void Room::release(RoomAdmin * admin) {
   holdCount--;
   if (holdCount <= 0) {
     admin->removeRoom(id);
-    rmm.deactivate(this);
+    clear();
+    //rmm.deactivate(this);
   }
 }
 
-/**
- * what happens with the original properties and optional properties?
- */
+
 void Room::init(ParseEvent * event, RoomCollection * _home) {
   
-  list<Property *> _properties = event->getProperties();
-  for (list<Property *>::iterator i = _properties.begin(); i != _properties.end(); i++)
-    properties.push_back(*i);
+  list<Property *> * _properties = event->getProperties();
+  for (list<Property *>::iterator i = _properties->begin(); i != _properties->end(); i++)
+    properties.push_back((*i)->copy());
 
-  list<Property *> _optionalProperties = event->getOptionals();
-  for (list<Property *>::iterator i = _optionalProperties.begin(); i != _optionalProperties.end(); i++)
-    optionalProperties.push_back(*i);
+  list<Property *> * _optionalProperties = event->getOptionals();
+  for (list<Property *>::iterator i = _optionalProperties->begin(); i != _optionalProperties->end(); i++)
+    optionalProperties.push_back((*i)->copy());
   home = _home;
 }
 
 RoomCollection * Room::getNeighbours(int k) {
   if (k < (int)exits.size()) {
-    if (exits[k] != 0) exits[k]->checkConsistency();
+    //if (exits[k] != 0) exits[k]->checkConsistency();
     return exits[k];
   } 
   else return 0;
@@ -112,14 +111,14 @@ void Room::clear() {
 /** compare the optional properties that are not present in the search tree
  * perhaps we should allow a tolerance, too?
  */
-bool Room::containsOptionals(list<Property *> & optionals) {
+bool Room::containsOptionals(list<Property *> * optionals) {
   list<Property *>::iterator i;
   list<Property *>::iterator j;
 	
   int matched = 0;
-  for (i = optionals.begin(); i != optionals.end(); i++) {
+  for (i = optionals->begin(); i != optionals->end(); i++) {
     for (j = optionalProperties.begin(); j != optionalProperties.end(); j++) {
-      if (!(*i)->comp(**j)) {
+      if (!(*i)->comp(*j)) {
 	matched = 1;
 	break;
       }
@@ -135,11 +134,11 @@ bool Room::containsOptionals(list<Property *> & optionals) {
  */
 bool Room::fastCompare(ParseEvent * ev, int tolerance) {
   list<Property *>::iterator j = properties.begin();
-  list<Property *> & props = ev->getProperties(); 
-  list<Property *>::iterator i = props.begin();
+  list<Property *> * props = ev->getProperties(); 
+  list<Property *>::iterator i = props->begin();
     		
-  for (; i != props.end() && j != properties.end(); i++, j++) {
-    tolerance -= (*i)->comp(**j);
+  for (; i != props->end() && j != properties.end(); i++, j++) {
+    tolerance -= (*i)->comp(*j);
     if (tolerance <= 0) return false;
   }
   return true;

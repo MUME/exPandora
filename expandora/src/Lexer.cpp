@@ -8,34 +8,36 @@ void Lexer::pushUserInput (char * input) {
   inputLock.lock();
   userInput.push(input);
   inputLock.unlock();
-  inputSync.wakeAll(); // there is only one thread waiting to be woken ...
+  inputSync.wakeOne();
 }
 
 void Lexer::pushMudInput(char * input) {
   inputLock.lock();
   mudInput.push(input);
   inputLock.unlock();
-  inputSync.wakeAll(); // there is only one thread waiting to be woken ...
+  inputSync.wakeOne();
 }
 
 void Lexer::run() {
-  char * buf = 0;
+  istringstream * buf = 0;
   while(1) {
     if (!userInput.empty()) {
       inputLock.lock();
-      buf = userInput.front();
+      string temp = string(userInput.front());
       userInput.pop();
       inputLock.unlock();
-      playerLexer.switch_streams(new istringstream(string(buf)), 0);
-      playerLexer.yylex(); 
+      playerLexer.switch_streams(buf = new istringstream(temp), 0); 
+      playerLexer.yylex();
+      delete(buf);
     }
     else if(!mudInput.empty()) {
       inputLock.lock();
-      buf = mudInput.front();
+      string temp = string(mudInput.front());
       mudInput.pop();
       inputLock.unlock();
-      mudLexer.switch_streams(new istringstream(string(buf)), 0);
-      mudLexer.yylex(); 
+      mudLexer.switch_streams(buf = new istringstream(temp), 0); 
+      mudLexer.yylex();
+      delete(buf);
     }
     else inputSync.wait();
   }    

@@ -7,7 +7,6 @@ using namespace std;
 SearchTreeNode::SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode> * _children) {
   myChars = new char[strlen(event->current()->rest()) + 1];
   strcpy(myChars, event->current()->rest()); 	// we copy the string so that we can remove rooms independetly of tree nodes
-  // of courxe that needs memory
   children = _children;
 }
 
@@ -21,14 +20,23 @@ SearchTreeNode::SearchTreeNode(char * _myChars, TinyList<RoomSearchNode> * _chil
  */
 RoomSearchNode * SearchTreeNode::getRooms(ParseEvent * event) {
   RoomSearchNode * selectedChild = 0;
-  for (int i = 0; myChars[i] != 0; i++) if (event->current()->next() != myChars[i]) return this;
+  for (int i = 0; myChars[i] != 0; i++) {
+    if (event->current()->next() != myChars[i]) {
+      for(; i > 0 ; i--) event->current()->prev();
+      return this;
+    }
+  }
   selectedChild = children->get(event->current()->next());
-	
-  if(selectedChild == 0) return this; // no such room
+
+  if(selectedChild == 0) {
+    for (int i = 1; i < myChars[i] != 0; i++) event->current()->prev();
+    return this; // no such room
+  }
   else return selectedChild->getRooms(event);	// the last character of name is 0, 
   // at position 0 there is a roomCollection, if we have rooms here
   // else there is 0, so name[depth] should work.
 }
+
 
 
 void SearchTreeNode::setChild(char position, RoomSearchNode * node) {
@@ -43,10 +51,8 @@ Room * SearchTreeNode::insertRoom(ParseEvent * event) {
   char c = event->current()->current();
   for (int i = 0; myChars[i] != 0; i++) {
     if (c != myChars[i]) {
-      //printf ("no match: \n%s\n%s\n", myChars + i, event->current()->rest());
       // we have to split, as we encountered a difference in the strings ...	
       selectedChild = new SearchTreeNode(myChars + i + 1, children);	// first build the lower part of this node	
-      //printf("string transferred to lower node: %s\n", myChars + i + 1);
       children = new TinyList<RoomSearchNode>();	// and update the upper part of this node
       children->put(myChars[i], selectedChild);
 		
@@ -85,19 +91,17 @@ RoomSearchNode * SearchTreeNode::skipDown(ParseEvent * event) {
   RoomSearchNode * selectedChild = 0;
   RoomSearchNode * ret = rcmm.activate();
   RoomSearchNode * add;
-  ParseEvent * copy = pemm.activate();
+  ParseEvent * copy = 0;
   for (int i = 0; i < 128; i++) {
     if ((selectedChild = children->get(i)) != 0) {
-      copy->copy(event);
-      if ((add = selectedChild->skipDown(event)) != 0) {
-	ret->merge(add);
-	if (add->numRooms() > -1) rcmm.deactivate((RoomCollection *)add);
-      }
-      copy->recycleProperties();
-      copy->clear();
+      copy = event->copy();
+      add = selectedChild->skipDown(event);
+      ret->merge(add);
+      if (add->numRooms() > -1) rcmm.deactivate((RoomCollection *)add);
+      pemm.deactivate(copy);
+      copy = 0;
     }
   }
-  pemm.deactivate(copy);
   return ret;
 }
 		

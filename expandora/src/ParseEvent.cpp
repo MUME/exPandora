@@ -4,19 +4,15 @@
 #include "utils.h"
 
 ObjectRecycler<ParseEvent> pemm;
-
+Property * oldProp;
 /**
  * shallow clear: the Properties aren't given back to the object recycler
  */
 void ParseEvent::clear() {
-	required.clear();
-	optionals.clear();
+  recycleProperties();
 	type = 0;
 	timestamp = 0;
 	pos = 0;
-}
-
-ParseEvent::~ParseEvent() {
 }
 
 ParseEvent * ParseEvent::copy() {
@@ -29,13 +25,13 @@ void ParseEvent::copy(ParseEvent * other) {
 	timestamp = other->timestamp;
 	type = other->type;
 	pos = 0;
-	list<Property *> & otherProps = other->getProperties();
-	list<Property *>::iterator p = otherProps.begin();
+	list<Property *> * otherProps = other->getProperties();
+	list<Property *>::iterator p = otherProps->begin();
 	list<Property *>::iterator otherPos = other->getPos();
 	Property * prop = 0;
-	for (; p != otherProps.end(); p++) {
+	for (; p != otherProps->end(); p++) {
 		prop = pmm.activate();
-		prop->copy(**p);
+		prop->copy(*p);
 		required.push_back(prop);
 		if (p == otherPos) {
 			pos = required.end();
@@ -43,10 +39,10 @@ void ParseEvent::copy(ParseEvent * other) {
 		}
 	}
 	otherProps = other->getOptionals();
-	p = otherProps.begin();
-	for (; p != otherProps.end(); p++) {
+	p = otherProps->begin();
+	for (; p != otherProps->end(); p++) {
 		prop = pmm.activate();
-		prop->copy(**p);
+		prop->copy(*p);
 		optionals.push_back(prop);
 	}
 }
@@ -67,16 +63,9 @@ void ParseEvent::recycleProperties() {
 	pos = 0;
 }
 
-ParseEvent::ParseEvent(ParseEvent * other) {
-	timestamp = other->timestamp;
-	type = other->type;
-	pos = other->getPos();	
-	optionals = other->getOptionals();
-	required = other->getProperties(); 
-}
-
 void ParseEvent::push(Property * newProp) {
 	required.push_back(newProp);
+	oldProp = newProp;
 	if (timestamp == 0) timestamp = m_timestamp();
 }
 
@@ -86,12 +75,6 @@ void ParseEvent::push(Property * newProp) {
 void ParseEvent::pushOptional(Property * newProp) {
 	optionals.push_back(newProp);
 	if (timestamp == 0) timestamp = m_timestamp();
-}
-
-Property * ParseEvent::pop() {
-	Property * ret = required.front();
-	required.pop_front();
-	return ret;
 }
 
 

@@ -621,9 +621,7 @@ void RendererWidget::draw(void)
         if (p != NULL) {
             curx = p->x;
             cury = p->y;
-#ifndef NEW_ENGINE
             curz = p->z;
-#endif
         } else {
             printf("RENDERER ERROR: cant get base coordinates.\r\n");
         }

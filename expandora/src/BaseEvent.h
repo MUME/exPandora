@@ -2,7 +2,7 @@
 #define BASEEVENT
 #define UNIQUE -1
 #define MOVE_FAIL -2 
-#include "ObjectRecycler.h"
+//#include "ObjectRecycler.h"
 
 
 
@@ -13,5 +13,5 @@ class BaseEvent {
 		char type;
 };
 
-extern ObjectRecycler<BaseEvent> bemm;
+//extern ObjectRecycler<BaseEvent> bemm;
 #endif

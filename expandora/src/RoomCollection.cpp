@@ -7,7 +7,8 @@ using namespace std;
 ObjectRecycler<RoomCollection> rcmm;
 
 Room * RoomCollection::insertRoom(ParseEvent * event) {
-  Room * room = rmm.activate();
+  Room * room = new Room();
+  //Room * room = rmm.activate();
   room->init(event, this);
 	
   rooms.insert(room);
@@ -57,8 +58,7 @@ Room * RoomCollection::matchOne(ParseEvent * target) {
 
 RoomCollection * RoomCollection::merge(RoomSearchNode * other) {
   if (other != 0 && other->numRooms() > 0) {
-    set<Room *> otherSet = ((RoomCollection *)other)->getRooms();
-    rooms.insert(otherSet.begin(), otherSet.end());
+    rooms.insert(((RoomCollection *)other)->begin(), ((RoomCollection *)other)->end());
   }
   return this;
 }

@@ -6,29 +6,29 @@ using namespace std;
 
 template <class T>
 class ObjectRecycler : private queue<T *> {
-	public:
-		void deactivate(T * obj);
-		T * activate();
+ public:
+  void deactivate(T * obj);
+  T * activate();
 };
 
 template <class T>
 void ObjectRecycler<T>::deactivate(T * obj) {
-	//printf("deactivating ... old queue size: %i\n", size());
-	obj->clear();
-	queue<T *>::push(obj);
-	//printf("deactivating ... new queue size: %i\n", size());
+  //printf("deactivating ... old queue size: %i\n", size());
+  obj->clear();
+  queue<T *>::push(obj);
+  //printf("deactivating ... new queue size: %i\n", size());
 }
 
 template <class T>
 T * ObjectRecycler<T>::activate() {
-	//printf("acitvating ... old queue size: %i\n", size());
+  //printf("acitvating ... old queue size: %i\n", size());
   if (!(queue<T *>::empty())) {
     T * ret = queue<T *>::front();
-    queue<T*>::pop();
-		//printf("acitvating ... new queue size: %i\n", size());
-		return ret;
-	}
-	else return new T();
+    queue<T *>::pop();
+    //printf("acitvating ... new queue size: %i\n", size());
+    return ret;
+  }
+  else return new T();
 }
 
 #endif

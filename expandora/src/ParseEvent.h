@@ -25,18 +25,12 @@ using namespace std;
  */
 class ParseEvent : public BaseEvent {
 	public:
-		~ParseEvent();
 		ParseEvent() {pos = 0; type = 0;}
-		ParseEvent(ParseEvent * other);
 		
 		void push(Property * newProp) ;
 		void pushOptional(Property * newProp);
 		
-		Property * pop(); // gets the first property and removes it
-		
 		void clear();	// for the ObjectRecycler
-		void recycleProperties();
-		void copy(ParseEvent * other);
 		ParseEvent * copy();
 
 		Property * next();	// next Property according to pos (updating pos)
@@ -44,9 +38,11 @@ class ParseEvent : public BaseEvent {
 		Property * current();	// current Property according to pos (pos stays as it is)
 		
 		list<Property *>::iterator getPos() {return pos;}	// for (shallow) copying
-		list<Property *> & getOptionals() {return optionals;}	
-		list<Property *> & getProperties() {return required;}
+		list<Property *> * getOptionals() {return &optionals;}	
+		list<Property *> * getProperties() {return &required;}
 	private:
+		void copy(ParseEvent * other);
+		void recycleProperties();
 		list<Property *> required;
 		list<Property *> optionals;
 		list<Property *>::iterator pos;

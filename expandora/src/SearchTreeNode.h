@@ -23,6 +23,7 @@ class SearchTreeNode : public RoomSearchNode {
 		virtual ~SearchTreeNode() {printf("warning: SearchTreeNode destroyed");}
 		virtual RoomSearchNode * getRooms(ParseEvent * event);
 		virtual Room * insertRoom(ParseEvent * event);
+		
 		virtual void setChild(char, RoomSearchNode *);
 		virtual RoomSearchNode * skipDown(ParseEvent * event);
 };

@@ -23,34 +23,44 @@ Room * IntermediateNode::insertRoom(ParseEvent * event) {
     
     return ret;
   }
+  else if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) return 0;
 	
   return SearchTreeNode::insertRoom(event);
 }
 	
 
 RoomSearchNode * IntermediateNode::getRooms(ParseEvent * event) {
+  RoomSearchNode * ret = 0;
   if (event->next() == 0) {
-    RoomSearchNode * ret = rcmm.activate();
+    ret = rcmm.activate();
     ret->merge(rooms);
     return ret;
   }
   else if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) return SearchTreeNode::skipDown(event);
-  else return SearchTreeNode::getRooms(event);
+  else {
+    ret = SearchTreeNode::getRooms(event);
+    if (ret == (SearchTreeNode *)this) event->prev();
+    return ret;
+  }
 }
 
 RoomSearchNode * IntermediateNode::skipDown(ParseEvent * event) {
-  RoomSearchNode * r = rcmm.activate();
-  if (event->current()->size() == SKIPPED_ONE) return getRooms(event);
-	
-	
-  if (event->next() == 0) r->merge(rooms);
-  else {
-    ParseEvent * copy = pemm.activate();
-    copy->copy(event);
-    char c = 0;
-    if ((myChars[0] == 0 && children->get(c = event->current()->current()) != 0) || myChars[0] == c)  r->merge(SearchTreeNode::getRooms(event));
-    r->merge(SearchTreeNode::skipDown(copy));
-    copy->recycleProperties();
+  bool many = false;
+  ParseEvent * copy = 0;
+
+  if (event->current()->size() == SKIPPED_MANY) {
+    many = true;
+    copy = event->copy();
+  }
+  else many = false; 
+  RoomCollection * r = getRooms(event);
+
+  if (many) {
+    RoomCollection * temp = 0;
+    r->merge(rooms);
+    temp = SearchTreeNode::skipDown(copy);
+    r->merge(temp);
+    rcmm.deactivate(temp);
     pemm.deactivate(copy);
   }
 
