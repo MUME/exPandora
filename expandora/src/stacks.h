@@ -35,3 +35,7 @@ public:
 };
 
 extern class stackmanager stacker;
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

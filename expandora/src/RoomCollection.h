@@ -35,3 +35,7 @@ class RoomCollection : public RoomSearchNode {
 extern ObjectRecycler<RoomCollection> rcmm; // room collection memory management ... :(
 #endif
 
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

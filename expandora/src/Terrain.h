@@ -18,3 +18,7 @@ class Terrain {
 extern map<char, Terrain *> terrains;
 extern map<QString, char> terrainIDs;
 #endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

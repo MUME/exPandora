@@ -3,19 +3,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
-
-#include "defines.h"
 #include <qmutex.h>
 
+#include "renderer.h"
+#include "defines.h"
 #include "struct.h"
-
 #include "event.h"
 #include "stacks.h"
 #include "dispatch.h"
 #include "exits.h"
 #include "forwarder.h"
-#include "renderer.h"
 #include "utils.h"
 #include "engine.h"
 #include "rooms.h"

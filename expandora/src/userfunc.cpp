@@ -1,14 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
-#include "defines.h"
 #include <qmutex.h>
 
-
+#include "rooms.h"
+#include "defines.h"
 #include "struct.h"
-
 #include "dispatch.h"
 #include "stacks.h"
 #include "forwarder.h"
@@ -16,7 +13,6 @@
 #include "userfunc.h"
 #include "xml2.h"
 #include "event.h"
-#include "rooms.h"
 #include "engine.h"
 #include "tree.h"
 #include "renderer.h"

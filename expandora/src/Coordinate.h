@@ -1,9 +1,9 @@
 #ifndef COORDINATE
 #define COORDINATE
-
+#include <vector>
 #include "BaseEvent.h"
 #include "ObjectRecycler.h"
-#include <vector>
+
 using namespace std;
 
 class Coordinate {
@@ -21,4 +21,8 @@ class Coordinate {
 
 extern vector<Coordinate *> stdMoves;
 extern ObjectRecycler<Coordinate> cmm;
+#endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
 #endif

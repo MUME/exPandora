@@ -16,3 +16,7 @@ class RoomSearchNode {
 };
 
 #endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

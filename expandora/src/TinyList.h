@@ -71,3 +71,7 @@ void TinyList<T>::remove(char c) {
 	if (c < listSize) list[c] = 0;
 }
 #endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

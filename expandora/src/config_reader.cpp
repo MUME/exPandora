@@ -2,27 +2,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "defines.h"
-
 #include <qmutex.h>
+#ifdef NEW_ENGINE
+#include <qstring.h>
+#endif
 
 
+#include "rooms.h"
+#include "defines.h"
 #include "struct.h"
 #include "CharacterTable.h"
 #include "utils.h"
-#include "event.h"
-#include "dispatch.h"
-#include "rooms.h"
 #include "renderer.h"
 #include "config_reader.h"
 #include "engine.h"
+#include "dispatch.h"
+#include "event.h"
 
 #ifdef NEW_ENGINE
 #include "Terrain.h"
-#include <qstring.h>
-//#include <pair>
-//using namespace std;
 #endif
 
 #define BUFFER_SIZE 4096

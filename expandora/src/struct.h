@@ -62,3 +62,7 @@ struct engine_flags_type {
 };
 
 extern struct engine_flags_type engine_flags;
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

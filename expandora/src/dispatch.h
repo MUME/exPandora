@@ -66,3 +66,7 @@ public:
 };
 
 extern class Cdispatcher dispatcher;
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

@@ -32,3 +32,7 @@ T * ObjectRecycler<T>::activate() {
 }
 
 #endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

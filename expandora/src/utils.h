@@ -110,3 +110,7 @@ class Strings_Comparator {
 };
 
 extern Strings_Comparator comparator;
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

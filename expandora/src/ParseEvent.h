@@ -9,12 +9,12 @@
 #define ROOM -3 
 #define NOTE -4
 
+
+#include <list>
+#include <time.h>
 #include "ObjectRecycler.h"
 #include "Property.h"
 #include "BaseEvent.h"
-#include <list>
-#include <time.h>
-
 
 using namespace std;
 
@@ -50,4 +50,8 @@ class ParseEvent : public BaseEvent {
 
 extern ObjectRecycler<ParseEvent> pemm;
 
+#endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
 #endif

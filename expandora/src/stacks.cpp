@@ -1,8 +1,7 @@
 #include <string.h>
 
-#include "defines.h"
-
 #include "renderer.h"
+#include "defines.h"
 #include "dispatch.h"
 #include "forwarder.h"
 #include "utils.h"

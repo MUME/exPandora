@@ -1,8 +1,9 @@
+#include <qgl.h>
 #ifdef Q_OS_MACX
 #include "cmath"
 #endif
 
-#include <qgl.h>
+
 
 #define MAX_ROOMS       30000		/* maximal amount of rooms */
 #define EXIT_UNDEFINED  (MAX_ROOMS+1)
@@ -103,3 +104,7 @@ public:
 };
 
 extern class roommanager roomer;/* room manager */
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

@@ -9,8 +9,9 @@ void TelnetFilter::attachLexer(Lexer * _lexer) {
   /** these methods purge protocol-specific things from the imput, save a copy 
       in the buffer, then call the analyzer thread via a QWaitCondition; so they
       return before the buffer is analyzed ... */
-void TelnetFilter::analyzeMudStream(char * input, int * length) {
-  lexer->pushMudInput(purgeProtocolSequences(input, *length)); // pushes the input and wakes the parser thread
+int TelnetFilter::analyzeMudStream(char * input, int length) {
+  lexer->pushMudInput(purgeProtocolSequences(input, length)); // pushes the input and wakes the parser thread
+  return length;
 } 
 
 
@@ -19,18 +20,19 @@ void TelnetFilter::analyzeMudStream(char * input, int * length) {
       
   /** this one should probably be handled differently - not everything is to be
       passed on - a hackish way will be modifying the input ... */
-void TelnetFilter::analyzeUserStream(char * input, int * length) {
-  lexer->pushUserInput(purgeProtocolSequences(input, *length));
+int TelnetFilter::analyzeUserStream(char * input, int length) {
+  lexer->pushUserInput(purgeProtocolSequences(input, length));
   if(input[0] == MAP_COMMAND_PREFIX) {
     input[0] = 0;
-    *length = 0;
+    return 0;
   }
+  else return length;
 }
 
 char * TelnetFilter::purgeProtocolSequences(char * input, int length) {
   char * lexingBuffer = new char[length+1];
   int lag = 0;
-  for (int i = 0; i <= length; i++) {
+  for (int i = 0; i < length; i++) {
     if ((unsigned char)input[i] == (unsigned char)255) {
       i += 2;
       lag += 3;

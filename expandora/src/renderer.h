@@ -1,13 +1,13 @@
 #ifndef MAINWINDOW_H 
 #define MAINWINDOW_H 
 
+#include <qmainwindow.h> 
+#include <qstringlist.h> 
+#include <qgl.h>
 #include "defines.h"
 #ifdef NEW_ENGINE
 #include "Room.h"
 #endif
-#include <qmainwindow.h> 
-#include <qstringlist.h> 
-#include <qgl.h>
 
 class QAction; 
 class QLabel; 
@@ -168,4 +168,8 @@ private:
 
 extern class MainWindow *renderer_window;
 
+#endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
 #endif

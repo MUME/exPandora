@@ -47,3 +47,7 @@ class Property {
 
 extern ObjectRecycler<Property> pmm;
 #endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

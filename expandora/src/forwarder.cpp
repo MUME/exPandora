@@ -4,13 +4,16 @@
  * for solaris: gcc forwarder.c -lsocket -lnsl
  *
  */
-
-#define DEBUG
-
-#include "defines.h"
+#include <unistd.h>
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <netinet/in.h>
+#include <signal.h>
+#include <sys/socket.h>
+#include <qglobal.h>
 
 #if defined Q_OS_LINUX || defined Q_OS_MACX
-
 #define WSAEWOULDBLOCK EWOULDBLOCK
 #define WSAEINPROGRESS EINPROGRESS
 #define WSAGetLastError() errno
@@ -19,38 +22,19 @@
 #define SOCKET int
 #define ioctlsocket ioctl
 
-//#include <arpa/inet.h>
-//#include <sys/ioctl.h>
-
-#include <unistd.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <signal.h>
-#include <sys/socket.h>
-
 #elif defined Q_OS_WIN32
-/*
-#include <Windows32/Base.h>
-#include <Windows32/Sockets.h>
-#include <time.h>
-*/
 #define socklen_t int
 #include <winsock.h>
 #endif
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <errno.h>
-
 #include <qmutex.h>
 
 
-
+#include "defines.h"
 #include "dispatch.h"
 
 #ifdef NEW_ENGINE
@@ -373,7 +357,7 @@ int proxy_loop(void)
 #ifndef NEW_ENGINE
               dispatcher.analyze_user_stream(intbuff, &rd);
   #else
-	      filter->analyzeUserStream(intbuff, &rd);
+	      rd = filter->analyzeUserStream(intbuff, rd);
 #endif
               if (!mud_emulation) {
                 tcp_mutex.lock();
@@ -417,7 +401,7 @@ int proxy_loop(void)
 #ifndef NEW_ENGINE
               dispatcher.analyze_mud_stream(intbuff, &rd);
               #else
-	      filter->analyzeMudStream(intbuff, &rd);
+	      rd = filter->analyzeMudStream(intbuff, rd);
 #endif
               tcp_mutex.lock();
 

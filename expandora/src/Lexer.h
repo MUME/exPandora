@@ -1,14 +1,15 @@
 #ifndef LEXER
 #define LEXER
+
+#include <qthread.h>
+#include <qwaitcondition.h>
+#include <qmutex.h>
+#include <queue>
 #include "defines.h"
 #include "ParseEvent.h"
 #include "Property.h"
 #include "ObjectRecycler.h"
 #include "Parser.h"
-#include <qthread.h>
-#include <qwaitcondition.h>
-#include <qmutex.h>
-#include <queue>
 using namespace std;
 
 
@@ -106,4 +107,8 @@ class Lexer : public QThread {
 };
 
 
+#endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
 #endif

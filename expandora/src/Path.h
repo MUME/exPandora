@@ -1,14 +1,15 @@
 #ifndef PATH
 #define PATH
-#include <set>
+
 #include "Room.h"
 #include "RoomAdmin.h"
+#include <set>
 
 using namespace std;
 
 class Path {
  public:
-  Path() {}
+  Path() {active = false;}
   void removeChild(Path * p);
   void setParent(Path * p);
   bool hasChildren() {return (!children.empty());};
@@ -22,10 +23,11 @@ class Path {
   // and removes the respective rooms if experimental
   void clear();
   void setProb(double p) {probability = p;};
-  void cutDeadBranch(); 	// removes this path and recursively all chldren 
+  //void cutDeadBranch(); 	// removes this path and recursively all chldren 
   // and gives them back to the pamm
   // and removes all respective experimental rooms
  private:
+  bool active;
   Path * parent;
   set<Path *> children;
   double probability;
@@ -35,4 +37,8 @@ class Path {
 
 extern ObjectRecycler<Path> pamm;
 
+#endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
 #endif

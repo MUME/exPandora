@@ -6,3 +6,7 @@ extern char * characterTable;
 
 
 void initCharacterTable();	
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

@@ -1,4 +1,6 @@
+
 #define NEW_ENGINE
+
 #include <qglobal.h>
 
 #if defined Q_OS_LINUX || defined Q_OS_MACX
@@ -57,3 +59,7 @@ int reversenum(int num);
 void engine();
 void toggle_renderer_reaction();
 void notify_analyzer();
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

@@ -203,7 +203,7 @@ void Parser::buildPaths(RoomCollection * rc) {
 void Parser::enlargePaths(RoomCollection * rc) {
 
   list<Path *>::iterator i = paths.begin();
-  set<Room *>::iterator j = rc->begin();
+  set<Room *>::iterator j = 0;
   
   Coordinate * c = 0;
   
@@ -219,18 +219,21 @@ void Parser::enlargePaths(RoomCollection * rc) {
   for (int l = 0; l < k; l++) {
     c = getExpectedCoordinate((*i)->getRoom());
     working = 0;
+    j = 0;
 
-    do {  
+    while (j != rc->end()/*j++ is done only if no new room*/) { 
       if (working == 0) {
+	j = rc->begin();
 	Room * newRoom = admin->quickInsert(mudEvents.front(), c, activeTerrain);
 	if (newRoom != 0) {
 	  working = (*i)->fork(newRoom, c);
 	  working->setProb(working->getProb()/PATH_ACCEPT);
 	}
 	else {
-	  working = *i;
+	  working = 1;
 	  continue;
-	}
+	}  
+
       }
       else {
 	working = (*i)->fork(*j, c);
@@ -240,6 +243,7 @@ void Parser::enlargePaths(RoomCollection * rc) {
       if (working->getProb() < prevBest/PATH_ACCEPT) {
 	(*i)->removeChild(working);
 	pamm.deactivate(working);
+	working = 1;
       }
       else {
 	if (best == 0) best = working;
@@ -252,10 +256,10 @@ void Parser::enlargePaths(RoomCollection * rc) {
 	  if (second == 0) second = working;
 	  paths.push_back(working);
 	}
+	working = 1;
       }
-    } while (j != rc->end());
+    } 
 
-    j = rc->begin();
     i++;
     cmm.deactivate(c);
   } 

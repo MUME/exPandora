@@ -17,3 +17,7 @@ extern const struct user_command_type user_commands[];
 #define USER_PARSE_NONE 0 /* 0 - not my area - send the line futher */
 #define USER_PARSE_DONE 1 /* 1 - got the line, and taken care of it - gag it */
 int parse_user_input_line(char *line);
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

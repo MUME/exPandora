@@ -1,10 +1,11 @@
 #ifndef INTERMEDIATENODE
 #define INTERMEDIATENODE
+#include <vector>
 #include "SearchTreeNode.h"
 #include "RoomSearchNode.h"
 #include "RoomCollection.h"
 #include "Room.h"
-#include <vector>
+
 using namespace std;
 /**
  * IntermediateNodes represent possible ends of a property
@@ -20,4 +21,8 @@ class IntermediateNode : public SearchTreeNode {
 		RoomCollection * rooms;
 };
 
+#endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
 #endif

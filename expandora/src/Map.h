@@ -21,3 +21,7 @@ class Map {
 };
 
 #endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

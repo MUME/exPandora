@@ -4,13 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <qthread.h>
+#include <qmutex.h>
 
 
 
 
 #include "defines.h"
-#include <qthread.h>
-#include <qmutex.h>
 
 
 #include "struct.h"

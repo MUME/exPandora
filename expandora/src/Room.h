@@ -58,3 +58,7 @@ class Room {
 
 //extern ObjectRecycler<Room> rmm;
 #endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

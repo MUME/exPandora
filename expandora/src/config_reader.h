@@ -4,3 +4,7 @@
 
 
 int parse_config(char *filename);
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

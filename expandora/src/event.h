@@ -52,3 +52,7 @@ void addtostack(struct Tevent *stack, char type, char *data);
 void printstacks();
 
 void clear_events_stacks();
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

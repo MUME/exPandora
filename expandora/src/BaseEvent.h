@@ -15,3 +15,7 @@ class BaseEvent {
 
 //extern ObjectRecycler<BaseEvent> bemm;
 #endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

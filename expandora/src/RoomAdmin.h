@@ -45,3 +45,7 @@ class RoomAdmin : public SearchTreeNode {
 extern RoomAdmin roomAdmin; //globally visible roomAdmin ...
 #endif
 	
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

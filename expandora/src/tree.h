@@ -45,3 +45,7 @@ public:
 };
 
 extern class Ctree namer;
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif

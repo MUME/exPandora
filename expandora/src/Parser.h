@@ -1,13 +1,14 @@
 #ifndef PARSER
 #define PARSER
+#include <queue>
+#include <list>
 #include "Terrain.h"
 #include "ParseEvent.h"
 #include "Property.h"
 #include "Path.h"
 #include "Room.h"
 #include "Coordinate.h"
-#include <queue>
-#include <list>
+
 //#include <dmalloc.h>
 using namespace std;
 
@@ -47,4 +48,8 @@ class Parser {
 
 extern Parser parser;
 
+#endif
+
+#ifdef DMALLOC
+#include <dmalloc.h>
 #endif
