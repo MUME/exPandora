@@ -1,3 +1,4 @@
+//#define NEW_ENGINE
 /*
 $Id$
 */
@@ -15,16 +16,29 @@ $Id$
 #include "utils.h"
 #include "dispatch.h"
 
+#ifdef NEW_ENGINE
+#include <stack>
+using namespace std;
+#include "Terrain.h"
+#include "ParseEvent.h"
+#include "Room.h"
+#include "RoomAdmin.h"
+#include "Coordinate.h"
+#include "Property.h"
+#endif
+
 #define XML_ROOMNAME    (1 << 0)
 #define XML_DESC        (1 << 1)
 #define XML_NOTE        (1 << 2)
-/*
+
+#ifdef NEW_ENGINE
 typedef struct Exit {
 	int SourceId;
 	int dir;
 	int DestId;
 } Exit;
-*/
+#endif
+
 class StructureParser: public QXmlDefaultHandler
 {
 public:
@@ -45,14 +59,18 @@ private:
 
     int i;
     struct Troom *r;
-
-    /*
-    ParseEvent * rooomProps;
+    
+#ifdef NEW_ENGINE
+    double timeFromString(QString &);
+   
+    double ts; 
+    Terrain * t;
+    ParseEvent * roomProps;
     Coordinate * c;    
     stack<Exit> exits;
     Property * prop;
     int id;
-    */
+#endif
 };
 
 
@@ -69,16 +87,14 @@ void xml_readbase( char *filename)
     reader.setContentHandler( handler );
     
 	
-    printf("---------->starting xml parsing<----------\n");
     
     reader.parse( source );
-    printf("---------->parsed xml - now starting sort<---------\n");
 
+#ifndef NEW_ENGINE
     roomer.resort_rooms();
-    printf("--------->done sorting<----------\n");
-
+#else
     //pop all the exits and addExit(...) them into the rooms
-
+#endif
     return;
 }
 
@@ -93,9 +109,13 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
 {
 
     if (qName == "room") {
-      	roomer.addroom_nonsorted(r);	/* tada! */
-	//roomAdmin.insertRoom(roomProps, i, c);
-	//pemm->deactivate(roomProps);
+#ifndef NEW_ENGINE
+	    roomer.addroom_nonsorted(r);	/* tada! */
+#else
+	Room * room = roomAdmin.insertRoom(roomProps, id, c, t);
+	room->resetTime(ts);
+	pemm.deactivate(roomProps);
+#endif
     }        
     flag = 0;    
     
@@ -106,11 +126,13 @@ bool StructureParser::characters( const QString& ch)
 {
     strncpy( data, (const char*) ch, ch.length() );
     data[ ch.length() ] = 0;
-    //prop = pmm.activate();
-    //prop->add(data);	
-    //if(flag != XML_NOTE) roomProps->push(prop);
-    //else roomProps->pushOptional(prop);
-    
+#ifdef NEW_ENGINE
+    prop = pmm.activate();
+    prop->add(data);	
+    if(flag != XML_NOTE) roomProps->push(prop);
+    else roomProps->pushOptional(prop);
+    return true;
+#else
     if (ch == NULL || ch == "")
         return TRUE;
     
@@ -135,6 +157,7 @@ bool StructureParser::characters( const QString& ch)
 
     
     return TRUE;
+#endif
 } 
 
 
@@ -161,10 +184,13 @@ bool StructureParser::startElement( const QString& , const QString& ,
     }
     
     if (qName == "room") {
-    	// roomProps = pemm.activate();
-	// c = cmm.activate();
+#ifdef NEW_ENGINE
+    	roomProps = pemm.activate();
+ 	c = cmm.activate();
+#else
 	r = new Troom;
       	reset_room(r);
+#endif
     }
     
     
@@ -182,7 +208,9 @@ bool StructureParser::startElement( const QString& , const QString& ,
       s = attributes.value("dir");
       strncpy( data, (const char*) s, s.length() );
       data[ s.length() ] = 0;
-      // char d = data[0];
+#ifdef NEW_ENGINE
+      char d = data[0];
+#endif
       dir = numbydir(data[0]);
       
       s = attributes.value("to");
@@ -208,32 +236,35 @@ bool StructureParser::startElement( const QString& , const QString& ,
       s = attributes.value("door");
       strncpy( data, (const char*) s, s.length() );
       data[ s.length() ] = 0;
-
-      /* if there is a door, then the exit (represented by d) is an optional property else it is a required property */
-      // prop = pmm.activate()
-      // prop->add(d); 
-      // if (data[0] == 0) {
-      // 	roomProps->push(prop);
-      // }
-      // else {
-      // 	roomProps->pushOptional(prop);
-      // }
-      // 
-      // Exit e = {id, dir, to};
-      // exits.push(e);
       
+#ifdef NEW_ENGINE
+      /* if there is a door, then the exit (represented by d) is an optional property else it is a required property */
+      prop = pmm.activate();
+      prop->add(d); 
+      if (data[0] == 0) {
+      	roomProps->push(prop);
+      }
+      else {
+       	roomProps->pushOptional(prop);
+      }
+       
+      Exit e = {id, dir, to};
+      exits.push(e);
+#endif 
       
       if (s.length() != 0) {
-      	/* all doors are optional properties */
-      	//prop = pmm.activate();
-      	//prop.add(data);
-      	//roomProps->pushOptional(prop);
+#ifdef NEW_ENGING
+	      /* all doors are optional properties */
+      	prop = pmm.activate();
+      	prop.add(data);
+      	roomProps->pushOptional(prop);
+#else
         r->doors[dir] = strdup(data);
         if (!r->doors[dir]) {
           printf("XML: Error while allocating memory in readbase function!");
           exit(1);
         }
-          
+#endif     
           
       }
       
@@ -247,29 +278,44 @@ bool StructureParser::startElement( const QString& , const QString& ,
             data[ s.length() ] = 0;
 
             if (attributes.qName(i) == "id") {
-                r->id = atoi( data );
-		//id = atoi(data);
-                continue;
+#ifndef NEW_ENGINE
+	  	    r->id = atoi( data );
+#else
+		    id = atoi(data);
+#endif
+	 	    continue;
             }
             if (attributes.qName(i) == "x") {
-                r->x = atoi( data );
-                //c->x = atoi(data);
-		continue;
+#ifndef NEW_ENGINE
+	  	    r->x = atoi( data );
+#else
+		    c->x = atoi(data);
+#endif
+    		    continue;
             }
             if (attributes.qName(i) == "y") {
-                r->y = atoi( data );
-		//c->y = atoi(data);
-                continue;
+#ifndef NEW_ENGINE
+	  	    r->y = atoi( data );
+#else
+		    c->y = atoi(data);
+#endif
+	 	    continue;
             }
             if (attributes.qName(i) == "z") {
-                r->z = atoi( data );
-		//c->z = atoi(data);
-                continue;
+#ifndef NEW_ENGINE
+	  	    r->z = atoi( data );
+#else
+		    c->z = atoi(data);
+#endif
+	 	    continue;
             }
 
             if (attributes.qName(i) == "terrain") {
-                struct room_sectors_data *p;
-
+#ifdef NEW_ENGINE
+		    t = terrains.find(terrainIDs.find(s)->second)->second;
+#else   
+		    struct room_sectors_data *p;
+		
                 r->sector = NULL;
                 p = room_sectors;
                 while (p) {
@@ -285,13 +331,16 @@ bool StructureParser::startElement( const QString& , const QString& ,
                   }
                   p = p->next;
                 }
+#endif
                 continue;
             }
             if (attributes.qName(i) == "timestamp") {
-                strcpy(r->timestamp, data);
-		//ignore ?? or set it after inserting?
-		//why is it stored in literal form?
-                continue;
+#ifndef NEW_ENGINE
+		    strcpy(r->timestamp, data);
+#else
+		    ts = timeFromString(s);
+#endif
+		    continue;
             }
   
             
@@ -300,6 +349,28 @@ bool StructureParser::startElement( const QString& , const QString& ,
 
     return TRUE;
 }
+
+#ifdef NEW_ENGINE
+/**
+ * a really ugly hack to get the timestamp out of the most stupid format string
+ * why don't we use one of QT's QDateFormat strings?
+ * I don't bother to calculate the hours, minutes and seconds as I'm wrong with 365.25 and that matters much more (one day atm?)
+ */
+double StructureParser::timeFromString(QString & s) {
+//"dd.MM.yyyy - hh:mm:ss"
+	s[3] = 0;
+	s[6] = 0;
+	s[9] = 0;
+	double ret = (strtod((const char *)s + 6, (char **)NULL) - 1970) * 60 * 60 * 24 * 365.25;
+	ret += strtod((const char *)s + 3, (char **)NULL) * 60 * 60 * 24 * 30.4375;
+	ret += strtod((const char *)s, (char **)NULL) * 60 * 60 * 24;
+	ret += 60 * 60 * 24; // just add one day to get 2000 not being a Schaltjahr right
+	s[3] = '.';
+	s[6] = '.';
+	s[9] = ' ';
+	return ret;
+}
+#endif
 
 /* plain text file alike writing */
 void xml_writebase(char *filename)

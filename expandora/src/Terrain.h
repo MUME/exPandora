@@ -16,4 +16,5 @@ class Terrain {
 };
 
 extern map<char, Terrain *> terrains;
+extern map<QString, char> terrainIDs;
 #endif

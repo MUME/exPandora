@@ -14,6 +14,7 @@ extern int defaultTolerance;
 
 class Room {
 	public:
+		void setTerrain(Terrain * t) {terrain = t;}
 		void approve() {experimental = false;};
 		void addExit(int direction, Room * destination);	
 		RoomCollection * go(BaseEvent * event);
@@ -29,6 +30,7 @@ class Room {
 		void setCoordinate(Coordinate * _c) {c = _c;};
 		Coordinate * getCoordinate(){return c;};
 		RoomCollection * getHome() {return home;};
+		void resetTime(double ts) {timestamp = ts;}
 	private:
 		RoomCollection * home;
 		list<Property *> properties;		/* name, desc, exit names - properties we need for tree searching */

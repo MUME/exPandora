@@ -8,7 +8,7 @@ RoomAdmin::RoomAdmin() : SearchTreeNode("") {
 	rooms = 0;
 }
 
-Room * RoomAdmin::insertRoom(ParseEvent * event) {
+Room * RoomAdmin::insertRoom(ParseEvent * event, Terrain * t) {
 	Room * room;
 	
 	if (event->current() == 0) {
@@ -18,6 +18,7 @@ Room * RoomAdmin::insertRoom(ParseEvent * event) {
 	else if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) return 0;
 	else room = SearchTreeNode::insertRoom(event);
 	assignId(room);
+	room->setTerrain(t);
 	return room;
 }
 
@@ -33,9 +34,9 @@ void RoomAdmin::assignId(Room * room) {
 	roomIndex[id] = room;
 }
 
-Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Cooordinate * c) {
+Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Coordinate * c, Terrain * t) {
 	unusedIds.push(id);
-	Room * room = insertRoom(event);
+	Room * room = insertRoom(event, t);
 	map.setNearest(c, room);
 	room->setCoordinate(c);
 	assignId(room);
@@ -43,20 +44,21 @@ Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Cooordinate * c) {
 }
 
 
-Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition) {
+Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition, Terrain * t) {
 	Room * room = deepestMatch->insertRoom(knownEvent);
 	assignId(room);
 	if (expectedPosition != 0) {
 		Coordinate * c = map.setNearest(expectedPosition, room);
 		room->setCoordinate(c);
-	}	
+	}
+	room->setTerrain(t);	
 	return room;
 }
 
-Room * RoomAdmin::insertRoom(ParseEvent * event, Coordinate * expectedPosition) {
+Room * RoomAdmin::insertRoom(ParseEvent * event, Coordinate * expectedPosition, Terrain * t) {
 	RoomSearchNode * temp = deepestMatch;
 	deepestMatch = this;
-	Room * ret = quickInsert(event, expectedPosition);
+	Room * ret = quickInsert(event, expectedPosition, t);
 	deepestMatch = temp;
 	return ret;
 }

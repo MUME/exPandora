@@ -52,6 +52,8 @@ void Room::clear() {
 		pmm.deactivate(optionalProperties.front());
 		optionalProperties.pop_front();
 	}
+	terrain = 0;
+	timestamp = 0;
 	home->removeRoom(this);
 }
 	

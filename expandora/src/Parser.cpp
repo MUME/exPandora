@@ -86,7 +86,7 @@ void Parser::approved() {
 		Coordinate * c = getExpectedCoordinate();
 		perhaps = roomAdmin.getRoom(c);
 		if ((perhaps == 0) || (!perhaps->fastCompare((ParseEvent *)mudEvents.front()))) {
-			perhaps = roomAdmin.insertRoom((ParseEvent *)mudEvents.front(), c);
+			perhaps = roomAdmin.insertRoom((ParseEvent *)mudEvents.front(), c, activeTerrain);
 			if (perhaps == 0) {
 				// can't insert it for some reason - for example skipped props
 				state = SYNCING;
@@ -123,7 +123,7 @@ void Parser::approved() {
 		}
 		else {
 			Coordinate * c = getExpectedCoordinate();
-			possible->merge(roomAdmin.insertRoom((ParseEvent *)mudEvents.front(), c)->getHome());
+			possible->merge(roomAdmin.insertRoom((ParseEvent *)mudEvents.front(), c, activeTerrain)->getHome());
 			state = EXPERIMENTING;
 			cmm.deactivate(c);
 		}
@@ -229,7 +229,7 @@ void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
 			copy->copy((ParseEvent *)mudEvents.front());
 			c->add((*i)->getRoom()->getCoordinate());
 			c->add(stdMoves[playerEvents.front()->type]);
-			working = (*i)->fork(roomAdmin.quickInsert(copy, c));
+			working = (*i)->fork(roomAdmin.quickInsert(copy, c, activeTerrain));
 			if (working->getProb() < MINPROB) working->deny();
 			else {
 				if (working->getProb() > paths.front()->getProb())

@@ -328,7 +328,7 @@ size_t write_to_channel(int mode, const char *format, va_list args)
 
 double m_timestamp(void) /* ms */
 {
-#ifdef Q_OS_LINUX
+#ifdef Q_OS_LINUX || Q_OS_MACX
   struct timeval tv;
   struct timezone tz;
 
