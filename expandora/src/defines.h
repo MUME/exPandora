@@ -1,13 +1,7 @@
 
-#define NEW_ENGINE
-#define DEBUG
-//#define DMALLOC
 
 #include <qglobal.h>
 
-#if defined Q_OS_LINUX || defined Q_OS_MACX
-#define QT_THREAD_SUPPORT
-#endif
 
 #define TRUE            1
 #define FALSE           0
