@@ -37,7 +37,7 @@ class Room {
 							   the user wants to know each time she enters */
 		list<Property *> optionalProperties;	/* secret exit names for example - properties we can match if they are present */
   
-  		vector<Exit *> exits;	 	/* we only match the defined standard exits and keep one field for "weird" exits */						   
+  		vector<RoomCollection *> exits;	 	/* we only match the defined standard exits and keep one field for "weird" exits */						   
 		bool experimental;
 		bool unique;
   		double timestamp; 		/*last modification */
