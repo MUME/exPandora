@@ -26,13 +26,18 @@ void Room::release(RoomAdmin * admin) {
     rmm.deactivate(this);
   }
   else if (holdCount < 0) 
-    printf("fatal: trying to double-remove room");
+    printf("fatal: trying to double-remove room\n");
 }
 
 
 void Room::init(ParseEvent * event, RoomCollection * _home) {
-  
+
   list<Property *> * _properties = event->getProperties();
+
+  #ifdef DEBUG
+  fprintf(stderr, "creating room: %s\n", _properties->front()->getText());
+  #endif
+
   for (list<Property *>::iterator i = _properties->begin(); i != _properties->end(); i++)
     properties.push_back((*i)->copy());
 
@@ -86,7 +91,11 @@ RoomCollection * Room::go(BaseEvent * dir) {
  * return all properties to pmm and remove this room from the room collection
  */
 void Room::clear() {
-  
+
+  #ifdef DEBUG
+  fprintf(stderr, "deleting room: '%s' with id %i\n", properties.front()->getText(), id);
+  #endif
+
   while(!properties.empty()) {
     pmm.deactivate(properties.front());
     properties.pop_front();

@@ -45,7 +45,9 @@ void RoomAdmin::assignId(Room * room) {
     if (id > greatestUsedId) greatestUsedId = id;
   }
 
-
+#ifdef DEBUG
+  fprintf(stderr, "assigning id: %i\n", id);
+#endif
   room->setId(id);
 
   if ((int)roomIndex.size() <= id) roomIndex.resize(id + 1, 0);

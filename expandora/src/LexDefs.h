@@ -12,7 +12,7 @@
 #define NONE 6
 #define UNKNOWN 7
 
-#define PATH_ACCEPT 3.0
+#define PATH_ACCEPT 5.0
 
 
 

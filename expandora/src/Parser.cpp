@@ -201,6 +201,9 @@ void Parser::buildPaths(RoomCollection * rc) {
 
 
 void Parser::enlargePaths(RoomCollection * rc) {
+  #ifdef DEBUG
+  fprintf(stderr, "enlarging paths with %i rooms, from event: %s\n ", rc->numRooms(), mudEvents.front()->getProperties()->front()->getText());
+  #endif
 
   list<Path *>::iterator i = paths.begin();
   set<Room *>::iterator j = 0;

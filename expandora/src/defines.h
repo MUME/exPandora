@@ -1,5 +1,6 @@
 
 #define NEW_ENGINE
+#define DEBUG
 
 #include <qglobal.h>
 
