@@ -362,7 +362,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
 #ifndef NEW_ENGINE
 	r->x = atoi( data );
 #else
-	c->x = atoi(data);
+	c->x = atoi(data) / 2;
 #endif
 	continue;
       }
@@ -370,7 +370,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
 #ifndef NEW_ENGINE
 	r->y = atoi( data );
 #else
-	c->y = atoi(data);
+	c->y = atoi(data) / 2;
 #endif
 	continue;
       }
@@ -378,7 +378,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
 #ifndef NEW_ENGINE
 	r->z = atoi( data );
 #else
-	c->z = atoi(data);
+	c->z = atoi(data) / 2;
 #endif
 	continue;
       }

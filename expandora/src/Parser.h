@@ -24,13 +24,13 @@ class Parser {
 		void mudPop();
 		void playerPop();
 		void unify();
-		Coordinate * getExpectedCoordinate();
+		
 		void dropNote(ParseEvent * ev);
 		void checkQueues();
 		void experimenting();
 		void syncing();
 		void approved();
-		void enlargePaths(RoomCollection * enlargingRooms, bool createNew);
+		void enlargePaths(RoomCollection * enlargingRooms);
 		void buildPaths(RoomCollection * initialRooms);
 
 		char state;
@@ -40,6 +40,7 @@ class Parser {
 		list<Path *> paths;
 		Room * mostLikelyRoom;
 		RoomAdmin * admin;
+		Coordinate * getExpectedCoordinate(Room * base);
 };	
 
 extern Parser parser;

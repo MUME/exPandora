@@ -19,6 +19,12 @@ void ParseEvent::clear() {
 ParseEvent::~ParseEvent() {
 }
 
+ParseEvent * ParseEvent::copy() {
+  ParseEvent * p = pemm.activate();
+  p->copy(this);
+  return p;
+}
+
 void ParseEvent::copy(ParseEvent * other) {
 	timestamp = other->timestamp;
 	type = other->type;

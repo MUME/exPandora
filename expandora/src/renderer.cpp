@@ -584,11 +584,11 @@ void RendererWidget::draw(void)
 #ifndef NEW_ENGINE
     struct Troom *p;
 #else
-    Coordinate * p;
-    Room * pr;
+    Coordinate * p = 0;
+    Room * pr = 0;
 #endif
-    unsigned int k;
-    int z, new_z;
+    unsigned int k = 0;
+    int z = 0, new_z = 0;
     
     print_debug(DEBUG_RENDERER, "in draw()");
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -609,20 +609,27 @@ void RendererWidget::draw(void)
     glTranslatef(userx, usery, 0);
  
     print_debug(DEBUG_RENDERER, "taking base coordinates");
-    if (stacker.amount >= 1) {
 #ifndef NEW_ENGINE
+    if (stacker.amount >= 1) {
 	p = roomer.getroom(stacker.get(1));
 #else
-	p = parser.getMostLikely()->getCoordinate();
+	pr = parser.getMostLikely();
+	if (pr == 0) pr = roomAdmin.getRoom(1);
+	if (pr == 0) p = 0;
+	else p = pr->getCoordinate();
 #endif
         if (p != NULL) {
             curx = p->x;
             cury = p->y;
+#ifndef NEW_ENGINE
             curz = p->z;
+#endif
         } else {
             printf("RENDERER ERROR: cant get base coordinates.\r\n");
         }
+#ifndef NEW_ENGINE
     }
+#endif
 
 
     CalculateFrustum();
@@ -639,7 +646,7 @@ void RendererWidget::draw(void)
     for (k = 1; k <= roomer.amount; k++) {
 	p = roomer.getroom(roomer.order[k - 1]);
 #else
-    for (k = 0; (int)k <= roomAdmin.lastId(); k++) {
+    for (k = 1; (int)k <= roomAdmin.lastId(); k++) {
       pr = roomAdmin.getRoom(k);
       if (pr == 0) continue;
       else p = pr->getCoordinate();

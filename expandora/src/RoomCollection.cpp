@@ -56,7 +56,7 @@ Room * RoomCollection::matchOne(ParseEvent * target) {
 }
 
 RoomCollection * RoomCollection::merge(RoomSearchNode * other) {
-  if (other->numRooms() > 0) {
+  if (other != 0 && other->numRooms() > 0) {
     set<Room *> otherSet = ((RoomCollection *)other)->getRooms();
     rooms.insert(otherSet.begin(), otherSet.end());
   }

@@ -14,7 +14,7 @@ class Path {
   bool hasChildren() {return (!children.empty());};
   void init(Room * room, RoomAdmin * _admin);
   Room * getRoom() {return room;};
-  Path * fork(Room * room); //new Path is fetched from pamm, distance between rooms is calculated and probability is updated accordingly
+  Path * fork(Room * room, Coordinate * expectedCoordinate); //new Path is fetched from pamm, distance between rooms is calculated and probability is updated accordingly
   double getProb() {return probability;};	
   void approve();
   void deny(); 	// removes this path and all parents up to the next branch 

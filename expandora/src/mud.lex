@@ -61,7 +61,7 @@ ROOMCOL		\33\[32m
 <DESC>.                 append(YYText()[0]);
 <DESC>"\r\n"            clearProperty();
 <DESC>"\n\r"		pushProperty();
-<DESC>"Exits:"		BEGIN(EXITS);
+<DESC>"Exits:"		clearProperty(); BEGIN(EXITS);
 
 
 <DESC,EXITS>{ROOMCOL}					skipSomeProperties(); pushEvent(ROOM); BEGIN(ROOMNAME);
@@ -82,19 +82,19 @@ ROOMCOL		\33\[32m
 <EXITS>"\n\r"			|
 <EXITS>"\r\n"			BEGIN(PROMPT);
 
-<PROMPT>"["...">"    		|
-<PROMPT>"#"...">"    		| 
-<PROMPT>"."...">"    		| 
-<PROMPT>"f"...">"    		| 
-<PROMPT>"("...">"    		| 
-<PROMPT>"<"...">"    		| 
-<PROMPT>"%"...">"    		| 
-<PROMPT>"~"...">"    		| 
-<PROMPT>"W"...">"    		| 
-<PROMPT>"U"...">"    		| 
-<PROMPT>"+"...">"    		| 
-<PROMPT>":"...">"    		| 
-<PROMPT>"="...">"    		append(YYText()[0]); markTerrain(); pushProperty(); pushEvent(ROOM); BEGIN(INITIAL);
+<PROMPT>"[".+">"    		|
+<PROMPT>"#".+">"    		| 
+<PROMPT>".".+">"    		| 
+<PROMPT>"f".+">"    		| 
+<PROMPT>"(".+">"    		| 
+<PROMPT>"<".+">"    		| 
+<PROMPT>"%".+">"    		| 
+<PROMPT>"~".+">"    		| 
+<PROMPT>"W".+">"    		| 
+<PROMPT>"U".+">"    		| 
+<PROMPT>"+".+">"    		| 
+<PROMPT>":".+">"    		| 
+<PROMPT>"=".+">"    		append(YYText()[0]); markTerrain(); pushProperty(); pushEvent(ROOM); BEGIN(INITIAL);
 <PROMPT>{ROOMCOL}               skipProperty(); pushEvent(ROOM); BEGIN(ROOMNAME);
 <PROMPT>">"			skipProperty(); pushEvent(ROOM); BEGIN(INITIAL);
 

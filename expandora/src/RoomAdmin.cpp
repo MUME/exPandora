@@ -15,7 +15,7 @@ void RoomAdmin::removeRoom(int id) {
 }
 
 Room * RoomAdmin::insertRoom(ParseEvent * event, Terrain * t) {
-	Room * room;
+	Room * room = 0;
 	
 	if (event->current() == 0) {
 		return rooms->insertRoom(event);
@@ -45,8 +45,8 @@ void RoomAdmin::assignId(Room * room) {
 Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Coordinate * c, Terrain * t) {
 	unusedIds.push(id);
 
-	Room * room = insertRoom(event, t);
-	map.setNearest(c, room);
+	Room * room = insertRoom(event, c, t);
+
 	
 	return room;
 }
@@ -54,20 +54,21 @@ Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Coordinate * c, Terrain
 
 Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition, Terrain * t) {
 	Room * room = deepestMatch->insertRoom(knownEvent);
+	deepestMatch = room->getHome();
 	assignId(room);
 	if (expectedPosition != 0) {
 	  map.setNearest(expectedPosition, room);
-		
 	}
 	room->setTerrain(t);	
 	return room;
 }
 
 Room * RoomAdmin::insertRoom(ParseEvent * event, Coordinate * expectedPosition, Terrain * t) {
-	RoomSearchNode * temp = deepestMatch;
-	deepestMatch = this;
-	Room * ret = quickInsert(event, expectedPosition, t);
-	deepestMatch = temp;
+
+
+	Room * ret = insertRoom(event, t);
+	map.setNearest(expectedPosition, ret);
+
 	return ret;
 }
 

@@ -96,27 +96,29 @@ void Parser::approved() {
   // now we have a move and a room on the event queues;
   Room * perhaps = 0;
   RoomCollection * possible = mostLikelyRoom->go(playerEvents.front());
-  if (possible->numRooms() == 0) {
-    Coordinate * c = getExpectedCoordinate();
+  if ((perhaps = possible->matchOne(mudEvents.front())) != 0) { // narrows possible by the event and return a Room if exactly one is left
+    mostLikelyRoom = perhaps;
+    rcmm.deactivate(possible);
+    mudPop();
+    playerPop();
+    return;
+  }
+  else { // try to match by coordinate
+    Coordinate * c = getExpectedCoordinate(mostLikelyRoom);
     perhaps = admin->getRoom(c);
-    if ((perhaps == 0) || (!perhaps->fastCompare((ParseEvent *)mudEvents.front()))) {
-      perhaps = admin->insertRoom((ParseEvent *)mudEvents.front(), c, activeTerrain);
-      if (perhaps == 0) {
-	// can't insert it for some reason - for example skipped props
-	state = SYNCING;
-	playerPop();
-	mudPop();
-	cmm.deactivate(c);
-	rcmm.deactivate(possible);
-	return;
-      }
-      else {	
-	possible->merge(perhaps->getHome());
-	state = EXPERIMENTING;
-	cmm.deactivate(c);
-      }
+    if ((perhaps == 0) || (!perhaps->fastCompare(mudEvents.front()))) {
+      // not found - go EXPERIMENTING
+      state = EXPERIMENTING;
+      RoomSearchNode * pathStart = admin->getRooms(mudEvents.front());
+      if (pathStart->numRooms() == -1) pathStart = rcmm.activate();
+      buildPaths((RoomCollection *)pathStart);
+      rcmm.deactivate((RoomCollection *)pathStart);
+      rcmm.deactivate(possible);
+      mudPop();
+      playerPop();
+      return;
     }
-    else {
+    else { // found => add the exit
       mostLikelyRoom->addExit(playerEvents.front()->type, perhaps);
       mostLikelyRoom = perhaps;
       playerPop();
@@ -126,24 +128,8 @@ void Parser::approved() {
       return;
     }
   }
-  else {
-	
-    if ((perhaps = possible->matchOne((ParseEvent *)mudEvents.front())) != 0) { // narrows possible by the event and return a Room if exactly one is left
-      mostLikelyRoom = perhaps;
-      mudPop();
-      playerPop();
-      rcmm.deactivate(possible);
-      return;
-    }
-    else {
-      Coordinate * c = getExpectedCoordinate();
-      possible->merge(admin->insertRoom((ParseEvent *)mudEvents.front(), c, activeTerrain)->getHome());
-      state = EXPERIMENTING;
-      cmm.deactivate(c);
-    }
-  }
-  buildPaths(possible);
-  rcmm.deactivate(possible);
+ 
+ 
 }
 
 void Parser::playerPop() {
@@ -152,6 +138,7 @@ void Parser::playerPop() {
 }
 			
 void Parser::mudPop() {
+  mudEvents.front()->recycleProperties();
   pemm.deactivate(mudEvents.front());
   mudEvents.pop();
 }
@@ -171,22 +158,13 @@ void Parser::syncing() {
 	
   // now we have a move and a room on the event queues;
 	
-  RoomSearchNode * possible = admin->getRooms((ParseEvent *)mudEvents.front());
- 
-  if (possible->numRooms() > 0) {
-    if (mostLikelyRoom == 0) {
-      if (possible->numRooms() == 1) {
-	state = APPROVED;
-	mostLikelyRoom = *(((RoomCollection *)possible)->begin());
-      }
-    }
-    else {
-      state = EXPERIMENTING;
-      buildPaths((RoomCollection *)possible);
-    }
+  RoomSearchNode * possible = admin->getRooms(mudEvents.front());
+  if (possible->numRooms() == 1) {
+    state = APPROVED;
+    mostLikelyRoom = *(((RoomCollection *)possible)->begin());
     rcmm.deactivate((RoomCollection *)possible);
   }
-  else if (possible->numRooms() == 0)
+  else if (possible->numRooms() >= 0)
     rcmm.deactivate((RoomCollection *)possible);
 
   if (!(playerEvents.empty())) playerPop();
@@ -198,6 +176,7 @@ void Parser::unify() {
   state = APPROVED;
   mostLikelyRoom = paths.front()->getRoom();
   paths.front()->approve();
+  paths.pop_front();
   list<Path *>::iterator i = paths.begin()++;
   for (; i != paths.end(); i++) {
     (*i)->deny();
@@ -217,9 +196,9 @@ void Parser::experimenting() {
     return;
   }
 	
-  RoomSearchNode * possible = admin->getRooms((ParseEvent *)mudEvents.front());
+  RoomSearchNode * possible = admin->getRooms(mudEvents.front());
   if (possible->numRooms() == -1) possible = rcmm.activate();
-  enlargePaths((RoomCollection *)possible, true);
+  enlargePaths((RoomCollection *)possible);
   rcmm.deactivate((RoomCollection *) possible);
   playerPop();
   mudPop();
@@ -229,30 +208,48 @@ void Parser::buildPaths(RoomCollection * rc) {
   Path * working = pamm.activate();
   working->init(mostLikelyRoom, admin);
   paths.push_front(working);
-  enlargePaths(rc, false);
+  enlargePaths(rc);
 }
 
-void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
-  if (paths.begin() == paths.end()) return;
+
+
+void Parser::enlargePaths(RoomCollection * rc) {
+
   list<Path *>::iterator i = paths.begin();
   set<Room *>::iterator j = rc->begin();
-
-  ParseEvent * copy = 0;
+  
   Coordinate * c = 0;
   
 
   Path * working = 0;
   Path * best = 0;
+  Path * second = 0;
   double prevBest = paths.front()->getProb();
 
   int k = paths.size();
+  ParseEvent * mudFront = mudEvents.front()->copy();
   
 
   for (int l = 0; l < k; l++) {
-    
-    for (j = rc->begin(); j != rc->end(); j++) {
-      working = (*i)->fork(*j);
-      if (working->getProb() < prevBest*MINPROB) {
+    c = getExpectedCoordinate((*i)->getRoom());
+    working = 0;
+
+    do {  
+      if (working == 0) {
+	working = (*i)->fork(admin->quickInsert(mudFront, c, activeTerrain), c);
+	if (l < k-1) mudFront = mudFront->copy(); // still paths left
+	else { // no paths left - no more copies needed
+	  pemm.deactivate(mudFront);
+	  mudFront = 0; 
+	}
+	working->setProb(working->getProb()/PATH_ACCEPT);
+      }
+      else {
+	working = (*i)->fork(*j, c);
+	j++;
+      }
+
+      if (working->getProb() < prevBest/PATH_ACCEPT) {
 	(*i)->removeChild(working);
 	pamm.deactivate(working);
       }
@@ -260,62 +257,47 @@ void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
 	if (best == 0) best = working;
 	else if(working->getProb() > best->getProb()) {
 	  paths.push_back(best);
+	  second = best;
 	  best = working;
 	}
-	else paths.push_back(working);
-      }
-    }
-    if (includeNew) {
-      copy = pemm.activate();
-      c = cmm.activate();
-      copy->copy((ParseEvent *)mudEvents.front());
-      c->add((*i)->getRoom()->getCoordinate());
-      c->add(stdMoves[playerEvents.front()->type]);
-      working = (*i)->fork(admin->quickInsert(copy, c, activeTerrain));
-      working->setProb(working->getProb()/2.0);
-      cmm.deactivate(c);
-      pemm.deactivate(copy);
-      // events are eaten by the room, coordinates not because coordinates can change during the insert process
-      // nevertheless we can deactivate the copy because we do a shallow deactivate
-      if (working->getProb() < MINPROB*prevBest) {
-	(*i)->removeChild(working);
-	pamm.deactivate(working);
-      }
-      else {
-	if (best == 0) best = working;
-	else if(working->getProb() > best->getProb()) {
-	  paths.push_back(best);
-	  best = working;
+	else {
+	  if (second == 0) second = working;
+	  paths.push_back(working);
 	}
-	else paths.push_back(working);
       }
-    }
+    } while (j != rc->end());
+
+    j = rc->begin();
     i++;
+    cmm.deactivate(c);
   } 
+
+
+
   for (int l = 0; l < k; l++) {
     working = paths.front();
-    if (!(working->hasChildren())) working->deny();	
     paths.pop_front();
+    if (!(working->hasChildren())) working->deny();	
   }
+
   if (best != 0) {
     paths.push_front(best);
     mostLikelyRoom = paths.front()->getRoom();
-    if (paths.begin()++ == paths.end()) { // excactly one path left -> go APPROVED
-      paths.front()->approve();
-      paths.clear();
-      state = APPROVED;
-      return;
+    if (second == 0 || best->getProb() > second->getProb()*PATH_ACCEPT) { // excactly one path left -> go APPROVED
+      unify();
     }
   }
   else state = SYNCING;
 }
 
 
-
-Coordinate * Parser::getExpectedCoordinate() {
+Coordinate * Parser::getExpectedCoordinate(Room * base) {
   Coordinate * c = cmm.activate();
-  c->add(stdMoves[playerEvents.front()->type]);
-  c->add(mostLikelyRoom->getCoordinate());
+  if (!playerEvents.empty()) c->add(stdMoves[playerEvents.front()->type]);
+  if (base != 0) c->add(base->getCoordinate());
   return c;
 }
+
+
+
 

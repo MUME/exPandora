@@ -37,7 +37,8 @@ class ParseEvent : public BaseEvent {
 		void clear();	// for the ObjectRecycler
 		void recycleProperties();
 		void copy(ParseEvent * other);
-		
+		ParseEvent * copy();
+
 		Property * next();	// next Property according to pos (updating pos)
 		Property * prev();	// previous  -"-
 		Property * current();	// current Property according to pos (pos stays as it is)

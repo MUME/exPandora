@@ -1,4 +1,5 @@
 #include "Path.h"
+#include "LexDefs.h"
 
 ObjectRecycler<Path> pamm;
 
@@ -17,14 +18,14 @@ void Path::init(Room * _room, RoomAdmin * _admin) {
  * distance between rooms is calculated 
  * and probability is updated accordingly
  */
-Path * Path::fork(Room * _room) {
+Path * Path::fork(Room * _room, Coordinate * expectedCoordinate) {
   Path * ret = pamm.activate();
   ret->init(_room, admin);
   ret->setParent(this);
   children.insert(ret);
-  int dist = room->getCoordinate()->distance(_room->getCoordinate());
-  if (dist == 0) dist = 1;
-  ret->setProb(probability / (double)dist);
+  double dist = expectedCoordinate->distance(_room->getCoordinate());
+  if (dist < 1) dist = 1.0/PATH_ACCEPT;
+  ret->setProb(probability / dist);
   return ret;
 }
 
@@ -33,14 +34,17 @@ void Path::setParent(Path * p) {
 }
 
 void Path::approve() {
-  if (room != 0) room->hold();
   room = 0;
   set<Path *>::iterator i = children.begin();
   for(; i != children.end(); i++) {
     (*i)->cutDeadBranch();
   }
   children.clear();
-  parent->approve();
+  
+  if (parent != 0) {
+    parent->removeChild(this);
+    parent->approve();
+  }
   pamm.deactivate(this);
 }
 
@@ -51,20 +55,25 @@ void Path::approve() {
  * and removes the respective rooms if experimental
  */
 void Path::deny() {
-  room->release(admin);
+  if (!children.empty()) return;
+  if (room != 0) room->release(admin);
   room = 0;
-  set<Path *>::iterator i = children.begin();
+  /*set<Path *>::iterator i = children.begin();
   for(; i != children.end(); i++) {
     (*i)->cutDeadBranch();
-  }
+    }*/
   children.clear();
-  parent->removeChild(this);
+  if (parent != 0) {
+    parent->removeChild(this);
+    parent->deny();
+  }
   pamm.deactivate(this);
 }
 	
 
 
 void Path::clear() {
+  if (room != 0) room->release(admin);
   room = 0;
   children.clear();
   parent = 0;
@@ -77,12 +86,13 @@ void Path::clear() {
  * and removes all respective experimental rooms
  */	
 void Path::cutDeadBranch() {
-  room->release(admin);
+  if (room != 0) room->release(admin);
   room = 0;
   set<Path *>::iterator i = children.begin();
   for(; i != children.end(); i++) {
     (*i)->cutDeadBranch();
   }
+  children.clear();
   pamm.deactivate(this);
 }
 	

@@ -38,8 +38,7 @@ void Lexer::run() {
       mudLexer.yylex(); 
     }
     else inputSync.wait();
-  }
-    
+  }    
 }
 
 GenericLexer::GenericLexer() {

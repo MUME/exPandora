@@ -16,11 +16,15 @@ class Spreadsheet;
 
 #define MAX_TEXTURES    100
 
+
 #define DIST_Z	2	/* the distance between 2 rooms */
 #define BASE_Z  -12	/* the distance to the "camera" */
+#ifndef NEW_ENGINE
 #define ROOM_SIZE 0.4f	/* the size of the rooms walls */
+#else
+#define ROOM_SIZE 0.2f	/* the size of the rooms walls */
+#endif
 
-  
 int renderer_main();
 
 
