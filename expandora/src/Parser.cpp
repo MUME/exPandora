@@ -26,7 +26,7 @@ void Parser::dropNote(ParseEvent * note) {
   pemm.deactivate(note);
 }
 
-void Parser::event(BaseEvent * ev) {
+void Parser::event(ParseEvent * ev) {
   if (ev->type >= 0) {
     // a move event
     playerEvents.push(ev);
@@ -147,14 +147,12 @@ void Parser::approved() {
 }
 
 void Parser::playerPop() {
-  if (playerEvents.front()->type >= 0) bemm.deactivate(playerEvents.front());
-  else bemm.deactivate(playerEvents.front());
+  pemm.deactivate(playerEvents.front());
   playerEvents.pop();
 }
 			
 void Parser::mudPop() {
-  if (mudEvents.front()->type >= 0) pemm.deactivate((ParseEvent *)mudEvents.front());
-  else bemm.deactivate(mudEvents.front());
+  pemm.deactivate(mudEvents.front());
   mudEvents.pop();
 }
 
@@ -238,16 +236,26 @@ void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
   if (paths.begin() == paths.end()) return;
   list<Path *>::iterator i = paths.begin();
   set<Room *>::iterator j = rc->begin();
-  ParseEvent * copy = pemm.activate();
-  Coordinate * c = cmm.activate();
-  Path * working;
-  Path * best = 0;
+
+  ParseEvent * copy = 0;
+  Coordinate * c = 0;
   
-  list<Path *>::iterator k = paths.end()--;
-  do {
-    for (; j != rc->end(); j++) {
+
+  Path * working = 0;
+  Path * best = 0;
+  double prevBest = paths.front()->getProb();
+
+  int k = paths.size();
+  
+
+  for (int l = 0; l < k; l++) {
+    
+    for (j = rc->begin(); j != rc->end(); j++) {
       working = (*i)->fork(*j);
-      if (working->getProb() < MINPROB*paths.front()->getProb()) working->deny();
+      if (working->getProb() < prevBest*MINPROB) {
+	(*i)->removeChild(working);
+	pamm.deactivate(working);
+      }
       else {
 	if (best == 0) best = working;
 	else if(working->getProb() > best->getProb()) {
@@ -258,13 +266,21 @@ void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
       }
     }
     if (includeNew) {
-      c->clear();
-      copy->clear();
+      copy = pemm.activate();
+      c = cmm.activate();
       copy->copy((ParseEvent *)mudEvents.front());
       c->add((*i)->getRoom()->getCoordinate());
       c->add(stdMoves[playerEvents.front()->type]);
       working = (*i)->fork(admin->quickInsert(copy, c, activeTerrain));
-      if (working->getProb() < MINPROB) working->deny();
+      working->setProb(working->getProb()/2.0);
+      cmm.deactivate(c);
+      pemm.deactivate(copy);
+      // events are eaten by the room, coordinates not because coordinates can change during the insert process
+      // nevertheless we can deactivate the copy because we do a shallow deactivate
+      if (working->getProb() < MINPROB*prevBest) {
+	(*i)->removeChild(working);
+	pamm.deactivate(working);
+      }
       else {
 	if (best == 0) best = working;
 	else if(working->getProb() > best->getProb()) {
@@ -274,19 +290,15 @@ void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
 	else paths.push_back(working);
       }
     }
-    if (!((*i)->hasChildren())) (*i)->deny();	
     i++;
-  } while (i != k);
-
-  working = *k;
-  do paths.pop_front(); 
-  while (paths.front() != working);
-  paths.push_front(best);
-
-  cmm.deactivate(c);
-  pemm.deactivate(copy);
-  if (paths.empty()) state = SYNCING;
-  else  {
+  } 
+  for (int l = 0; l < k; l++) {
+    working = paths.front();
+    if (!(working->hasChildren())) working->deny();	
+    paths.pop_front();
+  }
+  if (best != 0) {
+    paths.push_front(best);
     mostLikelyRoom = paths.front()->getRoom();
     if (paths.begin()++ == paths.end()) { // excactly one path left -> go APPROVED
       paths.front()->approve();
@@ -295,6 +307,7 @@ void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
       return;
     }
   }
+  else state = SYNCING;
 }
 
 

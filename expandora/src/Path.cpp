@@ -5,6 +5,7 @@ ObjectRecycler<Path> pamm;
 void Path::init(Room * _room, RoomAdmin * _admin) {
   admin = _admin;
   room = _room;
+  room->hold();
   children.clear();
   parent = 0;
   probability = 1;
@@ -50,7 +51,7 @@ void Path::approve() {
  * and removes the respective rooms if experimental
  */
 void Path::deny() {
-  room->release(admin); // wrong: the room could still be part of other paths; room needs some kind of "path count"
+  room->release(admin);
   room = 0;
   set<Path *>::iterator i = children.begin();
   for(; i != children.end(); i++) {

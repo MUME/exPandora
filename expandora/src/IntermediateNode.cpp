@@ -20,7 +20,7 @@ Room * IntermediateNode::insertRoom(ParseEvent * event) {
   if (event->next() == 0) {
     if (rooms == 0) rooms = rcmm.activate();
     Room * ret = rooms->insertRoom(event);
-    ret->setHome(rooms);
+    
     return ret;
   }
 	

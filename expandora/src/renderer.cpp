@@ -643,6 +643,7 @@ void RendererWidget::draw(void)
       pr = roomAdmin.getRoom(k);
       if (pr == 0) continue;
       else p = pr->getCoordinate();
+      if (p == 0) continue;
 #endif
         new_z = p->z - curz;
         if (z != new_z) {

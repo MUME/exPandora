@@ -18,7 +18,7 @@ class Parser {
 	public:
 		void setTerrain(Property * ter);
 		Parser(RoomAdmin * _admin);
-		void event(BaseEvent * ev);
+		void event(ParseEvent * ev);
 		Room * getMostLikely() {return mostLikelyRoom;}
 	private:
 		void mudPop();
@@ -34,8 +34,8 @@ class Parser {
 		void buildPaths(RoomCollection * initialRooms);
 
 		char state;
-		queue<BaseEvent *> playerEvents;
-		queue<BaseEvent *> mudEvents;
+		queue<ParseEvent *> playerEvents;
+		queue<ParseEvent *> mudEvents;
 		Terrain * activeTerrain;
 		list<Path *> paths;
 		Room * mostLikelyRoom;

@@ -24,12 +24,12 @@ class Room {
   void release(RoomAdmin * admin);
   void addExit(int direction, Room * destination);	
   RoomCollection * go(BaseEvent * event);
-  RoomCollection * getNeighbours(int k) {if (k < (int)exits.size()) return exits[k]; else return 0;}
-  Room() {}
+  RoomCollection * getNeighbours(int k); 
+  Room();
   void setUnique(){unique = true;};
   bool isUnique(){return unique;};
   void addOptional(Property * note) {optionalProperties.push_back(note);}
-  void init(ParseEvent * event);
+  void init(ParseEvent * event, RoomCollection * _home);
   void setId(int _id) {id = _id;};
   bool containsOptionals(list<Property *> & optionals);
   bool fastCompare(ParseEvent * props, int tolerance = defaultTolerance);
@@ -37,7 +37,6 @@ class Room {
   void setCoordinate(Coordinate * _c) {c = _c;};
   Coordinate * getCoordinate(){return c;};
   RoomCollection * getHome() {return home;};
-  void setHome(RoomCollection * _home) {home = _home;};
   void resetTime(double ts) {timestamp = ts;}
  private:
   RoomCollection * home;

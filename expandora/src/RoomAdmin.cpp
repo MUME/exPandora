@@ -11,6 +11,7 @@ RoomAdmin::RoomAdmin() : SearchTreeNode("") {
 void RoomAdmin::removeRoom(int id) {
   map.remove(roomIndex[id]->getCoordinate());
   roomIndex[id] = 0;
+  unusedIds.push(id);
 }
 
 Room * RoomAdmin::insertRoom(ParseEvent * event, Terrain * t) {

@@ -8,7 +8,7 @@ ObjectRecycler<RoomCollection> rcmm;
 
 Room * RoomCollection::insertRoom(ParseEvent * event) {
   Room * room = rmm.activate();
-  room->init(event);
+  room->init(event, this);
 	
   rooms.insert(room);
   return room;
@@ -61,4 +61,14 @@ RoomCollection * RoomCollection::merge(RoomSearchNode * other) {
     rooms.insert(otherSet.begin(), otherSet.end());
   }
   return this;
+}
+
+void RoomCollection::checkConsistency() {
+  stack<Room *> deleteQueue;
+  for(set<Room *>::iterator i = rooms.begin(); i != rooms.end(); i++) 
+    if ((*i)->getCoordinate() == 0) deleteQueue.push(*i);
+  while (!deleteQueue.empty()) {
+    rooms.erase(deleteQueue.top());
+    deleteQueue.pop();
+  }
 }

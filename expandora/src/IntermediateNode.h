@@ -17,7 +17,7 @@ class IntermediateNode : public SearchTreeNode {
 		RoomSearchNode * getRooms(ParseEvent * event);
 		RoomSearchNode * skipDown(ParseEvent * event);       	
 	private:
-		RoomSearchNode * rooms;
+		RoomCollection * rooms;
 };
 
 #endif

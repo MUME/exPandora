@@ -29,9 +29,8 @@ ROOMCOL		\33\[32m
 
 {ROOMCOL}				BEGIN(ROOMNAME);
 
-<*>[\0]						return 1; /* end of the string we are parsing*/
 <*>{OTHERCOL}[^\33]*{ENDCOL}			/* throw away some message in other colors*/
-<*>"It's pitch black ...\n"[^\n]*"\n"		skipSomeProperties(); BEGIN(PROMPT);
+<*>"It's pitch black ...\n"		                        skipSomeProperties(); BEGIN(PROMPT);
 
 <*>"Alas, you cannot go that way..."				|
 <*>"You need to swim to go there."				|
@@ -80,33 +79,24 @@ ROOMCOL		\33\[32m
 <EXITS>"]="[.,] append(YYText()[1]); pushOptional();
 <EXITS>"="[.,]  append(YYText()[0]); pushProperty();
 <EXITS>[.,]     pushProperty();
-
-		       %{
-		       //<EXITS>\[[^\] ,.]+\][,.]	append(YYText()[1]); pushOptional();	/* we don't know if the door is secret, */
-		       //<EXITS>"("[^) .,]+")"=?[,.]	append(YYText()[1]); pushOptional();	/* especially when it's open*/
-		       //<EXITS>\*[^* ,.]+\*=?[,.]	append(YYText()[1]); pushProperty();	/* *'s around an exit indicate light it seems...*/
-		       //<EXITS>[^ ,.]+[,.]		append(YYText()[0]); pushProperty();
-		       //<EXITS>=			append(YYText()[0]); 
-			 %}
-
 <EXITS>"\n\r"			|
 <EXITS>"\r\n"			BEGIN(PROMPT);
 
-<PROMPT>"["			|
-<PROMPT>"#"			| 
-<PROMPT>"."			| 
-<PROMPT>"f"			| 
-<PROMPT>"("			| 
-<PROMPT>"<"			| 
-<PROMPT>"%"			| 
-<PROMPT>"~"			| 
-<PROMPT>"W"			| 
-<PROMPT>"U"			| 
-<PROMPT>"+"			| 
-<PROMPT>":"			| 
-<PROMPT>"="			append(YYText()[0]); markTerrain(); pushProperty(); pushEvent(ROOM); BEGIN(INITIAL);
-<PROMPT>{ROOMCOL}               |
-<PROMPT>">"			skipProperty(); pushEvent(ROOM);  BEGIN(INITIAL);
+<PROMPT>"["...">"    		|
+<PROMPT>"#"...">"    		| 
+<PROMPT>"."...">"    		| 
+<PROMPT>"f"...">"    		| 
+<PROMPT>"("...">"    		| 
+<PROMPT>"<"...">"    		| 
+<PROMPT>"%"...">"    		| 
+<PROMPT>"~"...">"    		| 
+<PROMPT>"W"...">"    		| 
+<PROMPT>"U"...">"    		| 
+<PROMPT>"+"...">"    		| 
+<PROMPT>":"...">"    		| 
+<PROMPT>"="...">"    		append(YYText()[0]); markTerrain(); pushProperty(); pushEvent(ROOM); BEGIN(INITIAL);
+<PROMPT>{ROOMCOL}               skipProperty(); pushEvent(ROOM); BEGIN(ROOMNAME);
+<PROMPT>">"			skipProperty(); pushEvent(ROOM); BEGIN(INITIAL);
 
 %%
 

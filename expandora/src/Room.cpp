@@ -8,19 +8,46 @@ int defaultTolerance = 1;
 ObjectRecycler<Room> rmm;
 
 
+Room::Room() {
+  c = 0;
+  timestamp = 0;
+  holdCount = 0;
+  id = 0;
+  terrain = 0;
+  unique = false;
+  home = 0;
+}
+
+
 void Room::release(RoomAdmin * admin) {
   holdCount--;
-  if (holdCount == 0) {
+  if (holdCount <= 0) {
+    admin->removeRoom(id);
     rmm.deactivate(this);
-    admin->removeRoom(c);
   }
 }
 
-void Room::init(ParseEvent * event) {
+/**
+ * what happens with the original properties and optional properties?
+ */
+void Room::init(ParseEvent * event, RoomCollection * _home) {
   
-  properties = event->getProperties();
-  optionalProperties = event->getOptionals();
-  unique = false;
+  list<Property *> _properties = event->getProperties();
+  for (list<Property *>::iterator i = _properties.begin(); i != _properties.end(); i++)
+    properties.push_back(*i);
+
+  list<Property *> _optionalProperties = event->getOptionals();
+  for (list<Property *>::iterator i = _optionalProperties.begin(); i != _optionalProperties.end(); i++)
+    optionalProperties.push_back(*i);
+  home = _home;
+}
+
+RoomCollection * Room::getNeighbours(int k) {
+  if (k < (int)exits.size()) {
+    if (exits[k] != 0) exits[k]->checkConsistency();
+    return exits[k];
+  } 
+  else return 0;
 }
 
 void Room::addExit(int direc, Room * target) {
@@ -54,10 +81,10 @@ RoomCollection * Room::go(BaseEvent * dir) {
     return ret;
   }
 }
+
 /*
  * return all properties to pmm and remove this room from the room collection
  */
-
 void Room::clear() {
   
   while(!properties.empty()) {
@@ -68,10 +95,17 @@ void Room::clear() {
     pmm.deactivate(optionalProperties.front());
     optionalProperties.pop_front();
   }
+  for (int i = exits.size() - 1; i >= 0 ; i--) 
+    if (exits[i] != 0) exits[i]->clear();
   terrain = 0;
   timestamp = 0;
   holdCount = 0;
   home->removeRoom(this);
+  cmm.deactivate(c);
+  c = 0;
+  unique = false;
+  home = 0;
+  id = 0;
 }
 	
 

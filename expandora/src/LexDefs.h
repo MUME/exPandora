@@ -12,9 +12,8 @@
 #define NONE 6
 #define UNKNOWN 7
 
-#define MINPROB 0.001
+#define MINPROB 0.1
 
-void init();
-void pass();
+
 
 #endif

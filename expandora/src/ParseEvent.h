@@ -43,7 +43,7 @@ class ParseEvent : public BaseEvent {
 		Property * current();	// current Property according to pos (pos stays as it is)
 		
 		list<Property *>::iterator getPos() {return pos;}	// for (shallow) copying
-		list<Property *> & getOptionals() {return optionals;}	// well these are hard copies but only of the property pointer lists
+		list<Property *> & getOptionals() {return optionals;}	
 		list<Property *> & getProperties() {return required;}
 	private:
 		list<Property *> required;
