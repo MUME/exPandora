@@ -1,10 +1,15 @@
 //#include <qstring.h>
+//#include "../SearchTreeNode.h"
+//#include "../Room.h"
 #include <stdio.h>
-#include "../SearchTreeNode.h"
-#include "../TinyList.h"
+#include <set>
+
+set<int> * baum = new set<int>;
 
 int main(int argc, char **argv) {
-	SearchTreeNode * test = new SearchTreeNode("baum");
+  
+  printf("sizeof(set<int>): %i\n", sizeof(baum));
+//SearchTreeNode * test = new SearchTreeNode("baum");
 
 /*
 	char * string = new char[128];
