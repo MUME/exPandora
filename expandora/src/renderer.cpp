@@ -271,11 +271,9 @@ void RendererWidget::glDrawMarkers()
       }
 #else
       pr = parser.getMostLikely();
-      if (pr == 0) pr = roomAdmin.getRoom(0);
-      if (pr == 0) {
-	pr = roomAdmin.getRoom(0);
-	if (pr == 0) return; //silently die when there is no room for the marker
-      }
+      if (pr == 0) pr = roomAdmin.getRoom(1);
+      if (pr == 0) return; //silently die when there is no room for the marker
+      
       p = pr->getCoordinate();
 #endif
 

@@ -24,7 +24,6 @@ ROOMCOL		\33\[32m
 %x ROOMNAME
 %x PROMPT
 
-
 %%
 
 
@@ -56,21 +55,41 @@ ROOMCOL		\33\[32m
 <*>"Maybe you should get on your feet first?"			|
 <*>"Your boat cannot enter this place."				pushEvent(MOVE_FAIL); BEGIN(INITIAL);
 
-<ROOMNAME>.			append(YYText()[0]);
-<ROOMNAME>{ENDCOL}		pushProperty(); BEGIN(DESC);
+<ROOMNAME>.			        append(YYText()[0]);
+<ROOMNAME>{ENDCOL}"\r\n"		pushProperty(); BEGIN(DESC);
 <ROOMNAME>{ENDCOL}.{0,3}"Exits:"	pushProperty(); skipProperty(); BEGIN(EXITS);
 
-<DESC>.                         append(YYText()[0]);
-<DESC>"\n\r"			pushProperty();
-<DESC>"Exits:"			BEGIN(EXITS); // previous property needs to be dropped
+<DESC>.                 append(YYText()[0]);
+<DESC>"\r\n"            clearProperty();
+<DESC>"\n\r"		pushProperty();
+<DESC>"Exits:"		BEGIN(EXITS);
+
 
 <DESC,PROMPT>{ROOMCOL}					skipSomeProperties(); pushEvent(ROOM); BEGIN(ROOMNAME);
 
-<EXITS>\[[^\] ,.]+\][,.]	append(YYText()[1]); pushOptional();	/* we don't know if the door is secret, */
-<EXITS>"("[^) .,]+")"=?[,.]	append(YYText()[1]); pushOptional();	/* especially when it's open*/
-<EXITS>\*[^* ,.]+\*=?[,.]	append(YYText()[1]); pushProperty();	/* *'s around an exit indicate light it seems...*/
-<EXITS>[^ ,.]+[,.]		append(YYText()[0]); pushProperty();
-<EXITS>=			append(YYText()[0]); 
+<EXITS>"south"  |
+<EXITS>"north"  |
+<EXITS>"west"   |
+<EXITS>"east"   |
+<EXITS>"up"     |
+<EXITS>"down"   append(YYText()[0]);
+<EXITS>")"[.,]  |
+<EXITS>"]"[.,]  append(YYText()[0]); pushOptional();
+<EXITS>"=)"[.,] |
+<EXITS>"=]"[.,] |
+<EXITS>")="[.,] |
+<EXITS>"]="[.,] append(YYText(), YYText()+2); pushOptional();
+<EXITS>"="[.,]  append(YYText()[0]); pushProperty();
+<EXITS>[.,]     pushProperty();
+
+		       %{
+		       //<EXITS>\[[^\] ,.]+\][,.]	append(YYText()[1]); pushOptional();	/* we don't know if the door is secret, */
+		       //<EXITS>"("[^) .,]+")"=?[,.]	append(YYText()[1]); pushOptional();	/* especially when it's open*/
+		       //<EXITS>\*[^* ,.]+\*=?[,.]	append(YYText()[1]); pushProperty();	/* *'s around an exit indicate light it seems...*/
+		       //<EXITS>[^ ,.]+[,.]		append(YYText()[0]); pushProperty();
+		       //<EXITS>=			append(YYText()[0]); 
+			 %}
+
 <EXITS>"\n\r"			|
 <EXITS>"\r\n"			BEGIN(PROMPT);
 
@@ -86,10 +105,8 @@ ROOMCOL		\33\[32m
 <PROMPT>"U"			| 
 <PROMPT>"+"			| 
 <PROMPT>":"			| 
-<PROMPT>"="			append(YYText()[0]); pushProperty();
-<PROMPT>"\n"                    |
-<PROMPT>"\r"                    |
-<PROMPT>">"			pushEvent(ROOM);  BEGIN(INITIAL);
+<PROMPT>"="			append(YYText()[0]); pushProperty(); pushEvent(ROOM); BEGIN(INITIAL);
+<PROMPT>">"			skipProperty(); pushEvent(ROOM);  BEGIN(INITIAL);
 
 
 %%

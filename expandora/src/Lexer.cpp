@@ -48,15 +48,14 @@ GenericLexer::GenericLexer() {
 
 
 void GenericLexer::pushEvent(char _type) {
-	event->push(0);
 	event->type = _type;
 	parser->event(event);
 	event = pemm.activate();
 }
 	
 void GenericLexer::pushProperty() {
-	event->push(property);
-	property = pmm.activate();
+  event->push(property);
+  property = pmm.activate();
 }
 		
 void GenericLexer::pushOptional() {

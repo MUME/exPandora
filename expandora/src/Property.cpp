@@ -60,12 +60,14 @@ int Property::operator==(Property & other) {
 
 void Property::add(char c) {
 	enlarge(used+1);
-	if (used >= 0) begin[used] = c;
+	if (used >= 0) {
+	  begin[used] = c;
+	}
 	used++;
 }
 
 void Property::add(char * string) {
-	int needed = used + strlen(string);
+	int needed = used + strlen(string) + 1;
 	enlarge(needed);
 	
 	for (int i = used; i < needed; i++) {
@@ -85,7 +87,8 @@ void Property::add(const char * other, const char * end) {
 }	
 	
 void Property::enlarge(int neededSpace) {
-	while (neededSpace > length) {
+  // make sure the new string is 0-terminated
+  while (neededSpace >= length) {
 		length = length * 2 + 1;
 		char * newBegin = new char[length];
 		for (int i = 0 ; i < used; i++) newBegin[i] = begin[i];
@@ -93,6 +96,7 @@ void Property::enlarge(int neededSpace) {
 		delete[] begin;
 		begin = newBegin;
 	}
+  begin[neededSpace] = 0;
 }
 
 char Property::operator[](int offset) {
