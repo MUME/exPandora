@@ -48,6 +48,7 @@ class Proxy : public QThread{
  public:
   Proxy(int _local, char * _rh, int _rp) : local_port(_local), remote_host(_rh), remote_port(_rp) {proxy_init();}
   int proxy_init();
+
   void run();
   void send_line_to_mud(char *line);
   int send_line_to_user(char *line);

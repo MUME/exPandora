@@ -57,8 +57,8 @@ int main(int argc, char *argv[])
     char configfile[MAX_STR_LEN];
   
     /* parce arguments */
-    auda_argc = argc;
-    auda_argv = argv;
+    
+    
 
     for (i=1; i < argc; i++) {
 
