@@ -86,7 +86,7 @@ void Lexer::append(char ap) {
        property->add(ap);       // append a single char
 }
 		
-void Lexer::append(char * begin, char * end) {
+void Lexer::append(const char * begin, const char * end) {
        property->add(begin, end);	// append some substring
 }		
        

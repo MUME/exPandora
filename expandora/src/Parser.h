@@ -17,6 +17,7 @@ using namespace std;
 class Parser {
 	public:
 		void setTerrain(Property * ter);
+		Parser();
 		void event(BaseEvent * ev);
 		Room * getMostLikely() {return mostLikelyRoom;}
 	private:

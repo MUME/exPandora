@@ -1,9 +1,15 @@
 #include "Parser.h"
+#include "defines.h"
+#include "struct.h"
 #include "RoomAdmin.h"
 #include "LexDefs.h"
 #include "RoomCollection.h"
 
 Parser parser;
+
+Parser::Parser() {
+  mostLikelyRoom = roomAdmin.getRoom(1);
+}
 
 void Parser::setTerrain(Property * ter) {
 	
@@ -48,7 +54,7 @@ void Parser::checkQueues() {
 	if (playerEvents.empty()) {
 	  if (state != SYNCING) state = SYNCING;
 	}
-	else while (mudEvents.front()->timestamp < playerEvents.front()->timestamp && !(mudEvents.empty())) {
+	else while ( !(mudEvents.empty()) && mudEvents.front()->timestamp < playerEvents.front()->timestamp) {
 		mudPop();
 		state = SYNCING;
 	}
@@ -68,6 +74,8 @@ void Parser::checkQueues() {
 			syncing();
 			break;
 	}
+	toggle_renderer_reaction();
+	engine_flags.redraw  = 0;
 }	
 
 

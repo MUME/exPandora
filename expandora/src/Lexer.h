@@ -72,7 +72,7 @@ class Lexer : public QThread {
 		// the memory allocation is handled by the ObjectRecycler which will keep the rate of allocating/destroying strings low.
 		
 		void append(char ap); // append a single char
-		void append(char * begin, char * end); // append some substring
+		void append(const char * begin, const char * end); // append some substring
 		void append(char * text); // append a 0-terminated string
 		
 		void pushUserInput (char * input);

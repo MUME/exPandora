@@ -25,7 +25,7 @@ class Property {
 		int operator==(Property & other);
 		void add(char c);
 		void add(char * string);
-		void add(char * other, char * end);
+		void add(const char * other, const char * end);
 		char operator[](int offset);
 		int comp(Property & other);
 		void copy(Property & other);

@@ -56,16 +56,14 @@ ROOMCOL		\33\[32m
 <*>"Maybe you should get on your feet first?"			|
 <*>"Your boat cannot enter this place."				lexer->pushEvent(MOVE_FAIL); BEGIN(INITIAL);
 
-<ROOMNAME>.|\n			lexer->append(YYText()[0]);
+<ROOMNAME>.			lexer->append(YYText()[0]);
 <ROOMNAME>{ENDCOL}		lexer->pushProperty(); BEGIN(DESC);
-<ROOMNAME>{ENDCOL}"\nExits:"	lexer->pushProperty(); lexer->skipProperty(); BEGIN(EXITS);
+<ROOMNAME>{ENDCOL}.{0,3}"Exits:"	lexer->pushProperty(); lexer->skipProperty(); BEGIN(EXITS);
 
-<DESC>.|\n						lexer->append(YYText()[0]);
-<DESC>"Exits:"						lexer->pushProperty(); BEGIN(EXITS);
-<DESC>^("The "|"A "|"An ").*"\n"		        |
-<DESC>^.*"is standing here".*"\n"			|
-<DESC>^.*"is resting here".*"\n"			|
-<DESC>^.*"is sleeping here".*"\n"			; /* throw a way any mobs, players or objects (and possibly consistent parts of the desc) in this room*/
+<DESC>.                         lexer->append(YYText()[0]);
+<DESC>"\n\r"			lexer->pushProperty();
+<DESC>"Exits:"			BEGIN(EXITS); // previous property needs to be dropped
+
 <DESC,PROMPT>{ROOMCOL}					lexer->skipSomeProperties(); lexer->pushEvent(ROOM); BEGIN(ROOMNAME);
 
 <EXITS>\[[^\] ,.]+\][,.]	lexer->append(YYText()[1]); lexer->pushOptional();	/* we don't know if the door is secret, */
@@ -73,7 +71,8 @@ ROOMCOL		\33\[32m
 <EXITS>\*[^* ,.]+\*=?[,.]	lexer->append(YYText()[1]); lexer->pushProperty();	/* *'s around an exit indicate light it seems...*/
 <EXITS>[^ ,.]+[,.]		lexer->append(YYText()[0]); lexer->pushProperty();
 <EXITS>=			lexer->append(YYText()[0]); 
-<EXITS>\n			BEGIN(PROMPT);
+<EXITS>"\n\r"			|
+<EXITS>"\r\n"			BEGIN(PROMPT);
 
 <PROMPT>"["			|
 <PROMPT>"#"			| 
@@ -87,8 +86,10 @@ ROOMCOL		\33\[32m
 <PROMPT>"U"			| 
 <PROMPT>"+"			| 
 <PROMPT>":"			| 
-<PROMPT>"="			| 
-<PROMPT>[\t> ]			lexer->pushEvent(ROOM);  BEGIN(INITIAL);
+<PROMPT>"="			lexer->append(YYText()[0]); lexer->pushProperty();
+<PROMPT>"\n"                    |
+<PROMPT>"\r"                    |
+<PROMPT>">"			lexer->pushEvent(ROOM);  BEGIN(INITIAL);
 
 
 %%

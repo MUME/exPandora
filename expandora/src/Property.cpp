@@ -74,7 +74,7 @@ void Property::add(char * string) {
 	used = needed;
 }
 
-void Property::add(char * other, char * end) {
+void Property::add(const char * other, const char * end) {
 	int needed = used + other - end;
 	enlarge(needed);
 
