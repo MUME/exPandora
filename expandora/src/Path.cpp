@@ -21,6 +21,7 @@ Path * Path::fork(Room * _room) {
 	ret->setParent(this);
 	children.insert(ret);
 	double dist = room->getCoordinate()->distance(_room->getCoordinate());
+	if (dist == 0) dist = 1;
 	ret->setProb(probability / dist);
 	return ret;
 }
@@ -65,7 +66,7 @@ void Path::clear() {
 	room = 0;
 	children.clear();
 	parent = 0;
-	probability = 0;
+	probability = 1;
 }
 		
 /** 

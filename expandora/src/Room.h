@@ -32,6 +32,7 @@ class Room {
 		void setCoordinate(Coordinate * _c) {c = _c;};
 		Coordinate * getCoordinate(){return c;};
 		RoomCollection * getHome() {return home;};
+		void setHome(RoomCollection * _home) {home = _home;};
 		void resetTime(double ts) {timestamp = ts;}
 	private:
 		RoomCollection * home;

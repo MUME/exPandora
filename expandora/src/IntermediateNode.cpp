@@ -19,7 +19,9 @@ Room * IntermediateNode::insertRoom(ParseEvent * event) {
 	
   if (event->next() == 0) {
     if (rooms == 0) rooms = rcmm.activate();
-    return rooms->insertRoom(event);
+    Room * ret = rooms->insertRoom(event);
+    ret->setHome(rooms);
+    return ret;
   }
 	
   return SearchTreeNode::insertRoom(event);

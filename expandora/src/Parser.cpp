@@ -263,7 +263,7 @@ void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
 	  paths.insert(i, working); 
       }
     }
-    if (!(*i)->hasChildren()) (*i)->deny();		
+    if (!((*i)->hasChildren())) (*i)->deny();		
   }
   cmm.deactivate(c);
   pemm.deactivate(copy);
