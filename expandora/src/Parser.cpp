@@ -5,11 +5,12 @@
 #include "LexDefs.h"
 #include "RoomCollection.h"
 
-Parser parser;
+Parser parser(&roomAdmin);
 
-Parser::Parser() {
+Parser::Parser(RoomAdmin * _admin) {
   mostLikelyRoom = 0;
   state = SYNCING;
+  admin = _admin;
 }
 
 void Parser::setTerrain(Property * ter) {
@@ -97,9 +98,9 @@ void Parser::approved() {
   RoomCollection * possible = mostLikelyRoom->go(playerEvents.front());
   if (possible->numRooms() == 0) {
     Coordinate * c = getExpectedCoordinate();
-    perhaps = roomAdmin.getRoom(c);
+    perhaps = admin->getRoom(c);
     if ((perhaps == 0) || (!perhaps->fastCompare((ParseEvent *)mudEvents.front()))) {
-      perhaps = roomAdmin.insertRoom((ParseEvent *)mudEvents.front(), c, activeTerrain);
+      perhaps = admin->insertRoom((ParseEvent *)mudEvents.front(), c, activeTerrain);
       if (perhaps == 0) {
 	// can't insert it for some reason - for example skipped props
 	state = SYNCING;
@@ -136,7 +137,7 @@ void Parser::approved() {
     }
     else {
       Coordinate * c = getExpectedCoordinate();
-      possible->merge(roomAdmin.insertRoom((ParseEvent *)mudEvents.front(), c, activeTerrain)->getHome());
+      possible->merge(admin->insertRoom((ParseEvent *)mudEvents.front(), c, activeTerrain)->getHome());
       state = EXPERIMENTING;
       cmm.deactivate(c);
     }
@@ -172,7 +173,7 @@ void Parser::syncing() {
 	
   // now we have a move and a room on the event queues;
 	
-  RoomSearchNode * possible = roomAdmin.getRooms((ParseEvent *)mudEvents.front());
+  RoomSearchNode * possible = admin->getRooms((ParseEvent *)mudEvents.front());
  
   if (possible->numRooms() > 0) {
     if (mostLikelyRoom == 0) {
@@ -218,7 +219,7 @@ void Parser::experimenting() {
     return;
   }
 	
-  RoomSearchNode * possible = roomAdmin.getRooms((ParseEvent *)mudEvents.front());
+  RoomSearchNode * possible = admin->getRooms((ParseEvent *)mudEvents.front());
   if (possible->numRooms() == -1) possible = rcmm.activate();
   enlargePaths((RoomCollection *)possible, true);
   rcmm.deactivate((RoomCollection *) possible);
@@ -228,7 +229,7 @@ void Parser::experimenting() {
 
 void Parser::buildPaths(RoomCollection * rc) {
   Path * working = pamm.activate();
-  working->init(mostLikelyRoom);
+  working->init(mostLikelyRoom, admin);
   paths.push_front(working);
   enlargePaths(rc, false);
 }
@@ -262,7 +263,7 @@ void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
       copy->copy((ParseEvent *)mudEvents.front());
       c->add((*i)->getRoom()->getCoordinate());
       c->add(stdMoves[playerEvents.front()->type]);
-      working = (*i)->fork(roomAdmin.quickInsert(copy, c, activeTerrain));
+      working = (*i)->fork(admin->quickInsert(copy, c, activeTerrain));
       if (working->getProb() < MINPROB) working->deny();
       else {
 	if (best == 0) best = working;

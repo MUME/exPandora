@@ -10,6 +10,8 @@
 
 using namespace std;
 
+
+
 class RoomAdmin : public SearchTreeNode {
 	public:
 		RoomAdmin();
@@ -27,7 +29,7 @@ class RoomAdmin : public SearchTreeNode {
 		Room * insertRoom(ParseEvent * event, int id, Coordinate * c, Terrain * t = 0); 	// inserts the room with predefined id, 
 								// only use when building the tree from the database 
 		Room * insertRoom(ParseEvent * event, Coordinate * expectedPosition, Terrain * t = 0);
-
+		void removeRoom(int id); 
 	private:
 		//Coordinate * findNearestFree(Coordinate * pos);
 		Map map;

@@ -2,7 +2,8 @@
 
 ObjectRecycler<Path> pamm;
 
-void Path::init(Room * _room) {
+void Path::init(Room * _room, RoomAdmin * _admin) {
+  admin = _admin;
   room = _room;
   children.clear();
   parent = 0;
@@ -17,7 +18,7 @@ void Path::init(Room * _room) {
  */
 Path * Path::fork(Room * _room) {
   Path * ret = pamm.activate();
-  ret->init(_room);
+  ret->init(_room, admin);
   ret->setParent(this);
   children.insert(ret);
   int dist = room->getCoordinate()->distance(_room->getCoordinate());
@@ -31,7 +32,7 @@ void Path::setParent(Path * p) {
 }
 
 void Path::approve() {
-  if (room != 0) room->approve();
+  if (room != 0) room->hold();
   room = 0;
   set<Path *>::iterator i = children.begin();
   for(; i != children.end(); i++) {
@@ -49,7 +50,7 @@ void Path::approve() {
  * and removes the respective rooms if experimental
  */
 void Path::deny() {
-  if (room != 0 && room->isExperimental()) rmm.deactivate(room); // wrong: the room could still be part of other paths; room needs some kind of "path count"
+  room->release(admin); // wrong: the room could still be part of other paths; room needs some kind of "path count"
   room = 0;
   set<Path *>::iterator i = children.begin();
   for(; i != children.end(); i++) {
@@ -75,7 +76,7 @@ void Path::clear() {
  * and removes all respective experimental rooms
  */	
 void Path::cutDeadBranch() {
-  if (room != 0 && room->isExperimental()) rmm.deactivate(room);
+  room->release(admin);
   room = 0;
   set<Path *>::iterator i = children.begin();
   for(; i != children.end(); i++) {

@@ -167,7 +167,7 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
     prop->add(tid);
     roomProps->push(prop);
     Room * room = roomAdmin.insertRoom(roomProps, id, c, t);
-    room->approve();
+    room->hold();
     room->resetTime(ts);
     pemm.deactivate(roomProps);
     roomProps = 0;

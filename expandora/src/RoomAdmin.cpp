@@ -8,6 +8,11 @@ RoomAdmin::RoomAdmin() : SearchTreeNode("") {
 	rooms = rcmm.activate();
 }
 
+void RoomAdmin::removeRoom(int id) {
+  map.remove(roomIndex[id]->getCoordinate());
+  roomIndex[id] = 0;
+}
+
 Room * RoomAdmin::insertRoom(ParseEvent * event, Terrain * t) {
 	Room * room;
 	
