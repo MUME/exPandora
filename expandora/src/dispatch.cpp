@@ -265,13 +265,6 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
   
     buf[*n] = 0;
 
-/*
-    #ifdef DEBUG
-    printf("packet arrived. size : %i\n", *n);
-    printf("Buffer is : \r\n%s\r\n", buf); 
-    #endif
-*/
-
     dispatch_buffer();
   
     /* broken code */

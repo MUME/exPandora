@@ -44,7 +44,7 @@ SOURCES		+= stacks.cpp
 SOURCES		+= tree.cpp
 SOURCES		+= userfunc.cpp
 SOURCES		+= utils.cpp
-SOURCES		+= xml2.cpp
+SOURCES		+= qtxml.cpp
 SOURCES		+= interface.cpp
 
 TARGET		= ../pandora

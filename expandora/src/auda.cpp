@@ -234,11 +234,12 @@ int main(int argc, char *argv[])
   
     proxy_init();
 
+    printf("Loading the database ... \r\n");
     xml_readbase(base_file);
 //    roomer.database_integrity_check("After xml reading");
     
     
-    printf("Loading the database ... %i rooms loaded!\n", roomer.amount);
+    printf("Successfuly loaded %i rooms!\n", roomer.amount);
 
     /* init */
     Ctop = new Tevent;
