@@ -1,4 +1,4 @@
-#define NEW_ENGINE
+//#define NEW_ENGINE
 /*
 $Id$
 */
@@ -363,7 +363,8 @@ bool StructureParser::startElement( const QString& , const QString& ,
 #ifndef NEW_ENGINE
 		    strcpy(r->timestamp, data);
 #else
-		    ts = timeFromString(s);
+		    ts = 0;
+		    //ts = timeFromString(s);
 #endif
 		    continue;
             }

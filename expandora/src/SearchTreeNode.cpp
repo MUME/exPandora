@@ -40,28 +40,34 @@ void SearchTreeNode::setChild(char position, RoomSearchNode * node) {
  */
 Room * SearchTreeNode::insertRoom(ParseEvent * event) {
 	RoomSearchNode * selectedChild = 0;
-	char c;
-	for (int i = 0; myChars[i] != 0; i++) if ((c = event->current()->next()) != myChars[i]) {
+	char c = event->current()->current();
+	for (int i = 0; myChars[i] != 0; i++) {
+		if (c != myChars[i]) {
+			//printf ("no match: \n%s\n%s\n", myChars + i, event->current()->rest());
+			// we have to split, as we encountered a difference in the strings ...	
+			selectedChild = new SearchTreeNode(myChars + i + 1, children);	// first build the lower part of this node	
+			//printf("string transferred to lower node: %s\n", myChars + i + 1);
+			children = new TinyList();	// and update the upper part of this node
+			children->put(myChars[i], selectedChild);
 		
-		// we have to split, as we encountered a difference in the strings ...	
+			if (c == 0) selectedChild = new IntermediateNode(event);	// then build the branch
+			else {
+				event->current()->next();
+				selectedChild = new SearchTreeNode(event);
+			}
+				
+			children->put(c, selectedChild); // and update again
+			myChars[i] = 0; // the string is separated in [myChars][0][selectedChildChars][0] so we don't have to copy anything ... 
 		
-		selectedChild = new SearchTreeNode(myChars + i + 1, children);	// first build the lower part of this node	
-		children = new TinyList();	// and update the upper part of this node
-		children->put(myChars[i], selectedChild);
-		
-		if (c == 0) selectedChild = new IntermediateNode(event);	// then build the branch
-		else selectedChild = new SearchTreeNode(event);
-			
-		children->put(c, selectedChild); // and update again
-		myChars[i] = 0; // the string is separated in [myChars][0][selectedChildChars][0] so we don't have to copy anything ... 
-		
-		return selectedChild->insertRoom(event);
+			return selectedChild->insertRoom(event);
+		}
+		else c = event->current()->next();
 	}
 	
 	// we reached the end of our string and can pass the event to the next node (or create it)
-	selectedChild = children->get(c = event->current()->next());
-	if (selectedChild != 0) return selectedChild->insertRoom(event);
-	else {
+	selectedChild = children->get(c);
+	event->current()->next();
+	if (selectedChild == 0) { 
 	       	if (c != 0) selectedChild = new SearchTreeNode(event);
 		else selectedChild = new IntermediateNode(event);
 		children->put(c, selectedChild);
