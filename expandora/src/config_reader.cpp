@@ -3,10 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "defines.h"
+
 #include <qmutex.h>
 
 
-#include "defines.h"
 #include "struct.h"
 #include "CharacterTable.h"
 #include "utils.h"
@@ -718,5 +719,3 @@ void parse_line(char *line)
   
   
 }
-
-
