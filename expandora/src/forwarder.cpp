@@ -52,7 +52,7 @@ struct sockaddr_in my_net_name, his_net_name;
 
 #if defined Q_OS_LINUX || defined Q_OS_MACX
 
-  void refresh(int x)
+  void refresh(int)
   {
      if (fork()>0)
         exit(0);

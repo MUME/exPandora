@@ -26,7 +26,8 @@ using namespace std;
 class ParseEvent : public BaseEvent {
 	public:
 		ParseEvent() {pos = 0; type = 0;}
-		
+		void reset();
+
 		void push(Property * newProp) ;
 		void pushOptional(Property * newProp);
 		

@@ -25,8 +25,8 @@ class RoomCollection : public RoomSearchNode {
 		set<Room *>::iterator begin() {return rooms.begin();};
 		set<Room *>::iterator end() {return rooms.end();};
 
-		virtual RoomSearchNode * getRooms(ParseEvent * event){return this;}
-		virtual RoomCollection * skipDown(ParseEvent * event){return this;}
+		virtual RoomCollection * getRooms(ParseEvent *);
+		virtual RoomCollection * skipDown(ParseEvent *);
 	private:
 		set<Room *> rooms;
 		

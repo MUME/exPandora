@@ -230,7 +230,7 @@ void Parser::enlargePaths(RoomCollection * rc) {
 	  working->setProb(working->getProb()/PATH_ACCEPT);
 	}
 	else {
-	  working = 1;
+	  working = (*i);
 	  continue;
 	}  
 
@@ -243,7 +243,7 @@ void Parser::enlargePaths(RoomCollection * rc) {
       if (working->getProb() < prevBest/PATH_ACCEPT) {
 	(*i)->removeChild(working);
 	pamm.deactivate(working);
-	working = 1;
+	//working = 1;
       }
       else {
 	if (best == 0) best = working;
@@ -256,7 +256,7 @@ void Parser::enlargePaths(RoomCollection * rc) {
 	  if (second == 0) second = working;
 	  paths.push_back(working);
 	}
-	working = 1;
+	//working = 1;
       }
     } 
 

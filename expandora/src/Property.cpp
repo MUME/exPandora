@@ -39,14 +39,9 @@ void Property::copy(Property * other) {
   char * text = other->getText();
   used = other->size();
   if (text >= 0) {
-    begin = new char[used+1];
+    enlarge(used + 1);
     strncpy(begin, text, used);
     begin[used] = 0;
-    length = used+1;
-  }
-  else {
-    begin = 0;
-    length = 0;
   }
 }
 

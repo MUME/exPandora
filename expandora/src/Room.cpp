@@ -5,7 +5,7 @@
 
 int defaultTolerance = 1;
 
-//ObjectRecycler<Room> rmm;
+ObjectRecycler<Room> rmm;
 
 
 Room::Room() {
@@ -24,7 +24,7 @@ void Room::release(RoomAdmin * admin) {
   if (holdCount <= 0) {
     admin->removeRoom(id);
     clear();
-    //rmm.deactivate(this);
+    rmm.deactivate(this);
   }
 }
 

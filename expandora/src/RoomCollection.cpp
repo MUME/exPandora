@@ -2,13 +2,26 @@
 #include "RoomAdmin.h"
 #include <stdexcept>
 #include <stack>
+
 using namespace std;
 
 ObjectRecycler<RoomCollection> rcmm;
 
+RoomCollection * RoomCollection::getRooms(ParseEvent *) {
+  RoomCollection * ret = rcmm.activate();
+  ret->merge(this);
+  return ret;
+}
+
+RoomCollection * RoomCollection::skipDown(ParseEvent *) {
+  RoomCollection * ret = rcmm.activate();
+  ret->merge(this);
+  return ret;
+}
+
 Room * RoomCollection::insertRoom(ParseEvent * event) {
-  Room * room = new Room();
-  //Room * room = rmm.activate();
+  //Room * room = new Room();
+  Room * room = rmm.activate();
   room->init(event, this);
 	
   rooms.insert(room);

@@ -66,7 +66,7 @@ Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosi
   if (knownEvent->current()->size() == SKIPPED_ONE || knownEvent->current()->size() == SKIPPED_MANY) return 0;
 
   mapLock.lock();
-  if (deepestMatch == 0) return 0;
+  if (deepestMatch == 0) return 0; // we tried to insert this event before and it didn't work
   Room * room = deepestMatch->insertRoom(knownEvent);
   if (room != 0) deepestMatch = room->getHome();
   else deepestMatch = 0;
@@ -96,7 +96,11 @@ RoomSearchNode * RoomAdmin::getRooms(ParseEvent * event) {
   if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) deepestMatch = skipDown(event);
   else deepestMatch = SearchTreeNode::getRooms(event);
   if (deepestMatch->numRooms() < 0) ret = rcmm.activate();
-  else ret = (RoomCollection *)deepestMatch;
+  else {
+    ret = (RoomCollection *)deepestMatch;
+    deepestMatch = this; // we can't tell where that rc came from
+    event->reset();
+  }
   mapLock.unlock();
   return ret;
 }

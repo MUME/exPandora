@@ -21,6 +21,13 @@ ParseEvent * ParseEvent::copy() {
   return p;
 }
 
+void ParseEvent::reset() {
+  pos = 0;
+  list<Property *>::iterator i = required.begin();
+  for (;i != required.end(); i++) (*i)->reset();
+  for (i = optionals.begin(); i != optionals.end(); i++) (*i)->reset();
+}
+
 void ParseEvent::copy(ParseEvent * other) {
 	timestamp = other->timestamp;
 	type = other->type;

@@ -12,6 +12,7 @@ class Property {
   Property(); 
   Property(char *);
 
+  void reset() {currentOffset = -1;}
   void clear();
   void skip();
   void skipMany();

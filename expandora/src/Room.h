@@ -9,7 +9,6 @@
 
 #include <list>
 #include <vector>
-//#include <dmalloc.h>
 
 using namespace std;
 
@@ -56,7 +55,7 @@ class Room {
 
 };
 
-//extern ObjectRecycler<Room> rmm;
+extern ObjectRecycler<Room> rmm;
 #endif
 
 #ifdef DMALLOC

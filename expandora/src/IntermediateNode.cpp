@@ -53,12 +53,12 @@ RoomSearchNode * IntermediateNode::skipDown(ParseEvent * event) {
     copy = event->copy();
   }
   else many = false; 
-  RoomCollection * r = getRooms(event);
+  RoomCollection * r = (RoomCollection *)getRooms(event);
 
   if (many) {
     RoomCollection * temp = 0;
     r->merge(rooms);
-    temp = SearchTreeNode::skipDown(copy);
+    temp = (RoomCollection *)SearchTreeNode::skipDown(copy);
     r->merge(temp);
     rcmm.deactivate(temp);
     pemm.deactivate(copy);
