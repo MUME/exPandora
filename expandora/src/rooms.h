@@ -1,4 +1,5 @@
-#include <GL/gl.h>
+//#include <GL/gl.h>
+#include <OpenGL/gl.h>
 
 #define MAX_ROOMS       30000		/* maximal amount of rooms */
 #define EXIT_UNDEFINED  (MAX_ROOMS+1)
