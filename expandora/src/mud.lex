@@ -16,6 +16,8 @@ SPECIAL_MOB	"Nob"
 %x PROMPT
 
 /* we should also find things like "You skillfully discover a xy" or "The xy seems to be closed" in the initial state and drop a note on these*/
+/* "You flee head over heels" should be transformed into a MOVE event without direction (which will be queued in the user queue by the parser), 
+"flee" shouldn't generate an event on the user side*/
 %%
 
 {ROOMCOL}	BEGIN{ROOMNAME};

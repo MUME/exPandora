@@ -5,6 +5,10 @@ Lexer::Lexer() {
 	property = pmm.activate();
 }
 
+void Lexer::markTerrain() {
+	parser->setTerrain(property);
+}
+
 void Lexer::pushEvent(char _type) {
 	event->push(0);
 	event->type = _type;

@@ -17,6 +17,7 @@ class Lexer : private MudFlexLexer, private PlayerFlexLexer {
 		void MudLex(char * in) {MudFlexLexer::LexerInput(in, MAX_DATA_LEN); MudFlexLexer::yylex();}
 		void PlayerLex(char * in) {PlayerFlexLexer::LexerInput(in, MAX_DATA_LEN); PlayerFlexLexer::yylex();}
 	private: // only used by yylex()	
+		void markTerrain();
 		void pushEvent(char type);
 		void pushProperty();
 		void pushOptional();

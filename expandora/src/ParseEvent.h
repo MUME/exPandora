@@ -10,6 +10,7 @@
 #define MOVE 2
 #define SCOUT 3
 #define MOVE_FAIL 4
+#define NOTE 5
 
 #include "ObjectRecycler.h"
 #include "Property.h"

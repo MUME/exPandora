@@ -11,3 +11,5 @@ class Path {
 		list<Room *> rooms;
 		list<Exit *> exits;
 };
+
+#endif
