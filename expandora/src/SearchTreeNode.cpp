@@ -21,10 +21,10 @@ SearchTreeNode::SearchTreeNode(char * _myChars, TinyList * _children) {
  */
 RoomSearchNode * SearchTreeNode::getRooms(ParseEvent * event) {
 	RoomSearchNode * selectedChild = 0;
-	for (int i = 0; myChars[i] != 0; i++) if (event->current()->next() != myChars[i]) return 0;
+	for (int i = 0; myChars[i] != 0; i++) if (event->current()->next() != myChars[i]) return this;
 	selectedChild = children->get(event->current()->next());
 	
-	if(selectedChild == 0) return 0; // no such room
+	if(selectedChild == 0) return this; // no such room
 	else return selectedChild->getRooms(event);	// the last character of name is 0, 
 							// at position 0 there is a roomCollection, if we have rooms here
 							// else there is 0, so name[depth] should work.
