@@ -177,7 +177,7 @@ void Parser::syncing() {
   if (possible->numRooms() > 0) {
     if (mostLikelyRoom == 0) {
       if (possible->numRooms() == 1) {
-	state = EXPERIMENTING;
+	state = APPROVED;
 	mostLikelyRoom = *(((RoomCollection *)possible)->begin());
       }
     }
@@ -234,18 +234,26 @@ void Parser::buildPaths(RoomCollection * rc) {
 }
 
 void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
+  if (paths.begin() == paths.end()) return;
   list<Path *>::iterator i = paths.begin();
   set<Room *>::iterator j = rc->begin();
   ParseEvent * copy = pemm.activate();
   Coordinate * c = cmm.activate();
   Path * working;
-  for (; i != paths.end(); i++) {
+  Path * best = 0;
+  
+  list<Path *>::iterator k = paths.end()--;
+  do {
     for (; j != rc->end(); j++) {
       working = (*i)->fork(*j);
-      if (working->getProb() < MINPROB) working->deny();
+      if (working->getProb() < MINPROB*paths.front()->getProb()) working->deny();
       else {
-	if (working->getProb() > paths.front()->getProb()) paths.push_front(working);
-	else paths.insert(i, working);
+	if (best == 0) best = working;
+	else if(working->getProb() > best->getProb()) {
+	  paths.push_back(best);
+	  best = working;
+	}
+	else paths.push_back(working);
       }
     }
     if (includeNew) {
@@ -257,14 +265,23 @@ void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
       working = (*i)->fork(roomAdmin.quickInsert(copy, c, activeTerrain));
       if (working->getProb() < MINPROB) working->deny();
       else {
-	if (working->getProb() > paths.front()->getProb())
-	  paths.push_front(working);
-	else 
-	  paths.insert(i, working); 
+	if (best == 0) best = working;
+	else if(working->getProb() > best->getProb()) {
+	  paths.push_back(best);
+	  best = working;
+	}
+	else paths.push_back(working);
       }
     }
-    if (!((*i)->hasChildren())) (*i)->deny();		
-  }
+    if (!((*i)->hasChildren())) (*i)->deny();	
+    i++;
+  } while (i != k);
+
+  working = *k;
+  do paths.pop_front(); 
+  while (paths.front() != working);
+  paths.push_front(best);
+
   cmm.deactivate(c);
   pemm.deactivate(copy);
   if (paths.empty()) state = SYNCING;

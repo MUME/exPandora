@@ -136,9 +136,6 @@ void StructureParser::buildProperties(char * desc) {
       lastLineBegin = desc+i+1;
     }
   }
-  //prop->add(lastLineBegin);
-  //roomProps->push(prop);
-  //prop = pmm.activate();
 }
 #endif
 
@@ -170,6 +167,7 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
     prop->add(tid);
     roomProps->push(prop);
     Room * room = roomAdmin.insertRoom(roomProps, id, c, t);
+    room->approve();
     room->resetTime(ts);
     pemm.deactivate(roomProps);
     roomProps = 0;

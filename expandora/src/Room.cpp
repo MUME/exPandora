@@ -4,6 +4,8 @@
 
 int defaultTolerance = 1;
 
+ObjectRecycler<Room> rmm;
+
 void Room::init(ParseEvent * event) {
 	experimental = true;
 	properties = event->getProperties();

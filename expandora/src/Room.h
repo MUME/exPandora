@@ -17,6 +17,7 @@ class Room {
 		void setTerrain(Terrain * t) {terrain = t;}
 		Terrain * getTerrain() {return terrain;}
 		void approve() {experimental = false;};
+		bool isExperimental() {return experimental;}
 		void addExit(int direction, Room * destination);	
 		RoomCollection * go(BaseEvent * event);
 		RoomCollection * getNeighbours(int k) {if (k < (int)exits.size()) return exits[k]; else return 0;}
