@@ -9,6 +9,13 @@ Coordinate::Coordinate(int _x, int _y, int _z) {
 	z = _z;
 }
 
+int Coordinate::distance(Coordinate * other) {
+	int ret = abs(x - other->x);
+	ret += abs(y - other->y);
+	ret += abs(z - other->z);
+	return ret;
+}
+
 void Coordinate::clear() {
 	x = 0;
 	y = 0;

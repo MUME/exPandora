@@ -9,13 +9,12 @@
 using namespace std;
 
 
-class Exit;
 class RoomCollection;
 extern int defaultTolerance;
 
 class Room {
 	public:
-	
+		void approve() {experimental = false;};
 		void addExit(int direction, Room * destination);	
 		RoomCollection * go(BaseEvent * event);
 		Room();

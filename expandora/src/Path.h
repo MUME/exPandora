@@ -1,12 +1,14 @@
 #ifndef PATH
 #define PATH
-#include <list>
+#include <set>
 #include "Room.h"
 
 using namespace std;
 
 class Path {
 	public:
+		void removeChild(Path * p);
+		void setParent(Path * p);
 		bool hasChildren() {return (!children.empty());};
 		void init(Room * room);
 		Room * getRoom() {return room;};
@@ -17,12 +19,13 @@ class Path {
 				// and gives them back to the pamm 
 				// and removes the respective rooms if experimental
 		void clear();
+		void setProb(double p) {probability = p;};
 		void cutDeadBranch(); 	// removes this path and recursively all chldren 
 					// and gives them back to the pamm
 					// and removes all respective experimental rooms
 	private:
 		Path * parent;
-		list<Path *> children;
+		set<Path *> children;
 		double probability;
 		Room * room; // in fact a path only has one room, one parent and soem children(forks).
 };
