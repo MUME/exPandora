@@ -243,9 +243,8 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   optionsMenu->setItemChecked(hide_menu_id, false );
   optionsMenu->setItemChecked(hide_status_id, false );
   optionsMenu->setItemChecked(hide_roominfo_id, true );
-  
+ 
   optionsMenu->setItemChecked(always_on_top_id, true );
-  
 //  this->setWFlags(Qt::WStyle_Customize | Qt::WStyle_StaysOnTop);
 
   dock = new QDockWindow(this, "dock");
@@ -260,12 +259,18 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
 
 
    int flags = getWFlags();
+#ifndef MAC_OS
    if(testWFlags(Qt::WStyle_StaysOnTop)){
       flags ^= Qt::WStyle_StaysOnTop;
    }
    else{
       flags |= Qt::WStyle_StaysOnTop;
    }
+#else
+   if(testWFlags(Qt::WStyle_StaysOnTop)){
+      flags ^= Qt::WStyle_StaysOnTop;
+   }
+#endif
    QPoint p(geometry().x(),geometry().y());
    reparent(0,flags,p,true);
 
