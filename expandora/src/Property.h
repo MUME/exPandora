@@ -23,8 +23,9 @@ class Property {
 		char * rest();
 		
 		int operator==(Property & other);
-		void operator+=(char c);
-		void operator+=(char * string);
+		void add(char c);
+		void add(char * string);
+		void add(char * other, char * end);
 		char operator[](int offset);
 		int comp(Property & other);
 	private:
@@ -36,6 +37,5 @@ class Property {
 };
 
 
-extern Property NO_PROPERTY;
 extern ObjectRecycler<Property> pmm;
 #endif

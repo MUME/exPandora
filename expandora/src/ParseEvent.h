@@ -29,9 +29,7 @@ class ParseEvent {
 		ParseEvent() {pos = 0; type = 0;}
 		ParseEvent(ParseEvent * other);
 		
-		void push(char * begin); // various ways to push properties to the end of the list
 		void push(Property * newProp) ;
-		void pushOptional(char * begin);
 		void pushOptional(Property * newProp);
 		
 		Property * pop(); // gets the first property and removes it

@@ -51,13 +51,13 @@ int Property::operator==(Property & other) {
 	return 1;
 }
 
-void Property::operator+=(char c) {
+void Property::add(char c) {
 	enlarge(used+1);
 	if (used >= 0) begin[used] = c;
 	used++;
 }
 
-void Property::operator+=(char * string) {
+void Property::add(char * string) {
 	int needed = used + strlen(string);
 	enlarge(needed);
 	
@@ -67,7 +67,16 @@ void Property::operator+=(char * string) {
 	used = needed;
 }
 
+void Property::add(char * other, char * end) {
+	int needed = used + other - end;
+	enlarge(needed);
 
+	for (int i = used; i < needed; i++) {
+	if (i >= 0) begin[i] = other[i-used];
+						        }
+	used = needed;
+}	
+	
 void Property::enlarge(int neededSpace) {
 	while (neededSpace > length) {
 		length = length * 2 + 1;

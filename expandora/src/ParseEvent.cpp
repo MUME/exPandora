@@ -44,17 +44,7 @@ void ParseEvent::push(Property * newProp) {
 	if (timestamp == 0) timestamp = m_timestamp();
 }
 
-void ParseEvent::push(char * begin) {
-	Property *ins = new Property(begin);
-	required.push_back(ins);
-	if (timestamp == 0) timestamp = m_timestamp();
-}
 
-void ParseEvent::pushOptional(char * begin) {
-	Property *ins = new Property(begin);
-	optionals.push_back(ins);
-	if (timestamp == 0) timestamp = m_timestamp();
-}
 	
 
 void ParseEvent::pushOptional(Property * newProp) {
