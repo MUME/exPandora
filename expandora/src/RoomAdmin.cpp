@@ -33,7 +33,7 @@ Room * RoomAdmin::insertRoom(ParseEvent * event, int id) {
 	return insertRoom(event);
 }
 
-RoomCollection * RoomAdmin::getRooms(ParseEvent * event) {
+RoomSearchNode * RoomAdmin::getRooms(ParseEvent * event) {
 	if (event->current() == 0) return rooms;
 	else if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) return skipDown(event);
 	else return SearchTreeNode::getRooms(event);

@@ -16,14 +16,18 @@ using namespace std;
 #define NONE 6
 
 class Exit;
+class RoomCollection;
 
 class Room {
 	public:
-		Room(ParseEvent * event);
+		Room();
+		void init(ParseEvent * event);
 		void setId(int _id) {id = _id;};
 		int containsOptionals(list<Property *> & optionals);
 		int fastCompare(list<Property *> & props, int tolerance);
+		void clear();
 	private:
+		RoomCollection * home;
 		list<Property *> properties;		/* name, desc, exit names - properties we need for tree searching */
 		list<Property *> important;		/* pointers to the parts of the properties defining important things 
 							   the user wants to know each time she enters */
@@ -41,4 +45,5 @@ class Room {
 
 };
 
+extern ObjectRecycler<Room> rmm;
 #endif

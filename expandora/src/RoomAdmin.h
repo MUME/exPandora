@@ -10,7 +10,7 @@ class RoomAdmin : public SearchTreeNode {
 	public:
 		RoomAdmin();
 		~RoomAdmin();
-		RoomCollection * getRooms(ParseEvent * event);
+		RoomSearchNode * getRooms(ParseEvent * event);
 		Room * getRoom(int id) {return roomIndex[id];};
 		Room * insertRoom(ParseEvent * event); // pos defaults to 0, returns the id of the new room
 		Room * insertRoom(ParseEvent * event, int id); 	// inserts the room with predefined id, 

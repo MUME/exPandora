@@ -1,10 +1,29 @@
 #include "Room.h"
+#include "RoomCollection.h"
 #include "Exit.h"
 
-Room::Room(ParseEvent * event) {
+void Room::init(ParseEvent * event) {
 	properties = event->getProperties();
 	optionalProperties = event->getOptionals();
 }
+
+
+/*
+ * return all properties to pmm and remove this room from the room collection
+ */
+
+void Room::clear() {
+	while(!properties.empty()) {
+		pmm.deactivate(properties.front());
+		properties.pop_front();
+	}
+	while(!optionalProperties.empty()) {
+		pmm.deactivate(optionalProperties.front());
+		optionalProperties.pop_front();
+	}
+	home->removeRoom(this);
+}
+	
 
 /** compare the optional properties that are not present in the search tree
  * perhaps we should allow a tolerance, too?

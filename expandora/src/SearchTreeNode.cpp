@@ -1,10 +1,13 @@
 #include "SearchTreeNode.h"
 #include "IntermediateNode.h"
-
+#include <string>
+using namespace std;
 
 
 SearchTreeNode::SearchTreeNode(ParseEvent * event, TinyList * _children) {
-	myChars = event->current()->rest();
+	myChars = new char[strlen(event->current()->rest())];
+	strcpy(myChars, event->current()->rest()); 	// we copy the string so that we can remove rooms independetly of tree nodes
+							// of courxe that needs memory
 	children = _children;
 }
 
@@ -16,7 +19,7 @@ SearchTreeNode::SearchTreeNode(char * _myChars, TinyList * _children) {
 
 /**
  */
-RoomCollection * SearchTreeNode::getRooms(ParseEvent * event) {
+RoomSearchNode * SearchTreeNode::getRooms(ParseEvent * event) {
 	RoomSearchNode * selectedChild = 0;
 	for (int i = 0; myChars[i] != 0; i++) if (event->current()->next() != myChars[i]) return 0;
 	selectedChild = children->get(event->current()->next());
@@ -69,15 +72,15 @@ Room * SearchTreeNode::insertRoom(ParseEvent * event) {
 /**
  * checking if another property needs to be skipped is done in the intermediate nodes
  */
-RoomCollection * SearchTreeNode::skipDown(ParseEvent * event) {
+RoomSearchNode * SearchTreeNode::skipDown(ParseEvent * event) {
 	RoomSearchNode * selectedChild = 0;
-	RoomCollection * ret = rcmm.activate();
-	RoomCollection * add;
+	RoomSearchNode * ret = rcmm.activate();
+	RoomSearchNode * add;
 	for (int i = 0; i < 128; i++) {
 		if ((selectedChild = children->get(i)) != 0)
 			if ((add = selectedChild->skipDown(event)) != 0) {
 				ret->merge(add);
-				rcmm.deactivate(add);
+				if (add->numRooms() > -1) rcmm.deactivate((RoomCollection *)add);
 			}
 	}
 	return ret;

@@ -6,16 +6,17 @@ using namespace std;
 ObjectRecycler<RoomCollection> rcmm;
 
 Room * RoomCollection::insertRoom(ParseEvent * event) {
-	Room * room = new Room(event);
+	Room * room = new Room();
+	room->init(event);
 	
-	rooms.push_back(room);
+	rooms.insert(room);
 	return room;
 }
 
 
 RoomCollection * RoomCollection::filterByOptionals(ParseEvent * event) {
 	RoomCollection * filtered = rcmm.activate();
-	for  (list<Room *>::iterator i = rooms.begin(); i != rooms.end(); i++)	
+	for  (set<Room *>::iterator i = rooms.begin(); i != rooms.end(); i++)	
 		if ((*i)->containsOptionals(event->getOptionals())) filtered->addRoom(*i);
 	
 	return filtered;
@@ -23,7 +24,12 @@ RoomCollection * RoomCollection::filterByOptionals(ParseEvent * event) {
 
 
 void RoomCollection::addRoom(Room * room) {
-	rooms.push_back(room);
+	rooms.insert(room);
+}
+
+
+void RoomCollection::removeRoom(Room * room) {
+	rooms.erase(room);
 }
 
 /**
@@ -34,6 +40,10 @@ void RoomCollection::clear() {
 } 
 
 
-void RoomCollection::merge(RoomCollection * other) {
-	rooms.splice(rooms.begin(), other->getRooms());
+RoomCollection * RoomCollection::merge(RoomSearchNode * other) {
+	if (other->numRooms() > 0) {
+		set<Room *> otherSet = ((RoomCollection *)other)->getRooms();
+		rooms.insert(otherSet.begin(), otherSet.end());
+	}
+	return this;
 }

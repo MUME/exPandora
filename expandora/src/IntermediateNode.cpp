@@ -16,9 +16,9 @@ Room * IntermediateNode::insertRoom(ParseEvent * event) {
 }
 	
 
-RoomCollection * IntermediateNode::getRooms(ParseEvent * event) {
+RoomSearchNode * IntermediateNode::getRooms(ParseEvent * event) {
 	if (event->next() == 0) {
-		RoomCollection * ret = rcmm.activate();
+		RoomSearchNode * ret = rcmm.activate();
 		ret->merge(rooms);
 		return ret;
 	}
@@ -26,8 +26,8 @@ RoomCollection * IntermediateNode::getRooms(ParseEvent * event) {
 	else return SearchTreeNode::getRooms(event);
 }
 
-RoomCollection * IntermediateNode::skipDown(ParseEvent * event) {
-	RoomCollection * r = rcmm.activate();
+RoomSearchNode * IntermediateNode::skipDown(ParseEvent * event) {
+	RoomSearchNode * r = rcmm.activate();
 	if (event->current()->size() == SKIPPED_ONE) return getRooms(event);
 	
 	ParseEvent * copy = new ParseEvent(event);

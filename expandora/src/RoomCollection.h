@@ -1,6 +1,6 @@
 #ifndef ROOMCOLLECTION
 #define ROOMCOLLECTION
-#include <list>
+#include <set>
 #include "ParseEvent.h"
 #include "RoomSearchNode.h"
 #include "Room.h"
@@ -8,17 +8,23 @@
 
 using namespace std;
 
-class RoomCollection {
+class RoomCollection : public RoomSearchNode {
 	public:
 		RoomCollection() {};
+		virtual ~RoomCollection();
+		virtual int numRooms() {return rooms.size();} //let's hope this is implemented in some efficient way ...
 		Room * insertRoom(ParseEvent * event);
 		RoomCollection * filterByOptionals(ParseEvent * event);
 		void addRoom(Room * room);
-		void merge(RoomCollection * other);
+		RoomCollection * merge(RoomSearchNode * other);
 		void clear();
-		list<Room *> & getRooms() {return rooms;}
+		set<Room *> & getRooms() {return rooms;}
+		void removeRoom(Room * room); 
+		
+		virtual RoomSearchNode * getRooms(ParseEvent * event){return this;}
+		virtual RoomCollection * skipDown(ParseEvent * event){return this;}
 	private:
-		list<Room *> rooms;
+		set<Room *> rooms;
 		
 };
 

@@ -7,10 +7,12 @@ class RoomCollection;  //RoomCollection is a derived class of this one, so we ca
 
 class RoomSearchNode {
 	public:
-		virtual RoomCollection * getRooms(ParseEvent * event);
+		virtual int numRooms() {return -1;}
+		virtual RoomSearchNode * merge(RoomSearchNode * other) {return other;}
+		virtual RoomSearchNode * getRooms(ParseEvent * event);
 		virtual Room * insertRoom(ParseEvent * event);
-		virtual void setChild(char position, RoomSearchNode * child);
-		virtual RoomCollection * skipDown(ParseEvent * event);
+		virtual void setChild(char position, RoomSearchNode * child) {;}
+		virtual RoomSearchNode * skipDown(ParseEvent * event);
 };
 
 #endif
