@@ -1,4 +1,6 @@
-%option yyclass="MudLexer"  
+
+%option prefix="mud"
+%option yyclass="Parser"  
 /* we will define all the actions in the MudLexer class, so flex should know that it needs to produce MudLexer::yylex() */
 
 /* the codes are octal, so \33 is \27 in decimal and <ESC> in literal*/
