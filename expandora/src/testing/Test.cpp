@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include "ObjectRecycler.h"
+#include "ParseEvent.h"
 
 class parent {
 	public:
@@ -28,8 +30,16 @@ void parent::pr() {
 }
 
 int main(int argc, char **argv) {
-	parent par;
-	child ch;
-	par.pr();
-	ch.pr();
+	ParseEvent * event;
+	for(int i = 0; i< 10; i++) {
+		event = new ParseEvent();
+		printf("created event: %i", event);
+		ParseEvent.mm.deactivate(event);
+		printf("deactivated event: %i", event);
+	}
+	for (int i = 0; i < 12; i++) {
+		event = ParseEvent.mm.activate();
+		printf("activated event: %i", event);
+	}
+	return 0;
 }

@@ -20,7 +20,7 @@ SPECIAL_MOB	"Nob"
 
 <*>[\0]						/* end of the string we are parsing*/ return;
 <*>{OTHERCOL}[^\33]*{ENDCOL}			/* throw away some message in other colors*/
-<*>"It's pitch black ...\n"[^\n]*"\n"		jumpLastProperty; BEGIN(PROMPT);
+<*>"It's pitch black ...\n"[^\n]*"\n"		jumpLastProperty(); BEGIN(PROMPT);
 
 <*>"Alas, you cannot go that way..."				|
 <*>"You need to swim to go there."				|
@@ -48,23 +48,23 @@ SPECIAL_MOB	"Nob"
 <ROOMNAME>{ENDCOL}		pushProperty(); BEGIN(DESC);
 <ROOMNAME>{ENDCOL}"\nExits:"	pushProperty(); jumpProperty(); BEGIN(EXITS);
 
-<DESC>.|\n			append();
-<DESC>"Exits:"		pushProperty(); BEGIN(EXITS);
+<DESC>.|\n						append();
+<DESC>"Exits:"						pushProperty(); BEGIN(EXITS);
 <DESC>^("The "|"A "|"An "|{SPECIAL_MOB}).*"\n"		|
 <DESC>^.*"is standing here".*"\n"			|
 <DESC>^.*"is resting here".*"\n"			|
-<DESC>^.*"is sleeping here".*"\n"			; /* throw a way any mobs, players or objects in this room*/
-<DESC,PROMPT>{ROOMCOL}					pushEvent(INCOMPLETE_ROOM);; BEGIN(ROOMNAME);
+<DESC>^.*"is sleeping here".*"\n"			; /* throw a way any mobs, players or objects (and possibly consistent parts of the desc) in this room*/
+<DESC,PROMPT>{ROOMCOL}					pushEvent(INCOMPLETE_ROOM); BEGIN(ROOMNAME);
 
 <EXITS>\[[^\] ,.]+\][,.]	append(1); pushOptional();	/* we don't know if the door is secret, */
-<EXITS>"("[^\) .,]+")"=?[,.]	append(1); pushOptional();	/* especially when it's open*/
+<EXITS>"("[^) .,]+")"=?[,.]	append(1); pushOptional();	/* especially when it's open*/
 <EXITS>\*[^* ,.]+\*=?[,.]	append(1); pushProperty();	/* *'s around an exit indicate light it seems...*/
 <EXITS>[^ ,.]+[,.]		append(0); pushProperty();
 <EXITS>=			append(); 
 <EXITS>\n			BEGIN(PROMPT);
 
-<PROMPT>"["			| 
-<PROMPT>"#"			|		 
+<PROMPT>"["			|
+<PROMPT>"#"			| 
 <PROMPT>"."			| 
 <PROMPT>"f"			| 
 <PROMPT>"("			| 
@@ -73,7 +73,7 @@ SPECIAL_MOB	"Nob"
 <PROMPT>"~"			| 
 <PROMPT>"W"			| 
 <PROMPT>"U"			| 
-<PROMPT>"+"			| 	
+<PROMPT>"+"			| 
 <PROMPT>":"			| 
 <PROMPT>"="			| 
 <PROMPT>"O"			append(); pushProperty(); markTerrain(); 
