@@ -11,6 +11,7 @@
 #include "Coordinate.h"
 #include "Lexer.h"
 
+stdMoves.resize(6);
 stdMoves[NORTH] = new Coordinate(0,1,0);
 stdMoves[SOUTH] = new Coordinate(0,-1,0);
 stdMoves[EAST] = new Coordinate(1,0,0);

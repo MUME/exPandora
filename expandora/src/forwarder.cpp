@@ -425,6 +425,7 @@ int proxy_loop(void)
       
     }
   }
+  return 0;
 
 }
 

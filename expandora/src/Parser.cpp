@@ -52,8 +52,30 @@ void Parser::checkQueues() {
 }	
 
 void Parser::approved() {
-	if (playerEvents.front()->tpye == unify) {
-		mostLikelyRoom.unique = true;
+	if (mudEvents.front()->type == MOVE_FAIL) {
+		mudEvents.pop();
+		playerEvents.pop();
 		return;
 	}
-	RoomCollection * possible =
+	if (playerEvents.front()->type == UNIQUE) {
+		mostLikelyRoom->setUnique() = true;
+		playerEvents.pop();
+		return;
+	}
+	
+	// now we have a move and a room on the event queues;
+	Room * perhaps = 0;
+	RoomCollection * possible = mostLikelyRoom->go(playerEvents.front());
+	
+	if ((perhaps = possible->matchOne(mudEvents.front())) != 0) { // narrows possible by the event and return a Room if exactly one is left
+		mostLikelyRoom = perhaps;
+		mudEvents.pop();
+		playerEvents.pop();
+		return;
+	}
+	else {
+		state = EXPERIMENTING;
+       		buildPaths(possible);
+	}
+}
+
