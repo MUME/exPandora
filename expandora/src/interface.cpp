@@ -23,7 +23,7 @@
 #include <qpushbutton.h>
 #include <qtextedit.h>
 
-#include <math.h>
+//#include <math.h>
 
 #include "defines.h"
 #include "struct.h"
@@ -218,6 +218,9 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   hide_roominfo_id = optionsMenu->insertItem( tr("Hide/Show Room info"), this, SLOT( hide_roominfo()), Key_F10);
 
   optionsMenu->insertSeparator();
+
+  always_on_top_id = optionsMenu->insertItem( tr("Always on top"), this, SLOT( always_on_top()), Key_F9);
+
   
   menuBar()->insertItem( tr("&Options"), optionsMenu);
   
@@ -241,22 +244,39 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   optionsMenu->setItemChecked(hide_status_id, false );
   optionsMenu->setItemChecked(hide_roominfo_id, true );
   
-  /* ---- */
-//  setDockEnabled(DockBottom, false);
-//  setDockEnabled(DockTop, false);
-//  setDockEnabled(DockLeft, false);
-//  setDockEnabled(DockRight, false);
+  optionsMenu->setItemChecked(always_on_top_id, true );
   
+//  this->setWFlags(Qt::WStyle_Customize | Qt::WStyle_StaysOnTop);
+
   dock = new QDockWindow(this, "dock");
   dock->setCaption("Room Info");
   dock->setResizeEnabled( TRUE );
 //  dock->setVerticalStretchable( TRUE );
 //  dock->setHorizontalStretchable( TRUE );
-
   addDockWindow(dock, DockTornOff, FALSE);
   
   roominfo = new RoomInfo(dock, "roominfo");
   dock->setWidget(roominfo);
+
+
+   int flags = getWFlags();
+   if(testWFlags(Qt::WStyle_StaysOnTop)){
+      flags ^= Qt::WStyle_StaysOnTop;
+   }
+   else{
+      flags |= Qt::WStyle_StaysOnTop;
+   }
+   QPoint p(geometry().x(),geometry().y());
+   reparent(0,flags,p,true);
+
+//  this->reparent(NULL, this->getWFlags() | WStyle_StaysOnTop, QPoint(0,0),true);  
+    /* ---- */
+//  setDockEnabled(DockBottom, false);
+//  setDockEnabled(DockTop, false);
+//  setDockEnabled(DockLeft, false);
+//  setDockEnabled(DockRight, false);
+  
+
 
 
   LeftButtonPressed = false;
@@ -311,6 +331,25 @@ void MainWindow::hide_menu()
   }
 }
 
+void MainWindow::always_on_top()
+{
+  print_debug(DEBUG_INTERFACE, "always_on_top called");
+  
+  WFlags flags = getWFlags();
+  if(testWFlags(Qt::WStyle_StaysOnTop))
+  {
+    flags ^= Qt::WStyle_StaysOnTop;
+    optionsMenu->setItemChecked(always_on_top_id, false);
+  } else {
+    flags |= Qt::WStyle_StaysOnTop;
+    optionsMenu->setItemChecked(always_on_top_id, true);
+  }
+  QPoint p(geometry().x(),geometry().y());
+  reparent(0,flags,p,true);
+
+}
+
+
 void MainWindow::hide_status()
 {
   print_debug(DEBUG_INTERFACE, "hide/show status called");
@@ -341,7 +380,7 @@ void MainWindow::hide_roominfo()
   }
 }
 
- 
+
 void MainWindow::keyPressEvent( QKeyEvent *k )
 {
     switch ( tolower(k->ascii()) ) {

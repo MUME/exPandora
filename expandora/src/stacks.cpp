@@ -73,7 +73,7 @@ void stackmanager::reset()
     stackb[0] = 0;
     sa = stacka;
     sb = stackb;
-    bzero(mark, MAX_ROOMS);
+    memset(mark, 0, MAX_ROOMS);
     swap();
 }
 
@@ -81,7 +81,7 @@ void stackmanager::swap()
 {
     unsigned int *t;
 
-    bzero(mark, MAX_ROOMS);
+    memset(mark, 0, MAX_ROOMS);
     t = sa;
     sa = sb;
     sb = t;

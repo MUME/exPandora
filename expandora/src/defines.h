@@ -1,10 +1,11 @@
 
-/* choose one of thouse */
 #define LINUX
+//#define WIN32
 //#define MAC_OS
-//#define WINDOWS
 
-
+#ifdef LINUX
+#define QT_THREAD_SUPPORT
+#endif
 
 #define TRUE            1
 #define FALSE           0

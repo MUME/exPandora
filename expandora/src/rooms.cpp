@@ -40,7 +40,7 @@ void reset_room(struct Troom *r)
     r->z = 0;
     r->sector = 0;
   
-    bzero(r->timestamp, TIMESTAMP_LEN);
+    memset(r->timestamp, 0, TIMESTAMP_LEN);
   
   
     r->next = NULL;
@@ -271,7 +271,7 @@ void roommanager::resort_rooms()
   p = getroom(0);
   p = p->next;
 
-  bzero(order, MAX_ROOMS);
+  memset(order, 0, MAX_ROOMS);
   
   print_debug(DEBUG_ROOMS, "resorting rooms");
 

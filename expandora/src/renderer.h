@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H 
-#define MAINWINDOW_H
+#define MAINWINDOW_H 
 
-#include <cmath>
 #include <qmainwindow.h> 
 #include <qstringlist.h> 
 #include <qgl.h>
@@ -121,6 +120,7 @@ private slots:
   void hide_menu();
   void hide_status();
   void hide_roominfo();
+  void always_on_top();
 
 
 private:
@@ -142,6 +142,8 @@ private:
   int hide_status_id;
   int hide_menu_id;
   int hide_roominfo_id;
+  int always_on_top_id;
+
 
   bool          LeftButtonPressed;
   bool          RightButtonPressed;

@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define QT_THREAD_SUPPORT
+
+#include "defines.h"
 #include <qmutex.h>
 
 
-#include "defines.h"
 #include "struct.h"
 
 #include "dispatch.h"

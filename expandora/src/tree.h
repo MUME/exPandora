@@ -1,5 +1,5 @@
 
-#define ALPHABET_SIZE	27	/* 0 + 26 letters */
+#define ALPHABET_SIZE	27	/*  26 letters */
 #define A_SIZE		ALPHABET_SIZE
 #define MAX_HASH_LEN	150	/* this caps top length of the tree thread */
 
@@ -24,11 +24,14 @@ class Ctree {
   void delete_id(unsigned int id, Ttree *t);
   void delete_all(Ttree *t);
     
-  /* for debug */
+  /* for gathering debug info only*/
   struct levels_data_type levels_data[MAX_HASH_LEN];
-  void calculate_info(Ttree *t, int level);
+  void calculate_info(Ttree *t, int level, int single);
+  long debug_singles;
+
 public:
   Ttree *root;
+
 
   Ctree();
 

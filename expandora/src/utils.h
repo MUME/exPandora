@@ -76,7 +76,6 @@ double m_timestamp(); /* ms */
 void basic_mud_log(const char *format, ...);
 int MIN(int a, int b);
 
-
 #define MAX_N   ( MAX_LINES_DESC * 80 )
 #define MAX_M   ( MAX_LINES_DESC * 80 )
 

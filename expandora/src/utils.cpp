@@ -4,10 +4,20 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <time.h>
-#include <sys/time.h>
-#include <sys/timeb.h>
 
 #include "defines.h"
+
+#ifdef LINUX
+#include <sys/time.h>
+#endif 
+
+#include <sys/timeb.h>
+
+
+#ifndef LINUX
+  #define vsnprintf _vsnprintf
+#endif
+
 #include "utils.h"
 #include "forwarder.h"
 
@@ -111,7 +121,6 @@ void print_debug(unsigned int flag, const char *messg, ...)
   write_debug(flag, messg, args);
   va_end(args);
 }
-
 
 
 int parse_dir(char *dir)
@@ -316,14 +325,17 @@ size_t write_to_channel(int mode, const char *format, va_list args)
   return size;
 }
 
-
 double m_timestamp(void) /* ms */
 {
+#ifdef LINUX
   struct timeval tv;
   struct timezone tz;
 
   gettimeofday(&tv, &tz);
   return(tv.tv_sec*1.+tv.tv_usec/1000000.);
+#else
+  return 0;
+#endif
 }
 
 void basic_mud_log(const char *format, ...)

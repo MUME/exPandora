@@ -9,33 +9,45 @@
 class Ctree namer;
 
 
-void Ctree::calculate_info(Ttree *t, int level)
+void Ctree::calculate_info(Ttree *t, int level, int single)
 {
   unsigned int i;
-
+  int l;
+  
   if (t == NULL)
     return;
 
+  
+  
   levels_data[level].nodes++;
   levels_data[level].items += t->amount;
-
+  l = 0;
+  
   for (i = 0; i < A_SIZE; i++)
     if (t->leads[i] != NULL) {	
-      /* shall not delete this item */
+      
+      l++;
       
       levels_data[level].leads++;
       
-      calculate_info(t->leads[i], level+1);
+      calculate_info(t->leads[i], level+1, t->amount ? single + 1 : 0);
     }
+    
+  if (l == 0 && single > 0) 
+    debug_singles += (single+1);
+  
 }
 
 void Ctree::print_tree_stats()
 {
   unsigned int i;
 
-  bzero(levels_data, sizeof(struct levels_data_type) * MAX_HASH_LEN );
+  memset(levels_data, 0, sizeof(struct levels_data_type) * MAX_HASH_LEN );
+  debug_singles = 0;
   
-  calculate_info(root, 0);  
+  calculate_info(root, 0, 0);  
+  
+  print_debug(DEBUG_TREE, "Single rooms: %i", debug_singles);
   
   for (i = 0; levels_data[i].nodes; i++) 
     print_debug(DEBUG_TREE, "Level %-3li, nodes %-5li, leads %-5li, items %-5li.", 

@@ -7,23 +7,50 @@
 
 #define DEBUG
 
+#include "defines.h"
+
+#ifdef LINUX
+
+#define WSAEWOULDBLOCK EWOULDBLOCK
+#define WSAEINPROGRESS EINPROGRESS
+#define WSAGetLastError() errno
+#define INVALID_SOCKET (-1)
+#define closesocket close
+#define SOCKET int
+#define ioctlsocket ioctl
+
+//#include <arpa/inet.h>
+//#include <sys/ioctl.h>
+
+#include <unistd.h>
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <netinet/in.h>
+#include <signal.h>
+#include <sys/socket.h>
+
+#else
+/*
+#include <Windows32/Base.h>
+#include <Windows32/Sockets.h>
+#include <time.h>
+*/
+#define socklen_t int
+#include <winsock.h>
+
+#endif
+
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <netinet/in.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <errno.h>
-#include <netdb.h>
-#include <signal.h>
 #include <string.h>
 
-#define QT_THREAD_SUPPORT
+#include <errno.h>
+
 #include <qmutex.h>
 
 
-#include "defines.h"
 
 #include "dispatch.h"
 
@@ -35,13 +62,16 @@ int proxy_hangsock;
 fd_set proxy_descr1, proxy_descr2;
 struct sockaddr_in my_net_name, his_net_name;
 
+#ifdef LINUX
 
-void refresh(int x)
-{
-   if (fork()>0)
-       exit(0);
-   signal (SIGXCPU, refresh);
-}
+  void refresh(int x)
+  {
+     if (fork()>0)
+        exit(0);
+     signal (SIGXCPU, refresh);
+  }
+
+#endif
 
 #define MAXCONNECTIONS 1
 #define XX() printf ("DBG\n");
@@ -70,7 +100,7 @@ void send_line_to_mud(char *line)
     return;
   }
   
-  write (juzer[0].sout, line, rd);
+  send(juzer[0].sout, line, rd, 0);
 
   tcp_mutex.unlock();
   return;
@@ -88,7 +118,7 @@ int send_line_to_user(char *line)
     return 1;
   }
   
-  write (juzer[0].sock, line, rd);
+  send(juzer[0].sock, line, rd, 0);
 
   tcp_mutex.unlock();
   return 0;
@@ -130,10 +160,10 @@ void userdel(int sock)
     if (juzer[i].sock == sock)
       {
         shutdown (sock, 2);
-        close (sock);
+        closesocket (sock);
         if (!mud_emulation) {
           shutdown (juzer[i].sout, 2);
-          close (juzer[i].sout);
+          closesocket (juzer[i].sout);
         }
         juzer[i].sock = 0;
       }
@@ -144,7 +174,27 @@ int proxy_init()
   struct hostent *hent;
 /*  char proxy_s3ng[256];
  */
+
+#ifndef LINUX
+    WSADATA wsadata;
+#define WSVERS MAKEWORD(2,2)
+#endif
+
+    fprintf(stderr, "Proxy initialising\n");
+    
+#ifndef LINUX
+    if (WSAStartup(WSVERS, &wsadata) != 0)
+    {
+        printf("Failed to initialise Windows Sockets.\n");
+        exit(1);
+    }
+#endif
+
+
+
+#ifdef LINUX
   signal (SIGXCPU, refresh);
+#endif
 
   #ifdef DEBUG
     debug_file = fopen(DEBUG_FILE_NAME, "w+");
@@ -202,7 +252,7 @@ int proxy_init()
 }
 
 
-void proxy_loop()
+int proxy_loop(void)
 {
   int i, n, max;
 
@@ -246,7 +296,7 @@ void proxy_loop()
         char emulation_welcome_message[] = "Pandora MUD Emulation.\r\n";
         useradd(newsock);
         
-        write (newsock, emulation_welcome_message, strlen(emulation_welcome_message)); 
+        send(newsock, emulation_welcome_message, strlen(emulation_welcome_message), 0); 
         
         send_line_to_user(last_prompt);
 
@@ -266,19 +316,19 @@ void proxy_loop()
               if ((index=useradd (newsock))>=0)
                 juzer[index].sout=snew;
               else {
-                write (newsock, "------[ ERROR: Cannot create forward entry\n\r", 29); 
+                send(newsock, "------[ ERROR: Cannot create forward entry\n\r", 29, 0); 
                 shutdown (newsock,2); 
-                close (newsock);
+                closesocket (newsock);
               }
             } else {
-              write (newsock, "------[ ERROR: Forwarder cannot connect to remote host.\n\r", 16); 
+              send(newsock, "------[ ERROR: Forwarder cannot connect to remote host.\n\r", 16, 0); 
               shutdown (newsock,2); 
-              close (newsock);
+              closesocket (newsock);
             }
           } else {
-            write (newsock, "------[ ERROR: Cannot create socket\n\r", 22); 
+            send(newsock, "------[ ERROR: Cannot create socket\n\r", 22, 0); 
             shutdown (newsock,2); 
-            close (newsock);
+            closesocket (newsock);
           }
         }
       
@@ -299,7 +349,7 @@ void proxy_loop()
 
             /* user stream */
             
-            rd = read (juzer[x].sock, intbuff, sizeof(intbuff));
+            rd = recv(juzer[x].sock, intbuff, sizeof(intbuff), 0);
             if (rd>0) {
               #ifdef DEBUG
                 intbuff[rd] = 0;
@@ -320,7 +370,7 @@ void proxy_loop()
                   fflush(debug_file);
                 #endif
 
-                write (juzer[x].sout, intbuff, rd);
+                send(juzer[x].sout, intbuff, rd, 0);
               
                 tcp_mutex.unlock();
               }
@@ -340,7 +390,7 @@ void proxy_loop()
             
             /* mud stream */
             
-            rd = read (juzer[x].sout, intbuff, sizeof(intbuff));
+            rd = recv(juzer[x].sout, intbuff, sizeof(intbuff), 0);
             if (rd>0) {
               #ifdef DEBUG
                 intbuff[rd] = 0;
@@ -355,12 +405,12 @@ void proxy_loop()
 
               #ifdef DEBUG
                 intbuff[rd] = 0;
-                //fprintf(debug_file, "\r\n<-sent_to_user(len %i)-%s", rd);
+                fprintf(debug_file, "\r\n<-sent_to_user(len %i)-%s", rd);
                 fwrite(intbuff, rd, 1, debug_file);
                 fflush(debug_file);
               #endif
               
-              write (juzer[x].sock, intbuff, rd);
+              send(juzer[x].sock, intbuff, rd, 0);
 
               tcp_mutex.unlock();
               
@@ -392,6 +442,10 @@ void proxy_shutdown()
     }
 
   shutdown(proxy_hangsock, 2);
-  close(proxy_hangsock);
+  closesocket(proxy_hangsock);
       
+#ifndef LINUX
+    WSACleanup();
+#endif
+
 }

@@ -5,12 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define QT_THREAD_SUPPORT
 
-#include <qthread.h>
 
 
 #include "defines.h"
+#include <qthread.h>
+#include <qmutex.h>
+
+
 #include "struct.h"
 
 #include "rooms.h"
@@ -24,6 +26,7 @@
 #include "config_reader.h"
 #include "utils.h"
 #include "engine.h"
+
 
 /* global flags */
 int glredraw = 1;		/* redraw is needed */

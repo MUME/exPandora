@@ -4,10 +4,10 @@
 #include <string.h>
 #include <ctype.h>
 
-#define QT_THREAD_SUPPORT
-#include <qmutex.h>
 
 #include "defines.h"
+#include <qmutex.h>
+
 #include "struct.h"
 
 #include "event.h"
@@ -114,11 +114,7 @@ ECMD(engine_command_mappingoff)
   }    
 }
 
-/**
- *	compare room to database and find out if it has to be updated?
- *	getting a room for each possible position?
- *	here we have a hypothesis of where we could be?
- */
+
 ECMD(engine_command_apply_roomname)
 {
   struct Tevent *r;
@@ -150,12 +146,10 @@ ECMD(engine_command_apply_roomname)
   
   match = 0;
   
-  //not really a stack if you get things from the middle of it ...
-
   for (i = 1; i <= stacker.amount; i++) {
     room = roomer.getroom(stacker.get(i));
     if (room->name == NULL) {
-      printf("ERROR - room with no roomname !\r\n");
+      printf("ERROR - room without a roomname!\r\n");
     }
     if ( (match = roomer.roomname_cmp(room, r->data)) >= 0) {
       stacker.put(room->id);
@@ -197,7 +191,7 @@ ECMD(engine_command_apply_desc)
       for (i = 1; i <= stacker.amount; i++) {
           room = roomer.getroom(stacker.get(i));
 	  if (room->desc == NULL) {
-	    /* skip this room, it has no roomdesc to compare with */
+	    /* this room has no roomdesc, so we just skip it. */
 	    continue;
 	  }
           if ( (match = roomer.desc_cmp(room, r->data)) >= 0) {
@@ -678,7 +672,6 @@ int check_roomdesc()
         
     if (addedroom->desc == NULL) {
         send_to_user("--[Pandora: Error, empty roomdesc in new added room.\r\n");
-		// this doesn't work: the room will never be recognized afterwards
         addedroom->desc=strdup("");
     }
 

@@ -2,11 +2,11 @@
 #include <string.h>
 #include <stdio.h>
 
-#define QT_THREAD_SUPPORT
+
+#include "defines.h"
 #include <qmutex.h>
 
 
-#include "defines.h"
 #include "struct.h"
 
 #include "event.h"
@@ -28,7 +28,7 @@ struct event_types_type event_types[] = {
   {"R_PROMPT",        R_PROMPT,       E_RESULT},
   {"R_FAIL",          R_FAIL,         E_RESULT},
   {"R_DESC",          R_DESC,         E_RESULT},
-  {"R_BLIND",         R_BLIND,        E_RESULT}, //duplicate ...
+  {"R_BLIND",         R_BLIND,        E_RESULT},
   
   
   {NULL,              E_EMPTY,         E_NONE}
@@ -157,9 +157,6 @@ void preRAdd(char type, char *data)
     stacks_mutex.unlock();
 }
 
-/**
- * outputs data to the mud?
- */
 void preCAdd(char type, char *data)
 {
     struct Tevent *n, *p;

@@ -1,8 +1,15 @@
 #include <string.h>
 
-#include "libxml/parser.h"
-
 #include "defines.h"
+
+#ifndef LINUX
+//#include <win32config.h>
+#include <libxml\parser.h>
+#else 
+#include "libxml/parser.h"
+#endif
+
+
 #include "struct.h"
 
 #include "rooms.h"

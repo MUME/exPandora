@@ -4,11 +4,11 @@
 //#include <arpa/telnet.h>
 #define IAC 255
 
-#define QT_THREAD_SUPPORT
+#include "defines.h"
+
 #include <qmutex.h>
 
 
-#include "defines.h"
 #include "struct.h"
 
 #include "tree.h"
@@ -50,7 +50,7 @@ int Cdispatcher::check_roomname(char *line) {
     if (strlen(line) <= (strlen(roomname_start)+strlen(roomname_end)) ) 
 	return 0;
 	
-    if (strncmp(line, roomname_start, 5) != 0)
+    if (strncmp(line, roomname_start, strlen(roomname_start)) != 0)
         return 0;
     
     
@@ -58,7 +58,7 @@ int Cdispatcher::check_roomname(char *line) {
 		
     z=0;
     /* going to the next char */
-    for (i=5;i<strlen(line); i++) {
+    for (i=strlen(roomname_start);i<strlen(line); i++) {
 		
 	if (line[i]!=roomname_end[0]) {
             z++;			
@@ -66,7 +66,7 @@ int Cdispatcher::check_roomname(char *line) {
         } else {
             roomname[0] = 0;
             
-            strncpy(roomname, &line[5], z);
+            strncpy(roomname, &line[strlen(roomname_start)], z);
             roomname[z] = 0;
             
             print_debug(DEBUG_DISPATCHER, "ROOMNAME: %s%s%s", roomname_start, roomname, roomname_end);
@@ -105,9 +105,6 @@ int Cdispatcher::check_exits(char *line)
 	return 0;
 }
 
-/**
- * rewrite the text so that it only contains useful information?
- */
 void Cdispatcher::dispatch_buffer() 
 {
   int l;
@@ -331,7 +328,6 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             print_debug(DEBUG_DISPATCHER, "line after fixing: %s", a_line);
             */
           
-			//hackish side effects?
             if (check_roomname(a_line) == 0) 
                 if (check_exits(a_line) == 0)
                     if (check_failure(a_line) == 0)
