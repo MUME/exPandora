@@ -16,13 +16,14 @@ using namespace std;
 class Parser {
 	public:
 		void setTerrain(Property * ter);
-		void event(ParseEvent * ev);
+		void event(BaseEvent * ev);
 	private:
+		void unify();
 		void dropNote(ParseEvent * ev);
 		void checkQueues();
 		char state;
-		queue<ParseEvent *> playerEvents;
-		queue<ParseEvent *> mudEvents;
+		queue<BaseEvent *> playerEvents;
+		queue<BaseEvent *> mudEvents;
 		Terrain * activeTerrain;
 		list<Path *> possiblePaths;
 		Room * mostLikelyRoom;

@@ -16,9 +16,9 @@ void Parser::event(ParseEvent * ev) {
 		case MOVE:
 			playerEvents.push(ev);
 			break;
-		case SCOUT:
-			playerEvents.push(ev);
-			break;
+		case UNIQUE:
+			unify();
+			return;
 		case NOTE:
 			dropNote(ev);
 			return;
@@ -36,5 +36,14 @@ void Parser::checkQueues() {
 	if (mudEvents.empty()) return;
 	
 	//now we are sure we have a user event that happened before the mud event
+	
+	BaseEvent * player = playerEvents.front();
+	BaseEvent * mud = mudEvents.front();
+	Room * expected;
+	Room * found;	
+	
+	switch (state) {
+		case APPROVED:
+			expected = mostLikelyRoom->go(player);	
 }	
 

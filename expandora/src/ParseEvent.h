@@ -6,14 +6,12 @@
 #define UKNOWN_NUMBER 0
 
 //event types
-#define ROOM 1
-#define MOVE 2
-#define SCOUT 3
-#define MOVE_FAIL 4
-#define NOTE 5
+#define ROOM 253 
+#define NOTE 252
 
 #include "ObjectRecycler.h"
 #include "Property.h"
+#include "PlayerEvent.h"
 #include <list.h>
 #include <time.h>
 
@@ -25,7 +23,7 @@ using namespace std;
  * the ParseEvents will walk around in the SearchTree
  * The terrain type is remembered outside the Event and passed to the renderer if we found a new room
  */
-class ParseEvent {
+class ParseEvent : public BaseEvent {
 	public:
 		ParseEvent() {pos = 0; type = 0;}
 		ParseEvent(ParseEvent * other);
@@ -34,9 +32,6 @@ class ParseEvent {
 		void pushOptional(Property * newProp);
 		
 		Property * pop(); // gets the first property and removes it
-		
-		char type;	// bad style
-		double timestamp; // when did the event occur? - needed to determine causality in the parser
 		
 		void clear();	// for the ObjectRecycler
 		void recycleProperties();

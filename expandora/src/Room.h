@@ -4,22 +4,17 @@
 #include "Property.h"
 #include "Terrain.h"
 #include <list>
+#include <vector>
 using namespace std;
 
-// essential exits used by any mud that can be represented with a map ...
-#define NORTH 0
-#define WEST 1
-#define SOUTH 2
-#define EAST 3
-#define UP 4
-#define DOWN 5
-#define NONE 6
 
 class Exit;
 class RoomCollection;
 
 class Room {
 	public:
+		bool experimental;
+		Room * go(BaseEvent * event);
 		Room();
 		void init(ParseEvent * event);
 		void setId(int _id) {id = _id;};
@@ -33,12 +28,9 @@ class Room {
 							   the user wants to know each time she enters */
 		list<Property *> optionalProperties;	/* secret exit names for example - properties we can match if they are present */
 		int id; 			/* identifier */
-  		char * note; 			/* note, if needed, additional info etc */
   		Terrain * terrain; 		/* terrain type */ 		
   
-  		list<Exit *> exits;	 	/* in fact we don't need to know the correlation between Exits and properties: 
-						   we just define an exit as soon as the player leaves through the exit.. */
-
+  		vector<Exit *> exits;	 	/* we only match the defined standard exits and keep one field for "weird" exits */						   
   		long timestamp; 		/*last modification */
   
   		int x, y, z;			/* coordinates on our map */

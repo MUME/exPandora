@@ -3,10 +3,10 @@
 #include "Exit.h"
 
 void Room::init(ParseEvent * event) {
+	experimental = false;
 	properties = event->getProperties();
 	optionalProperties = event->getOptionals();
 }
-
 
 /*
  * return all properties to pmm and remove this room from the room collection
