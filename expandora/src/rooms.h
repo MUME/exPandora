@@ -1,3 +1,7 @@
+#ifdef Q_OS_MACX
+#include "cmath"
+#endif
+
 #include <qgl.h>
 
 #define MAX_ROOMS       30000		/* maximal amount of rooms */

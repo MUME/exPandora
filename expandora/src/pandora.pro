@@ -3,7 +3,13 @@ TEMPLATE	= app
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
-CONFIG		+= console qt opengl warn_on debug 
+CONFIG		+= qt opengl warn_on debug 
+win32 {
+	CONFIG	+= console
+}
+macx {
+	HEADERS += cmath
+}
 
 LEXSOURCES	+=mud.lex
 LEXSOURCES	+=player.lex

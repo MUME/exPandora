@@ -1,4 +1,3 @@
-
 #define E_ROOT '0' /* zero/root element */
 
 #define E_NONE          0
