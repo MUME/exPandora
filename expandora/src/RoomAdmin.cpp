@@ -38,9 +38,14 @@ Room * RoomAdmin::insertRoom(ParseEvent * event, int id) {
 	return room;
 }
 
-Room * RoomAdmin::quickInsert(ParseEvent * knownEvent) {
+
+Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition) {
 	Room * room = deepestMatch->insertRoom(knownEvent);
 	assignId(room);
+	if (expectedPosition != 0) {
+		Coordinate * c = map.setNearest(expectedPosition, room);
+		room->setCoordinate(c);
+	}	
 	return room;
 }
 

@@ -3,6 +3,7 @@
 #include "ParseEvent.h"
 #include "Property.h"
 #include "Terrain.h"
+#include "Coordinate.h"
 #include <list>
 #include <vector>
 using namespace std;
@@ -13,7 +14,7 @@ class RoomCollection;
 
 class Room {
 	public:
-		bool experimental;
+		
 		RoomCollection * go(BaseEvent * event);
 		Room();
 		void init(ParseEvent * event);
@@ -21,19 +22,21 @@ class Room {
 		int containsOptionals(list<Property *> & optionals);
 		int fastCompare(list<Property *> & props, int tolerance);
 		void clear();
+		void setCoordinate(Coordinate * _c) {c = _c;};
 	private:
 		RoomCollection * home;
 		list<Property *> properties;		/* name, desc, exit names - properties we need for tree searching */
 		list<Property *> important;		/* pointers to the parts of the properties defining important things 
 							   the user wants to know each time she enters */
 		list<Property *> optionalProperties;	/* secret exit names for example - properties we can match if they are present */
-		int id; 			/* identifier */
-  		Terrain * terrain; 		/* terrain type */ 		
   
   		vector<Exit *> exits;	 	/* we only match the defined standard exits and keep one field for "weird" exits */						   
-  		long timestamp; 		/*last modification */
-  
-  		int x, y, z;			/* coordinates on our map */
+		bool experimental;
+		bool unique;
+  		double timestamp; 		/*last modification */
+  		Coordinate * c;			/* coordinates on our map */
+		int id; 			/* identifier */
+  		Terrain * terrain; 		/* terrain type */ 		
 
 };
 

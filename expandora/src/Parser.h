@@ -18,9 +18,12 @@ class Parser {
 		void setTerrain(Property * ter);
 		void event(BaseEvent * ev);
 	private:
-		void unify();
 		void dropNote(ParseEvent * ev);
 		void checkQueues();
+		void experimenting();
+		void syncing();
+		void approved();
+
 		char state;
 		queue<BaseEvent *> playerEvents;
 		queue<BaseEvent *> mudEvents;

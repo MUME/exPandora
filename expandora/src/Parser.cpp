@@ -17,8 +17,8 @@ void Parser::event(ParseEvent * ev) {
 			playerEvents.push(ev);
 			break;
 		case UNIQUE:
-			unify();
-			return;
+			playerEvents.push(ev);
+			break;
 		case NOTE:
 			dropNote(ev);
 			return;
@@ -37,13 +37,23 @@ void Parser::checkQueues() {
 	
 	//now we are sure we have a user event that happened before the mud event
 	
-	BaseEvent * player = playerEvents.front();
-	BaseEvent * mud = mudEvents.front();
-	Room * expected;
-	Room * found;	
 	
 	switch (state) {
 		case APPROVED:
-			expected = mostLikelyRoom->go(player);	
+			approved();
+			break;
+		case EXPERIMENTING:
+			experimenting();
+			break;
+		case SYNCING:
+			syncing();
+			break;
+	}
 }	
 
+void Parser::approved() {
+	if (playerEvents.front()->tpye == unify) {
+		mostLikelyRoom.unique = true;
+		return;
+	}
+	RoomCollection * possible =
