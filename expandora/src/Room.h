@@ -23,13 +23,15 @@ class Room {
 		int fastCompare(vector<char *> & imps, int tolerance);
 	private:
 		vector<char *> properties;		/* name, desc, exit names - properties we need for tree searching */
-		vector<char *> doors;			/* pointers to the parts of the properties defining exit names, by convention the last ones */
+		vector<char *> important;		/* pointers to the parts of the properties defining important things 
+							   the user wants to know each time she enters */
 		vector<char *> optionalProperties;	/* secret exit names for example - properties we can match if they are present */
 		int id; 			/* identifier */
   		char * note; 			/* note, if needed, additional info etc */
   		Terrain * terrain; 		/* terrain type */ 		
   
-  		vector<Exit> exits;	 
+  		vector<Exit> exits;	 	/* in fact we don't need to know the correlation between Exits and properties: 
+						   we just define an exit as soon as the player leaves through the exit.. */
 
   		long timestamp; 		/*last modification */
   

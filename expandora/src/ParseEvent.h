@@ -28,18 +28,23 @@ extern property NO_PROPERTY;
  * the ParseEvents will walk around in the SearchTree
  * The terrain type is remembered outside the Event and passed to the renderer if we found a new room
  */
-class ParseEvent : private list<property> {
+class ParseEvent {
 	public:
-		ParseEvent() : list<property>() {pos = 0; type = 0;}
+		ParseEvent() {pos = 0; type = 0;}
 		void push(char * begin, char * end);
 		void push(property newProp) ;
+		void pushOptional(char * begin, char * end);
+		void pushOptional(property newProp);
 		property pop();
 		char type;
 		void clear();
 		property next();
 		property prev();
 		property current();
+		list<property> getOptionals {return optional;}
 	private:
+		list<property> required;
+		list<property> optional;
 		iterator pos;
 		double timestamp; // when did the event occur? - needed to determine causality in the parser
 };

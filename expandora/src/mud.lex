@@ -1,6 +1,6 @@
 
-%option prefix="mud"
-%option yyclass="Parser"  
+%option prefix="Mud"
+  
 /* we will define all the actions in the MudLexer class, so flex should know that it needs to produce MudLexer::yylex() */
 
 /* the codes are octal, so \33 is \27 in decimal and <ESC> in literal*/
@@ -46,11 +46,11 @@ SPECIAL_MOB	"Nob"
 <*>"Maybe you should get on your feet first?"			|
 <*>"Your boat cannot enter this place."				pushEvent(MOVE_FAIL); BEGIN(INITIAL);
 
-<ROOMNAME>.|\n			append();
+<ROOMNAME>.|\n			append(YYText()[0]);
 <ROOMNAME>{ENDCOL}		pushProperty(); BEGIN(DESC);
 <ROOMNAME>{ENDCOL}"\nExits:"	pushProperty(); skipProperty(); BEGIN(EXITS);
 
-<DESC>.|\n						append();
+<DESC>.|\n						append(YYText()[0]);
 <DESC>"Exits:"						pushProperty(); BEGIN(EXITS);
 <DESC>^("The "|"A "|"An "|{SPECIAL_MOB}).*"\n"		|
 <DESC>^.*"is standing here".*"\n"			|
@@ -58,11 +58,11 @@ SPECIAL_MOB	"Nob"
 <DESC>^.*"is sleeping here".*"\n"			; /* throw a way any mobs, players or objects (and possibly consistent parts of the desc) in this room*/
 <DESC,PROMPT>{ROOMCOL}					skipSomeProperties(); pushEvent(ROOM); BEGIN(ROOMNAME);
 
-<EXITS>\[[^\] ,.]+\][,.]	append(1); pushOptional();	/* we don't know if the door is secret, */
-<EXITS>"("[^) .,]+")"=?[,.]	append(1); pushOptional();	/* especially when it's open*/
-<EXITS>\*[^* ,.]+\*=?[,.]	append(1); pushProperty();	/* *'s around an exit indicate light it seems...*/
-<EXITS>[^ ,.]+[,.]		append(0); pushProperty();
-<EXITS>=			append(); 
+<EXITS>\[[^\] ,.]+\][,.]	append(YYText()[1]); pushOptional();	/* we don't know if the door is secret, */
+<EXITS>"("[^) .,]+")"=?[,.]	append(YYText()[1]); pushOptional();	/* especially when it's open*/
+<EXITS>\*[^* ,.]+\*=?[,.]	append(YYText()[1]); pushProperty();	/* *'s around an exit indicate light it seems...*/
+<EXITS>[^ ,.]+[,.]		append(YYText()[0]); pushProperty();
+<EXITS>=			append(YYText()[0]); 
 <EXITS>\n			BEGIN(PROMPT);
 
 <PROMPT>"["			|
@@ -78,7 +78,7 @@ SPECIAL_MOB	"Nob"
 <PROMPT>"+"			| 
 <PROMPT>":"			| 
 <PROMPT>"="			| 
-<PROMPT>"O"			append(); pushProperty(); markTerrain(); 
+<PROMPT>"O"			append(YYText()); pushProperty(); markTerrain(); 
 <PROMPT>[\t> ]			pushEvent(ROOM);  BEGIN(INITIAL);
 
 
