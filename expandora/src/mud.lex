@@ -18,9 +18,9 @@ SPECIAL_MOB	"Nob"
 
 {ROOMCOL}	BEGIN{ROOMNAME};
 
-<*>[\0]						/* end of the string we are parsing*/ return;
+<*>[\0]						return; /* end of the string we are parsing*/
 <*>{OTHERCOL}[^\33]*{ENDCOL}			/* throw away some message in other colors*/
-<*>"It's pitch black ...\n"[^\n]*"\n"		jumpLastProperty(); BEGIN(PROMPT);
+<*>"It's pitch black ...\n"[^\n]*"\n"		skipSomeProperties(); BEGIN(PROMPT);
 
 <*>"Alas, you cannot go that way..."				|
 <*>"You need to swim to go there."				|
@@ -46,7 +46,7 @@ SPECIAL_MOB	"Nob"
 
 <ROOMNAME>.|\n			append();
 <ROOMNAME>{ENDCOL}		pushProperty(); BEGIN(DESC);
-<ROOMNAME>{ENDCOL}"\nExits:"	pushProperty(); jumpProperty(); BEGIN(EXITS);
+<ROOMNAME>{ENDCOL}"\nExits:"	pushProperty(); skipProperty(); BEGIN(EXITS);
 
 <DESC>.|\n						append();
 <DESC>"Exits:"						pushProperty(); BEGIN(EXITS);
@@ -54,7 +54,7 @@ SPECIAL_MOB	"Nob"
 <DESC>^.*"is standing here".*"\n"			|
 <DESC>^.*"is resting here".*"\n"			|
 <DESC>^.*"is sleeping here".*"\n"			; /* throw a way any mobs, players or objects (and possibly consistent parts of the desc) in this room*/
-<DESC,PROMPT>{ROOMCOL}					pushEvent(INCOMPLETE_ROOM); BEGIN(ROOMNAME);
+<DESC,PROMPT>{ROOMCOL}					skipSomeProperties(); pushEvent(ROOM); BEGIN(ROOMNAME);
 
 <EXITS>\[[^\] ,.]+\][,.]	append(1); pushOptional();	/* we don't know if the door is secret, */
 <EXITS>"("[^) .,]+")"=?[,.]	append(1); pushOptional();	/* especially when it's open*/
