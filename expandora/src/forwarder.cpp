@@ -256,6 +256,7 @@ int proxy_init()
 #ifdef NEW_ENGINE
   filter = new TelnetFilter();
   filter->attachLexer(&lexer);
+  lexer.attachParser(&parser);
   lexer.start();
 #endif
   return 0;

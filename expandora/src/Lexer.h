@@ -33,7 +33,7 @@ class Lexer : public QThread {
 		Lexer();
 		//void MudLex(char * in) {}//mudLexer.LexerInput(in, MAX_DATA_LEN); MudFlexLexer::yylex();}
 		//void PlayerLex(char * in) {}//playerLexer.LexerInput(in, MAX_DATA_LEN); PlayerFlexLexer::yylex();}
-
+		void attachParser(Parser * _parser) {parser = _parser;}
 		virtual void run();
 
 		void markTerrain();

@@ -21,20 +21,22 @@ void TelnetFilter::analyzeMudStream(char * input, int * length) {
       passed on - a hackish way will be modifying the input ... */
 void TelnetFilter::analyzeUserStream(char * input, int * length) {
   lexer->pushUserInput(purgeProtocolSequences(input, *length));
-  if(input[0] == MAP_COMMAND_PREFIX) input[0] = 0;
-  *length = 0;
+  if(input[0] == MAP_COMMAND_PREFIX) {
+    input[0] = 0;
+    *length = 0;
+  }
 }
 
 char * TelnetFilter::purgeProtocolSequences(char * input, int length) {
-  char * lexingBuffer = new char[length];
+  char * lexingBuffer = new char[length+1];
   int lag = 0;
-  for (int i = 0; i < length; i++) {
+  for (int i = 0; i <= length; i++) {
     if ((unsigned char)input[i] == (unsigned char)255) {
-      i += 3;
+      i += 2;
       lag += 3;
     }
     else lexingBuffer[i-lag] = input[i];
   }
-  lexingBuffer[length - 1] = 0;
+  lexingBuffer[length-lag] = 0;
   return lexingBuffer;
 }
