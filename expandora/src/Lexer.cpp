@@ -1,5 +1,7 @@
 #include "Lexer.h"		
 
+Lexer lexer;
+
 Lexer::Lexer() {
 	event = pemm.activate();
 	property = pmm.activate();

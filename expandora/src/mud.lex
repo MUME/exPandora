@@ -1,5 +1,4 @@
 %{
-#define yy mud
 #define MUD
 #include "Lexer.h"
 #undef MUD
@@ -8,12 +7,10 @@ using namespace std;
 %}
 
 %option prefix="Mud"
-%option yyclass="Lexer"
-
-
+%option c++
+%option noyywrap
 
   
-/* we will define all the actions in the MudLexer class, so flex should know that it needs to produce MudLexer::yylex() */
 
 /* the codes are octal, so \33 is \27 in decimal and <ESC> in literal*/
 OTHERCOL	\33\[([234][013-9]m)|(22m)|(42m)|([1-9]m)
@@ -28,16 +25,14 @@ SPECIAL_MOB	"Nob"
 %x PROMPT
 
 
-/* we should also find things like "You skillfully discover a xy" or "The xy seems to be closed" in the initial state and drop a note on these*/
-/* "You flee head over heels" should be transformed into a MOVE event without direction (which will be queued in the user queue by the parser), 
-"flee" shouldn't generate an event on the user side*/
 %%
 
-{ROOMCOL}	BEGIN{ROOMNAME};
 
-<*>[\0]						return; /* end of the string we are parsing*/
+{ROOMCOL}				BEGIN(ROOMNAME);
+
+<*>[\0]						return 1; /* end of the string we are parsing*/
 <*>{OTHERCOL}[^\33]*{ENDCOL}			/* throw away some message in other colors*/
-<*>"It's pitch black ...\n"[^\n]*"\n"		skipSomeProperties(); BEGIN(PROMPT);
+<*>"It's pitch black ...\n"[^\n]*"\n"		lexer.skipSomeProperties(); BEGIN(PROMPT);
 
 <*>"Alas, you cannot go that way..."				|
 <*>"You need to swim to go there."				|
@@ -59,25 +54,25 @@ SPECIAL_MOB	"Nob"
 <*>"The descent is too steep, you need to climb to go there."	|
 <*>"You failed swimming there."					|
 <*>"Maybe you should get on your feet first?"			|
-<*>"Your boat cannot enter this place."				pushEvent(MOVE_FAIL); BEGIN(INITIAL);
+<*>"Your boat cannot enter this place."				lexer.pushEvent(MOVE_FAIL); BEGIN(INITIAL);
 
-<ROOMNAME>.|\n			append(YYText()[0]);
-<ROOMNAME>{ENDCOL}		pushProperty(); BEGIN(DESC);
-<ROOMNAME>{ENDCOL}"\nExits:"	pushProperty(); skipProperty(); BEGIN(EXITS);
+<ROOMNAME>.|\n			lexer.append(YYText()[0]);
+<ROOMNAME>{ENDCOL}		lexer.pushProperty(); BEGIN(DESC);
+<ROOMNAME>{ENDCOL}"\nExits:"	lexer.pushProperty(); lexer.skipProperty(); BEGIN(EXITS);
 
-<DESC>.|\n						append(YYText()[0]);
-<DESC>"Exits:"						pushProperty(); BEGIN(EXITS);
+<DESC>.|\n						lexer.append(YYText()[0]);
+<DESC>"Exits:"						lexer.pushProperty(); BEGIN(EXITS);
 <DESC>^("The "|"A "|"An "|{SPECIAL_MOB}).*"\n"		|
 <DESC>^.*"is standing here".*"\n"			|
 <DESC>^.*"is resting here".*"\n"			|
 <DESC>^.*"is sleeping here".*"\n"			; /* throw a way any mobs, players or objects (and possibly consistent parts of the desc) in this room*/
-<DESC,PROMPT>{ROOMCOL}					skipSomeProperties(); pushEvent(ROOM); BEGIN(ROOMNAME);
+<DESC,PROMPT>{ROOMCOL}					lexer.skipSomeProperties(); lexer.pushEvent(ROOM); BEGIN(ROOMNAME);
 
-<EXITS>\[[^\] ,.]+\][,.]	append(YYText()[1]); pushOptional();	/* we don't know if the door is secret, */
-<EXITS>"("[^) .,]+")"=?[,.]	append(YYText()[1]); pushOptional();	/* especially when it's open*/
-<EXITS>\*[^* ,.]+\*=?[,.]	append(YYText()[1]); pushProperty();	/* *'s around an exit indicate light it seems...*/
-<EXITS>[^ ,.]+[,.]		append(YYText()[0]); pushProperty();
-<EXITS>=			append(YYText()[0]); 
+<EXITS>\[[^\] ,.]+\][,.]	lexer.append(YYText()[1]); lexer.pushOptional();	/* we don't know if the door is secret, */
+<EXITS>"("[^) .,]+")"=?[,.]	lexer.append(YYText()[1]); lexer.pushOptional();	/* especially when it's open*/
+<EXITS>\*[^* ,.]+\*=?[,.]	lexer.append(YYText()[1]); lexer.pushProperty();	/* *'s around an exit indicate light it seems...*/
+<EXITS>[^ ,.]+[,.]		lexer.append(YYText()[0]); lexer.pushProperty();
+<EXITS>=			lexer.append(YYText()[0]); 
 <EXITS>\n			BEGIN(PROMPT);
 
 <PROMPT>"["			|
@@ -93,14 +88,16 @@ SPECIAL_MOB	"Nob"
 <PROMPT>"+"			| 
 <PROMPT>":"			| 
 <PROMPT>"="			| 
-<PROMPT>"O"			append(YYText()); pushProperty(); markTerrain(); 
-<PROMPT>[\t> ]			pushEvent(ROOM);  BEGIN(INITIAL);
+<PROMPT>[\t> ]			lexer.pushEvent(ROOM);  BEGIN(INITIAL);
 
 
 %%
 
-/*TODO: define append(), if possible use flex's own buffer and just move pointers around, append(int) appends only the i'th character*/
-/*	pushProperty and pushOptional flush the buffer.*/
+/* we should also find things like "You skillfully discover a xy" or "The xy seems to be closed" in the initial state and drop a note on these*/
+/* "You flee head over heels" should be transformed into a MOVE event without direction (which will be queued in the user queue by the parser), 
+"flee" shouldn't generate an event on the user side*/
+/*TODO: define lexer.append(), if possible use flex's own buffer and just move pointers around, append(int) appends only the i'th character*/
+/*	lexer.pushProperty and lexer.pushOptional flush the buffer.*/
 /*	matchCompleteRoom matches one room we believe to be fully specified, matchIncompleteRoom matches a description where the last parts are missing*/
 /*	jumpProperty indicates that we left out one property, jumpLastProperty indicates that we left out all following but the last property */
 /*		- this has to be represented in our search tree somehow so that we can match rooms with title and exits*/

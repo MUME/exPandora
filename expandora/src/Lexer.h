@@ -6,28 +6,26 @@
 
 #ifndef PLAYER
 #undef yyFlexLexer
-#undef yy
 #define yyFlexLexer PlayerFlexLexer
-#define yy player
 #include <FlexLexer.h>
+#undef yyFlexLexer
+#define yyFlexLexer MudFlexLexer
 #endif
 
 #ifndef MUD
 #undef yyFlexLexer
-#undef yy
 #define yyFlexLexer MudFlexLexer
-#define yy mud
 #include <FlexLexer.h>
+#undef yyFlexLexer
+#define yyFlexLexer PlayerFlexLexer
 #endif
 
-class Lexer : private MudFlexLexer, private PlayerFlexLexer {
+class Lexer {
 	public:
 		Lexer();
-		//void MudLex(char * in) {MudFlexLexer::LexerInput(in, MAX_DATA_LEN); MudFlexLexer::yylex();}
-		//void PlayerLex(char * in) {PlayerFlexLexer::LexerInput(in, MAX_DATA_LEN); PlayerFlexLexer::yylex();}
-		mudlex();
-		playerlex();
-	private: // only used by yylex()	
+		void MudLex(char * in) {}//mudLexer.LexerInput(in, MAX_DATA_LEN); MudFlexLexer::yylex();}
+		void PlayerLex(char * in) {}//playerLexer.LexerInput(in, MAX_DATA_LEN); PlayerFlexLexer::yylex();}
+		
 		void markTerrain();
 		void pushEvent(char type);
 		void pushProperty();
@@ -44,8 +42,12 @@ class Lexer : private MudFlexLexer, private PlayerFlexLexer {
 		void append(char * begin, char * end); // append some substring
 		void append(char * text); // append a 0-terminated string
 
+	private: 
+		PlayerFlexLexer playerLexer;
+		MudFlexLexer mudLexer;
 		Parser * parser;
 		ParseEvent * event;
 		Property * property;
 };
-		
+	
+extern Lexer lexer;
