@@ -25,6 +25,14 @@ void Property::clear() {
 	currentOffset = -1;
 }
 
+void Property::copy(Property & other) {
+	for (int i = 0; other[i] != 0; i++) {
+		add(other[i]);
+	}
+	add(0);
+	currentOffset = other.getOffset();
+}
+
 Property::Property() {
 	used = 0;
 	length = 0;

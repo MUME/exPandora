@@ -76,13 +76,18 @@ RoomSearchNode * SearchTreeNode::skipDown(ParseEvent * event) {
 	RoomSearchNode * selectedChild = 0;
 	RoomSearchNode * ret = rcmm.activate();
 	RoomSearchNode * add;
+	ParseEvent * copy = pemm.activate();
 	for (int i = 0; i < 128; i++) {
 		if ((selectedChild = children->get(i)) != 0)
+			copy->copy(event);
 			if ((add = selectedChild->skipDown(event)) != 0) {
 				ret->merge(add);
 				if (add->numRooms() > -1) rcmm.deactivate((RoomCollection *)add);
 			}
+			copy->recycleProperties();
+			copy->clear();
 	}
+	pemm.deactivate(copy);
 	return ret;
 }
 		

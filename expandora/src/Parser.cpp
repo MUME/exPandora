@@ -42,7 +42,7 @@ void Parser::checkQueues() {
 	
 	//now we are sure we have a user event that happened before the mud event
 	
-	
+
 	switch (state) {
 		case APPROVED:
 			approved();
@@ -56,14 +56,15 @@ void Parser::checkQueues() {
 	}
 }	
 
+
 void Parser::approved() {
-	if (mudEvents.front()->type == MOVE_FAIL) {
-		mudEvents.pop();
+	if (playerEvents.front()->type == UNIQUE) {
+		mostLikelyRoom->setUnique();
 		playerEvents.pop();
 		return;
 	}
-	if (playerEvents.front()->type == UNIQUE) {
-		mostLikelyRoom->setUnique();
+	if (mudEvents.front()->type == MOVE_FAIL) {
+		mudEvents.pop();
 		playerEvents.pop();
 		return;
 	}
@@ -120,6 +121,30 @@ void Parser::approved() {
        	buildPaths(possible);
 	rcmm.deactivate(possible);
 }
+
+void Parser::syncing() {
+	if (playerEvents.front()->type == UNIQUE) {
+		// unique doesn't work when syncing ...
+		playerEvents.pop();
+		return;
+	}
+	if (mudEvents.front()->type == MOVE_FAIL) {
+		mudEvents.pop();
+		playerEvents.pop();
+		return;
+	}
+	
+	// now we have a move and a room on the event queues;
+	
+	RoomCollection * possible = roomAdmin.getRoom(mudEvents.front());
+	if (possible->numRooms > 0) {
+		state = EXPERIMENTING;
+		buildPaths(possible);
+		rcmm.deactivate(possible);
+	}
+	else if (possible->numRooms == 0) rcmm.deactivate(possible);
+
+}	
 
 Coordinate * Parser::getExpectedCoordinate() {
 	Coordinate * c = cmm.activate();

@@ -28,6 +28,9 @@ class Property {
 		void add(char * other, char * end);
 		char operator[](int offset);
 		int comp(Property & other);
+		void copy(Property & other);
+		int getOffset(){return currentOffset;};
+		
 	private:
 		int currentOffset;
 		char * begin;

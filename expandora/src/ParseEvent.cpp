@@ -16,6 +16,31 @@ void ParseEvent::clear() {
 	pos = 0;
 }
 
+
+void ParseEvent::copy(ParseEvent * other) {
+	list<Property *> & otherProps = other->getProperties;
+	list<Property *>::iterator p = otherProps.begin();
+	list<Property *>::iterator otherPos = other->getPos();
+	Property * prop = 0;
+	for (; p != otherProps.end(); p++) {
+		prop = pmm.activate();
+		prop.copy(*p);
+		required.push_back(prop);
+		if (p == otherPos) {
+			pos = required.end();
+			pos--;
+		}
+	}
+	otherProps = other->getOptionals();
+	p = otherProps.begin();
+	for (; p != otherProps.end(); p++) {
+		prop = pmm.activate();
+		prop.copy(*p);
+		optionals.push_back(prop);
+	}
+}
+
+
 /**
  * give the properties back to the recycler - should only be done if they aren't needed in a newly created room
  */

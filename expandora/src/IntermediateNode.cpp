@@ -30,16 +30,17 @@ RoomSearchNode * IntermediateNode::skipDown(ParseEvent * event) {
 	RoomSearchNode * r = rcmm.activate();
 	if (event->current()->size() == SKIPPED_ONE) return getRooms(event);
 	
-	ParseEvent * copy = new ParseEvent(event);
 	
 	if (event->next() == 0) r->merge(rooms);
 	else {
+		ParseEvent * copy = pemm.activate();
+		copy->copy(event);
 		char c;
-		if (children->get(c = event->current()->next()) != 0)  r->merge(children->get(c)->getRooms(event));
+		if ((myChars[0] == 0 && children->get(c = event->current()->current()) != 0) || myChars[0] == c)  r->merge(SearchTreeNode::getRooms(event));
+		r->merge(SearchTreeNode::skipDown(copy));
+		copy->recycleProperties();
+		pemm.deactivate(copy);
 	}
 
-	r->merge(SearchTreeNode::skipDown(copy));
-
-	delete(copy);
 	return r;
 }
