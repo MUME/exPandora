@@ -11,28 +11,51 @@
 #include <queue>
 using namespace std;
 
+
 #ifndef PLAYER
 #undef yyFlexLexer
-#define yyFlexLexer playerFlexLexer
+#define yyFlexLexer PlayerFlexLexer
 #include <FlexLexer.h>
 #undef yyFlexLexer
-#define yyFlexLexer mudFlexLexer
+#define yyFlexLexer MudFlexLexer
 #endif
+
+
 
 #ifndef MUD
 #undef yyFlexLexer
-#define yyFlexLexer mudFlexLexer
+#define yyFlexLexer MudFlexLexer
 #include <FlexLexer.h>
 #undef yyFlexLexer
-#define yyFlexLexer playerFlexLexer
+#define yyFlexLexer PlayerFlexLexer
 #endif
+
+class Lexer;
+
+class GenericLexer {
+ public:
+    void attachLexer(Lexer * _lexer) {lexer = _lexer;}
+ protected:
+    Lexer * lexer;
+};
+
+class MudLexer : public MudFlexLexer, public GenericLexer {
+ public:
+  virtual int yylex();
+};
+	
+class PlayerLexer : public PlayerFlexLexer, public GenericLexer {
+ public:
+  virtual int yylex();
+  void init();
+};
+
 
 class Lexer : public QThread {
 	public:
 
 		Lexer();
-		//void MudLex(char * in) {}//mudLexer.LexerInput(in, MAX_DATA_LEN); MudFlexLexer::yylex();}
-		//void PlayerLex(char * in) {}//playerLexer.LexerInput(in, MAX_DATA_LEN); PlayerFlexLexer::yylex();}
+		
 		void attachParser(Parser * _parser) {parser = _parser;}
 		virtual void run();
 
@@ -60,12 +83,12 @@ class Lexer : public QThread {
 		queue<char *> userInput;
 		queue<char *> mudInput;
 		
-		playerFlexLexer playerLexer;
-		mudFlexLexer mudLexer;
+		PlayerLexer playerLexer;
+		MudLexer mudLexer;
 		Parser * parser;
 		ParseEvent * event;
 		Property * property;
 };
-	
-extern Lexer lexer;
+
+
 #endif

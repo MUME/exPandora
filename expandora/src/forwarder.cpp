@@ -254,10 +254,11 @@ int proxy_init()
 #endif
 */
 #ifdef NEW_ENGINE
+  Lexer * lexer = new Lexer();
   filter = new TelnetFilter();
-  filter->attachLexer(&lexer);
-  lexer.attachParser(&parser);
-  lexer.start();
+  filter->attachLexer(lexer);
+  lexer->attachParser(&parser);
+  lexer->start();
 #endif
   return 0;
 }

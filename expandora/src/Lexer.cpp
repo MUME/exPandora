@@ -3,8 +3,6 @@
 #include <sstream>
 #include <iostream>
 
-Lexer lexer;
-
 void Lexer::pushUserInput (char * input) {
   inputLock.lock();
   userInput.push(input);
@@ -46,6 +44,9 @@ void Lexer::run() {
 Lexer::Lexer() {
 	event = pemm.activate();
 	property = pmm.activate();
+	playerLexer.attachLexer(this);
+	mudLexer.attachLexer(this);
+	playerLexer.init();
 }
 
 void Lexer::markTerrain() {
