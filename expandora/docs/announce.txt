@@ -1,0 +1,64 @@
+This is for Linux users.
+
+Ok, since i think i'll be more busy then before (in next 2-3 months) i'am releasing this version of mapper again. Generally this mapper was more or less tested. I mapped around 17.5k rooms and played a lot with it. (see Ennor the Mapper Char :-)
+ 
+Though there are still many ideas i didnt (yet?) implement. :-(
+
+Mapper requires Qt (multithreaded), OpenGL, libxml and of course gcc/glibc/linux networking (sockets). 
+If anyone feels like recoding the networking part - its possible to port mapper to windows. :) Though my own attempts to recode it failed due to very strange Qt's networking behaviour when you use multiple threads.
+
+
+
+I'll try to list the features and possible advantages/disadvantages of my version of mapper. Though I must admit - i didnt test any other mappers myself. The description of features might be somewhat too detailed, but as this mapper is for Linux only (at least now) i suppose the readers will understand it. :-)
+
+ The main features, i guess, are:
+ 
+ * 3d map implemented in openGL. 
+   You can move around, set any distance and angle for looking at map and playing with. Its possible to change  the textures as well. 
+   Compared to the old version i cleaned the code a bit and improved the  rendering performance greately. (see Frustum Culling and details cut  if the distance to the room is too big)
+ 
+   Currently i use only the stuff like textures, 2d polygons, textures  and blending/transparency. Though as i finally fixed the frustum culling  its possible to add any openGL stuff you would like to have. (some  people mentioned Duke Nukem 3D 3d models poiting at your position and  running around =)
+ 
+ * Proxy. 
+   I followed many other mappers lead and abandoned the swapped sub-powwow application idea and rewrote it as proxy. 
+ 
+ * Threads. 
+   Unlike many other mappers (or even all?) i decided to use  2 threads. One for handling networking and dispatching/repacking  network packets and second for engine and openGL renderer. Generally i tried to move all the slow (comparative) stuff to the second thread. This means you link wont be delayed. You get all the stuff almost instantly - as it would happend with real proxy. Another thing is that renderer _might_ slowdown your station performance while rendering etc. But it should not happen as rendering is rather fast now.
+ 
+ * Approximate strings matching. 
+   The plague of other mappers - typos in roomname and roomdescs. Once you've mapped the area you have a saved roomname and descs etc, but thuse often have typos in them. Or just get changed. So, i got bored of loosing sync just because something got fixed and switched to approximate strings matching and added confogirable automatic refreshing. The user just gives 2 numbers - percents of allowed mistakes in roomname and desc (default is set to 10) and if he feels safe can turn the automatic refreshing on. So, when you run around with 100% sync and run over a room with a few typos fixed in it - most likelly you will just get a message 
+ 
+ --[ (AutoRefreshed) not exact roomdesc match: 2 errors.
+ 
+ and you'll be in sync and roomdesc will be refreshed in the base. If autorefreshing is off - you'll just get warned that roomdesc doesnt match and still stay in sync. 
+ 
+ * Mud Emulation and Offline Editing. 
+   Yes. just add -e in command line and connect to the same port as you use. And you can run around in the zones you mapped and edit them if you need. (mostly you need this for coordinates)
+ 
+ * The Engine and concept of syncing. 
+   The general idea stayed as it is, just most things became configurable. I wanted to keep the track of your position ALWAYS. For that i always store all possible positions, not just one or none. This allows to use mapper as reliable replacement for secrets databases to show hints about possible secret exits in room. Also this allows the use of dynamic algorithms for syncing. 
+   And about the word configurable - mapper doesnt need all the info the game can give you. It can live with parts of it as well. You can turn off descriptions, exits analyzing, terrains in prompt and fuck up the movements aliases - mapper will still try to sync somehow. And if it gets the info - even better, the syncing will be more precise and/or faster.
+
+  The engine itself is configurable as well (it was almost fully rewritten). Basicly engine is a state-atuomate. It has two stacks - the cause and results stacks and it has little scriplets for each pair of stacks top values. A little example - general mappers cycle for basic movement:
+ 
+engine EMPTY 	EMPTY		done
+engine C_MOVE	EMPTY		done
+engine C_MOVE	R_ROOM		try_dir; swap; apply_roomname; swap; Rremove; Cremove
+engine EMPTY	R_DESC		apply_desc; swap; Rremove
+engine EMPTY	R_EXITS		apply_exits; swap; Rremove
+engine EMPTY	R_PROMPT	apply_prompt; swap; Rremove
+
+ * Editing and mapping.
+   Its more or less automated. For editing you have offline mode and a set of commands for deleting/adding/changing the values. Mostly this is used for fixing incorrect merging (in old zones, where descs are the same very often) and for fixing the look of the map - i.e. Editing the coordinates.
+
+ * Configuration
+   Via config files and your client. (see pandora.pow and mume.conf)
+
+  * Debugging
+    I added dynamic debug system. You can turn debug messages on/off without restarting and recompiling. See the mdebug command and debug.conf config file. 
+
+  * Full resync (i.e. generall search over all rooms for a room name) take as little time as possible. For that you pay with extra 2-5Mb of your RAM. :) Mapper uses a huge tree for searching and thus it takes just 2 cycles over letter in room name to find all rooms with the same name your database.
+  
+  * no light and fog support. Both things should be supported. Mapper tries to follow your movements.
+    
+  

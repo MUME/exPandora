@@ -1,0 +1,186 @@
+\documentclass[11pt]{article}
+\begin{document}
+\title{exPandora - An algorithm for uniquely identifying rooms in MUME}
+\maketitle
+
+\section{Motivation}
+Pandora often gets confused when new rooms have similar descriptions and random exits. 
+Identifying rooms in a mud like MUME is obviously an indecidable problem as every exit could be a random one with the randomness occuring only at the "wrong"
+time. So we need to apply some heuristics. Additionally it is quite annoying to manually switch
+between mapping and exploring perspective all the time, so a unified mode that maps rooms when we 
+see them the first time is the way to go. The following algorithm tries to solve that problem as good
+as possible.
+
+\section{General approach}
+Due to the limited number of relevant properties rooms and exits can have I chose to use a state
+machine with some additional information in a number of stacks and qeues. Azazello already did a
+great deal of work in
+identifying premapped rooms, which works quite well so far. I'll use that algorithm - called
+pandora algorithm from now on - as a black box to find already mapped rooms based on coordinates or
+room names and as base for the new algorithm.
+
+\section{Specification of the algorithm}
+\subsection{Pandora's contribution}
+In exploring mode pandora keeps a number of "specculative" rooms for the player position as soon
+as it can't find a unique position anymore. These positions are eliminated with further movements
+of the player until only one possible path is left. This is in itself a heuristic algorithm as it
+ignores random exits. Yet it is quite a good heuristic as it most times predicts the correct
+position after a short sequence of steps in premapped areas, which is proven by experience. I will
+extend that behaviour to the mapping of new rooms.
+
+\subsection{Expanding pandora}
+The player can (and should) define unique rooms. These are rooms with unique properties - title,
+description, exits - that only occur once in the game world. There are quite a few such rooms and the
+player should be able to find them by experience and drop an "munique" when she enters one of them.
+Instead of only considering premapped rooms as possible positions we also set up one experimental
+path on previously unmapped rooms. So as soon as the player leaves the premapped area a new room is
+created resembling the room he just enters. At the same time all existing rooms matching his new
+position are found with pandora and considered possible positions, too. The experimental path is
+continued - by creation of a new room and matching of existent rooms - with each step of the player
+until it is either accepted or rejected. All other paths are treated as usual. The experimental path
+is accepted when it meets a non-experimental unique room or when the player defines one of the rooms
+he just entered as unique and there are no other paths left. Then all experimental rooms on this path
+are transformed into permanent rooms. If the player defines a newly entered
+but previously existing room as unique all paths that end in newly created rooms are rejected. A
+path is rejected as soon as another path is accepted or if te player leaves through a known
+exit and doesn't enter the expected room.
+
+\subsection{Formal description}
+We operate on rooms, exits, paths and players.
+\begin{itemize}
+\item{Rooms:} Each room contains pointers to up to 7 exits - n, s, e, w, u, d and "unknown". Rooms
+have the property of being experimental or, on the contrary, approved. Rooms have coordinates x, y,
+z, a title and a description. Two rooms are called similar if their respective titles, descriptions
+and exits match up to a certain degree. A pointer to an exit is called unknown if it isn't
+initialized. This is used synonymously to the exits' "unknown" property. 
+\item{Exits:} A non-random, deterministic exit contains pointers to two rooms. Exits have as many
+names as they have rooms. Exits can have the
+property of being random. In this case they can hold an unrestricted number of room-pointers.  Exits
+have the property of being known, if they connect only approved rooms. Exits "connect" the rooms they
+contain. Exits are called "open" if only one of their room-pointers is not null.
+\item{Paths} A path is a sequence of rooms connected with exits. A path can be enlardged to
+another room which means that the new room and an exit connecting it with the previous head of the
+path are added. A path can be forked to a new room which means that a new path is created from the
+last exit, which is updated to contain the new room, and the new room. Weakly forking, in contrast to
+normal. strongly forking, means that the fork only takes place if there are no other paths that will
+strongly fork or enlarge or weakly fork and are already coordination-wise nearer to the new room
+in the same step of calculation. A path
+can be accepted which means that all rooms in the path get the property "approved" and all exits
+connecting them get the property "known". A path can be rejected, which means that all experimental
+rooms in it are deleted and all exits connnecting to one of these rooms are updated accordingly.
+\item{Players:} A player contains pointers to a number of similar rooms which are called his possible
+positions. A player can leave through any of the rooms' exits or in an "unknown" way and will enter a
+new room determined by description, title and exits.
+\end{itemize}
+
+In general one instance of the algorithm is started for each player, so we only consider one
+player. The algorithm has three states:
+\begin{itemize}
+\item{Approved:} We are in approved state, if the player has exactly one possible position and the
+room this position refers to is approved.
+\item{Experimenting:} We are in experimenting state if there are several possible positions. This
+implicates that there is at least one experimental room among the possible positions.  
+\item{Syncing:} In syncing state we have no clue where we are. We try to recognize our position
+with each new room.
+\end{itemize}
+
+
+State transitions:
+\subsubsection{Approved}
+$=>$ There are only approved rooms and there is only one possiblel position.
+\begin{itemize}
+\item{The player leaves through a known exit:}
+\begin{itemize}
+\item{The player enters a room that matches exactly one room this exit is
+connected to:} The possible position is updated to the matching room and the state remains
+approved.
+\item {The player enters a room matching several rooms this exit is connected to:}
+Each of the matching rooms is set as a possible position and as head of a path. The state
+changes to experimenting.
+\item{The player enters a room that doesn't match a room this exit
+is connected to:} If the exit is deterministic it is changed to random. The new room is created as
+experimental and set as possible position and end of a new path. All rooms matching the new room are
+found using pandora and set as possible positions and ends of a new path, too. The exit is remembered
+as startOfPath and all new possible positions are added to it. The state is changed to
+experimenting.
+\end{itemize}
+\item{The player leaves in an unknown way}
+\begin{itemize}
+\item{The player enters a room matching exactly one of the adjacent (by exits) rooms of her possible position:} The possible position is updated to
+the matching room and the state remains approved.
+\item{The player enters a room matching several of the adjacent rooms of her possible position;}
+Each of the matching rooms is set as a possible position and as head of a path. The state
+changes to experimenting.
+\item{The player enters a room not matching any of the adjacent
+rooms of her possible position:} The new room is created and set experimental and all similar rooms
+are searched. All these rooms are set as heads of paths and possible positions. The unknown exit of
+the old room is connected to all the these rooms. The state changes to experimenting.
+\end{itemize}
+\item{The player leaves through an unknown exit}
+\begin{itemize}
+\item{The player enters a room matching a room at the
+expected coordinates:} The possible position is updated to the matching room, the exit is updated
+to contain the old and the matching room and gets known. The state remains approved.
+\item{Else:} The new room is created as
+experimental and set as possible position and end of a new path. All rooms matching the new room are
+set as possible positions and ends of a new path, too. The exit is remembered
+as startOfPath and all new possible positions are added to it. The state is changed to
+experimenting.
+\end{itemize}
+\end{itemize}
+\subsubsection{Experimenting}
+$=>$ There are several possible positions and experimental rooms. All newly created rooms are experimental.
+\begin{itemize}
+\item{The player tries to declare her current position as unique}
+\begin{itemize}
+\item{There is exactly one room matching the current room description and this room is a
+possible position:}
+The matching room is declared unique. The path this room is on is accepted. On this path all rooms
+are made approved and all exits are made known. All other paths are rejected. Their experimental
+rooms are deleted. The state is changed to Approved.
+\item{There are several rooms matching the description but only one of them is approved:} The
+approved room is declared unique. The same things as above happens with this room.
+\item{Else:} Nothing happens. The player gets a message stating that she can't declare this room as
+unique.
+\end{itemize}
+\item{One of the heads of the paths is unique:} The same happens as if the user declared this
+room unique.
+\item{The player leaves a room R1 (referred by its properties) through an exit E (referred by the
+respecting pointer) and enters a new room R2 (referred by its properties):} For each path ending in a
+possible position P:
+\begin{itemize}
+\item{There are rooms in P's exit E matching R2:} The path is weakly forked to each
+matching room. (=> near rooms are preferred; this could be an exit between experimental rooms)
+\item{P's exit E exists, it is not open, but none of its rooms matches R2:} The path is rejected. (=>
+ignoring random exits)
+\item{P's exit E doesn't exist yet or is open:} If there is a room matching R2 exactly at the
+expected coordinates the path is enlard by this room. Else one new room matching R2 is created, the
+path is enlarged by this room and the path is weakly forked to each other room matching R2. (=> we
+prefer coordination-wise correct links to "incorrect" links.)
+\end{itemize}
+
+
+\item{The player leaves in an unknown way:} For performance reasons we reject all paths and enter
+the Syncing state.
+\end{itemize}
+If there is only one path left this path is accepted and the Approved state is entered. If there
+is no path left Syncing state is entered.
+\subsubsection{Syncing}
+In this state the pandora algorithm is used to find the position. We enter the Approved state as
+soon as we know for sure where we are.
+
+
+\subsection{Quality of the algorithm}
+As we only do weak forking in the Experimenting state it is guaranteed that all paths end in different rooms at all times 
+and we enter Approved state as soon as we meet a unique room. To tell how correct the resulting path is we would need 
+to know the properties of MUME's real map which isn't the case. What we can tell is that most of MUME's map can be
+expressed in a three-dimensional coordinate-system with exits between adjacent rooms. As long as we follow this system
+the mapping works well as adjacent matching rooms are always preferred over far range exits. Still this could yield several 
+paths spawning off when many tuples of similar rooms are close to each other. But as it is impossible to get to a unique room 
+on two seperate paths the user can end this behaviour by finding an approved unique room. If the map strictly conforms to the
+coordinate system, there will be one path that enters the unique room from a directly adjacent room and this is the one that will be approved.
+This could either be the simple following of coordinates which is always tried or a path that "jumps" around and could also be tried. 
+As adjacent connections are preferred over jumps that second path can never get a room the first one takes. So the first one will be approved.
+As I don't know much about the properties of far range links I can only state that their mapping must be tested by experiment.
+
+\end{document}

@@ -1,0 +1,80 @@
+#savefile-version 6
+#host localhost 3000
+#delim normal
+#setvar mem=1048576
+#alias #compact={#if ($(1)=="on") #option +compact; #else #if ($(1)=="off") #option -compact; #else #option compact}
+#alias #debug={#if ($(1)=="on") #option +debug; #else #if ($(1)=="off") #option -debug; #else #option debug}
+#alias #echo={#if ($(1)=="on") #option +echo; #else #if ($(1)=="off") #option -echo; #else #option echo}
+#alias #info={#if ($(1)=="on") #option +info; #else #if ($(1)=="off") #option -info; #else #option info}
+#alias #keyecho={#if ($(1)=="on") #option +keyecho; #else #if ($(1)=="off") #option -keyecho; #else #option keyecho}
+#alias #lines=#setvar lines=$0
+#alias #settimer=#setvar timer=$0
+#alias #speedwalk={#if ($(1)=="on") #option +speedwalk; #else #if ($(1)=="off") #option -speedwalk; #else #option speedwalk}
+#alias #wrap={#if ($(1)=="on") #option +wrap; #else #if ($(1)=="off") #option -wrap; #else #option wrap}
+#alias d=down
+#alias e=east
+#alias exa=examine $0
+#alias exam=examine $0
+#alias l=look $0
+#alias lo=look $0
+#alias loo=look $0
+#alias m_prepare={spam on; brief off; prompt all}
+#alias madd={mdoor ${door} $1}
+#alias mexit={mdoor exit $1}
+#alias n=north
+#alias s=south
+#alias show_exits={maction local all --[ Door: } 
+#alias sr={stand; ride}
+#alias u=up
+#alias w=west 
+#action >+pandora_zblam ZBLAM! A &1 doesn't want you riding &2 anymore.={#print; mevent r_fail zblam}
+#action >+pandora_prevent &1 prevents you from going &2.={#print; mevent r_fail prevent}
+#action >+exhausted_mount A &1 is too exhausted.={#print; mevent r_fail mount_exhausted}
+#action >+pandora_ridegag &1 is standing here, ridden by &2.={}
+#bind BS ^H=&del-char-left
+#bind C-a ^A=&begin-of-line
+#bind C-b ^B=&prev-char
+#bind C-d ^D=&del-char-right
+#bind C-e ^E=&end-of-line
+#bind C-f ^F=&next-char
+#bind C-k ^K=&kill-to-eol
+#bind C-l ^L=&redraw-line
+#bind C-n ^N=&next-line
+#bind C-p ^P=&prev-line
+#bind C-t ^T=&transpose
+#bind C-w ^W=&to-history
+#bind C-z ^Z=&suspend
+#bind Del ^?=&del-char-left
+#bind Down ^[[B=&next-line
+#bind KP2 ^[[6~=s
+#bind KP3 ^R=d
+#bind KP4 ^[[H=w
+#bind KP5 ^[Ou=exits
+#bind KP6 ^[[F=e
+#bind KP7 ^[Ow=look
+#bind KP8 ^[[5~=n
+#bind KP9 ^X=u
+#bind LF ^J=&enter-line
+#bind Left ^[[D=&prev-char
+#bind M-BS ^[^H=&del-word-left
+#bind M-Del ^[^?=&del-word-left
+#bind M-Tab ^[^I=&complete-line
+#bind M-b ^[b=&prev-word
+#bind M-d ^[d=&del-word-right
+#bind M-f ^[f=&next-word
+#bind M-k ^[k=&redraw-line-noprompt
+#bind M-l ^[l=&downcase-word
+#bind M-t ^[t=&transpose-words
+#bind M-u ^[u=&upcase-word
+#bind Ret ^M=&enter-line
+#bind Right ^[[C=&next-char
+#bind SHIFT+KP1 ^[[79~={maction local d --[door:}
+#bind SHIFT+KP2 ^[[69~={maction local s --[door:}
+#bind SHIFT+KP4 ^[[62~={maction local w --[door:}
+#bind SHIFT+KP6 ^[[72~={maction local e --[door:}
+#bind SHIFT+KP7 ^[[75~={maction local u --[door:}
+#bind SHIFT+KP8 ^[[78~={maction local n --[door:}
+#bind Tab ^I=&complete-word
+#bind Up ^[[A=&prev-line
+#option -exit -history -words -compact -debug +echo -info +keyecho -speedwalk
+#option -wrap -autoprint -reprint -sendsize +autoclear

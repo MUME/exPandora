@@ -1,0 +1,74 @@
+
+
+    Installation and Configation
+    
+    Pandora is based on following libs: 
+    
+	Qt (multithreaded), OpenGL, libxml, glibc. 
+	
+    Evetything else should be plain C/C++ 
+    
+    * download and unpack (is already done i guess)
+    * cd src
+    * qmake
+    * make
+    * read and edit /congifs/mume.conf
+      
+      Espectually note the ROOM COLOUR settings.
+      Note: The give colour in this config is green. Pandora requires 
+      unique colour for roomnames - this means you have to check if you
+      use the green colour for anything else, like says tells emoutes etc.
+      
+    * add pandora's settings on top of your client settings. 
+      (see /configs/pandora.pow)
+    
+    Watch out - you have to use full names for commands like north, east, look, 
+    examine and scout. (see /configs/pandora.pow)
+    
+    * run the ./run file and check if the openGL and the program starts normally.
+    
+    * load your client and settings - try to connect to the localport.
+    
+    * read mhelp and mhelp command_name for each command :)
+    
+    
+    Keys in OpenGL window:
+    
+    mouse, menu etc - as always.
+    
+    F12, F11, F10 			 - hide/show MENU bar, STATUS bar and 
+					   ROOM info accordingly.
+    
+    left_mouse_button + mouse movements  - move the cam in x and y coordinates.
+    
+    right_mouse_button + mouse movements - change the x, y angles of view
+    
+    mouse_wheel 			 - change the Z coordinate
+    
+    PageUp/PageDown			 - rotate around the Z coordinate
+    
+    Escape 				 - reset the view/angle setting to 
+					   default values.
+    
+    and for compatibility - older keys:
+    
+    q, w 				 - change the X coordinate       
+    a, s 				 - change the Y coordinate
+    y, x				 - change the Z coordinate
+    
+    r					 - force redraw (openGL/Qt message)
+    c					 - force engine analyzer call 
+					   (not used though)
+    
+    
+    mhelp is your friend.
+    mreset is your best friend - use it if ANY strange stuff starts to happen. :-)
+
+    
+    Contact me if you have questions/suggestions : 
+    	
+	Mail: lachupe@gmail.com 
+	ICQ: 132744841
+    
+    
+									      Aza
