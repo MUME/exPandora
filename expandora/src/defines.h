@@ -1,7 +1,7 @@
 #define NEW_ENGINE
 #include <qglobal.h>
 
-#ifdef Q_OS_LINUX || Q_OS_MACX
+#if defined Q_OS_LINUX || defined Q_OS_MACX
 #define QT_THREAD_SUPPORT
 #endif
 

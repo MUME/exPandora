@@ -12,7 +12,7 @@
 #include "ObjectRecycler.h"
 #include "Property.h"
 #include "BaseEvent.h"
-#include <list.h>
+#include <list>
 #include <time.h>
 
 

@@ -15,16 +15,16 @@ template <class T>
 void ObjectRecycler<T>::deactivate(T * obj) {
 	//printf("deactivating ... old queue size: %i\n", size());
 	obj->clear();
-	push(obj);
+	queue<T *>::push(obj);
 	//printf("deactivating ... new queue size: %i\n", size());
 }
 
 template <class T>
 T * ObjectRecycler<T>::activate() {
 	//printf("acitvating ... old queue size: %i\n", size());
-	if (!empty()) {
-		T * ret = front();
-		pop();
+  if (!(queue<T *>::empty())) {
+    T * ret = queue<T *>::front();
+    queue<T*>::pop();
 		//printf("acitvating ... new queue size: %i\n", size());
 		return ret;
 	}
