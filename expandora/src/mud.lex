@@ -2,14 +2,12 @@
 #define MUD
 #include "Lexer.h"
 #undef MUD
-#include <iostream>
-using namespace std;
 %}
 
-%option prefix="Mud"
+%option prefix="mud"
 %option c++
 %option noyywrap
-
+%option outfile="lex.mud.c"
   
 
 /* the codes are octal, so \33 is \27 in decimal and <ESC> in literal*/

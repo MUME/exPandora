@@ -5,6 +5,10 @@ MOC_DIR		= moc
 
 CONFIG		+= console qt opengl warn_on release
 
+LEXSOURCES	+=mud.lex
+LEXSOURCES	+=player.lex
+
+
 HEADERS		+=BaseEvent.h
 HEADERS		+=CharacterTable.h
 HEADERS		+=Coordinate.h

@@ -6,18 +6,18 @@
 
 #ifndef PLAYER
 #undef yyFlexLexer
-#define yyFlexLexer PlayerFlexLexer
+#define yyFlexLexer playerFlexLexer
 #include <FlexLexer.h>
 #undef yyFlexLexer
-#define yyFlexLexer MudFlexLexer
+#define yyFlexLexer mudFlexLexer
 #endif
 
 #ifndef MUD
 #undef yyFlexLexer
-#define yyFlexLexer MudFlexLexer
+#define yyFlexLexer mudFlexLexer
 #include <FlexLexer.h>
 #undef yyFlexLexer
-#define yyFlexLexer PlayerFlexLexer
+#define yyFlexLexer playerFlexLexer
 #endif
 
 class Lexer {
@@ -43,8 +43,8 @@ class Lexer {
 		void append(char * text); // append a 0-terminated string
 
 	private: 
-		PlayerFlexLexer playerLexer;
-		MudFlexLexer mudLexer;
+		playerFlexLexer playerLexer;
+		mudFlexLexer mudLexer;
 		Parser * parser;
 		ParseEvent * event;
 		Property * property;
