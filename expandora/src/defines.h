@@ -1,7 +1,7 @@
 
-#define LINUX
+//#define LINUX
 //#define WIN32
-//#define MAC_OS
+#define MAC_OS
 
 #ifdef LINUX
 #define QT_THREAD_SUPPORT

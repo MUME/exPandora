@@ -2,7 +2,7 @@
 
 #include "defines.h"
 
-#ifndef LINUX
+#ifdef WIN32
 //#include <win32config.h>
 #include <libxml\parser.h>
 #else 

@@ -7,14 +7,14 @@
 
 #include "defines.h"
 
-#ifdef LINUX
+#if defined LINUX || defined MAC_OS
 #include <sys/time.h>
 #endif 
 
 #include <sys/timeb.h>
 
 
-#ifndef LINUX
+#if defined WIN32
   #define vsnprintf _vsnprintf
 #endif
 

@@ -9,8 +9,7 @@ QMAKE_CXXFLAGS_RELEASE	+=  $$CFLAGS_VAR
 QMAKE_CXXFLAGS_DEBUG	+=  $$CFLAGS_VAR
 LIBS 		+= $$CLIBS_VAR
 
-CONFIG		+= console qt opengl warn_on release 
-#debug
+CONFIG		+= console qt opengl warn_on release debug
 
 #LIBS 		+= libxml2.lib
 
