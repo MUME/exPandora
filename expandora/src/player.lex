@@ -1,4 +1,5 @@
 %option prefix="Player"
+%option yyclass="Lexer"
 
 %{
 #include "LexDefs.h"

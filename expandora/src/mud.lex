@@ -1,5 +1,6 @@
 
 %option prefix="Mud"
+%option yyclass="Lexer"
   
 /* we will define all the actions in the MudLexer class, so flex should know that it needs to produce MudLexer::yylex() */
 

@@ -1,5 +1,7 @@
 #include "Parser.h"
 #include "RoomAdmin.h"
+#include "LexDefs.h"
+#include "RoomCollection.h"
 
 void Parser::setTerrain(Property * ter) {
 	
@@ -83,7 +85,7 @@ void Parser::approved() {
 				playerPop();
 				mudPop();
 				cmm.deactivate(c);
-				rcmm->deactivate(possible);
+				rcmm.deactivate(possible);
 				return;
 			}
 			else {	
@@ -98,7 +100,7 @@ void Parser::approved() {
 			playerPop();
 			mudPop();
 			cmm.deactivate(c);
-			rcmm->deactivate(possible);
+			rcmm.deactivate(possible);
 			return;
 		}
 	}
@@ -122,14 +124,14 @@ void Parser::approved() {
 	rcmm.deactivate(possible);
 }
 
-void playerPop() {
-	if (playerEvents.front() >= 0) pemm.deactivate(playerEvents.front());
+void Parser::playerPop() {
+	if (playerEvents.front()->type >= 0) bemm.deactivate(playerEvents.front());
 	else bemm.deactivate(playerEvents.front());
 	playerEvents.pop();
 }
 			
-void mudPop() {
-	if (mudEvents.front() >= 0) pemm.deactivate(mudEvents.front());
+void Parser::mudPop() {
+	if (mudEvents.front()->type >= 0) pemm.deactivate((ParseEvent *)mudEvents.front());
 	else bemm.deactivate(mudEvents.front());
 	mudEvents.pop();
 }
@@ -148,17 +150,103 @@ void Parser::syncing() {
 	
 	// now we have a move and a room on the event queues;
 	
-	RoomCollection * possible = roomAdmin.getRooms(mudEvents.front());
-	if (possible->numRooms > 0) {
+	RoomSearchNode * possible = roomAdmin.getRooms((ParseEvent *)mudEvents.front());
+	if (possible->numRooms() > 0) {
 		state = EXPERIMENTING;
-		buildPaths(possible);
-		rcmm.deactivate(possible);
+		buildPaths((RoomCollection *)possible);
+		rcmm.deactivate((RoomCollection *)possible);
 	}
-	else if (possible->numRooms == 0) rcmm.deactivate(possible);
+	else if (possible->numRooms() == 0) rcmm.deactivate((RoomCollection *)possible);
 	playerPop();
 	mudPop();
 
 }	
+
+void Parser::unify() {
+	state = APPROVED;
+	mostLikelyRoom = paths.front()->getRoom();
+	paths.front()->approve();
+	list<Path *>::iterator i = paths.begin()++;
+	for (; i != paths.end(); i++) {
+		(*i)->deny();
+	}
+	paths.clear();
+}
+
+void Parser::experimenting() {
+	if (playerEvents.front()->type == UNIQUE) {
+		unify();
+		playerPop();
+		return;
+	}
+	if (mudEvents.front()->type == MOVE_FAIL) {
+		mudPop();
+		playerPop();
+		return;
+	}
+	
+	RoomSearchNode * possible = roomAdmin.getRooms((ParseEvent *)mudEvents.front());
+	if (possible->numRooms() == -1) possible = rcmm.activate();
+	enlargePaths((RoomCollection *)possible, true);
+	rcmm.deactivate((RoomCollection *) possible);
+	playerPop();
+	mudPop();
+}
+
+void Parser::buildPaths(RoomCollection * rc) {
+	Path * working = pamm.activate();
+	working->init(mostLikelyRoom);
+	paths.push_front(working);
+	enlargePaths(rc, false);
+}
+
+void Parser::enlargePaths(RoomCollection * rc, bool includeNew) {
+	list<Path *>::iterator i = paths.begin();
+	set<Room *>::iterator j = rc->begin();
+	ParseEvent * copy = pemm.activate();
+	Coordinate * c = cmm.activate();
+	Path * working;
+	for (; i != paths.end(); i++) {
+		for (; j != rc->end(); j++) {
+			working = (*i)->fork(*j);
+			if (working->getProb() < MINPROB) working->deny();
+			else {
+				if (working->getProb() > paths.front()->getProb()) paths.push_front(working);
+				else paths.insert(i, working);
+			}
+		}
+		if (includeNew) {
+			c->clear();
+			copy->clear();
+			copy->copy((ParseEvent *)mudEvents.front());
+			c->add((*i)->getRoom()->getCoordinate());
+			c->add(stdMoves[playerEvents.front()->type]);
+			working = (*i)->fork(roomAdmin.quickInsert(copy, c));
+			if (working->getProb() < MINPROB) working->deny();
+			else {
+				if (working->getProb() > paths.front()->getProb())
+					paths.push_front(working);
+				else 
+					paths.insert(i, working); 
+			}
+		}
+		if (!(*i)->hasChildren()) (*i)->deny();		
+	}
+	cmm.deactivate(c);
+	pemm.deactivate(copy);
+	if (paths.empty()) state = SYNCING;
+	else  {
+		mostLikelyRoom = paths.front()->getRoom();
+		if (paths.begin()++ == paths.end()) { // excactly one path left -> go APPROVED
+			paths.front()->approve();
+			paths.clear();
+			state = APPROVED;
+			return;
+		}
+	}
+}
+
+
 
 Coordinate * Parser::getExpectedCoordinate() {
 	Coordinate * c = cmm.activate();

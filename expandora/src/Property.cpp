@@ -29,7 +29,7 @@ void Property::copy(Property & other) {
 	for (int i = 0; other[i] != 0; i++) {
 		add(other[i]);
 	}
-	add(0);
+	add('\0');
 	currentOffset = other.getOffset();
 }
 

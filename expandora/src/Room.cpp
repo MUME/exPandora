@@ -1,6 +1,5 @@
 #include "Room.h"
 #include "RoomCollection.h"
-#include "Exit.h"
 #include "LexDefs.h"
 
 int defaultTolerance = 1;
@@ -19,12 +18,12 @@ RoomCollection * Room::go(BaseEvent * dir) {
 		return ret;
 	}
 	else if (dir->type == UNKNOWN) {
-		for (int i = 0; i < exits.size(); i++) {
+		for (unsigned int i = 0; i < exits.size(); i++) {
 			ret->merge(exits[i]);
 		}
 		return ret;
 	}
-	else if (dir->type <  0 || dir->type >= exits.size()) return ret;
+	else if (dir->type <  0 || dir->type >= (int)exits.size()) return ret;
 	else {
 		ret->merge(exits[dir->type]);
 		return ret;

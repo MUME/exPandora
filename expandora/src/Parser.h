@@ -19,19 +19,23 @@ class Parser {
 		void setTerrain(Property * ter);
 		void event(BaseEvent * ev);
 	private:
+		void mudPop();
+		void playerPop();
+		void unify();
 		Coordinate * getExpectedCoordinate();
-       		void buildPaths(RoomCollection * rooms);
 		void dropNote(ParseEvent * ev);
 		void checkQueues();
 		void experimenting();
 		void syncing();
 		void approved();
+		void enlargePaths(RoomCollection * enlargingRooms, bool createNew);
+		void buildPaths(RoomCollection * initialRooms);
 
 		char state;
 		queue<BaseEvent *> playerEvents;
 		queue<BaseEvent *> mudEvents;
 		Terrain * activeTerrain;
-		list<Path *> possiblePaths;
+		list<Path *> paths;
 		Room * mostLikelyRoom;
 };	
 
