@@ -6,10 +6,11 @@ RoomAdmin::RoomAdmin() : SearchTreeNode("", this, 0) {
 	rooms = 0;
 }
 
-Room * RoomAdmin::insertRoom(char ** properties, int numProperties) {
-	if (numProperties == 0) {
+Room * RoomAdmin::insertRoom(vector<char *> properties) {
+	Room * newRoom; 
+	if (properties.size() == 0) {
 		if(rooms == 0) rooms = new RoomCollection();
-		selectedChild = rooms;
+		newRoom = rooms->insertRoom(properties, 0);
 	}	
 	else {	
 		char next = properties[0][0];
@@ -25,8 +26,8 @@ Room * RoomAdmin::insertRoom(char ** properties, int numProperties) {
 				put(next, selectedChild);
 			}
 		}
+		newRoom = selectedChild->insertRoom(properties, 0);
 	}
-	Room * newRoom = selectedChild->insertRoom(properties, 0, numProperties);
 	int id;
 	if (unusedIds.empty()) id = ++greatestUsedId;
 	else {
@@ -39,17 +40,17 @@ Room * RoomAdmin::insertRoom(char ** properties, int numProperties) {
 	return newRoom;	
 }
 
-Room * RoomAdmin::insertRoom(char ** properties, int numProperties, int id) {
+Room * RoomAdmin::insertRoom(vector<char *> properties, int id) {
 	unusedIds.push(id);
-	return insertRoom(properties, numProperties);
+	return insertRoom(properties);
 }
 
-RoomCollection * RoomAdmin::getRooms(char ** properties, int numProperties) {
-	if (numProperties == 0) return rooms;
+RoomCollection * RoomAdmin::getRooms(vector<char *> properties) {
+	if (properties.size() == 0) return rooms;
 	char next = properties[0][0];
 	selectedChild = get(next);
 	if (selectedChild == 0) return 0;
-	else return selectedChild->getRooms(properties, 0, numProperties);
+	else return selectedChild->getRooms(properties, 0);
 }
 
 

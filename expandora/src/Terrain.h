@@ -1,6 +1,7 @@
 #ifndef TERRAIN
 #define TERRAIN
-#include <GL/gl.h>
+#include <OpenGL/gl.h>
+using namespace std;
 // we should unify this GL thing. arghh
 
 // this is really a lazy class ...

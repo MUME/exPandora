@@ -4,6 +4,9 @@
 #include "RoomSearchNode.h"
 #include "RoomCollection.h"
 #include "Room.h"
+#include <vector>
+using namespace std;
+
 /**
  * keeps a substring of the properties, and a table of other RoomSearchNodes pointing to the possible following characters
  */
@@ -18,9 +21,9 @@ class SearchTreeNode : public RoomSearchNode, protected TinyList {
 	public:
 		SearchTreeNode(char * _myChars, RoomSearchNode * _parent, int _start);
 		~SearchTreeNode();
-		virtual RoomCollection * getRooms(char ** properties, int pos, int numProperties);
-		virtual Room * insertRoom(char ** properties, int pos, int numProperties);
-		Room * insertMatchingRoom(char ** properties, int pos, int numProperties);
+		virtual RoomCollection * getRooms(vector<char *> properties, int pos);
+		virtual Room * insertRoom(vector<char *> properties, int pos);
+		Room * insertMatchingRoom(vector<char *> properties, int pos);
 		void setChild(char, RoomSearchNode *);
 };
 #endif

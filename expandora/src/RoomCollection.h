@@ -1,19 +1,20 @@
 #ifndef ROOMCOLLECTION
 #define ROOMCOLLECTION
-#include <vector.h>
+#include <vector>
 #include "RoomSearchNode.h"
 #include "Room.h"
+using namespace std;
 
-class RoomCollection : public RoomSearchNode {
+class RoomCollection {
 	public:
 		RoomCollection() {};
-		RoomCollection * getRooms(char ** properties, int property, int numProperties) {return this;}
-		Room * insertRoom(char ** properties, int numProperties);
-		Room * insertRoom(char ** properties, int property, int numProperties) {return insertRoom(properties, numProperties);};
-		RoomCollection * filterByOptionals(char ** optionalProperties, int num);
+		RoomCollection * getRooms(vector<char *> properties, int property) {return this;}
+		Room * insertRoom(vector<char *> properties);
+		Room * insertRoom(vector<char *> properties, int property) {return insertRoom(properties);};
+		RoomCollection * filterByOptionals(vector<char *> optionalProperties);
 		void RoomCollection::addRoom(Room * room);
 	private:
-		vector<Room> * rooms;
+		vector<Room *> rooms;
 		
 };
 #endif

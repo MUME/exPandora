@@ -4,12 +4,12 @@
 /**
  * finds all rooms matching the string name
  */
-RoomCollection * SearchTreeNode::getRooms(char ** properties, int pos, int numProperties) {
+RoomCollection * SearchTreeNode::getRooms(vector<char *> properties, int pos) {
 	if (strcmp(properties[pos]+start, myChars)) return 0;
 	
 	selectedChild = get(properties[pos][next]);
 	if(selectedChild == 0) return 0; // no such room
-	else return selectedChild->getRooms(properties, pos, numProperties);	// the last character of name is 0, 
+	else return selectedChild->getRooms(properties, pos);	// the last character of name is 0, 
 							// at position 0 there is a roomCollection, if we have rooms here
 							// else there is 0, so name[depth] should work.
 }
@@ -21,7 +21,7 @@ void SearchTreeNode::setChild(char position, RoomSearchNode * node) {
 
 /**
  */
-Room * SearchTreeNode::insertRoom(char ** properties, int pos, int numProperties) {
+Room * SearchTreeNode::insertRoom(vector<char *> properties, int pos) {
 	char * othersChars;
 	for (int i = start; i < next; i++) {
 		if (myChars[i-start] != properties[pos][i]) {
@@ -34,20 +34,20 @@ Room * SearchTreeNode::insertRoom(char ** properties, int pos, int numProperties
 			parent = new SearchTreeNode(othersChars, parent, start);
 			parent->setChild(myChars[0], this);
 			start = i;
-			return parent->insertRoom(properties, pos, numProperties);
+			return parent->insertRoom(properties, pos);
 		}
 	}
 	// if we got here, our string matched the properties
-	return insertMatchingRoom(properties, pos, numProperties); 
+	return insertMatchingRoom(properties, pos); 
 }
 
-Room * SearchTreeNode::insertMatchingRoom(char ** properties, int pos, int numProperties) { 
+Room * SearchTreeNode::insertMatchingRoom(vector<char *> properties, int pos) { 
 	
 	char * othersChars;
 	RoomSearchNode * selectedChild = get(properties[pos][next]);
 	if (selectedChild == 0) {
 		if (properties[pos][next] == 0) {
-			if (pos < numProperties-1) {
+			if (pos < properties.size()-1) {
 				othersChars = (char *)malloc(strlen(properties[pos+1])+1);
 				strcpy(othersChars, properties[pos+1]);
 			}
@@ -62,7 +62,7 @@ Room * SearchTreeNode::insertMatchingRoom(char ** properties, int pos, int numPr
 			put(othersChars[0], selectedChild);
 		}
 	}
-	return selectedChild->insertRoom(properties, pos, numProperties);
+	return selectedChild->insertRoom(properties, pos);
 }
 
 

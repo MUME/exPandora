@@ -3,22 +3,22 @@
 #include <stdexcept>
 using namespace std;
 
-Room * RoomCollection::insertRoom(char ** properties, int numProperties) {
-	Room * room = new Room(properties, numProperties);
+Room * RoomCollection::insertRoom(vector<char *> properties) {
+	Room * room = new Room(properties);
 	
-	rooms->push_back(*room);
+	rooms.push_back(room);
 	return room;
 }
 
 
-RoomCollection * RoomCollection::filterByOptionals(char ** optionalProperties, int num) {
+RoomCollection * RoomCollection::filterByOptionals(vector<char *> optionalProperties) {
 	RoomCollection * filtered = new RoomCollection();
 	Room * room;
 	int i;
-	for (i = rooms->size(); i > 0; --i) {
+	for (i = rooms.size(); i > 0; --i) {
 		try {
-			room = &rooms->at(i);	
-			if (room->containsOptionals(optionalProperties, num)) filtered->addRoom(room);
+			room = rooms[i];	
+			if (room->containsOptionals(optionalProperties)) filtered->addRoom(room);
 		} catch (out_of_range e) {} //don't care for the exception - just try the next room
 	}
 	return filtered;
@@ -26,6 +26,6 @@ RoomCollection * RoomCollection::filterByOptionals(char ** optionalProperties, i
 
 
 void RoomCollection::addRoom(Room * room) {
-	rooms->push_back(*room);
+	rooms.push_back(room);
 }
 

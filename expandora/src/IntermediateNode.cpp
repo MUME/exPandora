@@ -5,17 +5,17 @@ IntermediateNode::IntermediateNode(char * _myChars, RoomSearchNode * _parent) : 
 	rooms = 0;
 }
 
-Room * IntermediateNode::insertRoom(char ** properties, int pos, int numProperties) {
+Room * IntermediateNode::insertRoom(vector<char *> properties, int pos) {
 	pos++;
-	if (pos == numProperties) {
+	if (pos == properties.size()) {
 		if (rooms == 0) rooms = new RoomCollection();
-		return rooms->insertRoom(properties, numProperties);
+		return rooms->insertRoom(properties);
 	}
 	char * othersChars;
 	for (int i = start; i < next; i++) {
 		if (myChars[i-start] != properties[pos][i]) {
-			othersChars = (char *)malloc(next - i + 1);
-			char * myNewChars = (char *)malloc(i + 1);
+			othersChars = new char[next - i + 1];
+			char * myNewChars = new char[i + 1];
 			strncpy(othersChars, myChars+i, next-i);
 			strncpy(myNewChars, myChars, i); 
 			delete(myChars);
@@ -27,20 +27,20 @@ Room * IntermediateNode::insertRoom(char ** properties, int pos, int numProperti
 			}
 			put(properties[pos][i], selectedChild);
 			next = i;
-			return selectedChild->insertRoom(properties, pos, numProperties);
+			return selectedChild->insertRoom(properties, pos);
 		}
 	}
 
-	return SearchTreeNode::insertMatchingRoom(properties, pos, numProperties);
+	return SearchTreeNode::insertMatchingRoom(properties, pos);
 		
 }
 
 
 
 
-RoomCollection * IntermediateNode::getRooms(char ** properties, int pos, int numProperties) {
+RoomCollection * IntermediateNode::getRooms(vector<char *> properties, int pos) {
 	pos++;
-	if (pos == numProperties) return rooms;
-	else return SearchTreeNode::getRooms(properties, pos, numProperties);
+	if (pos == properties.size()) return rooms;
+	else return SearchTreeNode::getRooms(properties, pos);
 }
 
