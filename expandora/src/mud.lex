@@ -65,7 +65,8 @@ ROOMCOL		\33\[32m
 <DESC>"Exits:"		BEGIN(EXITS);
 
 
-<DESC,PROMPT>{ROOMCOL}					skipSomeProperties(); pushEvent(ROOM); BEGIN(ROOMNAME);
+<DESC,EXITS>{ROOMCOL}					skipSomeProperties(); pushEvent(ROOM); BEGIN(ROOMNAME);
+
 
 <EXITS>"south"  |
 <EXITS>"north"  |
@@ -104,8 +105,8 @@ ROOMCOL		\33\[32m
 <PROMPT>"+"			| 
 <PROMPT>":"			| 
 <PROMPT>"="			append(YYText()[0]); pushProperty(); pushEvent(ROOM); BEGIN(INITIAL);
+<PROMPT>{ROOMCOL}               |
 <PROMPT>">"			skipProperty(); pushEvent(ROOM);  BEGIN(INITIAL);
-
 
 %%
 

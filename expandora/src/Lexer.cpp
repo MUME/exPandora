@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include "utils.h"
 
 void Lexer::pushUserInput (char * input) {
   inputLock.lock();
@@ -42,37 +43,42 @@ void Lexer::run() {
 }
 
 GenericLexer::GenericLexer() {
-	event = pemm.activate();
-	property = pmm.activate();
+  event = pemm.activate();
+  property = pmm.activate();
 }
 
 
 void GenericLexer::pushEvent(char _type) {
-	event->type = _type;
-	parser->event(event);
-	event = pemm.activate();
+  if (event->timestamp < 1) event->timestamp = m_timestamp();
+  event->type = _type;
+  parser->event(event);
+  event = pemm.activate();
 }
 	
 void GenericLexer::pushProperty() {
+  if (event->timestamp < 1) event->timestamp = m_timestamp();
   event->push(property);
   property = pmm.activate();
 }
 		
 void GenericLexer::pushOptional() {
-	event->pushOptional(property);
-	property = pmm.activate();
+  if (event->timestamp < 1) event->timestamp = m_timestamp();
+  event->pushOptional(property);
+  property = pmm.activate();
 }
 		
 void GenericLexer::skipProperty() {
-	property->skip();
-	event->push(property);
-	property = pmm.activate();
+  if (event->timestamp < 1) event->timestamp = m_timestamp();
+  property->skip();
+  event->push(property);
+  property = pmm.activate();
 }
 		
 void GenericLexer::skipSomeProperties() {
-	property->skipMany();
-	event->push(property);
-	property = pmm.activate();
+  if (event->timestamp < 1) event->timestamp = m_timestamp();
+  property->skipMany();
+  event->push(property);
+  property = pmm.activate();
 }
 		
 
