@@ -39,7 +39,6 @@ RoomSearchNode * IntermediateNode::getRooms(ParseEvent * event) {
   else if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) return SearchTreeNode::skipDown(event);
   else {
     ret = SearchTreeNode::getRooms(event);
-    if (ret == (SearchTreeNode *)this) event->prev();
     return ret;
   }
 }

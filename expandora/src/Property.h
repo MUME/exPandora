@@ -1,3 +1,4 @@
+
 #ifndef PROPERTY
 #define PROPERTY
 
@@ -5,44 +6,34 @@
 #define SKIPPED_MANY -2
 
 #include "ObjectRecycler.h"
+#include "ListCycler.h"
+#include "SimpleString.h"
 
-class Property {
+class Property : public ListCycler<char> {
  public:	
 
-  Property(); 
-  Property(char *);
-
-  void reset() {currentOffset = -1;}
+  Property() : used(0) {data.put(127, 0); attachList(&data);}
+  ~Property() {;}
   void clear();
   void skip();
   void skipMany();
-  int size();
-		
-  char current();
-  char next();
-  char prev();
-  char get(int k);
 		
   char * rest();
-  char * getText();	
 
+  int size() {return used;}
   void add(char c);
   void add(char * string);
   void add(const char * other, const char * end);
-
-  int comp(Property * other);
-  void copy(Property * other);
+  char get(unsigned int i) {return data.get(i);}
+  char * getText() {return data.getText();}
   Property * copy();
+  SimpleString * copyString() {return data.copy();}
+  bool equals (SimpleString * other) {return data.equals(other);}
+  int compare(SimpleString * other) {return data.compare(other);}
   
-  int getOffset(){return currentOffset;};
-		
  private:
-  int currentOffset;
-  char * begin;
-  int length;
+  SimpleString data;
   int used;
-  void enlarge(int neededSpace);
-		
 };
 
 

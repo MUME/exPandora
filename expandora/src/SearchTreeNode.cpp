@@ -4,14 +4,14 @@
 using namespace std;
 
 
-SearchTreeNode::SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode> * _children) {
-  myChars = new char[strlen(event->current()->rest()) + 1];
-  strcpy(myChars, event->current()->rest()); 	// we copy the string so that we can remove rooms independetly of tree nodes
+SearchTreeNode::SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode *> * _children) {
+  myChars = new char[strlen(event->current()->rest())];
+  strcpy(myChars, event->current()->rest()+1); 	// we copy the string so that we can remove rooms independetly of tree nodes
   children = _children;
 }
 
 
-SearchTreeNode::SearchTreeNode(char * _myChars, TinyList<RoomSearchNode> * _children) {
+SearchTreeNode::SearchTreeNode(char * _myChars, TinyList<RoomSearchNode *> * _children) {
   myChars = _myChars; 
   children = _children;
 }
@@ -48,22 +48,19 @@ void SearchTreeNode::setChild(char position, RoomSearchNode * node) {
  */
 Room * SearchTreeNode::insertRoom(ParseEvent * event) {
   RoomSearchNode * selectedChild = 0;
-  char c = event->current()->current();
+  char c = event->current()->next();
   for (int i = 0; myChars[i] != 0; i++) {
     if (c != myChars[i]) {
       // we have to split, as we encountered a difference in the strings ...	
       selectedChild = new SearchTreeNode(myChars + i + 1, children);	// first build the lower part of this node	
-      children = new TinyList<RoomSearchNode>();	// and update the upper part of this node
+      children = new TinyList<RoomSearchNode *>();	// and update the upper part of this node
       children->put(myChars[i], selectedChild);
 		
       if (c == 0) selectedChild = new IntermediateNode(event);	// then build the branch
-      else {
-	event->current()->next();
-	selectedChild = new SearchTreeNode(event);
-      }
+      else selectedChild = new SearchTreeNode(event);
 				
       children->put(c, selectedChild); // and update again
-      myChars[i] = 0; // the string is separated in [myChars][0][selectedChildChars][0] so we don't have to copy anything ... 
+      myChars[i] = 0; // the string is separated in [myChars][0][selectedChildChars][0] so we don't have to copy anything
 		
       return selectedChild->insertRoom(event);
     }
@@ -72,15 +69,11 @@ Room * SearchTreeNode::insertRoom(ParseEvent * event) {
 	
   // we reached the end of our string and can pass the event to the next node (or create it)
   selectedChild = children->get(c);
-  event->current()->next();
   if (selectedChild == 0) {
-	       
     if (c != 0) selectedChild = new SearchTreeNode(event);
     else selectedChild = new IntermediateNode(event);
     children->put(c, selectedChild);
   }
-
-
   return selectedChild->insertRoom(event);
 }
 			

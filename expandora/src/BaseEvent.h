@@ -9,7 +9,7 @@
 class BaseEvent {
 	public:
 		void clear() {timestamp = 0; type = 0;};
-		double timestamp;
+		long timestamp;
 		char type;
 };
 

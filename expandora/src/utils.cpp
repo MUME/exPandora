@@ -326,14 +326,22 @@ size_t write_to_channel(int mode, const char *format, va_list args)
   return size;
 }
 
+#ifdef NEW_ENGINE
+long m_timestamp()
+#else
 double m_timestamp(void) /* ms */
+#endif
 {
 #ifdef Q_OS_LINUX || Q_OS_MACX
   struct timeval tv;
   struct timezone tz;
 
   gettimeofday(&tv, &tz);
+#ifdef NEW_ENGINE
+  return tv.tv_sec*1000000 + tv_usec);
+#else
   return(tv.tv_sec*1.+tv.tv_usec/1000000.);
+#endif
 #else
   return 0;
 #endif

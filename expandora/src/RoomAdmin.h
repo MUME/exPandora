@@ -1,20 +1,20 @@
 #ifndef ROOMADMIN
 #define ROOMADMIN
 #include "RoomSearchNode.h"
-#include "SearchTreeNode.h"
+#include "IntermediateNode.h"
 #include <qmutex.h>
 #include <vector>
 #include <stack>
 #include "Room.h"
 #include "Map.h"
 #include "Terrain.h"
-//#include <dmalloc.h>
+
 
 using namespace std;
 
 
 
-class RoomAdmin : public SearchTreeNode {
+class RoomAdmin : public IntermediateNode {
  public:
   RoomAdmin();
 		

@@ -3,7 +3,7 @@
 
 RoomAdmin roomAdmin;
 
-RoomAdmin::RoomAdmin() : SearchTreeNode(""), mapLock(true) {
+RoomAdmin::RoomAdmin() : IntermediateNode(), mapLock(true) {
   mapLock.lock();
   greatestUsedId = -1;
   mapLock.unlock();
@@ -65,15 +65,12 @@ Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Coordinate * c, Terrain
 
 
 Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition, Terrain * t) {
-  if (knownEvent->current()->size() == SKIPPED_ONE || knownEvent->current()->size() == SKIPPED_MANY) deepestMatch = 0;
+
   if (deepestMatch == 0) return 0; // we tried to insert this event before and it didn't work
 
   mapLock.lock();
 
-  Room * room = 0;
-
-  if (deepestMatch != this) room = deepestMatch->insertRoom(knownEvent);
-  else room = SearchTreeNode::insertRoom(knownEvent);
+  Room * room = deepestMatch->insertRoom(knownEvent);
 
   if (room != 0) deepestMatch = room->getHome();
   else deepestMatch = 0;
@@ -86,10 +83,9 @@ Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosi
 }
 
 Room * RoomAdmin::insertRoom(ParseEvent * event, Coordinate * expectedPosition, Terrain * t) {
-  if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) return 0;
 
   mapLock.lock();    
-  Room * room = SearchTreeNode::insertRoom(event);
+  Room * room = IntermediateNode::insertRoom(event);
   room->setTerrain(t);
   map.setNearest(expectedPosition, room);
   assignId(room);
@@ -98,16 +94,14 @@ Room * RoomAdmin::insertRoom(ParseEvent * event, Coordinate * expectedPosition, 
 }
 
 RoomSearchNode * RoomAdmin::getRooms(ParseEvent * event) {
-  RoomCollection * ret;
+  RoomSearchNode * ret;
+
   mapLock.lock();
-  if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) deepestMatch = skipDown(event);
-  else deepestMatch = SearchTreeNode::getRooms(event);
-  if (deepestMatch->numRooms() < 0) ret = rcmm.activate();
-  else ret = (RoomCollection *)deepestMatch;
-
+  ret = IntermediateNode::getRooms(event);
+  if (ret->numRooms() < 0) ret = rcmm.activate();
   deepestMatch = this; 
-
   mapLock.unlock();
+
   event->reset(); // we can't tell where that node came from
   return ret;
 }

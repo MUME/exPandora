@@ -72,7 +72,11 @@ void send_to_user(const char *messg, ...);
 void send_to_mud(const char *messg, ...);
 int get_input_boolean(char *input);
 int parse_dir(char *dir);
+#ifdef NEW_ENGINE
+long m_timestamp();
+#else
 double m_timestamp(); /* ms */
+#endif
 void basic_mud_log(const char *format, ...);
 int MIN(int a, int b);
 

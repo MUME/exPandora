@@ -13,13 +13,14 @@
 %}
 
 %%
-"minit" init();
-"south" pushEvent(SOUTH);
-"north" pushEvent(NORTH);
-"west"  pushEvent(WEST);
-"east"  pushEvent(EAST);
-"up"    pushEvent(UP);
-"down"  pushEvent(DOWN);
+^"minit" init();
+^"south" pushEvent(SOUTH);
+^"north" pushEvent(NORTH);
+^"west"  pushEvent(WEST);
+^"east"  pushEvent(EAST);
+^"up"    pushEvent(UP);
+^"down"  pushEvent(DOWN);
+^("look"|"examine")(" "|"\t")*("\r\n"|"\n\r") pushEvent(NONE);
 %%
 
 /**

@@ -163,6 +163,9 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
 #ifndef NEW_ENGINE
     roomer.addroom_nonsorted(r);	/* tada! */
 #else
+#ifdef DEBUG
+    fprintf(stderr, "inserting room: %i\n", id);
+#endif
     prop = pmm.activate();
     prop->add(tid);
     roomProps->push(prop);
@@ -186,6 +189,9 @@ bool StructureParser::characters( const QString& ch)
   strncpy( data, (const char*) ch, ch.length() );
   data[ ch.length() ] = 0;
 #ifdef NEW_ENGINE	
+#ifdef DEBUG
+    fprintf(stderr, "parsing data: %s\n", data);
+#endif
   prop = pmm.activate();
   if (flag != XML_DESC) prop->add(data);	
   else buildProperties(data);

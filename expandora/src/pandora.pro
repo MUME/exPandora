@@ -15,6 +15,8 @@ LEXSOURCES	+=mud.lex
 LEXSOURCES	+=player.lex
 
 
+HEADERS         +=ListCycler.h
+HEADERS         +=SimpleString.h
 HEADERS		+=BaseEvent.h
 HEADERS		+=CharacterTable.h
 HEADERS		+=Coordinate.h
@@ -50,6 +52,7 @@ HEADERS		+=userfunc.h
 HEADERS		+=utils.h
 HEADERS         +=TelnetFilter.h
 
+SOURCES         +=SimpleString.cpp
 SOURCES         +=TelnetFilter.cpp
 SOURCES		+=BaseEvent.cpp
 SOURCES		+=Terrain.cpp

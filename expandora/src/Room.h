@@ -5,10 +5,7 @@
 #include "Terrain.h"
 #include "Coordinate.h"
 #include "ObjectRecycler.h"
-
-
-#include <list>
-#include <vector>
+#include "TinyList.h"
 
 using namespace std;
 
@@ -28,10 +25,10 @@ class Room {
   Room();
   void setUnique(){unique = true;};
   bool isUnique(){return unique;};
-  void addOptional(Property * note) {optionalProperties.push_back(note->copy());}
+  void addOptional(Property * note) {optionalProperties.put(optionalProperties.size(), note->copyString());}
   void init(ParseEvent * event, RoomCollection * _home);
   void setId(int _id) {id = _id;};
-  bool containsOptionals(list<Property *> * optionals);
+  bool containsOptionals(TinyList<Property *> * optionals);
   bool fastCompare(ParseEvent * props, int tolerance = defaultTolerance);
   void clear();
   void setCoordinate(Coordinate * _c) {c = _c;};
@@ -40,12 +37,12 @@ class Room {
   void resetTime(double ts) {timestamp = ts;}
  private:
   RoomCollection * home;
-  list<Property *> properties;		/* name, desc, exit names - properties we need for tree searching */
-  list<Property *> important;		/* pointers to the parts of the properties defining important things 
+  TinyList<SimpleString *> properties;		/* name, desc, exit names - properties we need for tree searching */
+  TinyList<SimpleString *> important;		/* pointers to the parts of the properties defining important things 
 					   the user wants to know each time she enters */
-  list<Property *> optionalProperties;	/* secret exit names for example - properties we can match if they are present */
+  TinyList<SimpleString *> optionalProperties;	/* secret exit names for example - properties we can match if they are present */
   
-  vector<RoomCollection *> exits;	 	/* we only match the defined standard exits and keep one field for "weird" exits */						   
+  TinyList<RoomCollection *> exits;	 	/* we only match the defined standard exits and keep one field for "weird" exits */						   
   int holdCount;
   bool unique;
   double timestamp; 		/*last modification */

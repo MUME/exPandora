@@ -7,14 +7,15 @@ template <class T>
 class TinyList {
 	public:
 		TinyList();
-		~TinyList();
-		T * get(char pos);
-		void put(char pos, T * object);
-		void remove(char pos);
-		
-	private:
-		T ** list;
-		char listSize;
+		virtual ~TinyList();
+		virtual T get(unsigned int pos);
+		virtual void put(unsigned int pos, T object);
+		virtual void remove(unsigned int pos);
+		virtual unsigned int size();
+
+	protected:
+		T * list;
+		unsigned int listSize;
 };
 
 
@@ -27,47 +28,48 @@ class TinyList {
  *	- only need 3 lines to access an element
  */
 
+template <class T>
+unsigned int TinyList<T>::size() {
+  return listSize;
+}
 
 
 template <class T>
 TinyList<T>::TinyList() {
-	list = new T * [1];
-	listSize = 1;
-	list[0] = 0;
+  listSize = 0;
+  list = 0;
 }
 
 template <class T>
 TinyList<T>::~TinyList() {
-	delete[] list;
+  if (list) delete[] list;
 }
 
 
 template <class T>
-T * TinyList<T>::get(char c) {
-	if (c < 0) c+=128;
+T TinyList<T>::get(unsigned int c) {
 	if (c >= listSize) return 0;
 	else return list[c];
 }
 
 template <class T>
-void TinyList<T>::put(char c, T * object) {	
-	if (c < 0) c+=128;
+void TinyList<T>::put(unsigned int c, T object) {	
 	if (c >= listSize) {
-		char i;
-		T ** nlist = new T *[c+1];
+		unsigned int i;
+		T * nlist = new T[c+2];
 		for (i = 0; i < listSize; i++) nlist[i] = list[i];
-		listSize = c+1;
 		for (; i < c; i++) nlist[i] = 0;
-		delete[] list;
+		if (list) delete[] list;
 		list = nlist;
+		listSize = c+1;
+		list[listSize] = 0;
 	}
 	list[c] = object;
 }
 
 
 template <class T>
-void TinyList<T>::remove(char c) {
-	if (c < 0) c+=128;
+void TinyList<T>::remove(unsigned int c) {
 	if (c < listSize) list[c] = 0;
 }
 #endif

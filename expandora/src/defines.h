@@ -1,6 +1,7 @@
 
 #define NEW_ENGINE
 #define DEBUG
+//#define DMALLOC
 
 #include <qglobal.h>
 

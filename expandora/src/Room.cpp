@@ -32,37 +32,31 @@ void Room::release(RoomAdmin * admin) {
 
 void Room::init(ParseEvent * event, RoomCollection * _home) {
 
-  list<Property *> * _properties = event->getProperties();
+  TinyList<Property *> * _properties = event->getProperties();
 
   #ifdef DEBUG
-  fprintf(stderr, "creating room: %s\n", _properties->front()->getText());
+  fprintf(stderr, "creating room: %s\n", _properties->get(0)->getText());
   #endif
 
-  for (list<Property *>::iterator i = _properties->begin(); i != _properties->end(); i++)
-    properties.push_back((*i)->copy());
+  for (char i = 0; _properties->get(i); i++)
+    properties.put(i, _properties->get(i)->copyString());
 
-  list<Property *> * _optionalProperties = event->getOptionals();
-  for (list<Property *>::iterator i = _optionalProperties->begin(); i != _optionalProperties->end(); i++)
-    optionalProperties.push_back((*i)->copy());
+  TinyList<Property *> * _optionalProperties = event->getOptionals();
+  for (char i = 0; _optionalProperties->get(i) != 0; i++)
+    optionalProperties.put(i, _optionalProperties->get(i)->copyString());
+
   home = _home;
 }
 
 RoomCollection * Room::getNeighbours(int k) {
-  if (k < (int)exits.size()) {
-    //if (exits[k] != 0) exits[k]->checkConsistency();
-    return exits[k];
-  } 
-  else return 0;
+  return exits.get(k);
 }
 
 void Room::addExit(int direc, Room * target) {
-  if ((int)(exits.size()) <= direc) {
-    exits.resize(direc + 1, 0);
-  }
-  RoomCollection * roomsInDir = exits[direc];
+  RoomCollection * roomsInDir = exits.get(direc);
   if (roomsInDir == 0) {
     roomsInDir = rcmm.activate();
-    exits[direc] = roomsInDir;
+    exits.put(direc, roomsInDir);
   }
   roomsInDir->addRoom(target);
 }
@@ -76,13 +70,12 @@ RoomCollection * Room::go(BaseEvent * dir) {
   }
   else if (dir->type == UNKNOWN) {
     for (unsigned int i = 0; i < exits.size(); i++) {
-      ret->merge(exits[i]);
+      ret->merge(exits.get(i));
     }
     return ret;
   }
-  else if (dir->type <  0 || dir->type >= (int)exits.size()) return ret;
   else {
-    ret->merge(exits[dir->type]);
+    ret->merge(exits.get(dir->type));
     return ret;
   }
 }
@@ -93,19 +86,19 @@ RoomCollection * Room::go(BaseEvent * dir) {
 void Room::clear() {
 
   #ifdef DEBUG
-  fprintf(stderr, "deleting room: '%s' with id %i\n", properties.front()->getText(), id);
+  fprintf(stderr, "deleting room: '%s' with id %i\n", properties.get(0)->getText(), id);
   #endif
 
-  while(!properties.empty()) {
-    pmm.deactivate(properties.front());
-    properties.pop_front();
+  for (char i = 0; properties.get(i) != 0; i++) {
+    ssmm.deactivate(properties.get(i));
+    properties.remove(i);
   }
-  while(!optionalProperties.empty()) {
-    pmm.deactivate(optionalProperties.front());
-    optionalProperties.pop_front();
+  for (char i = 0; optionalProperties.get(i) != 0; i++) {
+    ssmm.deactivate(optionalProperties.get(i));
+    optionalProperties.remove(i);
   }
-  for (int i = exits.size() - 1; i >= 0 ; i--) 
-    if (exits[i] != 0) exits[i]->clear();
+  for (unsigned int i = 0; i < exits.size(); i++) 
+    if (exits.get(i) != 0) exits.get(i)->clear();
   terrain = 0;
   timestamp = 0;
   holdCount = 0;
@@ -121,34 +114,34 @@ void Room::clear() {
 /** compare the optional properties that are not present in the search tree
  * perhaps we should allow a tolerance, too?
  */
-bool Room::containsOptionals(list<Property *> * optionals) {
-  list<Property *>::iterator i;
-  list<Property *>::iterator j;
+bool Room::containsOptionals(TinyList<Property *> * optionals) {
+  char i;
+  char j;
 	
-  int matched = 0;
-  for (i = optionals->begin(); i != optionals->end(); i++) {
-    for (j = optionalProperties.begin(); j != optionalProperties.end(); j++) {
-      if (!(*i)->comp(*j)) {
-	matched = 1;
+  bool matched = false;
+  for (i = 0; optionals->get(i) != 0; i++) {
+    for (j = 0; optionalProperties.get(j) != 0; j++) {
+      if (optionals->get(i)->equals(optionalProperties.get(j))) {
+	matched = true;
 	break;
       }
     }
     if (!matched) return false;
-    else matched = 0;
+    else matched = false;
   }
   return true;
 }
 
-/** we only compare the first num properties only to this room here
+/**
  * we allow a tolerance for typoes and such like pandora does
  */
 bool Room::fastCompare(ParseEvent * ev, int tolerance) {
-  list<Property *>::iterator j = properties.begin();
-  list<Property *> * props = ev->getProperties(); 
-  list<Property *>::iterator i = props->begin();
+  char j = 0;
+  TinyList<Property *> * props = ev->getProperties(); 
+  char i = 0;
     		
-  for (; i != props->end() && j != properties.end(); i++, j++) {
-    tolerance -= (*i)->comp(*j);
+  for (; props->get(i) != 0 && properties.get(j) != 0; i++, j++) {
+    tolerance -= props->get(i)->compare(properties.get(j));
     if (tolerance <= 0) return false;
   }
   return true;
