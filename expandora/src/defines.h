@@ -1,9 +1,7 @@
 
-#define LINUX
-//#define WIN32
-//#define MAC_OS
+#include <qglobal.h>
 
-#ifdef LINUX
+#ifdef Q_OS_LINUX
 #define QT_THREAD_SUPPORT
 #endif
 
@@ -28,8 +26,8 @@
 
 
 /* global flags */
-extern int glredraw ;		/* redraw is needed */
-extern int glquit ;			/* quiting ... */
+extern int glredraw;		/* redraw is needed */
+extern int glquit;			/* quiting ... */
 
 extern int modified;
 

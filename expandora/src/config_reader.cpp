@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define QT_THREAD_SUPPORT
 #include <qmutex.h>
 
 

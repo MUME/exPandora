@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include "defines.h"
 
 char characterTable_file[MAX_STR_LEN] = "characterTable";
@@ -14,8 +14,8 @@ unsigned char characterTable[128] = "";
 unsigned char positionTable[128] = "";
 
 void initCharacterTable() {
-	bzero(characterTable, 128);
-	bzero(positionTable, 128);
+	memset(characterTable, 0, 128);
+	memset(positionTable, 0, 128);
 	int tablePos = 0;
 	int readChar;
 	

@@ -9,7 +9,7 @@
 
 #include "defines.h"
 
-#if defined LINUX || defined MAC_OS
+#if defined Q_OS_LINUX || defined Q_OS_MACX
 
 #define WSAEWOULDBLOCK EWOULDBLOCK
 #define WSAEINPROGRESS EINPROGRESS
@@ -30,7 +30,7 @@
 #include <signal.h>
 #include <sys/socket.h>
 
-#elif defined WIN32
+#elif defined Q_OS_WIN32
 /*
 #include <Windows32/Base.h>
 #include <Windows32/Sockets.h>
@@ -61,7 +61,7 @@ int proxy_hangsock;
 fd_set proxy_descr1, proxy_descr2;
 struct sockaddr_in my_net_name, his_net_name;
 
-#if defined LINUX || defined MAC_OS
+#if defined Q_OS_LINUX || defined Q_OS_MACX
 
   void refresh(int x)
   {
@@ -174,14 +174,14 @@ int proxy_init()
 /*  char proxy_s3ng[256];
  */
 
-#ifdef WIN32
+#ifdef Q_OS_WIN32
     WSADATA wsadata;
 #define WSVERS MAKEWORD(2,2)
 #endif
 
     fprintf(stderr, "Proxy initialising\n");
     
-#ifdef WIN32
+#ifdef Q_OS_WIN32
     if (WSAStartup(WSVERS, &wsadata) != 0)
     {
         printf("Failed to initialise Windows Sockets.\n");
@@ -191,7 +191,7 @@ int proxy_init()
 
 
 
-#if defined LINUX || defined MAC_OS
+#if defined Q_OS_LINUX || defined Q_OS_MACX
   signal (SIGXCPU, refresh);
 #endif
 
@@ -444,7 +444,7 @@ void proxy_shutdown()
   shutdown(proxy_hangsock, 2);
   closesocket(proxy_hangsock);
       
-#ifdef WIN32
+#ifdef Q_OS_WIN32
     WSACleanup();
 #endif
 

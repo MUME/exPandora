@@ -259,7 +259,7 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
 
 
    int flags = getWFlags();
-#ifndef MAC_OS
+#ifndef Q_OS_MACX
    if(testWFlags(Qt::WStyle_StaysOnTop)){
       flags ^= Qt::WStyle_StaysOnTop;
    }

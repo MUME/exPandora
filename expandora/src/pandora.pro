@@ -3,15 +3,7 @@ TEMPLATE	= app
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
-CFLAGS_VAR	= $$system(pkg-config --cflags libxml-2.0)
-CLIBS_VAR	= $$system(pkg-config --libs libxml-2.0)
-QMAKE_CXXFLAGS_RELEASE	+=  $$CFLAGS_VAR
-QMAKE_CXXFLAGS_DEBUG	+=  $$CFLAGS_VAR
-LIBS 		+= $$CLIBS_VAR
-
-CONFIG		+= console qt opengl warn_on release debug
-
-#LIBS 		+= libxml2.lib
+CONFIG		+= console qt opengl warn_on release
 
 HEADERS		+= config_reader.h
 HEADERS		+= CharacterTable.h

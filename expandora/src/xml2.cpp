@@ -2,7 +2,7 @@
 
 #include "defines.h"
 
-#ifdef WIN32
+#ifdef Q_OS_WIN
 //#include <win32config.h>
 #include <libxml\parser.h>
 #else 

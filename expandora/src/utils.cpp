@@ -7,14 +7,15 @@
 
 #include "defines.h"
 
-#if defined LINUX || defined MAC_OS
+
+
+#if defined Q_OS_LINUX || defined Q_OS_MACX
 #include <sys/time.h>
 #endif 
 
 #include <sys/timeb.h>
 
-
-#if defined WIN32
+#if defined Q_OS_WIN32
   #define vsnprintf _vsnprintf
 #endif
 
@@ -327,7 +328,7 @@ size_t write_to_channel(int mode, const char *format, va_list args)
 
 double m_timestamp(void) /* ms */
 {
-#ifdef LINUX
+#ifdef Q_OS_LINUX
   struct timeval tv;
   struct timezone tz;
 
