@@ -41,57 +41,41 @@ void Lexer::run() {
     
 }
 
-Lexer::Lexer() {
+GenericLexer::GenericLexer() {
 	event = pemm.activate();
 	property = pmm.activate();
-	playerLexer.attachLexer(this);
-	mudLexer.attachLexer(this);
-	playerLexer.init();
 }
 
-void Lexer::markTerrain() {
-	parser->setTerrain(property);
-}
 
-void Lexer::pushEvent(char _type) {
+void GenericLexer::pushEvent(char _type) {
 	event->push(0);
 	event->type = _type;
 	parser->event(event);
 	event = pemm.activate();
 }
 	
-void Lexer::pushProperty() {
+void GenericLexer::pushProperty() {
 	event->push(property);
 	property = pmm.activate();
 }
 		
-void Lexer::pushOptional() {
+void GenericLexer::pushOptional() {
 	event->pushOptional(property);
 	property = pmm.activate();
 }
 		
-void Lexer::skipProperty() {
+void GenericLexer::skipProperty() {
 	property->skip();
 	event->push(property);
 	property = pmm.activate();
 }
 		
-void Lexer::skipSomeProperties() {
+void GenericLexer::skipSomeProperties() {
 	property->skipMany();
 	event->push(property);
 	property = pmm.activate();
 }
 		
-void Lexer::append(char ap) {
-       property->add(ap);       // append a single char
-}
-		
-void Lexer::append(const char * begin, const char * end) {
-       property->add(begin, end);	// append some substring
-}		
-       
-void Lexer::append(char * text) { // append a 0-terminated string
-	property->add(text);
-}
+
 		
 

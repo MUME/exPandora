@@ -14,12 +14,12 @@
 
 %%
 "minit" init();
-"south" lexer->pushEvent(SOUTH);
-"north" lexer->pushEvent(NORTH);
-"west"  lexer->pushEvent(WEST);
-"east"  lexer->pushEvent(EAST);
-"up"    lexer->pushEvent(UP);
-"down"  lexer->pushEvent(DOWN);
+"south" pushEvent(SOUTH);
+"north" pushEvent(NORTH);
+"west"  pushEvent(WEST);
+"east"  pushEvent(EAST);
+"up"    pushEvent(UP);
+"down"  pushEvent(DOWN);
 %%
 
 /**

@@ -32,7 +32,7 @@ ROOMCOL		\33\[32m
 
 <*>[\0]						return 1; /* end of the string we are parsing*/
 <*>{OTHERCOL}[^\33]*{ENDCOL}			/* throw away some message in other colors*/
-<*>"It's pitch black ...\n"[^\n]*"\n"		lexer->skipSomeProperties(); BEGIN(PROMPT);
+<*>"It's pitch black ...\n"[^\n]*"\n"		skipSomeProperties(); BEGIN(PROMPT);
 
 <*>"Alas, you cannot go that way..."				|
 <*>"You need to swim to go there."				|
@@ -54,23 +54,23 @@ ROOMCOL		\33\[32m
 <*>"The descent is too steep, you need to climb to go there."	|
 <*>"You failed swimming there."					|
 <*>"Maybe you should get on your feet first?"			|
-<*>"Your boat cannot enter this place."				lexer->pushEvent(MOVE_FAIL); BEGIN(INITIAL);
+<*>"Your boat cannot enter this place."				pushEvent(MOVE_FAIL); BEGIN(INITIAL);
 
-<ROOMNAME>.			lexer->append(YYText()[0]);
-<ROOMNAME>{ENDCOL}		lexer->pushProperty(); BEGIN(DESC);
-<ROOMNAME>{ENDCOL}.{0,3}"Exits:"	lexer->pushProperty(); lexer->skipProperty(); BEGIN(EXITS);
+<ROOMNAME>.			append(YYText()[0]);
+<ROOMNAME>{ENDCOL}		pushProperty(); BEGIN(DESC);
+<ROOMNAME>{ENDCOL}.{0,3}"Exits:"	pushProperty(); skipProperty(); BEGIN(EXITS);
 
-<DESC>.                         lexer->append(YYText()[0]);
-<DESC>"\n\r"			lexer->pushProperty();
+<DESC>.                         append(YYText()[0]);
+<DESC>"\n\r"			pushProperty();
 <DESC>"Exits:"			BEGIN(EXITS); // previous property needs to be dropped
 
-<DESC,PROMPT>{ROOMCOL}					lexer->skipSomeProperties(); lexer->pushEvent(ROOM); BEGIN(ROOMNAME);
+<DESC,PROMPT>{ROOMCOL}					skipSomeProperties(); pushEvent(ROOM); BEGIN(ROOMNAME);
 
-<EXITS>\[[^\] ,.]+\][,.]	lexer->append(YYText()[1]); lexer->pushOptional();	/* we don't know if the door is secret, */
-<EXITS>"("[^) .,]+")"=?[,.]	lexer->append(YYText()[1]); lexer->pushOptional();	/* especially when it's open*/
-<EXITS>\*[^* ,.]+\*=?[,.]	lexer->append(YYText()[1]); lexer->pushProperty();	/* *'s around an exit indicate light it seems...*/
-<EXITS>[^ ,.]+[,.]		lexer->append(YYText()[0]); lexer->pushProperty();
-<EXITS>=			lexer->append(YYText()[0]); 
+<EXITS>\[[^\] ,.]+\][,.]	append(YYText()[1]); pushOptional();	/* we don't know if the door is secret, */
+<EXITS>"("[^) .,]+")"=?[,.]	append(YYText()[1]); pushOptional();	/* especially when it's open*/
+<EXITS>\*[^* ,.]+\*=?[,.]	append(YYText()[1]); pushProperty();	/* *'s around an exit indicate light it seems...*/
+<EXITS>[^ ,.]+[,.]		append(YYText()[0]); pushProperty();
+<EXITS>=			append(YYText()[0]); 
 <EXITS>"\n\r"			|
 <EXITS>"\r\n"			BEGIN(PROMPT);
 
@@ -86,10 +86,10 @@ ROOMCOL		\33\[32m
 <PROMPT>"U"			| 
 <PROMPT>"+"			| 
 <PROMPT>":"			| 
-<PROMPT>"="			lexer->append(YYText()[0]); lexer->pushProperty();
+<PROMPT>"="			append(YYText()[0]); pushProperty();
 <PROMPT>"\n"                    |
 <PROMPT>"\r"                    |
-<PROMPT>">"			lexer->pushEvent(ROOM);  BEGIN(INITIAL);
+<PROMPT>">"			pushEvent(ROOM);  BEGIN(INITIAL);
 
 
 %%
