@@ -1,8 +1,11 @@
-// the codes are octal, so \33 is \27 in decimal and <ESC> in literal
+%option yyclass="MudLexer"  // we will define all the actions in the MudLexer class, so flex should know that it needs to produce MudLexer::yylex() 
 
+// the codes are octal, so \33 is \27 in decimal and <ESC> in literal
 OTHERCOL	\33\[[234][013-9]m|22m|42m|[1-9]m
 ENDCOL		\33\[0m
 ROOMCOL		\33\[32m
+
+SPECIAL_MOB	"Nob"
 
 %x DESC
 %x EXITS
@@ -12,46 +15,51 @@ ROOMCOL		\33\[32m
 %%
 
 {ROOMCOL}	BEGIN{ROOMNAME};
+/* we should also find things like "You skillfully discover a xy" or "The xy seems to be closed" in the initial state and drop a note on these*/
 
-
+<*>	\0						return; // end of the string we are parsing
 <*>	{OTHERCOL}[^\33]*{ENDCOL}			;// throw away some message in other colors
-<*>	"It's pitch black ...\n"[.]*"\n"		jumpLastProperty; BEGIN(PROMPT);
+<*>	"It's pitch black ...\n"[^\n]*"\n"		jumpLastProperty; BEGIN(PROMPT);
 
-<*> 	"Alas, you cannot go that way..."				moveFail();
-<*> 	"You need to swim to go there."					moveFail();
-<*> 	"You need to swim there."					moveFail();
-<*> 	"In your dreams, or what?"					moveFail();
-<*> 	"You failed to climb there and fall down, hurting yourself."	moveFail();
-<*>	"You unsccessfully try to break through the ice."		moveFail();
-<*>	"Oops! You cannot go there riding!"				moveFail();
-<*>	"Your mount refuses to follow your orders!"			moveFail();
-<*>	"You can't go into deep water!"					moveFail();
-<*>	"Nah... You feel too relaxed to do that.."			moveFail();
-<*>	"No way! You are fighting for your life!"			moveFail();
-<*>	"You are too exhausted."					moveFail();
-<*>	"You are too exhausted to ride."				moveFail();
-<*>	"You don't control your mount!"					moveFail();
-<*>	"Your mount is too sensible to attempt such a feat."		moveFail();
-<*>	"You need to climb to go there."				moveFail();
-<*>	"The ascent is too steep, you need to climb to go there."	moveFail();
-<*>	"The descent is too steep, you need to climb to go there."	moveFail();
-<*>	"You failed swimming there."					moveFail();
-<*>	"Maybe you should get on your feet first?"			moveFail();
-<*>	"Your boat cannot enter this place."				moveFail();
+<*> 	"Alas, you cannot go that way..."				|
+<*> 	"You need to swim to go there."					|
+<*> 	"You need to swim there."					|
+<*> 	"In your dreams, or what?"					|
+<*> 	"You failed to climb there and fall down, hurting yourself."	|
+<*>	"You unsccessfully try to break through the ice."		|
+<*>	"Oops! You cannot go there riding!"				|
+<*>	"Your mount refuses to follow your orders!"			|
+<*>	"You can't go into deep water!"					|
+<*>	"Nah... You feel too relaxed to do that.."			|
+<*>	"No way! You are fighting for your life!"			|
+<*>	"You are too exhausted."					|
+<*>	"You are too exhausted to ride."				|
+<*>	"You don't control your mount!"					|
+<*>	"Your mount is too sensible to attempt such a feat."		|
+<*>	"You need to climb to go there."				|
+<*>	"The ascent is too steep, you need to climb to go there."	|
+<*>	"The descent is too steep, you need to climb to go there."	|
+<*>	"You failed swimming there."					|
+<*>	"Maybe you should get on your feet first?"			|
+<*>	"Your boat cannot enter this place."				pushEvent(MOVE_FAIL); BEGIN(INITIAL);
 
 <ROOMNAME>	.|\n			append();
 <ROOMNAME>	{ENDCOL}		pushProperty(); BEGIN(DESC);
-<ROOMNAME>	{ENDCOL}[\n]"Exits:"	pushProperty(); jumpProperty(); BEGIN(EXITS);
+<ROOMNAME>	{ENDCOL}"\nExits:"	pushProperty(); jumpProperty(); BEGIN(EXITS);
 
-<DESC>		.|[\n]			append();
+<DESC>		.|\n			append();
 <DESC>		"Exits:"		pushProperty(); BEGIN(EXITS);
-<DESC,PROMPT>	{ROOMCOL}		matchIncompleteRoom(); BEGIN(ROOMNAME);
+<DESC>		^("The "|"A "|"An "|{SPECIAL_MOB}).*"\n"		|
+<DESC>		^.*"is standing here".*"\n"				|
+<DESC>		^.*"is resting here".*"\n"				|
+<DESC>		^.*"is sleeping here".*"\n"				; // throw a way any mobs, players or objects in this room
+<DESC,PROMPT>	{ROOMCOL}		pushEvent(INCOMPLETE_ROOM);; BEGIN(ROOMNAME);
 
-<EXITS> 	\[[^\]]*\]		append(1); pushOptional();	// we don't know if the door is secret, 
-<EXITS> 	\([^)]*\)		append(1); pushOptional();	// especially when it's open
-<EXITS>		\*[^*]*\*		append(1); pushProperty();	// *'s around an exit indicate light it seems...
-<EXITS>		[^ ,]*,			append(0); pushProperty();
-<EXITS>		[^ ,]*\n		append(0); pushProperty(); 
+<EXITS> 	\[[^\] ,.]+\][,.]	append(1); pushOptional();	// we don't know if the door is secret, 
+<EXITS> 	"("[^\) .,]+")"=?[,.]	append(1); pushOptional();	// especially when it's open
+<EXITS>		\*[^* ,.]+\*=?[,.]	append(1); pushProperty();	// *'s around an exit indicate light it seems...
+<EXITS>		[^ ,.]+[,.]		append(0); pushProperty();
+<EXITS>		=			append(); 
 <EXITS> 	\n			BEGIN(PROMPT);
 
 <PROMPT> 	"["			| 
@@ -68,7 +76,7 @@ ROOMCOL		\33\[32m
 <PROMPT>	":"			| 
 <PROMPT>	"="			| 
 <PROMPT>	"O"			append(); pushProperty(); markTerrain(); 
-<PROMPT>	[\t> ]			matchCompleteRoom();  BEGIN(INITIAL);
+<PROMPT>	[\t> ]			pushEvent(ROOM);  BEGIN(INITIAL);
 
 
 %%
@@ -79,5 +87,4 @@ ROOMCOL		\33\[32m
 //	jumpProperty indicates that we left out one property, jumpLastProperty indicates that we left out all following but the last property 
 //		- this has to be represented in our search tree somehow so that we can match rooms with title and exits
 //	perhaps we should also drop a note in the current room if the user types "exits" or if he searches and finds a hidden exit
-//	markTerrain should tell the Room-Algorithm which property determines the terrain type
-//	perhaps we should define the functions in a derived class?
+//	markTerrain should tell the Room-Algorithm which property determines the terrain type for the rendering
