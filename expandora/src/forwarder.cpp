@@ -53,6 +53,11 @@
 
 #include "dispatch.h"
 
+#ifdef NEW_ENGINE
+#include "TelnetFilter.h"
+#include "Lexer.h"
+TelnetFilter * filter;
+#endif
 
 QMutex tcp_mutex;
 
@@ -168,6 +173,7 @@ void userdel(int sock)
       }
 }
 
+
 int proxy_init()
 {
   struct hostent *hent;
@@ -247,6 +253,11 @@ int proxy_init()
   }
 #endif
 */
+#ifdef NEW_ENGINE
+  filter = new TelnetFilter();
+  filter->attachLexer(&lexer);
+  lexer.start();
+#endif
   return 0;
 }
 
@@ -357,8 +368,11 @@ int proxy_loop(void)
                 fflush(debug_file);
               #endif
               
+#ifndef NEW_ENGINE
               dispatcher.analyze_user_stream(intbuff, &rd);
-  
+  #else
+	      filter->analyzeUserStream(intbuff, &rd);
+#endif
               if (!mud_emulation) {
                 tcp_mutex.lock();
 
@@ -398,8 +412,11 @@ int proxy_loop(void)
                 fflush(debug_file);
               #endif
               
+#ifndef NEW_ENGINE
               dispatcher.analyze_mud_stream(intbuff, &rd);
-              
+              #else
+	      filter->analyzeMudStream(intbuff, &rd);
+#endif
               tcp_mutex.lock();
 
               #ifdef DEBUG

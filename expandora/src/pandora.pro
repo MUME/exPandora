@@ -48,8 +48,9 @@ HEADERS		+=struct.h
 HEADERS		+=tree.h
 HEADERS		+=userfunc.h
 HEADERS		+=utils.h
+HEADERS         +=TelnetFilter.h
 
-
+SOURCES         +=TelnetFilter.cpp
 SOURCES		+=BaseEvent.cpp
 SOURCES		+=Terrain.cpp
 SOURCES		+=CharacterTable.cpp

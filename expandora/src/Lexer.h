@@ -1,3 +1,5 @@
+#ifndef LEXER
+#define LEXER
 #include "defines.h"
 #include "ParseEvent.h"
 #include "Property.h"
@@ -66,3 +68,4 @@ class Lexer : public QThread {
 };
 	
 extern Lexer lexer;
+#endif

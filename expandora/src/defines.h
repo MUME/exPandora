@@ -1,4 +1,4 @@
-#define NEW_ENGINE
+//#define NEW_ENGINE
 #include <qglobal.h>
 
 #ifdef Q_OS_LINUX || Q_OS_MACX

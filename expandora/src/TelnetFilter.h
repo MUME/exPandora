@@ -15,14 +15,14 @@ class TelnetFilter {
   /** these methods purge protocol-specific things from the imput, save a copy 
       in the buffer, then call the analyzer thread via a QWaitCondition; so they
       return before the buffer is analyzed ... */
-  void analyzeMudStream(char * input, int length);
+  void analyzeMudStream(char * input, int * length);
 
   /** this one should probably be handled differently - not everything is to be
       passed on - a hackish way will be modifying the input ... */
-  void analyzeUserStream(char * input, int length);
+  void analyzeUserStream(char * input, int * length);
  private:
   Lexer * lexer;
   char * purgeProtocolSequences(char * input, int length);
-}
+};
 
 #endif
