@@ -30,29 +30,30 @@ class ParseEvent {
 		ParseEvent(ParseEvent * other);
 		
 		void push(char * begin); // various ways to push properties to the end of the list
-		void push(Property & newProp) ;
+		void push(Property * newProp) ;
 		void pushOptional(char * begin);
-		void pushOptional(Property & newProp);
+		void pushOptional(Property * newProp);
 		
-		Property pop(); // gets the first property and removes it
+		Property * pop(); // gets the first property and removes it
 		
 		char type;	// bad style
 		double timestamp; // when did the event occur? - needed to determine causality in the parser
 		
 		void clear();	// for the ObjectRecycler
+		void recycleProperties();
 		void copy(ParseEvent * other);
 		
-		Property & next();	// next Property according to pos (updating pos)
-		Property & prev();	// previous  -"-
-		Property & current();	// current Property according to pos (pos stays as it is)
+		Property * next();	// next Property according to pos (updating pos)
+		Property * prev();	// previous  -"-
+		Property * current();	// current Property according to pos (pos stays as it is)
 		
-		list<Property>::iterator getPos() {return pos;}	// for (shallow) copying
-		list<Property> & getOptionals() {return optionals;}
-		list<Property> & getProperties() {return required;}
+		list<Property *>::iterator getPos() {return pos;}	// for (shallow) copying
+		list<Property *> & getOptionals() {return optionals;}	// well these are hard copies but only of the property pointer lists
+		list<Property *> & getProperties() {return required;}
 	private:
-		list<Property> required;
-		list<Property> optionals;
-		list<Property>::iterator pos;
+		list<Property *> required;
+		list<Property *> optionals;
+		list<Property *>::iterator pos;
 };
 
 extern ObjectRecycler<ParseEvent> pemm;

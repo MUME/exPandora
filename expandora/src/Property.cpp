@@ -2,6 +2,7 @@
 #include <string.h>
 
 Property NO_PROPERTY; // 0,0,0,0
+ObjectRecycler<Property> pmm;
 
 char * Property::rest() {
 	return begin + currentOffset;
@@ -21,14 +22,14 @@ int Property::size() {
 
 void Property::clear() {
 	used = 0;
-	currentOffset = 0;
+	currentOffset = -1;
 }
 
 Property::Property() {
 	used = 0;
 	length = 0;
 	begin = 0;
-	currentOffset = 0;
+	currentOffset = -1;
 }
 
 Property::Property(char * in) {
@@ -78,7 +79,7 @@ void Property::enlarge(int neededSpace) {
 	}
 }
 
-char & Property::operator[](int offset) {
+char Property::operator[](int offset) {
 	if (offset > length) enlarge(offset);
 	else if (offset < 0) return begin[length - 1];
 	return begin[offset];

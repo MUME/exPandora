@@ -15,7 +15,6 @@ Room * RoomCollection::insertRoom(ParseEvent * event) {
 
 RoomCollection * RoomCollection::filterByOptionals(ParseEvent * event) {
 	RoomCollection * filtered = rcmm.activate();
-	Room * room;
 	for  (list<Room *>::iterator i = rooms.begin(); i != rooms.end(); i++)	
 		if ((*i)->containsOptionals(event->getOptionals())) filtered->addRoom(*i);
 	
@@ -27,6 +26,9 @@ void RoomCollection::addRoom(Room * room) {
 	rooms.push_back(room);
 }
 
+/**
+ * don't erase the rooms as they are still contained in other RoomCollections
+ */
 void RoomCollection::clear() {
 	rooms.clear();
 } 

@@ -4,7 +4,7 @@
 
 
 SearchTreeNode::SearchTreeNode(ParseEvent * event, TinyList * _children) {
-	myChars = event->current().rest();
+	myChars = event->current()->rest();
 	children = _children;
 }
 
@@ -18,8 +18,8 @@ SearchTreeNode::SearchTreeNode(char * _myChars, TinyList * _children) {
  */
 RoomCollection * SearchTreeNode::getRooms(ParseEvent * event) {
 	RoomSearchNode * selectedChild = 0;
-	for (int i = 0; myChars[i] != 0; i++) if (event->current().next() != myChars[i]) return 0;
-	selectedChild = children->get(event->current().next());
+	for (int i = 0; myChars[i] != 0; i++) if (event->current()->next() != myChars[i]) return 0;
+	selectedChild = children->get(event->current()->next());
 	
 	if(selectedChild == 0) return 0; // no such room
 	else return selectedChild->getRooms(event);	// the last character of name is 0, 
@@ -38,7 +38,7 @@ void SearchTreeNode::setChild(char position, RoomSearchNode * node) {
 Room * SearchTreeNode::insertRoom(ParseEvent * event) {
 	RoomSearchNode * selectedChild = 0;
 	char c;
-	for (int i = 0; myChars[i] != 0; i++) if (c = event->current().next() != myChars[i]) {
+	for (int i = 0; myChars[i] != 0; i++) if ((c = event->current()->next()) != myChars[i]) {
 		
 		// we have to split, as we encountered a difference in the strings ...	
 		
@@ -56,14 +56,14 @@ Room * SearchTreeNode::insertRoom(ParseEvent * event) {
 	}
 	
 	// we reached the end of our string and can pass the event to the next node (or create it)
-	selectedChild = children->get(c = event->current().next());
+	selectedChild = children->get(c = event->current()->next());
 	if (selectedChild != 0) return selectedChild->insertRoom(event);
 	else {
 	       	if (c != 0) selectedChild = new SearchTreeNode(event);
 		else selectedChild = new IntermediateNode(event);
 		children->put(c, selectedChild);
 	}
-	selectedChild->insertRoom(event);
+	return selectedChild->insertRoom(event);
 }
 			
 /**

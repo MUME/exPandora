@@ -5,11 +5,29 @@
 
 ObjectRecycler<ParseEvent> pemm;
 
+/**
+ * shallow clear: the Properties aren't given back to the object recycler
+ */
 void ParseEvent::clear() {
 	required.clear();
 	optionals.clear();
 	type = 0;
 	timestamp = 0;
+	pos = 0;
+}
+
+/**
+ * give the properties back to the recycler - should only be done if they aren't needed in a newly created room
+ */
+void ParseEvent::recycleProperties() {
+	while (!required.empty()) {
+		pmm.deactivate(required.front());
+		required.pop_front();
+	}
+	while (!optionals.empty()) {
+		pmm.deactivate(optionals.front());
+		optionals.pop_front();
+	}
 	pos = 0;
 }
 
@@ -21,58 +39,58 @@ ParseEvent::ParseEvent(ParseEvent * other) {
 	required = other->getProperties(); 
 }
 
-void ParseEvent::push(Property & newProp) {
+void ParseEvent::push(Property * newProp) {
 	required.push_back(newProp);
 	if (timestamp == 0) timestamp = m_timestamp();
 }
 
 void ParseEvent::push(char * begin) {
-	Property ins(begin);
+	Property *ins = new Property(begin);
 	required.push_back(ins);
 	if (timestamp == 0) timestamp = m_timestamp();
 }
 
 void ParseEvent::pushOptional(char * begin) {
-	Property ins(begin);
+	Property *ins = new Property(begin);
 	optionals.push_back(ins);
 	if (timestamp == 0) timestamp = m_timestamp();
 }
 	
 
-void ParseEvent::pushOptional(Property & newProp) {
+void ParseEvent::pushOptional(Property * newProp) {
 	optionals.push_back(newProp);
 	if (timestamp == 0) timestamp = m_timestamp();
 }
 
-Property ParseEvent::pop() {
-	Property ret = required.front();
+Property * ParseEvent::pop() {
+	Property * ret = required.front();
 	required.pop_front();
 	return ret;
 }
 
 
-Property & ParseEvent::next() {
+Property * ParseEvent::next() {
 	if (pos == 0) pos = required.begin();
 	else pos++;
 	if (pos == required.end()) {
 		pos = 0;
-		return NO_PROPERTY;
+		return 0;
 	}
 	else return *pos;
 }
 
-Property & ParseEvent::prev() {
+Property * ParseEvent::prev() {
 	if (pos == 0) pos = required.end();
 	if (pos == required.begin()) {
 		pos = 0;
-		return NO_PROPERTY;
+		return 0;
 	}
 	else return *--pos;
 }		
 	
-Property & ParseEvent::current() {
+Property * ParseEvent::current() {
 	if (pos == 0) pos = required.begin();
-	if (pos == required.end()) return NO_PROPERTY;
+	if (pos == required.end()) return 0;
 	else return *pos;
 }
 

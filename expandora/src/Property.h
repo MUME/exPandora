@@ -4,6 +4,7 @@
 #define SKIPPED_ONE 0
 #define SKIPPED_MANY -1
 
+#include "ObjectRecycler.h"
 
 class Property {
 	public:	
@@ -24,7 +25,7 @@ class Property {
 		int operator==(Property & other);
 		void operator+=(char c);
 		void operator+=(char * string);
-		char & operator[](int offset);
+		char operator[](int offset);
 		int comp(Property & other);
 	private:
 		int currentOffset;
@@ -36,4 +37,5 @@ class Property {
 
 
 extern Property NO_PROPERTY;
+extern ObjectRecycler<Property> pmm;
 #endif

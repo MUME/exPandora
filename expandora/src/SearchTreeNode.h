@@ -21,7 +21,7 @@ class SearchTreeNode : public RoomSearchNode {
 	public:
 		SearchTreeNode(ParseEvent * event, TinyList * children = new TinyList());
 		SearchTreeNode(char * string, TinyList * children = new TinyList());
-		~SearchTreeNode();
+		virtual ~SearchTreeNode();
 		virtual RoomCollection * getRooms(ParseEvent * event);
 		virtual Room * insertRoom(ParseEvent * event);
 		virtual void setChild(char, RoomSearchNode *);

@@ -9,11 +9,11 @@ RoomAdmin::RoomAdmin() : SearchTreeNode("") {
 Room * RoomAdmin::insertRoom(ParseEvent * event) {
 	Room * room;
 	
-	if (event->current() == NO_PROPERTY) {
+	if (event->current() == 0) {
 		rooms = rcmm.activate();
 		return rooms->insertRoom(event);
 	}
-	else if (event->current().size() == SKIPPED_ONE || event->current().size() == SKIPPED_MANY) return 0;
+	else if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) return 0;
 	else room = SearchTreeNode::insertRoom(event);
 	
 	int id;
@@ -34,8 +34,8 @@ Room * RoomAdmin::insertRoom(ParseEvent * event, int id) {
 }
 
 RoomCollection * RoomAdmin::getRooms(ParseEvent * event) {
-	if (event->current() == NO_PROPERTY) return rooms;
-	else if (event->current().size() == SKIPPED_ONE || event->current().size() == SKIPPED_MANY) return skipDown(event);
+	if (event->current() == 0) return rooms;
+	else if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) return skipDown(event);
 	else return SearchTreeNode::getRooms(event);
 }
 
