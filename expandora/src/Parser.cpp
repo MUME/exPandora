@@ -190,7 +190,7 @@ void Parser::syncing() {
   else if (possible->numRooms() == 0)
     rcmm.deactivate((RoomCollection *)possible);
 
-  if (!playerEvents.empty()) playerPop();
+  if (!(playerEvents.empty())) playerPop();
   mudPop();
 
 }	
