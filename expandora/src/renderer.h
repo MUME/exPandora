@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H 
 #define MAINWINDOW_H 
 
+#include "defines.h"
+#include "Room.h"
 #include <qmainwindow.h> 
 #include <qstringlist.h> 
 #include <qgl.h>
@@ -101,7 +103,11 @@ private:
   int           curz;			/* current rooms position */ 
   
   void glDrawMarkers();
+#ifndef NEW_ENGINE
   void glDrawRoom(struct Troom *p);
+#else
+  void glDrawRoom(Room * pr);
+#endif
   bool PointInFrustum(float x, float y, float z);
 };
 

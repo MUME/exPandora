@@ -1,4 +1,4 @@
-//#define NEW_ENGINE
+
 /*
 $Id$
 */

@@ -15,9 +15,11 @@ extern int defaultTolerance;
 class Room {
 	public:
 		void setTerrain(Terrain * t) {terrain = t;}
+		Terrain * getTerrain() {return terrain;}
 		void approve() {experimental = false;};
 		void addExit(int direction, Room * destination);	
 		RoomCollection * go(BaseEvent * event);
+		RoomCollection * getNeighbours(int k) {if (k < (int)exits.size()) return exits[k]; else return 0;}
 		Room() {}
 		void setUnique(){unique = true;};
 		bool isUnique(){return unique;};

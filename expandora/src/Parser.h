@@ -18,6 +18,7 @@ class Parser {
 	public:
 		void setTerrain(Property * ter);
 		void event(BaseEvent * ev);
+		Room * getMostLikely() {return mostLikelyRoom;}
 	private:
 		void mudPop();
 		void playerPop();

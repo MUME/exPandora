@@ -6,15 +6,20 @@
 #include <qapplication.h>
 #include <qdatetime.h>
 
-#include "defines.h"
+//#include "defines.h"
+#include "renderer.h"
 #include "struct.h"
 
-#include "renderer.h"
+
 #include "stacks.h"
 #include "utils.h"
 #include "rooms.h"
 
 #include "userfunc.h"
+
+#include "RoomAdmin.h"
+#include "Parser.h"
+#include "RoomCollection.h"
 
 #if defined(Q_CC_MSVC)
 #pragma warning(disable:4305) // init: truncation from const double to float
@@ -230,12 +235,19 @@ int renderer_main()
 
 void RendererWidget::glDrawMarkers()
 {
+#ifndef NEW_ENGINE
     struct Troom *p;
     unsigned int k;
+#else
+    Room * pr;
+    Coordinate * p;
+#endif
+    
     int dx, dy, dz;
 
     
     glColor4f(marker_colour[0],marker_colour[1],marker_colour[2],marker_colour[3]);
+#ifndef NEW_ENGINE
     for (k = 1; k <= stacker.amount; k++) {
       
       p = roomer.getroom(stacker.get(k));
@@ -244,6 +256,19 @@ void RendererWidget::glDrawMarkers()
         printf("RENDERER ERROR: Stuck upon corrupted room while drawing red pointers.\r\n");
           continue;
       }
+#else
+      pr = parser.getMostLikely();
+      if (pr == 0) pr = roomAdmin.getRoom(0);
+      if (pr == 0) {
+	printf("can't get hold of a room to draw a marker on");
+	return;
+      }
+      else p = pr->getCoordinate();
+#endif
+
+
+
+
 
 
       dx = p->x - curx;
@@ -284,16 +309,30 @@ void RendererWidget::glDrawMarkers()
       glEnd();
 
 //      glTranslatef(-dx, -dy, -dz);
-
-
+#ifndef NEW_ENGINE
     }
+#endif
+
 
 }
 
+
+
+
+#ifndef NEW_ENGINE
 void RendererWidget::glDrawRoom(struct Troom *p)
+#else
+void RendererWidget::glDrawRoom(Room * pr)
+#endif
 {
     GLfloat dx, dx2, dy, dy2, dz, dz2;
+#ifndef NEW_ENGINE
     struct Troom *r;
+#else
+    RoomCollection * rc;
+    Coordinate * r;
+    Coordinate * p = pr->getCoordinate();
+#endif 
     int k;
     char lines, texture;
     float distance;
@@ -321,11 +360,15 @@ void RendererWidget::glDrawRoom(struct Troom *p)
 
     
     glTranslatef(dx, dy, dz);
-
+#ifndef NEW_ENGINE
     if (p->sector != NULL && texture) {
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, p->sector->texture);
-
+#else    
+      if (pr->getTerrain() != NULL && texture) {
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, pr->getTerrain()->texture);
+#endif
       glBegin(GL_QUADS);
       
       glTexCoord2f(0.0, 1.0);
@@ -349,14 +392,24 @@ void RendererWidget::glDrawRoom(struct Troom *p)
     if (lines == 0)
       return;
     
-    for (k = 0; k <= 5; k++)
+    for (k = 0; k <= 5; k++) 
+#ifndef NEW_ENGINE
       if (p->exits[k] != 0) {
         if (p->exits[k] < EXIT_UNDEFINED) {
+#else
+      {
+	  rc = pr->getNeighbours(k);
+	  if (rc == 0) continue;
+	  for(set<Room *>::iterator i = rc->begin(); i != rc->end(); i++) {
+#endif
             GLfloat kx, ky, kz;
             GLfloat sx, sy;
 
-
+#ifndef NEW_ENGINE
             r = roomer.getroom(p->exits[k]);
+#else
+	    r = (*i)->getCoordinate();
+#endif
             dx2 = r->x - curx;
             dy2 = r->y - cury;
             dz2 = (r->z - curz) * DIST_Z;
@@ -391,14 +444,17 @@ void RendererWidget::glDrawRoom(struct Troom *p)
             } else if (k == DOWN) {
                 kz = -(ROOM_SIZE + 0.2);
             } 
-
+#ifndef NEW_ENGINE
             if (p->doors[k] != NULL) {
                 if (strcmp(p->doors[k], "exit") == 0) {
+#endif
                     glColor4f(0, 1.0, 0.0, colour[3] + 0.2);
+#ifndef NEW_ENGINE
                 } else {
                     glColor4f(1.0, 0.0, 0.0, colour[3] + 0.2);
                 }
             }
+#endif
                 
             glBegin(GL_LINES);
             glVertex3f(dx + sx, dy + sy, dz);
@@ -409,7 +465,10 @@ void RendererWidget::glDrawRoom(struct Troom *p)
 
             glColor4f(colour[0], colour[1], colour[2], colour[3]);
 
-        } else {
+        } 
+
+#ifndef NEW_ENGINE
+	  else {
             GLfloat kx, ky, kz;
 
             if (k == NORTH) {
@@ -465,7 +524,8 @@ void RendererWidget::glDrawRoom(struct Troom *p)
             if (p->exits[k] == EXIT_DEATH) {
                 glColor4f(1.0, 0.0, 0.0, colour[3] + 0.2);
             } 
-            
+
+
             glBegin(GL_LINES);
             glVertex3f(dx + kx, dy + ky, dz);
             glVertex3f(dx2 + kx, dy2 + ky, dz2);
@@ -499,6 +559,7 @@ void RendererWidget::glDrawRoom(struct Troom *p)
             glColor4f(colour[0], colour[1], colour[2], colour[3]);
             
         }
+#endif
     }
 
         
@@ -509,7 +570,12 @@ void RendererWidget::glDrawRoom(struct Troom *p)
 
 void RendererWidget::draw(void)
 {
+#ifndef NEW_ENGINE
     struct Troom *p;
+#else
+    Coordinate * p;
+    Room * pr;
+#endif
     unsigned int k;
     int z, new_z;
     
@@ -533,7 +599,11 @@ void RendererWidget::draw(void)
  
     print_debug(DEBUG_RENDERER, "taking base coordinates");
     if (stacker.amount >= 1) {
+#ifndef NEW_ENGINE
 	p = roomer.getroom(stacker.get(1));
+#else
+	p = parser.getMostLikely()->getCoordinate();
+#endif
         if (p != NULL) {
             curx = p->x;
             cury = p->y;
@@ -554,10 +624,15 @@ void RendererWidget::draw(void)
 
 
     z = 9999;
+#ifndef NEW_ENGINE
     for (k = 1; k <= roomer.amount; k++) {
-
 	p = roomer.getroom(roomer.order[k - 1]);
-      
+#else
+	for (k = 1; k <= roomAdmin.lastId(); k++) {
+      pr = roomAdmin.getRoom(k);
+      if (pr == 0) continue;
+      else p = pr->getCoordinate();
+#endif
         new_z = p->z - curz;
         if (z != new_z) {
           z = new_z;
@@ -589,7 +664,11 @@ void RendererWidget::draw(void)
         }
 
         glColor4f(colour[0], colour[1], colour[2], colour[3]);
+#ifndef NEW_ENGINE
         glDrawRoom(p);
+#else
+	glDrawRoom(pr);
+#endif
         
     } /* for */
 

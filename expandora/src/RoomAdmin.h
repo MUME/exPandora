@@ -15,7 +15,7 @@ class RoomAdmin : public SearchTreeNode {
 		RoomAdmin();
 		~RoomAdmin() {} // implement it ...
 		
-		
+		int lastId() {return greatestUsedId;}
 		RoomSearchNode * getRooms(ParseEvent * event);
 		Room * quickInsert(ParseEvent * knownEvent); 	// inserts a room based on an event we already getRoom()'d on
 								// like this we don't traverse the upper part of the tree once again
