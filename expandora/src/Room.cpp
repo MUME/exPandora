@@ -1,18 +1,34 @@
 #include "Room.h"
 #include "RoomCollection.h"
 #include "Exit.h"
+#include "LexDefs.h"
 
 int defaultTolerance = 1;
 
 void Room::init(ParseEvent * event) {
-	experimental = false;
+	experimental = true;
 	properties = event->getProperties();
 	optionalProperties = event->getOptionals();
+	unique = false;
 }
 
 RoomCollection * Room::go(BaseEvent * dir) {
-	if (dir->type < 0) return 0;
-	else return exits[dir->type]->goingTo;
+	RoomCollection * ret = rcmm.activate();
+	if (dir->type == NONE) {
+		ret->addRoom(this);
+		return ret;
+	}
+	else if (dir->type == UNKNOWN) {
+		for (int i = 0; i < exits.size(); i++) {
+			ret->merge(exits[i]);
+		}
+		return ret;
+	}
+	else if (dir->type <  0 || dir->type >= exits.size()) return ret;
+	else {
+		ret->merge(exits[dir->type]);
+		return ret;
+	}
 }
 /*
  * return all properties to pmm and remove this room from the room collection

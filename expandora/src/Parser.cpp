@@ -23,7 +23,7 @@ void Parser::event(BaseEvent * ev) {
 				playerEvents.push(ev);
 				break;
 			case NOTE:
-				// goes into mostLikelyRoom
+				// goes into mostLikelyRoom and isn't pushed on the queue, so that the queuePop won't get confused
 				dropNote((ParseEvent *)ev);
 				return;
 		}
@@ -35,7 +35,7 @@ void Parser::checkQueues() {
 	if (mudEvents.empty()) return;
 	if (playerEvents.empty() && state != SYNCING) state = SYNCING;	
 	else while (mudEvents.front()->timestamp < playerEvents.front()->timestamp && !(mudEvents.empty())) {
-		mudEvents.pop();
+		mudPop();
 		state = SYNCING;
 	}
 	if (mudEvents.empty()) return;
@@ -60,19 +60,19 @@ void Parser::checkQueues() {
 void Parser::approved() {
 	if (playerEvents.front()->type == UNIQUE) {
 		mostLikelyRoom->setUnique();
-		playerEvents.pop();
+		playerPop();
 		return;
 	}
 	if (mudEvents.front()->type == MOVE_FAIL) {
-		mudEvents.pop();
-		playerEvents.pop();
+		mudPop();
+		playerPop();
 		return;
 	}
 	
 	// now we have a move and a room on the event queues;
 	Room * perhaps = 0;
 	RoomCollection * possible = mostLikelyRoom->go(playerEvents.front());
-	if (possible == 0) {
+	if (possible->numRooms() == 0) {
 		Coordinate * c = getExpectedCoordinate();
 		perhaps = roomAdmin.getRoom(c);
 		if ((perhaps == 0) || (!perhaps->fastCompare((ParseEvent *)mudEvents.front()))) {
@@ -80,13 +80,14 @@ void Parser::approved() {
 			if (perhaps == 0) {
 				// can't insert it for some reason - for example skipped props
 				state = SYNCING;
-				playerEvents.pop();
-				mudEvents.pop();
+				playerPop();
+				mudPop();
 				cmm.deactivate(c);
+				rcmm->deactivate(possible);
 				return;
 			}
 			else {	
-				possible = rcmm.activate()->merge(perhaps->getHome());
+				possible->merge(perhaps->getHome());
 				state = EXPERIMENTING;
 				cmm.deactivate(c);
 			}
@@ -94,20 +95,19 @@ void Parser::approved() {
 		else {
 			mostLikelyRoom->addExit(playerEvents.front()->type, perhaps);
 			mostLikelyRoom = perhaps;
-			playerEvents.pop();
-			mudEvents.pop();
+			playerPop();
+			mudPop();
 			cmm.deactivate(c);
+			rcmm->deactivate(possible);
 			return;
 		}
 	}
 	else {
-		possible = rcmm.activate();
-		possible->merge(possible);
 	
 		if ((perhaps = possible->matchOne((ParseEvent *)mudEvents.front())) != 0) { // narrows possible by the event and return a Room if exactly one is left
 			mostLikelyRoom = perhaps;
-			mudEvents.pop();
-			playerEvents.pop();
+			mudPop();
+			playerPop();
 			rcmm.deactivate(possible);
 			return;
 		}
@@ -122,27 +122,41 @@ void Parser::approved() {
 	rcmm.deactivate(possible);
 }
 
+void playerPop() {
+	if (playerEvents.front() >= 0) pemm.deactivate(playerEvents.front());
+	else bemm.deactivate(playerEvents.front());
+	playerEvents.pop();
+}
+			
+void mudPop() {
+	if (mudEvents.front() >= 0) pemm.deactivate(mudEvents.front());
+	else bemm.deactivate(mudEvents.front());
+	mudEvents.pop();
+}
+
 void Parser::syncing() {
 	if (playerEvents.front()->type == UNIQUE) {
 		// unique doesn't work when syncing ...
-		playerEvents.pop();
+		playerPop();
 		return;
 	}
 	if (mudEvents.front()->type == MOVE_FAIL) {
-		mudEvents.pop();
-		playerEvents.pop();
+		mudPop();
+		playerPop();
 		return;
 	}
 	
 	// now we have a move and a room on the event queues;
 	
-	RoomCollection * possible = roomAdmin.getRoom(mudEvents.front());
+	RoomCollection * possible = roomAdmin.getRooms(mudEvents.front());
 	if (possible->numRooms > 0) {
 		state = EXPERIMENTING;
 		buildPaths(possible);
 		rcmm.deactivate(possible);
 	}
 	else if (possible->numRooms == 0) rcmm.deactivate(possible);
+	playerPop();
+	mudPop();
 
 }	
 

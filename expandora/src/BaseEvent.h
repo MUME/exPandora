@@ -11,4 +11,6 @@ class BaseEvent {
 		double timestamp;
 		char type;
 };
+
+extern ObjectRecycler<BaseEvent> bemm;
 #endif
