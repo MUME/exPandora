@@ -154,6 +154,9 @@ ECMD(engine_command_apply_roomname)
 
   for (i = 1; i <= stacker.amount; i++) {
     room = roomer.getroom(stacker.get(i));
+    if (room->name == NULL) {
+      printf("ERROR - room with no roomname !\r\n");
+    }
     if ( (match = roomer.roomname_cmp(room, r->data)) >= 0) {
       stacker.put(room->id);
     }
@@ -193,6 +196,10 @@ ECMD(engine_command_apply_desc)
   } else {
       for (i = 1; i <= stacker.amount; i++) {
           room = roomer.getroom(stacker.get(i));
+	  if (room->desc == NULL) {
+	    /* skip this room, it has no roomdesc to compare with */
+	    continue;
+	  }
           if ( (match = roomer.desc_cmp(room, r->data)) >= 0) {
               print_debug(DEBUG_ANALYZER, "found matching room");
               stacker.put(room->id);
