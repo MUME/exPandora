@@ -11,17 +11,13 @@
 #define SCOUT 3
 #define MOVE_FAIL 4
 
+#include "Property.h"
 #include <list>
 #include <time.h>
 
 
 using namespace std;
 
-typedef struct property {
-	char * begin;
-	char * end;
-} property;
-extern property NO_PROPERTY;
 
 
 /**	

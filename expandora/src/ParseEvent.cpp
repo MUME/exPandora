@@ -3,7 +3,6 @@
 #include "defines.h"
 #include "utils.h"
 
-property NO_PROPERTY = {(char *)INT_MAX, (char *)INT_MAX};
 
 void ParseEvent::clear() {
 	required.clear();
