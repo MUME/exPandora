@@ -10,10 +10,10 @@ class RoomAdmin : public SearchTreeNode {
 	public:
 		RoomAdmin();
 		~RoomAdmin();
-		RoomCollection * getRooms(vector<char *> & properties);
+		RoomCollection * getRooms(ParseEvent * event);
 		Room * getRoom(int id) {return roomIndex[id];};
-		Room * insertRoom(vector<char *> & properties); // pos defaults to 0, returns the id of the new room
-		Room * insertRoom(vector<char *> & properties, int id); 	// inserts the room with predefined id, 
+		Room * insertRoom(ParseEvent * event); // pos defaults to 0, returns the id of the new room
+		Room * insertRoom(ParseEvent * event, int id); 	// inserts the room with predefined id, 
 											// only use when building the tree from the database 
 	private:
 		vector<Room *> roomIndex;

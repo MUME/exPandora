@@ -1,33 +1,21 @@
 #include "RoomAdmin.h"
 #include "IntermediateNode.h"
 
-RoomAdmin::RoomAdmin() : SearchTreeNode("", this, 0) {
+RoomAdmin::RoomAdmin() : SearchTreeNode("") {
 	greatestUsedId = -1;
 	rooms = 0;
 }
 
-Room * RoomAdmin::insertRoom(vector<char *> & properties) {
-	Room * newRoom; 
-	if (properties.size() == 0) {
-		if(rooms == 0) rooms = new RoomCollection();
-		newRoom = rooms->insertRoom(properties, 0);
-	}	
-	else {	
-		char next = properties[0][0];
-		selectedChild = get(next);
-		if (selectedChild == 0) {
-			if (next == 0) { // first property is empty
-				selectedChild = new IntermediateNode(properties[1], this);		
-				put(0, selectedChild);
-			}
-		
-			else {
-				selectedChild = new SearchTreeNode(properties[0], this, 0);
-				put(next, selectedChild);
-			}
-		}
-		newRoom = selectedChild->insertRoom(properties, 0);
+Room * RoomAdmin::insertRoom(ParseEvent * event) {
+	Room * room;
+	
+	if (event->current() == NO_PROPERTY) {
+		rooms = rcmm.activate();
+		return rooms->insertRoom(event);
 	}
+	else if (event->current().size() == SKIPPED_ONE || event->current().size() == SKIPPED_MANY) return 0;
+	else room = SearchTreeNode::insertRoom(event);
+	
 	int id;
 	if (unusedIds.empty()) id = ++greatestUsedId;
 	else {
@@ -35,22 +23,20 @@ Room * RoomAdmin::insertRoom(vector<char *> & properties) {
 		unusedIds.pop();
 	}
 	
-	newRoom->setId(id);
-	roomIndex[id] = newRoom;
-	return newRoom;	
+	room->setId(id);
+	roomIndex[id] = room;
+	return room;	
 }
 
-Room * RoomAdmin::insertRoom(vector<char *> & properties, int id) {
+Room * RoomAdmin::insertRoom(ParseEvent * event, int id) {
 	unusedIds.push(id);
-	return insertRoom(properties);
+	return insertRoom(event);
 }
 
-RoomCollection * RoomAdmin::getRooms(vector<char *> & properties) {
-	if (properties.size() == 0) return rooms;
-	char next = properties[0][0];
-	selectedChild = get(next);
-	if (selectedChild == 0) return 0;
-	else return selectedChild->getRooms(properties, 0);
+RoomCollection * RoomAdmin::getRooms(ParseEvent * event) {
+	if (event->current() == NO_PROPERTY) return rooms;
+	else if (event->current().size() == SKIPPED_ONE || event->current().size() == SKIPPED_MANY) return skipDown(event);
+	else return SearchTreeNode::getRooms(event);
 }
 
 

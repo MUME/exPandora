@@ -1,46 +1,45 @@
 #include "IntermediateNode.h"
 
 
-IntermediateNode::IntermediateNode(char * _myChars, RoomSearchNode * _parent) : SearchTreeNode(_myChars, parent, 0) {
+IntermediateNode::IntermediateNode(ParseEvent * event) : SearchTreeNode(event->next().rest()) {
 	rooms = 0;
 }
 
-Room * IntermediateNode::insertRoom(vector<char *> & properties, int pos) {
-	pos++;
-	if (pos == properties.size()) {
-		if (rooms == 0) rooms = new RoomCollection();
-		return rooms->insertRoom(properties);
+Room * IntermediateNode::insertRoom(ParseEvent * event) {
+	
+	if (event->next() == NO_PROPERTY) {
+		if (rooms == 0) rooms = rcmm.activate();
+		return rooms->insertRoom(event);
 	}
-	char * othersChars;
-	for (int i = start; i < next; i++) {
-		if (myChars[i-start] != properties[pos][i]) {
-			othersChars = new char[next - i + 1];
-			char * myNewChars = new char[i + 1];
-			strncpy(othersChars, myChars+i, next-i);
-			strncpy(myNewChars, myChars, i); 
-			delete(myChars);
-			myChars = myNewChars;
-			selectedChild = new SearchTreeNode(othersChars, this, i);
-			for (int c = 0; c < 128; c++) {
-				selectedChild->setChild(c, get(c));
-				put(c, 0);
-			}
-			put(properties[pos][i], selectedChild);
-			next = i;
-			return selectedChild->insertRoom(properties, pos);
-		}
-	}
+	
+	return SearchTreeNode::insertRoom(event);
+}
+	
 
-	return SearchTreeNode::insertMatchingRoom(properties, pos);
-		
+RoomCollection * IntermediateNode::getRooms(ParseEvent * event) {
+	if (event->next() == NO_PROPERTY) {
+		RoomCollection * ret = rcmm.activate();
+		ret->merge(rooms);
+		return ret;
+	}
+	else if (event->current().size() == SKIPPED_ONE || event->current().size() == SKIPPED_MANY) return SearchTreeNode::skipDown(event);
+	else return SearchTreeNode::getRooms(event);
 }
 
+RoomCollection * IntermediateNode::skipDown(ParseEvent * event) {
+	RoomCollection * r = rcmm.activate();
+	if (event->current().size() == SKIPPED_ONE) return getRooms(event);
+	
+	ParseEvent * copy = new ParseEvent(event);
+	
+	if (event->next() == NO_PROPERTY) r->merge(rooms);
+	else {
+		char c;
+		if (children->get(c = event->current().next()) != 0)  r->merge(children->get(c)->getRooms(event));
+	}
 
+	r->merge(SearchTreeNode::skipDown(copy));
 
-
-RoomCollection * IntermediateNode::getRooms(vector<char *> & properties, int pos) {
-	pos++;
-	if (pos == properties.size()) return rooms;
-	else return SearchTreeNode::getRooms(properties, pos);
+	delete(copy);
+	return r;
 }
-

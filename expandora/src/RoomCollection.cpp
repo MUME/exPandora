@@ -3,24 +3,22 @@
 #include <stdexcept>
 using namespace std;
 
-Room * RoomCollection::insertRoom(vector<char *> & properties) {
-	Room * room = new Room(properties);
+ObjectRecycler<RoomCollection> rcmm;
+
+Room * RoomCollection::insertRoom(ParseEvent * event) {
+	Room * room = new Room(event);
 	
 	rooms.push_back(room);
 	return room;
 }
 
 
-RoomCollection * RoomCollection::filterByOptionals(vector<char *> & optionalProperties) {
-	RoomCollection * filtered = new RoomCollection();
+RoomCollection * RoomCollection::filterByOptionals(ParseEvent * event) {
+	RoomCollection * filtered = rcmm.activate();
 	Room * room;
-	int i;
-	for (i = rooms.size(); i > 0; --i) {
-		try {
-			room = rooms[i];	
-			if (room->containsOptionals(optionalProperties)) filtered->addRoom(room);
-		} catch (out_of_range e) {} //don't care for the exception - just try the next room
-	}
+	for  (list<Room *>::iterator i = rooms.begin(); i != rooms.end(); i++)	
+		if ((*i)->containsOptionals(event->getOptionals())) filtered->addRoom(*i);
+	
 	return filtered;
 }
 
@@ -29,3 +27,11 @@ void RoomCollection::addRoom(Room * room) {
 	rooms.push_back(room);
 }
 
+void RoomCollection::clear() {
+	rooms.clear();
+} 
+
+
+void RoomCollection::merge(RoomCollection * other) {
+	rooms.splice(rooms.begin(), other->getRooms());
+}

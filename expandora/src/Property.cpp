@@ -1,6 +1,12 @@
 #include "Property.h"
 #include <string.h>
 
+Property NO_PROPERTY; // 0,0,0,0
+
+char * Property::rest() {
+	return begin + currentOffset;
+}
+
 void Property::skip() {
 	used = SKIPPED_ONE;
 }
@@ -15,16 +21,31 @@ int Property::size() {
 
 void Property::clear() {
 	used = 0;
+	currentOffset = 0;
 }
 
 Property::Property() {
 	used = 0;
 	length = 0;
 	begin = 0;
+	currentOffset = 0;
 }
 
-int Property::operator==(Property other) {
-	if (other.size() != used) return 0;
+Property::Property(char * in) {
+	begin = in;
+	length = strlen(in);
+	used = length;
+	currentOffset = 0;
+}
+
+int Property::comp(Property & other) {
+	int ret = 0;
+	for (int i = 0; i<used; i++) if (begin[i] != other[i]) ret++;
+	return ret;
+}
+
+int Property::operator==(Property & other) {
+	if (used != other.size()) return 0;
 	for (int i = 0; i<used; i++) if (begin[i] != other[i]) return 0;
 	return 1;
 }
@@ -59,7 +80,20 @@ void Property::enlarge(int neededSpace) {
 
 char & Property::operator[](int offset) {
 	if (offset > length) enlarge(offset);
+	else if (offset < 0) return begin[length - 1];
 	return begin[offset];
 }
-	
+
+
+char Property::current() {
+	return operator[](currentOffset);
+}
+		
+char Property::next() {
+	return operator[](++currentOffset);
+}
+		
+char Property::prev() {
+	return operator[](--currentOffset);
+}
 

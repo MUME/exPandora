@@ -11,9 +11,10 @@ using namespace std;
  */
 class IntermediateNode : public SearchTreeNode {
 	public:
-		IntermediateNode(char * _myChars, RoomSearchNode * parent);
-		Room * insertRoom(vector<char *> & properties, int pos); //increments pos
-		RoomCollection * getRooms(vector<char *> & properties, int pos); // increments pos
+		IntermediateNode(ParseEvent * event);
+		Room * insertRoom(ParseEvent * event); 
+		RoomCollection * getRooms(ParseEvent * event);
+		RoomCollection * skipDown(ParseEvent * event);       	
 	private:
 		RoomCollection * rooms;
 };
