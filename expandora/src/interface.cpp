@@ -35,6 +35,11 @@
 
 #include "userfunc.h"
 
+#ifdef NEW_ENGINE
+#include "Parser.h"
+#include "Room.h"
+#include "Coordinate.h"
+#endif
 
 RoomInfo::RoomInfo(QWidget* parent, const char* name)
  : QWidget(parent, name)
@@ -105,8 +110,15 @@ RoomInfo::RoomInfo(QWidget* parent, const char* name)
 void RoomInfo::update_info()
 {
   char str[200];
-  struct Troom *r;
+  
+#ifdef NEW_ENGINE
+  Room * rr;
+  Coordinate * r;
+#else
   int i;
+  struct Troom *r;
+
+  
   
   if (stacker.amount == 0) {
     
@@ -120,23 +132,34 @@ void RoomInfo::update_info()
     id_label->setText(tr("ID:  Multiple possibilities"));
     return;
   }
-  
+
   sprintf(str, "ID: ");
   stacker.get_current( &str[ strlen(str) ] );
   id_label->setText(tr(str));
 
   r = roomer.getroom(stacker.get(1));
-
+#endif
+#ifdef NEW_ENGINE  
+  rr = parser.getMostLikely();
+  if (rr) r = rr->getCoordinate();
+  else r = cmm.activate();
+#endif
   sprintf(str, "Coord: X: %i, Y %i, Z: %i", r->x, r->y, r->z);
   coord_label->setText( str );
   
+#ifndef NEW_ENGINE
   if (r->sector) {
     sprintf(str, " %s ", r->sector->desc);
+#else
+  if(rr) {
+    sprintf(str, " %s ", rr->getTerrain()->desc);
+#endif
+    
     terrain_label->setText( str );
   } else {
     terrain_label->setText(" T: NONE ");
   }
-  
+#ifndef NEW_ENGINE
   if (r->name) {
     name_edit->setText( r->name );
   } else {
@@ -191,7 +214,7 @@ void RoomInfo::update_info()
       }
       
   exits_label->setText( str );
-  
+#endif  
   
 }
 
@@ -269,7 +292,8 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
 #else
    if(testWFlags(Qt::WStyle_StaysOnTop)){
       flags ^= Qt::WStyle_StaysOnTop;
-   }
+   
+}
 #endif
    QPoint p(geometry().x(),geometry().y());
    reparent(0,flags,p,true);
@@ -390,7 +414,9 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
 {
     switch ( tolower(k->ascii()) ) {
         case 'c':                               
-            engine();
+#ifndef NEW_ENGINE  
+	  engine();
+#endif
             break;
          
         case 'x':

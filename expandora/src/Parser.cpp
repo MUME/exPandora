@@ -3,6 +3,8 @@
 #include "LexDefs.h"
 #include "RoomCollection.h"
 
+Parser parser;
+
 void Parser::setTerrain(Property * ter) {
 	
 	activeTerrain = (terrains.find((*ter)[0]))->second; // the first character has to be the terrain id

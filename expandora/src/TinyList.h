@@ -31,7 +31,6 @@ class TinyList {
 
 template <class T>
 TinyList<T>::TinyList() {
-	printf("TinyList constructor ...\n");
 	list = new T * [1];
 	listSize = 1;
 	list[0] = 0;

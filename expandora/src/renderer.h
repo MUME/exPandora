@@ -2,7 +2,9 @@
 #define MAINWINDOW_H 
 
 #include "defines.h"
+#ifdef NEW_ENGINE
 #include "Room.h"
+#endif
 #include <qmainwindow.h> 
 #include <qstringlist.h> 
 #include <qgl.h>

@@ -68,12 +68,13 @@ Room * SearchTreeNode::insertRoom(ParseEvent * event) {
 	selectedChild = children->get(c);
 	event->current()->next();
 	if (selectedChild == 0) {
-	       printf("creating new Node ...\n");	
+	       
 	       	if (c != 0) selectedChild = new SearchTreeNode(event);
 		else selectedChild = new IntermediateNode(event);
 		children->put(c, selectedChild);
 	}
-	else printf("using selected Node ...\n");
+
+
 	return selectedChild->insertRoom(event);
 }
 			

@@ -117,7 +117,7 @@ void StructureParser::addExits() {
 	    from = roomAdmin.getRoom(e->sourceId);
 	    to = roomAdmin.getRoom(e->destId);
 	    from->addExit(e->dir, to);
-		printf("added exit from %i to %i in dir %i\n", from, to, e->dir);
+		
 	}
 }
 #endif
@@ -150,7 +150,6 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
 	roomProps = 0;
 	cmm.deactivate(c);
 	c = 0;
-	printf("inserted room: %i\n", id);
 #endif
     }        
     flag = 0;    
@@ -408,7 +407,6 @@ bool StructureParser::startElement( const QString& , const QString& ,
  */
 double StructureParser::timeFromString(QString & s) {
 //"dd.MM.yyyy - hh:mm:ss"
-	printf("original timestamp: %s\n", (const char *)s);
 	s[2] = 0;
 	s[5] = 0;
 	s[10] = 0;
@@ -416,8 +414,6 @@ double StructureParser::timeFromString(QString & s) {
 	ret += strtod((const char *)s + 3, (char **)0) * 60 * 60 * 24 * 30.4375;
 	ret += strtod((const char *)s, (char **)0) * 60 * 60 * 24;
 	ret += 60 * 60 * 24; // just add one day to get 2000 not being a Schaltjahr right
-	//printf("modified timestamp: %s\n", s);
-	
 	s[2] = '.';
 	s[5] = '.';
 	s[10] = ' ';
