@@ -35,14 +35,16 @@ char Property::get(int offset) {
 }
 
 void Property::copy(Property * other) {
-  currentOffset = other->getOffset();
+
   char * text = other->getText();
-  used = other->size();
+  int otherUsed = other->size();
   if (text >= 0) {
-    enlarge(used + 1);
-    strncpy(begin, text, used);
-    begin[used] = 0;
+    enlarge(otherUsed + 1);
+    strncpy(begin, text, otherUsed);
+    begin[otherUsed] = 0;
   }
+  used = otherUsed;
+  currentOffset = other->getOffset();
 }
 
 Property * Property::copy() {

@@ -212,6 +212,12 @@ void Parser::enlargePaths(RoomCollection * rc) {
   Path * best = 0;
   Path * second = 0;
   double prevBest = paths.front()->getProb();
+  stack<Room *> releaseSchedule;
+  
+  for (j = rc->begin(); j != rc->end(); j++) {
+	(*j)->hold(); // make sure the rooms don't get deleted by accident
+	releaseSchedule.push(*j);
+  }
 
   int k = paths.size();
   
@@ -221,11 +227,14 @@ void Parser::enlargePaths(RoomCollection * rc) {
     working = 0;
     j = 0;
 
+    
     while (j != rc->end()/*j++ is done only if no new room*/) { 
       if (working == 0) {
 	j = rc->begin();
 	Room * newRoom = admin->quickInsert(mudEvents.front(), c, activeTerrain);
 	if (newRoom != 0) {
+	  newRoom->hold();
+	  releaseSchedule.push(newRoom);
 	  working = (*i)->fork(newRoom, c);
 	  working->setProb(working->getProb()/PATH_ACCEPT);
 	}
@@ -243,11 +252,10 @@ void Parser::enlargePaths(RoomCollection * rc) {
       if (working->getProb() < prevBest/PATH_ACCEPT) {
 	(*i)->removeChild(working);
 	pamm.deactivate(working);
-	//working = 1;
       }
       else {
 	if (best == 0) best = working;
-	else if(working->getProb() > best->getProb()) {
+	else if (working->getProb() > best->getProb()) {
 	  paths.push_back(best);
 	  second = best;
 	  best = working;
@@ -256,7 +264,6 @@ void Parser::enlargePaths(RoomCollection * rc) {
 	  if (second == 0) second = working;
 	  paths.push_back(working);
 	}
-	//working = 1;
       }
     } 
 
@@ -279,6 +286,11 @@ void Parser::enlargePaths(RoomCollection * rc) {
     }
   }
   else state = SYNCING;
+  
+  while (!releaseSchedule.empty()) {
+    releaseSchedule.top()->release(admin);
+    releaseSchedule.pop();
+  }
 }
 
 

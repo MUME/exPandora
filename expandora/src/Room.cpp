@@ -21,11 +21,12 @@ Room::Room() {
 
 void Room::release(RoomAdmin * admin) {
   holdCount--;
-  if (holdCount <= 0) {
+  if (holdCount == 0) {
     admin->removeRoom(id);
-    clear();
     rmm.deactivate(this);
   }
+  else if (holdCount < 0) 
+    printf("fatal: trying to double-remove room");
 }
 
 
