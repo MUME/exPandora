@@ -18,6 +18,12 @@
 #include "config_reader.h"
 #include "engine.h"
 
+#ifdef NEW_ENGINE
+#include "Terrain.h"
+#include <qstring.h>
+//#include <pair>
+//using namespace std;
+#endif
 
 #define BUFFER_SIZE 4096
 
@@ -367,17 +373,20 @@ ACMD(parse_terraintype)
 {
   char *p;
   char arg[MAX_STR_LEN];
-  struct room_sectors_data *terrain;
-    
+#ifndef NEW_ENGINE
+  struct room_sectors_data *terrain = new room_sectors_data;
+#else
+  Terrain * terrain = new Terrain();
+#endif
   
   p = skip_spaces(line);                        
   if (!*p) {                                    
     CONFIG_ERROR("missing terrain description");
+    delete terrain;
     return;                                     
   }                                             
   p = one_argument(p, arg, 2);          /* upper case */
   
-  terrain = new room_sectors_data;
   
 
   terrain->desc = (char *) malloc(strlen(arg)+1);
@@ -387,7 +396,7 @@ ACMD(parse_terraintype)
   if (!*p) {                                    
     CONFIG_ERROR("missing filename");
     free(terrain->desc);
-    free(terrain);
+    delete terrain; // things created with new should ALWAYS be destroyed with delete
     return;                                     
   }                                             
   p = one_argument(p, arg, 1);          /* get as is - file name */ 
@@ -399,17 +408,23 @@ ACMD(parse_terraintype)
   p = skip_spaces(p);                        
   if (!*p) {                                    
     CONFIG_ERROR("missing terrain marker");
-    free(terrain->desc);
-    free(terrain);
+    free(terrain->filename);
+    delete terrain;
     return;                                     
   }                                             
   p = one_argument(p, arg, 1);          /* get as is */ 
 
   terrain->pattern = arg[0];
   
+#ifndef NEW_ENGINE
   terrain->next = room_sectors;
   
   room_sectors = terrain;
+#else 
+  terrains.insert(make_pair(arg[0], terrain));
+  terrainIDs.insert(make_pair(QString::fromAscii(terrain->desc), arg[0]));
+#endif
+  
   
 }
 

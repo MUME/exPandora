@@ -73,6 +73,7 @@ void Map::set(Coordinate *cm, Room *room) {
 Coordinate * Map::setNearest(Coordinate *_c, Room *room) {
 	Coordinate * c = getNearestFree(_c);
 	set(c, room);
+	room->setCoordinate(c);
 	return c;
 }
 		

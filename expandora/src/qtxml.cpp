@@ -116,6 +116,7 @@ void StructureParser::addExits() {
 	    exits.pop();
 	    from = roomAdmin.getRoom(e->sourceId);
 	    to = roomAdmin.getRoom(e->destId);
+	    
 	    from->addExit(e->dir, to);
 		
 	}
@@ -129,7 +130,8 @@ StructureParser::StructureParser()
 #ifdef NEW_ENGINE
 	roomProps = 0;
 	prop = 0;
-	c = 0;
+	c = cmm.activate();
+	c->clear();
 	ts = 0;
 	t = 0;
 	id = 0;
@@ -148,8 +150,8 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
 	room->resetTime(ts);
 	pemm.deactivate(roomProps);
 	roomProps = 0;
-	cmm.deactivate(c);
-	c = 0;
+	c->clear();
+	id = 0;
 #endif
     }        
     flag = 0;    
@@ -227,7 +229,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
     if (qName == "room") {
 #ifdef NEW_ENGINE
     	roomProps = pemm.activate();
- 	c = cmm.activate();
+ 	
 #else
 	r = new Troom;
       	reset_room(r);

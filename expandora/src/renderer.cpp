@@ -77,7 +77,11 @@ RendererWidget::RendererWidget( QWidget *parent, const char *name )
 void RendererWidget::initializeGL()
 {
   QImage tex1, buf1;
+#ifndef NEW_ENGINE
   struct room_sectors_data *p;
+#else 
+  Terrain * p;
+#endif
 
   glShadeModel(GL_SMOOTH);
   glClearColor (0.0, 0.0, 0.0, 0.0);	/* This Will Clear The Background Color To Black */
@@ -118,15 +122,21 @@ void RendererWidget::initializeGL()
     }
 
     
-    
+#ifndef NEW_ENGINE    
     p = room_sectors;
     while (p) {
+#else
+      for (map<char, Terrain *>::iterator i = terrains.begin(); i != terrains.end(); i++) {
+	p = (*i).second;
+#endif
       glGenTextures(1, &p->texture);
       print_debug(DEBUG_RENDERER, "loading texture %s", p->filename);
 
+#ifndef NEW_ENGINE
       if (strcmp( p->desc, "DEATH" ) == 0 ) 
         death_terrain = p;
-      
+#endif
+
       buf1.load( p->filename );
       tex1 = QGLWidget::convertToGLFormat( buf1 ); // flipped 32bit RGBA
 
@@ -166,8 +176,9 @@ void RendererWidget::initializeGL()
         
         glEndList();
       }
-      
+#ifndef NEW_ENGINE
       p = p->next;
+#endif
     }
     
 
@@ -262,10 +273,10 @@ void RendererWidget::glDrawMarkers()
       pr = parser.getMostLikely();
       if (pr == 0) pr = roomAdmin.getRoom(0);
       if (pr == 0) {
-	printf("can't get hold of a room to draw a marker on");
-	return;
+	pr = roomAdmin.getRoom(0);
+	if (pr == 0) return; //silently die when there is no room for the marker
       }
-      else p = pr->getCoordinate();
+      p = pr->getCoordinate();
 #endif
 
 
@@ -630,7 +641,7 @@ void RendererWidget::draw(void)
     for (k = 1; k <= roomer.amount; k++) {
 	p = roomer.getroom(roomer.order[k - 1]);
 #else
-	for (k = 1; k <= roomAdmin.lastId(); k++) {
+    for (k = 0; (int)k <= roomAdmin.lastId(); k++) {
       pr = roomAdmin.getRoom(k);
       if (pr == 0) continue;
       else p = pr->getCoordinate();

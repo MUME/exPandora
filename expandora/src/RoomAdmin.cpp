@@ -5,18 +5,18 @@ RoomAdmin roomAdmin;
 
 RoomAdmin::RoomAdmin() : SearchTreeNode("") {
 	greatestUsedId = -1;
-	rooms = 0;
+	rooms = rcmm.activate();
 }
 
 Room * RoomAdmin::insertRoom(ParseEvent * event, Terrain * t) {
 	Room * room;
 	
 	if (event->current() == 0) {
-		rooms = rcmm.activate();
 		return rooms->insertRoom(event);
 	}
 	else if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) return 0;
 	else room = SearchTreeNode::insertRoom(event);
+
 	assignId(room);
 	room->setTerrain(t);
 	return room;
@@ -28,18 +28,20 @@ void RoomAdmin::assignId(Room * room) {
 	else {
 		id = unusedIds.top();
 		unusedIds.pop();
+		if (id > greatestUsedId) greatestUsedId = id;
 	}
 	
 	room->setId(id);
-	if (roomIndex.size() <= id) roomIndex.resize(id + 1, 0);
+	if ((int)roomIndex.size() <= id) roomIndex.resize(id + 1, 0);
 	roomIndex[id] = room;
 }
 
 Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Coordinate * c, Terrain * t) {
 	unusedIds.push(id);
+
 	Room * room = insertRoom(event, t);
 	map.setNearest(c, room);
-	room->setCoordinate(c);
+	
 	return room;
 }
 
@@ -48,8 +50,8 @@ Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosi
 	Room * room = deepestMatch->insertRoom(knownEvent);
 	assignId(room);
 	if (expectedPosition != 0) {
-		Coordinate * c = map.setNearest(expectedPosition, room);
-		room->setCoordinate(c);
+	  map.setNearest(expectedPosition, room);
+		
 	}
 	room->setTerrain(t);	
 	return room;

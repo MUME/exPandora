@@ -20,7 +20,7 @@ class RoomAdmin : public SearchTreeNode {
 		Room * quickInsert(ParseEvent * knownEvent); 	// inserts a room based on an event we already getRoom()'d on
 								// like this we don't traverse the upper part of the tree once again
 		Room * quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition, Terrain * t = 0);
-		Room * getRoom(int id) {if (roomIndex.size() > id) return roomIndex[id]; else return 0;};
+		Room * getRoom(int id) {if (greatestUsedId >= id) return roomIndex[id]; else return 0;};
 		Room * getRoom(Coordinate * pos) {return map.get(pos);};
 		
 		Room * insertRoom(ParseEvent * event, Terrain * t = 0); // pos defaults to 0, returns the id of the new room
@@ -29,7 +29,7 @@ class RoomAdmin : public SearchTreeNode {
 		Room * insertRoom(ParseEvent * event, Coordinate * expectedPosition, Terrain * t = 0);
 
 	private:
-		Coordinate * findNearestFree(Coordinate * pos);
+		//Coordinate * findNearestFree(Coordinate * pos);
 		Map map;
 		void assignId(Room * room); 
 		RoomSearchNode * deepestMatch;

@@ -27,6 +27,10 @@
 #include "utils.h"
 #include "engine.h"
 
+#ifdef NEW_ENGINE
+#include "RoomAdmin.h"
+#endif
+
 
 /* global flags */
 int glredraw = 1;		/* redraw is needed */
@@ -238,8 +242,11 @@ int main(int argc, char *argv[])
     xml_readbase(base_file);
 //    roomer.database_integrity_check("After xml reading");
     
-    
+#ifndef NEW_ENGINE
     printf("Successfuly loaded %i rooms!\n", roomer.amount);
+#else
+    printf("Successfuly loaded %i rooms!\n", roomAdmin.lastId() + 1);
+#endif
 
     /* init */
     Ctop = new Tevent;

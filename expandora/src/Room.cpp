@@ -12,11 +12,14 @@ void Room::init(ParseEvent * event) {
 }
 
 void Room::addExit(int direc, Room * target) {
-	if (exits.size() <= (unsigned int)direc) {
+  if ((int)(exits.size()) <= direc) {
 		exits.resize(direc + 1, 0);
 	}
 	RoomCollection * roomsInDir = exits[direc];
-	if (roomsInDir == 0) roomsInDir = rcmm.activate();
+	if (roomsInDir == 0) {
+	  roomsInDir = rcmm.activate();
+	  exits[direc] = roomsInDir;
+	}
 	roomsInDir->addRoom(target);
 }
 
