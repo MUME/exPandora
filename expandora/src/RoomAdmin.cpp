@@ -51,6 +51,14 @@ Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosi
 	return room;
 }
 
+Room * RoomAdmin::insertRoom(ParseEvent * event, Coordinate * expectedPosition) {
+	RoomSearchNode * temp = deepestMatch;
+	deepestMatch = this;
+	Room * ret = quickInsert(event, expectedPosition);
+	deepestMatch = temp;
+	return ret;
+}
+
 RoomSearchNode * RoomAdmin::getRooms(ParseEvent * event) {
 	if (event->current() == 0) return rooms;
 	else if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) deepestMatch = skipDown(event);

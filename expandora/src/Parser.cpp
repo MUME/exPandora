@@ -8,6 +8,14 @@ void Parser::setTerrain(Property * ter) {
 	activeTerrain = (terrains.find((*ter)[0]))->second; // the first character has to be the terrain id
 }
 
+void Parser::dropNote(ParseEvent * note) {
+	if (mostLikelyRoom != 0) { 
+		while (note->next() != 0) mostLikelyRoom->addOptional(note->current());
+	}
+	else note->recycleProperties();
+	pemm.deactivate(note);
+}
+
 void Parser::event(BaseEvent * ev) {
 	if (ev->type >= 0) {
 		// a move event

@@ -17,10 +17,10 @@ class Room {
 		void approve() {experimental = false;};
 		void addExit(int direction, Room * destination);	
 		RoomCollection * go(BaseEvent * event);
-		Room();
+		Room() {}
 		void setUnique(){unique = true;};
 		bool isUnique(){return unique;};
-		
+		void addOptional(Property * note) {optionalProperties.push_back(note);}
 		void init(ParseEvent * event);
 		void setId(int _id) {id = _id;};
 		bool containsOptionals(list<Property *> & optionals);

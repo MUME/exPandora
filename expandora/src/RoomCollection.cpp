@@ -1,6 +1,7 @@
 #include "RoomCollection.h"
 #include "RoomAdmin.h"
 #include <stdexcept>
+#include <stack>
 using namespace std;
 
 ObjectRecycler<RoomCollection> rcmm;
@@ -39,6 +40,19 @@ void RoomCollection::clear() {
 	rooms.clear();
 } 
 
+Room * RoomCollection::matchOne(ParseEvent * target) {
+	set<Room *>::iterator i = rooms.begin();
+	stack<Room *> deleteSchedule;
+	for (; i != rooms.end(); i++) {
+		if (!(*i)->fastCompare(target, defaultTolerance)) deleteSchedule.push(*i);
+	}
+	while (!deleteSchedule.empty()) {
+	       rooms.erase(deleteSchedule.top());
+	       deleteSchedule.pop();
+	}
+	if (++(rooms.begin()) == rooms.end()) return *(rooms.begin());
+	else return 0;
+}
 
 RoomCollection * RoomCollection::merge(RoomSearchNode * other) {
 	if (other->numRooms() > 0) {

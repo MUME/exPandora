@@ -4,18 +4,29 @@
 #include "ObjectRecycler.h"
 #include "Parser.h"
 
+#ifndef PLAYER
 #undef yyFlexLexer
+#undef yy
 #define yyFlexLexer PlayerFlexLexer
+#define yy player
 #include <FlexLexer.h>
+#endif
+
+#ifndef MUD
 #undef yyFlexLexer
+#undef yy
 #define yyFlexLexer MudFlexLexer
+#define yy mud
 #include <FlexLexer.h>
+#endif
 
 class Lexer : private MudFlexLexer, private PlayerFlexLexer {
 	public:
 		Lexer();
-		void MudLex(char * in) {MudFlexLexer::LexerInput(in, MAX_DATA_LEN); MudFlexLexer::yylex();}
-		void PlayerLex(char * in) {PlayerFlexLexer::LexerInput(in, MAX_DATA_LEN); PlayerFlexLexer::yylex();}
+		//void MudLex(char * in) {MudFlexLexer::LexerInput(in, MAX_DATA_LEN); MudFlexLexer::yylex();}
+		//void PlayerLex(char * in) {PlayerFlexLexer::LexerInput(in, MAX_DATA_LEN); PlayerFlexLexer::yylex();}
+		mudlex();
+		playerlex();
 	private: // only used by yylex()	
 		void markTerrain();
 		void pushEvent(char type);

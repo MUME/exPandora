@@ -11,6 +11,16 @@ void Room::init(ParseEvent * event) {
 	unique = false;
 }
 
+void Room::addExit(int direc, Room * target) {
+	if (exits.size() < (unsigned int)direc) {
+		exits.resize(direc);
+	}
+	RoomCollection * roomsInDir = exits[direc];
+	if (roomsInDir == 0) roomsInDir = rcmm.activate();
+	roomsInDir->addRoom(target);
+}
+
+
 RoomCollection * Room::go(BaseEvent * dir) {
 	RoomCollection * ret = rcmm.activate();
 	if (dir->type == NONE) {

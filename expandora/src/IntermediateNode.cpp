@@ -35,7 +35,7 @@ RoomSearchNode * IntermediateNode::skipDown(ParseEvent * event) {
 	else {
 		ParseEvent * copy = pemm.activate();
 		copy->copy(event);
-		char c;
+		char c = 0;
 		if ((myChars[0] == 0 && children->get(c = event->current()->current()) != 0) || myChars[0] == c)  r->merge(SearchTreeNode::getRooms(event));
 		r->merge(SearchTreeNode::skipDown(copy));
 		copy->recycleProperties();
