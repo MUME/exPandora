@@ -130,13 +130,13 @@ void StructureParser::buildProperties(char * desc) {
     if (desc[i] == '|') {
       desc[i] = 0;
       prop->add(lastLineBegin);
-      roomProps->add(prop);
+      roomProps->push(prop);
       prop = pmm.activate();
       lastLineBegin = desc+i+1;
     }
   }
   prop->add(lastLineBegin);
-  roomProps->add(prop);
+  roomProps->push(prop);
   prop = pmm.activate();
 }
 #endif
