@@ -33,9 +33,11 @@ void RoomAdmin::assignId(Room * room) {
 	roomIndex[id] = room;
 }
 
-Room * RoomAdmin::insertRoom(ParseEvent * event, int id) {
+Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Cooordinate * c) {
 	unusedIds.push(id);
 	Room * room = insertRoom(event);
+	map.setNearest(c, room);
+	room->setCoordinate(c);
 	assignId(room);
 	return room;
 }

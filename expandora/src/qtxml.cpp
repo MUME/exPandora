@@ -19,6 +19,11 @@ $Id$
 #define XML_DESC        (1 << 1)
 #define XML_NOTE        (1 << 2)
 
+typedef struct Exit {
+	int SourceId;
+	int dir;
+	int DestId;
+} Exit;
 
 class StructureParser: public QXmlDefaultHandler
 {
@@ -40,7 +45,15 @@ private:
 
     int i;
     struct Troom *r;
+
+    ParseEvent * rooomProps;
+    Coordinate * c;    
+    stack<Exit> exits;
+    Property * prop;
+    int id;
 };
+
+
 
 
 void xml_readbase( char *filename)
@@ -62,7 +75,8 @@ void xml_readbase( char *filename)
     roomer.resort_rooms();
     printf("--------->done sorting<----------\n");
 
-    
+    //pop all the exits and addExit(...) them into the rooms
+
     return;
 }
 
@@ -78,6 +92,8 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
 
     if (qName == "room") {
       	roomer.addroom_nonsorted(r);	/* tada! */
+	//roomAdmin.insertRoom(roomProps, i, c);
+	//pemm->deactivate(roomProps);
     }        
     flag = 0;    
     
@@ -88,7 +104,10 @@ bool StructureParser::characters( const QString& ch)
 {
     strncpy( data, (const char*) ch, ch.length() );
     data[ ch.length() ] = 0;
-
+    //prop = pmm.activate();
+    //prop->add(data);	
+    //if(flag != XML_NOTE) roomProps->push(prop);
+    //else roomProps->pushOptional(propr);
     
     if (ch == NULL || ch == "")
         return TRUE;
@@ -140,8 +159,10 @@ bool StructureParser::startElement( const QString& , const QString& ,
     }
     
     if (qName == "room") {
-      r = new Troom;
-      reset_room(r);
+    	// roomProps = pemm.activate();
+	// c = cmm.activate();
+	r = new Troom;
+      	reset_room(r);
     }
     
     
@@ -165,6 +186,10 @@ bool StructureParser::startElement( const QString& , const QString& ,
       strncpy( data, (const char*) s, s.length() );
       data[ s.length() ] = 0;
       
+      // exits.push(new Exit {id, dir, to});
+      // we'll have to find out which exits are actually doors and then pushOptional() them later ...
+      /* cringe */
+      
       i = 0;
       to = 0;
       while (room_flags[i].name) { 
@@ -182,6 +207,10 @@ bool StructureParser::startElement( const QString& , const QString& ,
       strncpy( data, (const char*) s, s.length() );
       data[ s.length() ] = 0;
 
+      //prop = pmm.activate();
+      //prop.add(data);
+      //roomProps->pushOptional(prop);
+      
       if (s.length() != 0) {
         r->doors[dir] = strdup(data);
         if (!r->doors[dir]) {
@@ -203,18 +232,22 @@ bool StructureParser::startElement( const QString& , const QString& ,
 
             if (attributes.qName(i) == "id") {
                 r->id = atoi( data );
+		//id = atoi(data);
                 continue;
             }
             if (attributes.qName(i) == "x") {
                 r->x = atoi( data );
-                continue;
+                //c->x = atoi(data);
+		continue;
             }
             if (attributes.qName(i) == "y") {
                 r->y = atoi( data );
+		//c->y = atoi(data);
                 continue;
             }
             if (attributes.qName(i) == "z") {
                 r->z = atoi( data );
+		//c->z = atoi(data);
                 continue;
             }
 
@@ -225,6 +258,13 @@ bool StructureParser::startElement( const QString& , const QString& ,
                 p = room_sectors;
                 while (p) {
                   if (strcmp(p->desc, data) == 0) {
+			  // this could be somewhat faster if we used another data structure (for example the map in Terrain.cpp)
+			  // atm we traverse all the terrains for each inserted room -> effort: n(rooms)*n(terrains)
+			  // with a proper structure we could reduce it to n(rooms)*1 or at least n(rooms)*log(n(terrains))
+			  // perhaps we need another map<QString &, char> to find the terrain abbrevation characters from the names used in the xml
+			  // in Room's properties the abbrevations are stored
+			  // 
+			  // and if we stayed like this, I wouldn't use strcmp in an inner loop - especially when I only want to know if the strings differ at all
                     r->sector = p;
                   }
                   p = p->next;
@@ -233,6 +273,8 @@ bool StructureParser::startElement( const QString& , const QString& ,
             }
             if (attributes.qName(i) == "timestamp") {
                 strcpy(r->timestamp, data);
+		//ignore ?? or set it after inserting?
+		//why is it stored in literal form?
                 continue;
             }
   

@@ -22,7 +22,7 @@ class RoomAdmin : public SearchTreeNode {
 		Room * getRoom(Coordinate * pos) {return map.get(pos);};
 		
 		Room * insertRoom(ParseEvent * event); // pos defaults to 0, returns the id of the new room
-		Room * insertRoom(ParseEvent * event, int id); 	// inserts the room with predefined id, 
+		Room * insertRoom(ParseEvent * event, int id, Coordinate * c); 	// inserts the room with predefined id, 
 								// only use when building the tree from the database 
 		Room * insertRoom(ParseEvent * event, Coordinate * expectedPosition);
 
