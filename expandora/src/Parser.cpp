@@ -1,27 +1,32 @@
 #include "Parser.h"
+#include "RoomAdmin.h"
 
 void Parser::setTerrain(Property * ter) {
 	
 	activeTerrain = (terrains.find((*ter)[0]))->second; // the first character has to be the terrain id
 }
 
-void Parser::event(ParseEvent * ev) {
-	switch (ev->type) {
-		case ROOM:
-			mudEvents.push(ev);
-			break;
-		case MOVE_FAIL:
-			mudEvents.push(ev);
-			break;
-		case MOVE:
-			playerEvents.push(ev);
-			break;
-		case UNIQUE:
-			playerEvents.push(ev);
-			break;
-		case NOTE:
-			dropNote(ev);
-			return;
+void Parser::event(BaseEvent * ev) {
+	if (ev->type >= 0) {
+		// a move event
+		playerEvents.push(ev);
+	}
+	
+	else {
+		
+		switch (ev->type) {
+			case ROOM:
+			case MOVE_FAIL:
+				mudEvents.push(ev);
+				break;
+			case UNIQUE:
+				playerEvents.push(ev);
+				break;
+			case NOTE:
+				// goes into mostLikelyRoom
+				dropNote((ParseEvent *)ev);
+				return;
+		}
 	}
 	checkQueues();
 }       
@@ -58,7 +63,7 @@ void Parser::approved() {
 		return;
 	}
 	if (playerEvents.front()->type == UNIQUE) {
-		mostLikelyRoom->setUnique() = true;
+		mostLikelyRoom->setUnique();
 		playerEvents.pop();
 		return;
 	}
@@ -66,16 +71,60 @@ void Parser::approved() {
 	// now we have a move and a room on the event queues;
 	Room * perhaps = 0;
 	RoomCollection * possible = mostLikelyRoom->go(playerEvents.front());
-	
-	if ((perhaps = possible->matchOne(mudEvents.front())) != 0) { // narrows possible by the event and return a Room if exactly one is left
-		mostLikelyRoom = perhaps;
-		mudEvents.pop();
-		playerEvents.pop();
-		return;
+	if (possible == 0) {
+		Coordinate * c = getExpectedCoordinate();
+		perhaps = roomAdmin.getRoom(c);
+		if ((perhaps == 0) || (!perhaps->fastCompare((ParseEvent *)mudEvents.front()))) {
+			perhaps = roomAdmin.insertRoom((ParseEvent *)mudEvents.front(), c);
+			if (perhaps == 0) {
+				// can't insert it for some reason - for example skipped props
+				state = SYNCING;
+				playerEvents.pop();
+				mudEvents.pop();
+				cmm.deactivate(c);
+				return;
+			}
+			else {	
+				possible = rcmm.activate()->merge(perhaps->getHome());
+				state = EXPERIMENTING;
+				cmm.deactivate(c);
+			}
+		}
+		else {
+			mostLikelyRoom->addExit(playerEvents.front()->type, perhaps);
+			mostLikelyRoom = perhaps;
+			playerEvents.pop();
+			mudEvents.pop();
+			cmm.deactivate(c);
+			return;
+		}
 	}
 	else {
-		state = EXPERIMENTING;
-       		buildPaths(possible);
+		possible = rcmm.activate();
+		possible->merge(possible);
+	
+		if ((perhaps = possible->matchOne((ParseEvent *)mudEvents.front())) != 0) { // narrows possible by the event and return a Room if exactly one is left
+			mostLikelyRoom = perhaps;
+			mudEvents.pop();
+			playerEvents.pop();
+			rcmm.deactivate(possible);
+			return;
+		}
+		else {
+			Coordinate * c = getExpectedCoordinate();
+			possible->merge(roomAdmin.insertRoom((ParseEvent *)mudEvents.front(), c)->getHome());
+			state = EXPERIMENTING;
+			cmm.deactivate(c);
+		}
 	}
+       	buildPaths(possible);
+	rcmm.deactivate(possible);
+}
+
+Coordinate * Parser::getExpectedCoordinate() {
+	Coordinate * c = cmm.activate();
+	c->add(stdMoves[playerEvents.front()->type]);
+	c->add(mostLikelyRoom->getCoordinate());
+	return c;
 }
 

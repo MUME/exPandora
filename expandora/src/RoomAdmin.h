@@ -23,7 +23,9 @@ class RoomAdmin : public SearchTreeNode {
 		
 		Room * insertRoom(ParseEvent * event); // pos defaults to 0, returns the id of the new room
 		Room * insertRoom(ParseEvent * event, int id); 	// inserts the room with predefined id, 
-											// only use when building the tree from the database 
+								// only use when building the tree from the database 
+		Room * insertRoom(ParseEvent * event, Coordinate * expectedPosition);
+
 	private:
 		Coordinate * findNearestFree(Coordinate * pos);
 		Map map;

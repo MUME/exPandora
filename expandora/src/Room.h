@@ -11,18 +11,25 @@ using namespace std;
 
 class Exit;
 class RoomCollection;
+extern int defaultTolerance;
 
 class Room {
 	public:
-		
+	
+		void addExit(int direction, Room * destination);	
 		RoomCollection * go(BaseEvent * event);
 		Room();
+		void setUnique(){unique = true;};
+		bool isUnique(){return unique;};
+		
 		void init(ParseEvent * event);
 		void setId(int _id) {id = _id;};
-		int containsOptionals(list<Property *> & optionals);
-		int fastCompare(list<Property *> & props, int tolerance);
+		bool containsOptionals(list<Property *> & optionals);
+		bool fastCompare(ParseEvent * props, int tolerance = defaultTolerance);
 		void clear();
 		void setCoordinate(Coordinate * _c) {c = _c;};
+		Coordinate * getCoordinate(){return c;};
+		RoomCollection * getHome() {return home;};
 	private:
 		RoomCollection * home;
 		list<Property *> properties;		/* name, desc, exit names - properties we need for tree searching */

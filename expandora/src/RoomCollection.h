@@ -20,6 +20,9 @@ class RoomCollection : public RoomSearchNode {
 		void clear();
 		set<Room *> & getRooms() {return rooms;}
 		void removeRoom(Room * room); 
+	
+		Room * matchOne(ParseEvent * ev);	// narrows the Collection by the event and returns a Room if exactly one is left otherwise returns 0
+
 		
 		virtual RoomSearchNode * getRooms(ParseEvent * event){return this;}
 		virtual RoomCollection * skipDown(ParseEvent * event){return this;}

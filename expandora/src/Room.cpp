@@ -2,6 +2,8 @@
 #include "RoomCollection.h"
 #include "Exit.h"
 
+int defaultTolerance = 1;
+
 void Room::init(ParseEvent * event) {
 	experimental = false;
 	properties = event->getProperties();
@@ -32,7 +34,7 @@ void Room::clear() {
 /** compare the optional properties that are not present in the search tree
  * perhaps we should allow a tolerance, too?
  */
-int Room::containsOptionals(list<Property *> & optionals) {
+bool Room::containsOptionals(list<Property *> & optionals) {
 	list<Property *>::iterator i;
 	list<Property *>::iterator j;
 	
@@ -44,22 +46,24 @@ int Room::containsOptionals(list<Property *> & optionals) {
 				break;
 			}
 		}
-		if (!matched) return 0;
+		if (!matched) return false;
 		else matched = 0;
 	}
-	return 1;
+	return true;
 }
 
 /** we only compare the first num properties only to this room here
  * we allow a tolerance for typoes and such like pandora does
  */
-int Room::fastCompare(list<Property *> & props, int tolerance) {
+bool Room::fastCompare(ParseEvent * ev, int tolerance) {
 	list<Property *>::iterator j = properties.begin();
-	list<Property *>::iterator i = props.begin(); 
+	list<Property *> & props = ev->getProperties(); 
+	list<Property *>::iterator i = props.begin();
+    		
 	for (; i != props.end() && j != properties.end(); i++, j++) {
 		tolerance -= (*i)->comp(**j);
-		if (tolerance <= 0) return 0;
+		if (tolerance <= 0) return false;
 	}
-	return 1;
+	return true;
 }
 				

@@ -5,6 +5,7 @@
 #include "Property.h"
 #include "Path.h"
 #include "Room.h"
+#include "Coordinate.h"
 #include <queue>
 #include <list>
 using namespace std;
@@ -18,6 +19,8 @@ class Parser {
 		void setTerrain(Property * ter);
 		void event(BaseEvent * ev);
 	private:
+		Coordinate * getExpectedCoordinate();
+       		void buildPaths(RoomCollection * rooms);
 		void dropNote(ParseEvent * ev);
 		void checkQueues();
 		void experimenting();
