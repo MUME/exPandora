@@ -5,7 +5,7 @@ using namespace std;
 
 
 SearchTreeNode::SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode> * _children) {
-	myChars = new char[strlen(event->current()->rest())];
+	myChars = new char[strlen(event->current()->rest()) + 1];
 	strcpy(myChars, event->current()->rest()); 	// we copy the string so that we can remove rooms independetly of tree nodes
 							// of courxe that needs memory
 	children = _children;
@@ -67,11 +67,13 @@ Room * SearchTreeNode::insertRoom(ParseEvent * event) {
 	// we reached the end of our string and can pass the event to the next node (or create it)
 	selectedChild = children->get(c);
 	event->current()->next();
-	if (selectedChild == 0) { 
+	if (selectedChild == 0) {
+	       printf("creating new Node ...\n");	
 	       	if (c != 0) selectedChild = new SearchTreeNode(event);
 		else selectedChild = new IntermediateNode(event);
 		children->put(c, selectedChild);
 	}
+	else printf("using selected Node ...\n");
 	return selectedChild->insertRoom(event);
 }
 			

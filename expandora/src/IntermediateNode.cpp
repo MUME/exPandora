@@ -4,10 +4,13 @@
 IntermediateNode::IntermediateNode(ParseEvent * event) : SearchTreeNode((char *)0) {
  	Property * prop = event->next();
 	if (prop != 0) {
- 		myChars = new char[strlen(prop->rest())];
+ 		myChars = new char[strlen(prop->rest()) + 1];
 		strcpy(myChars, prop->rest());
 	}
-	else myChars = "";
+	else {
+		myChars = new char[1];
+		myChars[0] = 0;
+	}
 	rooms = 0;
 	event->prev();
 }
