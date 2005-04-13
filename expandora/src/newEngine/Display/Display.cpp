@@ -129,20 +129,11 @@ void RendererWidget::resizeGL( int width, int height )
 }
 
 
-void RendererWidget::paintGL()
-{
-  display();
-}
-
 void Display::run()
 {
   printf("Starting renderer ...\n");
 
   QApplication::setColorSpec( QApplication::CustomColor );
-  char * appname = "expandora";
-  int argc = 1;
-  QApplication a(argc, &appname);
-
   if ( !QGLFormat::hasOpenGL() ) {
     qWarning( "This system has no OpenGL support. Exiting." );
     return;
@@ -151,7 +142,7 @@ void Display::run()
 
   
   renderer_window = new MainWindow( 0, "MainWindow" );
-  a.setMainWidget( renderer_window );
+  qApp.setMainWidget( renderer_window );
   
   QGLFormat f;
   f.setDoubleBuffer( TRUE );                 
@@ -165,22 +156,29 @@ void Display::run()
 
   printf("Renderer: ready and awaiting for events...\r\n");
   
-  a.exec();
-  
   return;
 }
 
-void RendererWidget::markerChanged(Coordinate * oldPos, Coordinate * newPos)
+void RendererWidget::moveMarker(Coordinate * oldPos, Coordinate * newPos)
 {
+  if (oldPos != 0) {
+    glColor4f(0,0,0,0);
+    drawMarker(oldPos);
+  }
+
+  if (newPos != 0) {
+    glColor4f(marker_colour[0],marker_colour[1],marker_colour[2],marker_colour[3]);
+    drawMarker(newPos);
+  }
+}
+
+
+void RendererWidget::drawMarker(Coordinate * pos) {
   int dx, dy, dz;
+  dx = pos->x - curx;
+  dy = pos->y - cury;
+  dz = (pos->z - curz) * DIST_Z;
 
-  //missing: delete old position ... 
-    
-  glColor4f(marker_colour[0],marker_colour[1],marker_colour[2],marker_colour[3]);
-
-  dx = newPos->x - curx;
-  dy = newPos->y - cury;
-  dz = (p->z - curz) * DIST_Z;
       
   /* upper */
   glBegin(GL_TRIANGLES);
@@ -214,13 +212,13 @@ void RendererWidget::markerChanged(Coordinate * oldPos, Coordinate * newPos)
 
 
 
-void RendererWidget::glDrawRoom(Room * pr)
+void RendererWidget::drawRoom(Room * pr)
 {
   GLfloat dx, dx2, dy, dy2, dz, dz2;
   RoomCollection * rc;
   Coordinate * r;
   Coordinate * p = pr->getCoordinate();
-  int k;
+  unsigned int k;
   char lines, texture;
   float distance;
 
@@ -236,6 +234,39 @@ void RendererWidget::glDrawRoom(Room * pr)
   if (PointInFrustum(dx, dy, dz) != true)
     return;
 
+  int z = p->z - curz;
+  
+  if (z <= -14) {
+    colour[0] = 0; colour[1] = 0; colour[2] = 0; colour[3] = 0; 
+  }
+  else if (z <= -10) {
+    colour[0] = 0.1; colour[1] = 0.1; colour[2] = 0.1; colour[3] = 0.1; 
+  }
+  else if (z <= -5) {
+    colour[0] = 0.3; colour[1] = 0.3; colour[2] = 0.3; colour[3] = 0.2; 
+  }
+  else if (z < -1) {
+    colour[0] = 0.4; colour[1] = 0.4; colour[2] = 0.4; colour[3] = 0.3; 
+  }
+  else if (z == -1) {
+    colour[0] = 0.5; colour[1] = 0.5; colour[2] = 0.5; colour[3] = 0.4; 
+  }
+  else if (z == 0) {
+    colour[0] = 0.1; colour[1] = 0.8; colour[2] = 0.8; colour[3] = 0.6; 
+  }
+  else if (z == 1) {
+    colour[0] = 0.0; colour[1] = 0.5; colour[2] = 0.9; colour[3] = 0.2; 
+  }
+  else {
+    colour[0] = 0.0; colour[1] = 0.5; colour[2] = 0.9; colour[3] = 0.1; 
+  }
+  
+  
+  
+
+  
+
+
   distance = m_Frustum[FRONT][A] * dx + m_Frustum[FRONT][B] * dy + 
     m_Frustum[FRONT][C] * dz + m_Frustum[FRONT][D];
     
@@ -249,7 +280,7 @@ void RendererWidget::glDrawRoom(Room * pr)
   glTranslatef(dx, dy, dz);
   if (pr->getTerrain() != NULL && texture) {
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, pr->getTerrain()->texture);
+    glBindTexture(GL_TEXTURE_2D, (terrains.find(pr->getTerrain()))->second->texture);
 
     glBegin(GL_QUADS);
       
@@ -274,7 +305,7 @@ void RendererWidget::glDrawRoom(Room * pr)
   if (lines == 0)
     return;
     
-  for (k = 0; k <= 5; k++) 
+  for (k = 0; k < pr->numExits(); k++) 
 
     {
       rc = pr->getNeighbours(k);
@@ -344,14 +375,8 @@ void RendererWidget::glDrawRoom(Room * pr)
 
 
 
-void RendererWidget::draw(void)
+void RendererWidget::shiftView()
 {
-
-  Coordinate * p = 0;
-  Room * pr = 0;
-
-  unsigned int k = 0;
-  int z = 0, new_z = 0;
     
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -370,85 +395,15 @@ void RendererWidget::draw(void)
 
   glTranslatef(userx, usery, 0);
 
-  pr = parser->getMostLikely();
-  if (pr == 0) pr = roomAdmin->getRoom(1);
-  if (pr == 0) p = 0;
-  else p = pr->getCoordinate();
-
-  if (p != NULL) {
-    curx = p->x;
-    cury = p->y;
-    curz = p->z;
-  } else {
-    printf("RENDERER ERROR: cant get base coordinates.\r\n");
-  }
-
-
   CalculateFrustum();
     
-    
-
   glColor4f(0.1, 0.8, 0.8, 0.4);
+
   colour[0] = 0.1; colour[1] = 0.8; colour[2] = 0.8; colour[3] = 0.4; 
-
-
-  z = 9999;
-
-  for (k = 1; (int)k <= roomAdmin->lastId(); k++) {
-    pr = roomAdmin->getRoom(k);
-    if (pr == 0) continue;
-    else p = pr->getCoordinate();
-    if (p == 0) continue;
-
-    new_z = p->z - curz;
-    if (z != new_z) {
-      z = new_z;
-      if (z == 0) {
-	colour[0] = 0.1; colour[1] = 0.8; colour[2] = 0.8; colour[3] = 0.6; 
-      }
-      if (z > 1) {
-	colour[0] = 0.0; colour[1] = 0.5; colour[2] = 0.9; colour[3] = 0.1; 
-      }
-      if (z < -1) {
-	colour[0] = 0.4; colour[1] = 0.4; colour[2] = 0.4; colour[3] = 0.3; 
-      }
-      if (z == -1) {
-	colour[0] = 0.5; colour[1] = 0.5; colour[2] = 0.5; colour[3] = 0.4; 
-      }
-      if (z == 1) {
-	colour[0] = 0.0; colour[1] = 0.5; colour[2] = 0.9; colour[3] = 0.2; 
-      }
-  
-      if (z <= -5) {
-	colour[0] = 0.3; colour[1] = 0.3; colour[2] = 0.3; colour[3] = 0.2; 
-      }
-      if (z <= -10) {
-	colour[0] = 0.1; colour[1] = 0.1; colour[2] = 0.1; colour[3] = 0.1; 
-      }
-      if (z <= -14) {
-	colour[0] = 0; colour[1] = 0; colour[2] = 0; colour[3] = 0; 
-      }
-    }
-
-    glColor4f(colour[0], colour[1], colour[2], colour[3]);
-
-    glDrawRoom(pr);
-
-        
-  } /* for */
-
-
-  glDrawMarkers();
-  
-  this->swapBuffers();
-  glredraw = 0;
+ 
+  emit viewableAreaChanged(new Coordinate(userx, usery, userz), 
 }
 
-void RendererWidget::display(void)
-{
-  if (glredraw)
-    draw();
-}
 
 
 void Display::toggle_renderer_reaction()

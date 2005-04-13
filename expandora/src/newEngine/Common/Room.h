@@ -22,6 +22,7 @@ class Room {
   void addExit(int direction, Room * destination);	
   RoomCollection * go(BaseEvent * event);
   RoomCollection * getNeighbours(int k); 
+  unsigned int numExits() {return exits.size();}
   Room();
   void setUnique(){unique = true;};
   bool isUnique(){return unique;};
@@ -48,7 +49,7 @@ class Room {
   double timestamp; 		/*last modification */
   Coordinate * c;			/* coordinates on our map */
   int id; 			/* identifier */
-  int terrain; 		/* terrain type */ 		
+  char terrain; 		/* terrain type */ 		
 
 };
 

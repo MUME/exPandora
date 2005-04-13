@@ -293,36 +293,36 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
          
         case 'x':
             renderer->userz += 1;
-            renderer->scheduleRedraw();
+            renderer->shiftView();
             break;
     
          case 'y':
             renderer->userz -= 1;
-            renderer->scheduleRedraw();
+            renderer->shiftView();
             break;
     
          case 'q':
             renderer->userx -= 1;
-            renderer->scheduleRedraw();
+            renderer->shiftView();
             break;
          
          case 'w':
             renderer->userx += 1;
-            renderer->scheduleRedraw();
+            renderer->shiftView();
             break;
          
          case 'a':
             renderer->usery += 1;
-            renderer->scheduleRedraw();
+            renderer->shiftView();
             break;
     
          case 's':
             renderer->usery -= 1;
-            renderer->scheduleRedraw();
+            renderer->shiftView();
             break;
     
          case 'r':
-           renderer->scheduleRedraw();
+           renderer->shiftView();
            break;
     
     }        
@@ -330,27 +330,27 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
     switch ( k->key() ) {
         case Key_Up:
           renderer->anglex += 5;
-          renderer->scheduleRedraw();
+          renderer->shiftView();
           break;
         case Key_Down:
           renderer->anglex -= 5;
-          renderer->scheduleRedraw();
+          renderer->shiftView();
           break;
         case Key_Left:
           renderer->angley -= 5;
-          renderer->scheduleRedraw();
+          renderer->shiftView();
           break;
         case Key_Right:
           renderer->angley += 5;
-          renderer->scheduleRedraw();
+          renderer->shiftView();
           break;
         case Key_PageUp:
           renderer->anglez += 5;
-          renderer->scheduleRedraw();
+          renderer->shiftView();
           break;
         case Key_PageDown:
           renderer->anglez -= 5;
-          renderer->scheduleRedraw();
+          renderer->shiftView();
           break;
         
          case Key_Escape:           
@@ -360,7 +360,7 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
             renderer->userx = 0;
             renderer->usery = 0;
             renderer->userz = BASE_Z;		
-            renderer->scheduleRedraw();
+            renderer->shiftView();
             break;				
 
          case Key_F12:
@@ -380,7 +380,6 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
          
     }
     
-    renderer->display();
 }
 
 void MainWindow::mousePressEvent( QMouseEvent *e)
@@ -419,21 +418,16 @@ void MainWindow::mouseMoveEvent( QMouseEvent *e)
     
     if ( ((dist_x * dist_x) + (dist_y * dist_y)) >= 100) {
       
-      renderer->userx -= dist_x / 10;
-      renderer->usery += dist_y / 10;
-      renderer->scheduleRedraw();
-
-      renderer->display();
+      renderer->userx -= dist_x;
+      renderer->usery += dist_y;
+      renderer->shiftView();
       old_pos = pos;
     }
     
   } else if (RightButtonPressed) {
-    renderer->anglex += dist_y;
-    renderer->angley += dist_x;
-    renderer->scheduleRedraw();
-    
-    
-    renderer->display();
+    renderer->anglex -= dist_y;
+    renderer->angley -= dist_x;
+    renderer->shiftView();
     old_pos = pos;
 
   }
@@ -449,6 +443,5 @@ void MainWindow::wheelEvent(QWheelEvent *e)
   delta = e->delta();
 
   renderer->userz += delta / 120;
-  renderer->scheduleRedraw();
-  renderer->display();
+  renderer->shiftView();
 }

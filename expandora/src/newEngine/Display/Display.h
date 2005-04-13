@@ -56,14 +56,7 @@ class RendererWidget : public QGLWidget
   int           userz;		/* additional shift added by user */
 
   RendererWidget( QWidget *parent, const char *name=0 );
-
- 
- 
-
-  void display(void);
-
-  void scheduleRedraw() {glredraw = 1;}
-  void draw(void);
+  void shiftView(void);
   void CalculateFrustum();
 
 
@@ -88,12 +81,16 @@ class RendererWidget : public QGLWidget
   int           curz;			/* current rooms position */ 
 
   void NormalizePlane(float frustum[6][4], int side);  
-
-  void glDrawRoom(Room * pr);
+  void drawMarker(Coordinate * pos);
+  
   bool PointInFrustum(float x, float y, float z);
 
   public slots:
   void moveMarker(Coordinate * from, Coordinate * to);
+  void drawRoom(Room * pr);
+  
+ signals:
+  viewableAreaExtended(Coordinate * center, Coordinate * extends); 
 };
 
 
