@@ -1,25 +1,16 @@
-#include <stdio.h>
-
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <qgl.h>
 #include <qimage.h>
 #include <qapplication.h>
 #include <qdatetime.h>
 
-#include "LexDefs.h"
+#include "Terrain.h"
 #include "Display.h"
-#include "RoomAdmin.h"
-#include "Parser.h"
 #include "RoomCollection.h"
 #include "MainWindow.h"
 
 const GLfloat RendererWidget::marker_colour[]  =  {1.0, 0.2, 0.0, 0.6};
-
-void Display::attachParser(Parser * parser) 
-{renderer_window->attachParser(parser);}
-
-void Display::attachRoomAdmin(RoomAdmin * admin) 
-{renderer_window->attachRoomAdmin(admin);}
 
 
 RendererWidget::RendererWidget( QWidget *parent, const char *name )
@@ -179,24 +170,16 @@ void Display::run()
   return;
 }
 
-void RendererWidget::glDrawMarkers()
+void RendererWidget::markerChanged(Coordinate * oldPos, Coordinate * newPos)
 {
-  Room * pr;
-  Coordinate * p;
-    
   int dx, dy, dz;
 
+  //missing: delete old position ... 
     
   glColor4f(marker_colour[0],marker_colour[1],marker_colour[2],marker_colour[3]);
 
-  pr = parser->getMostLikely();
-  if (pr == 0) pr = roomAdmin->getRoom(1);
-  if (pr == 0) return; //silently die when there is no room for the marker
-      
-  p = pr->getCoordinate();
-
-  dx = p->x - curx;
-  dy = p->y - cury;
+  dx = newPos->x - curx;
+  dy = newPos->y - cury;
   dz = (p->z - curz) * DIST_Z;
       
   /* upper */

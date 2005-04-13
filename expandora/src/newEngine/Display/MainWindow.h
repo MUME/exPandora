@@ -9,15 +9,14 @@
 #include <qlineedit.h>
 #include <qpushbutton.h>
 
-#include "Parser.h"
 #include "Display.h"
 
 class RoomInfo : public QWidget
 {
-  Q_OBJECT public:
+  Q_OBJECT 
+    public:
 
   RoomInfo(QWidget *parent, const char *name = 0);
-  void attachParser(Parser * _parser) {parser = _parser;}
 
   QLabel*     id_label;
   QLabel*     terrain_label;
@@ -45,17 +44,15 @@ class RoomInfo : public QWidget
   QHBoxLayout   *nameLayout; 
   QHBoxLayout   *descLayout; 
   QVBoxLayout   *mainLayout; 
-  Parser * parser;
 
 };
 
 
 class MainWindow : public QMainWindow
 {
-  Q_OBJECT public:
+  Q_OBJECT 
+    public:
   MainWindow(QWidget *parent, const char *name = 0);
-  void attachParser(Parser * parser) {renderer->attachParser(parser); roominfo->attachParser(parser);}
-  void attachRoomAdmin(RoomAdmin * admin) {renderer->attachRoomAdmin(admin);}
   
   void update_status_bar();
   RendererWidget *renderer;

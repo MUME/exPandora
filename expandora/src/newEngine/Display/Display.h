@@ -2,10 +2,7 @@
 #define DISPLAY
 
 #include <qthread.h>
-
 #include "Room.h"
-#include "RoomAdmin.h"
-#include "Parser.h"
 
 #define MAX_TEXTURES    100
 #define DIST_Z	1	/* the distance between 2 rooms */
@@ -48,7 +45,8 @@ enum PlaneData
 
 class RendererWidget : public QGLWidget
 {
-  Q_OBJECT public:
+  Q_OBJECT 
+    public:
 
   GLfloat       angley;
   GLfloat       anglex;
@@ -59,8 +57,8 @@ class RendererWidget : public QGLWidget
 
   RendererWidget( QWidget *parent, const char *name=0 );
 
-  void attachParser(Parser * _parser) {parser = _parser;}
-  void attachRoomAdmin(RoomAdmin * admin) {roomAdmin = admin;}
+ 
+ 
 
   void display(void);
 
@@ -75,9 +73,7 @@ class RendererWidget : public QGLWidget
   void paintGL();
 
  private:
-  Parser * parser;
-  RoomAdmin * roomAdmin;
-
+ 
   static const GLfloat marker_colour[4];
   static const int texture_visibilit_range = 300;
   static const int details_visibility_range = 500;
@@ -92,9 +88,12 @@ class RendererWidget : public QGLWidget
   int           curz;			/* current rooms position */ 
 
   void NormalizePlane(float frustum[6][4], int side);  
-  void glDrawMarkers();
+
   void glDrawRoom(Room * pr);
   bool PointInFrustum(float x, float y, float z);
+
+  public slots:
+  void moveMarker(Coordinate * from, Coordinate * to);
 };
 
 
@@ -104,8 +103,6 @@ class Display : public QThread {
  public:
   void run();
   void toggle_renderer_reaction();
-  void attachParser(Parser * parser); 
-  void attachRoomAdmin(RoomAdmin * admin); 
   void CalculateFrustum();
 
 
