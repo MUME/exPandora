@@ -21,7 +21,7 @@ class Room {
   bool release();
   void addExit(int direction, Room * destination);	
   RoomCollection * go(BaseEvent * event);
-  RoomCollection * getNeighbours(int k); 
+  RoomCollection * getNeighbours(int k) {return exits.get(k);} 
   unsigned int numExits() {return exits.size();}
   Room();
   void setUnique(){unique = true;};

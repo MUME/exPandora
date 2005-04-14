@@ -4,11 +4,13 @@
 #include <qmenubar.h> 
 #include <qstatusbar.h> 
 
+
 #include "MainWindow.h"
 #include "Display.h"
-#include "Parser.h"
 #include "Room.h"
 #include "Coordinate.h"
+#include "Terrain.h"
+
 
 #define ON_OFF(flag) ( (flag) ? "ON" : "OFF" )
 
@@ -75,27 +77,23 @@ RoomInfo::RoomInfo(QWidget* parent, const char* name)
   mainLayout->setMargin(11);
   mainLayout->setSpacing(6); 
 
-  update_info();
 }
 
-void RoomInfo::update_info()
+void RoomInfo::update_info(Room * rr)
 {
   char str[200];
   
-
-  Room * rr;
   Coordinate * r;
 
-  rr = parser->getMostLikely();
   if (rr) r = rr->getCoordinate();
-  else r = cmm.activate();
+  else r = new Coordinate(0,0,0);
 
   sprintf(str, "Coord: X: %i, Y %i, Z: %i", r->x, r->y, r->z);
   coord_label->setText( str );
   
 
   if(rr) {
-    sprintf(str, " %s ", rr->getTerrain()->desc);
+    sprintf(str, " %s ", terrains.find(rr->getTerrain())->second->desc);
 
     
     terrain_label->setText( str );
@@ -201,12 +199,12 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
 
 }
 
-void MainWindow::update_status_bar()
+void MainWindow::update_status_bar(Room * rr)
 {  
 
   locationLabel->setText("silly location bar");
   
-  roominfo->update_info();
+  roominfo->update_info(rr);
 }
 
 

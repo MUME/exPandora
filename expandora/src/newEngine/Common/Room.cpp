@@ -50,9 +50,6 @@ void Room::init(ParseEvent * event, RoomCollection * _home) {
   home = _home;
 }
 
-RoomCollection * Room::getNeighbours(int k) {
-  return exits.get(k);
-}
 
 void Room::addExit(int direc, Room * target) {
   RoomCollection * roomsInDir = exits.get(direc);

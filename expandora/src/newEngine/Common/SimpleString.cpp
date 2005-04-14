@@ -1,4 +1,4 @@
-#include <string.h>
+#include <string>
 #include "SimpleString.h"
 
 ObjectRecycler<SimpleString> ssmm;
@@ -29,7 +29,3 @@ void SimpleString::copy(SimpleString * other) {
 
 }
     
-  
-void SimpleString::clear() {
-  for (unsigned int i = 0; i < listSize; i++) list[i] = 0;
-}

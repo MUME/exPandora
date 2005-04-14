@@ -1,16 +1,6 @@
 #ifndef LEXER
 #define LEXER
-
-#include <qthread.h>
-#include <qwaitcondition.h>
-#include <qmutex.h>
-#include <queue>
-#include "ParseEvent.h"
-#include "Property.h"
-#include "ObjectRecycler.h"
-#include "Parser.h"
-using namespace std;
-
+#include <iostream>
 
 #ifndef PLAYER
 #undef yyFlexLexer
@@ -20,8 +10,6 @@ using namespace std;
 #define yyFlexLexer MudFlexLexer
 #endif
 
-
-
 #ifndef MUD
 #undef yyFlexLexer
 #define yyFlexLexer MudFlexLexer
@@ -29,6 +17,17 @@ using namespace std;
 #undef yyFlexLexer
 #define yyFlexLexer PlayerFlexLexer
 #endif
+
+#include <qthread.h>
+#include <qwaitcondition.h>
+#include <qmutex.h>
+#include <queue>
+#include <qobject.h>
+#include "ParseEvent.h"
+#include "Property.h"
+#include "ObjectRecycler.h"
+
+using namespace std;
 
 class Lexer;
 
@@ -42,15 +41,18 @@ otherwise we do a deep clear - simple.
 The memory allocation is handled by the ObjectRecycler 
 which will keep the rate of allocating/destroying strings low.
 */
-class GenericLexer {
+class GenericLexer : public QObject {
+ private:
+  Q_OBJECT
+
  public:
   GenericLexer();
-    void attachParser(Parser * _parser) {parser = _parser;}
+
     void append(char ap) {property->add(ap);} // append a single char
     void append(const char * begin, const char * end) {property->add(begin, end);} // append some substring
     void append(char * text) {property->add(text);} // append a 0-terminated string
     void clearProperty() {property->clear();}
-    void markTerrain() {parser->setTerrain(property);}
+
     
 
     void pushEvent(char type);
@@ -59,9 +61,13 @@ class GenericLexer {
     void skipProperty();
     void skipSomeProperties();
     
+  signals:
+    void terrainDetected(Property *);
+    void eventFound(ParseEvent *);
+    
 protected:
     long m_timestamp();
-    Parser * parser;
+    void markTerrain() {emit terrainDetected(property);}
     ParseEvent * event;
     Property * property;
 };
@@ -71,14 +77,18 @@ classes to hold the yylex() methods
 as we can't derive the flex generated methods from GenericLexer 
 we have to do it this way.
 */
-class MudLexer : public MudFlexLexer, public GenericLexer {
+class MudLexer : public GenericLexer, public MudFlexLexer {
+ private:
+  Q_OBJECT
  public:
   virtual int yylex();
 };	
-class PlayerLexer : public PlayerFlexLexer, public GenericLexer {
+class PlayerLexer : public GenericLexer, public PlayerFlexLexer {
+ private:
+  Q_OBJECT
+
  public:
   virtual int yylex();
-  void init();
 };
 
 
@@ -86,16 +96,18 @@ class PlayerLexer : public PlayerFlexLexer, public GenericLexer {
 the interface the lexer provides for the proxy; you can attach a parser, and feed it with input
 from mud and player. The threading is handled inside this class 
 */
-class Lexer : public QThread {
+class Lexer : public QObject, public QThread {
+
  public:
-  Lexer() {playerLexer.init();}
-  void attachParser(Parser * _parser) {mudLexer.attachParser(_parser), playerLexer.attachParser(_parser);}
-  
+  Lexer() {}
   virtual void run();
+
+ public slots:
   void pushUserInput(char * input);
   void pushMudInput(char * input); 
  
  private: 
+  Q_OBJECT
   QWaitCondition inputSync;
   QMutex inputLock;
   queue<char *> userInput;

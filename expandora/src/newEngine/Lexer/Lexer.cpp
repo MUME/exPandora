@@ -52,7 +52,7 @@ GenericLexer::GenericLexer() {
 void GenericLexer::pushEvent(char _type) {
   if (event->timestamp < 1) event->timestamp = m_timestamp();
   event->type = _type;
-  parser->event(event);
+  emit eventFound(event);
   event = pemm.activate();
 }
 	

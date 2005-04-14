@@ -2,6 +2,7 @@
 #define DISPLAY
 
 #include <qthread.h>
+#include <qgl.h>
 #include "Room.h"
 
 #define MAX_TEXTURES    100
@@ -19,54 +20,13 @@ class QLabel;
 class QWidget;
 class QPushButton;
 
-// We create an enum of the sides so we don't have to call each side 0 or 1.
-// This way it makes it more understandable and readable when dealing with frustum sides.
-enum FrustumSide
-  {
-    RIGHT   = 0,        // The RIGHT side of the frustum
-    LEFT    = 1,        // The LEFT  side of the frustum
-    BOTTOM  = 2,        // The BOTTOM side of the frustum
-    TOP     = 3,        // The TOP side of the frustum
-    BACK    = 4,        // The BACK side of the frustum
-    FRONT   = 5         // The FRONT side of the frustum
-  }; 
-
-// Like above, instead of saying a number for the ABC and D of the plane, we
-// want to be more descriptive.
-enum PlaneData
-  {
-    A = 0,              // The X value of the plane's normal
-    B = 1,              // The Y value of the plane's normal
-    C = 2,              // The Z value of the plane's normal
-    D = 3               // The distance the plane is from the origin
-  };
 
 
 
-class RendererWidget : public QGLWidget
-{
-  Q_OBJECT 
-    public:
-
-  GLfloat       angley;
-  GLfloat       anglex;
-  GLfloat       anglez;
-  int           userx;
-  int           usery;
-  int           userz;		/* additional shift added by user */
-
-  RendererWidget( QWidget *parent, const char *name=0 );
-  void shiftView(void);
-  void CalculateFrustum();
-
-
- protected:
-  void initializeGL();
-  void resizeGL( int width, int height );
-  void paintGL();
+class RendererWidget : public QGLWidget {
 
  private:
- 
+  Q_OBJECT 
   static const GLfloat marker_colour[4];
   static const int texture_visibilit_range = 300;
   static const int details_visibility_range = 500;
@@ -75,7 +35,6 @@ class RendererWidget : public QGLWidget
   float         m_Frustum[6][4];
   GLuint        basic_gllist;
   GLuint        global_list;
-  int           glredraw;
   int           curx;
   int           cury;
   int           curz;			/* current rooms position */ 
@@ -89,8 +48,24 @@ class RendererWidget : public QGLWidget
   void moveMarker(Coordinate * from, Coordinate * to);
   void drawRoom(Room * pr);
   
+ public:
+  GLfloat       angley;
+  GLfloat       anglex;
+  GLfloat       anglez;
+  int           userx;
+  int           usery;
+  int           userz;		/* additional shift added by user */
+
+  RendererWidget( QWidget *parent, const char *name=0 );
+  void shiftView(void);
+  void CalculateFrustum();
+
+ protected:
+  void initializeGL();
+  void resizeGL( int width, int height );
+
  signals:
-  viewableAreaExtended(Coordinate * center, Coordinate * extends); 
+  void viewableAreaChanged(float**); 
 };
 
 
@@ -105,9 +80,29 @@ class Display : public QThread {
 
  private:
   MainWindow *renderer_window;
+
 };
 
 
+// We create an enum of the sides so we don't have to call each side 0 or 1.
+// This way it makes it more understandable and readable when dealing with frustum sides.
+enum FrustumSide {
+    RIGHT   = 0,        // The RIGHT side of the frustum
+    LEFT    = 1,        // The LEFT  side of the frustum
+    BOTTOM  = 2,        // The BOTTOM side of the frustum
+    TOP     = 3,        // The TOP side of the frustum
+    BACK    = 4,        // The BACK side of the frustum
+    FRONT   = 5         // The FRONT side of the frustum
+}; 
+
+// Like above, instead of saying a number for the ABC and D of the plane, we
+// want to be more descriptive.
+enum PlaneData {
+    A = 0,              // The X value of the plane's normal
+    B = 1,              // The Y value of the plane's normal
+    C = 2,              // The Z value of the plane's normal
+    D = 3               // The distance the plane is from the origin
+};
 
 
 

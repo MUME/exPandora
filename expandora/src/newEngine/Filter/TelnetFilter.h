@@ -1,16 +1,18 @@
 #ifndef TELNETFILTER
 #define TELNETFILTER
-#include "Lexer.h"
+
+#include <qobject.h>
 
 
 // we should chage that prefix ... perhaps '¤' - or is that only present on german keyboards ;)
 #define MAP_COMMAND_PREFIX 'm' 
 
 
-class TelnetFilter {
- public:
-  /** the lexical analyzer to be called when the data is made "clean"*/
-  void attachLexer(Lexer * lexer);
+class TelnetFilter : public QObject {
+ private:
+  Q_OBJECT
+
+    public slots:
 
   /** these methods purge protocol-specific things from the imput, save a copy 
       in the buffer, then call the analyzer thread via a QWaitCondition; so they
@@ -21,8 +23,10 @@ class TelnetFilter {
       passed on - a hackish way will be modifying the input ... */
   int analyzeUserStream(char * input, int length);
  private:
-  Lexer * lexer;
   char * purgeProtocolSequences(char * input, int length);
+ signals:
+  void newMudInput(char *);
+  void newUserInput(char *);
 };
 
 #endif

@@ -36,7 +36,7 @@ class RoomInfo : public QWidget
 
   QPushButton* apply_button;
 
-  void update_info();
+  void update_info(Room * rr);
 
  private:
   QHBoxLayout   *topLayout;
@@ -54,7 +54,7 @@ class MainWindow : public QMainWindow
     public:
   MainWindow(QWidget *parent, const char *name = 0);
   
-  void update_status_bar();
+  void update_status_bar(Room * rr);
   RendererWidget *renderer;
 
   private slots:

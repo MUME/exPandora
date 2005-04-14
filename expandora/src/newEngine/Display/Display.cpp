@@ -1,3 +1,4 @@
+
 #include <cstdio>
 #include <cmath>
 #include <qgl.h>
@@ -9,6 +10,7 @@
 #include "Display.h"
 #include "RoomCollection.h"
 #include "MainWindow.h"
+#include "LexDefs.h"
 
 const GLfloat RendererWidget::marker_colour[]  =  {1.0, 0.2, 0.0, 0.6};
 
@@ -124,8 +126,7 @@ void RendererWidget::resizeGL( int width, int height )
   glLoadIdentity ();		
   gluPerspective(50.0f, (GLfloat) width / (GLfloat) height, 0.5f, 1000.0f);
   glMatrixMode (GL_MODELVIEW);	
-  
-  glredraw = 1;
+  shiftView();
 }
 
 
@@ -142,7 +143,7 @@ void Display::run()
 
   
   renderer_window = new MainWindow( 0, "MainWindow" );
-  qApp.setMainWidget( renderer_window );
+  qApp->setMainWidget( renderer_window );
   
   QGLFormat f;
   f.setDoubleBuffer( TRUE );                 
@@ -261,11 +262,6 @@ void RendererWidget::drawRoom(Room * pr)
     colour[0] = 0.0; colour[1] = 0.5; colour[2] = 0.9; colour[3] = 0.1; 
   }
   
-  
-  
-
-  
-
 
   distance = m_Frustum[FRONT][A] * dx + m_Frustum[FRONT][B] * dy + 
     m_Frustum[FRONT][C] * dz + m_Frustum[FRONT][D];
@@ -400,15 +396,16 @@ void RendererWidget::shiftView()
   glColor4f(0.1, 0.8, 0.8, 0.4);
 
   colour[0] = 0.1; colour[1] = 0.8; colour[2] = 0.8; colour[3] = 0.4; 
- 
-  emit viewableAreaChanged(new Coordinate(userx, usery, userz), 
+  
+
+  emit viewableAreaChanged((float **)m_Frustum); 
 }
 
 
 
 void Display::toggle_renderer_reaction()
 {
-  QKeyEvent *k = new QKeyEvent(QEvent::KeyPress, 0, 'r', 0, NULL, FALSE, 0);
+  QKeyEvent * k = new QKeyEvent(QEvent::KeyPress, 0, 'r', 0, NULL, FALSE, 0);
   QApplication::postEvent( renderer_window->renderer, k );
 }
 

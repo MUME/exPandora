@@ -1,13 +1,8 @@
 #include "Coordinate.h"
 
-vector<Coordinate *> stdMoves;
+
 ObjectRecycler<Coordinate> cmm;
 
-Coordinate::Coordinate(int _x, int _y, int _z) {
-	x = _x;
-	y = _y;
-	z = _z;
-}
 
 int Coordinate::distance(Coordinate * other) {
 	int ret = abs(x - other->x);

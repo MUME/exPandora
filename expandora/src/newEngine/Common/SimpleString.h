@@ -10,7 +10,7 @@ class SimpleString : public TinyList<char> {
   virtual bool equals(SimpleString * other);
   virtual char * getText() {return TinyList<char>::list;}
   virtual SimpleString * copy();
-  virtual void clear();
+  virtual void clear() {for (unsigned int i = 0; i < listSize; i++) list[i] = 0;}
  protected:
   void copy(SimpleString * other);
 };
