@@ -10,7 +10,7 @@
 #include "Display.h"
 #include "RoomCollection.h"
 #include "MainWindow.h"
-#include "LexDefs.h"
+
 
 const GLfloat RendererWidget::marker_colour[]  =  {1.0, 0.2, 0.0, 0.6};
 
@@ -328,23 +328,32 @@ void RendererWidget::drawRoom(Room * pr)
 
 	sx = 0;
 	sy = 0;
+	
+	Coordinate * dir = 0;
+	if (k < Coordinate::stdMoves.size()) 
+	  dir = Coordinate::stdMoves[k];
+	else 
+	  dir = cmm.activate();
 
-
-	if (k == NORTH) {
+	if (dir->y > 0) {
 	  ky = +(ROOM_SIZE + 0.2);
 	  sy = +ROOM_SIZE;
-	} else if (k == EAST) {
-	  kx = +(ROOM_SIZE + 0.2);
-	  sx = +ROOM_SIZE;
-	} else if (k == SOUTH) {
+	} 
+	else if (dir->y < 0) {
 	  ky = -(ROOM_SIZE + 0.2);
 	  sy = -ROOM_SIZE;
-	} else if (k == WEST) {
+	}
+	if (dir->x > 0) {
+	  kx = +(ROOM_SIZE + 0.2);
+	  sx = +ROOM_SIZE;
+	} 
+	else if (dir->x < 0) {
 	  kx = -(ROOM_SIZE + 0.2);
 	  sx = -ROOM_SIZE;
-	} else if (k == UP) {
+	}
+	if (dir->z > 0) {
 	  kz = +(ROOM_SIZE + 0.2);
-	} else if (k == DOWN) {
+	} else if (dir->z < 0) {
 	  kz = -(ROOM_SIZE + 0.2);
 	} 
 

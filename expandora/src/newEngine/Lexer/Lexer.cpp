@@ -19,6 +19,7 @@ void Lexer::pushMudInput(char * input) {
 }
 
 void Lexer::run() {
+  init();
   istringstream * buf = 0;
   while(1) {
     if (!userInput.empty()) {

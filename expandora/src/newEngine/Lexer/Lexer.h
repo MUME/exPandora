@@ -108,6 +108,8 @@ class Lexer : public QObject, public QThread {
  
  private: 
   Q_OBJECT
+  
+  void init();
   QWaitCondition inputSync;
   QMutex inputLock;
   queue<char *> userInput;

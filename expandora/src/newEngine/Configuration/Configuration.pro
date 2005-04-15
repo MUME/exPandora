@@ -8,3 +8,5 @@ INCLUDEPATH += .
 # Input
 HEADERS += Configuration.h
 SOURCES += Configuration.cpp
+
+DESTDIR = ../lib/

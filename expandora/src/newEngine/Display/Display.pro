@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = lib
-INCLUDEPATH += . ../Common/ ../Lexer/
+INCLUDEPATH += . ../Common/
 
 CONFIG		+= qt opengl warn_on debug thread
 
@@ -11,3 +11,7 @@ CONFIG		+= qt opengl warn_on debug thread
 # Input
 HEADERS += Display.h MainWindow.h Terrain.h
 SOURCES += Display.cpp MainWindow.cpp Terrain.cpp
+
+LIBS += -L../lib -lCommon
+
+DESTDIR = ../lib
