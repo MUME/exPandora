@@ -2,18 +2,19 @@
 
 
 #include "RoomCollection.h"
-#include<stack>
+#include <stack>
 
 
-Parser::Parser() {
+Parser::Parser() : insertLock(true) {
   mostLikelyRoom = 0;
   state = SYNCING;
   matchingTolerance = 0;
   pathAcceptance = 5.0;
+  paths = new list<Path *>();
+  shortPaths = 0;
 }
 
 void Parser::setTerrain(Property * ter) {
-	
   activeTerrain = ter->get(0); // the first character has to be the terrain id
 }
 
@@ -97,29 +98,57 @@ void Parser::approved() {
   }
   else { // try to match by coordinate
     Coordinate * c = getExpectedCoordinate(mostLikelyRoom);
-    emit lookingForRooms(this, c);
+    inputLock.lock();
+    emit lookingForRooms(c);
+    inputLock.unlock();
     //perhaps = admin->getRoom(c);
-    if ((perhaps == 0) || (!perhaps->fastCompare(mudEvents.front(), matchingTolerance))) {
-      // not found - go EXPERIMENTING
-      state = EXPERIMENTING;
-      rcmm.deactivate(possible);
-      emit lookingForRooms(this, mudEvents.front());
-      //possible = (RoomCollection *)admin->getRooms(mudEvents.front());
-      buildPaths(possible);
-    }
-    else { // found => add the exit
-      mostLikelyRoom->addExit(playerEvents.front()->type, perhaps);
-      emit playerMoved(mostLikelyRoom->getCoordinate(), perhaps->getCoordinate());
-      mostLikelyRoom = perhaps;
-    }
+    if (state == DANGLING_APPROVED) state = APPROVED;
     cmm.deactivate(c);
   }
   rcmm.deactivate(possible);
   mudPop();
-  playerPop();
- 
- 
+  playerPop(); 
 }
+
+void Parser::approvedRoom(Room * perhaps) {  
+  if ((perhaps == 0) || (!perhaps->fastCompare(mudEvents.front(), matchingTolerance))) {
+    // not found - go EXPERIMENTING
+    state = EXPERIMENTING;
+    experimentingRoom(mostLikelyRoom);
+    isertLock.unlock();
+    experimenting();
+    insertLock.lock();
+  }
+  else { // found => add the exit
+    state = DANGLING_APPROVED;
+    mostLikelyRoom->addExit(playerEvents.front()->type, perhaps);
+    emit playerMoved(mostLikelyRoom->getCoordinate(), perhaps->getCoordinate());
+    mostLikelyRoom = perhaps;
+  }
+}
+
+void Parser::syncingRoom(Room * room) {
+    state = DANGLING_APPROVED;
+    lastMostLikely = mostLikelyRoom;
+    mostLikelyRoom = room;
+    emit playerMoved(0, mostLikelyRoom->getCoordinate());
+}
+
+void Parser::match(Room * room) {
+  insertLock.lock();
+  if (state == DANGLING_APPROVED) { // a second room was found in approved
+    state = EXPERIMENTING;
+    experimentingRoom(lastMostLikely);
+    insertLock.unlock();
+    experimenting();
+    return;
+  }
+  else if (state == APPROVED) approvedRoom(room);
+  else if (state == EXPERIMENTING) experimentingRoom(room);
+  else if (state == SYNCING) syncingRoom(room);
+  inserLock.unlock();
+}
+
 
 void Parser::playerPop() {
   pemm.deactivate(playerEvents.front());
@@ -145,21 +174,14 @@ void Parser::syncing() {
   }
 	
   // now we have a move and a room on the event queues;
-  
-  emit lookingForRooms(this, mudEvents.front());
-  //RoomSearchNode * possible = admin->getRooms(mudEvents.front());
-  if (possible->numRooms() == 1) {
-    state = APPROVED;
-    mostLikelyRoom = *(((RoomCollection *)possible)->begin());
-    emit playerMoved(0, mostLikelyRoom->getCoordinate());
-    rcmm.deactivate((RoomCollection *)possible);
-  }
-  else if (possible->numRooms() >= 0)
-    rcmm.deactivate((RoomCollection *)possible);
 
+  insertLock.lock();
+  emit lookingForRooms(this, mudEvents.front());
+  insertLock.unlock();
+  if (state == DANGLING_APPROVED) state = APPROVED;
+  //RoomSearchNode * possible = admin->getRooms(mudEvents.front());
   if (!(playerEvents.empty())) playerPop();
   mudPop();
-
 }	
 
 void Parser::unify() {
@@ -189,128 +211,110 @@ void Parser::experimenting() {
     playerPop();
     return;
   }
+
+  prevBest = paths.front()->getProb();
+  shortPaths = paths;
+  paths = new list<Path *>();
+  best = 0;
+  seconf = 0;
+
+  insertLock.lock(); // make sure no other parser pushes rooms in our paths
+  emit lookingForRooms(mudEvents.front());
   
-  emit lookingForRooms(this, mudEvents.front());
-  //RoomSearchNode * possible = admin->getRooms(mudEvents.front());
-  if (possible->numRooms() == -1) possible = rcmm.activate();
-  enlargePaths((RoomCollection *)possible);
-  rcmm.deactivate((RoomCollection *) possible);
-  playerPop();
-  mudPop();
-}
-
-void Parser::buildPaths(RoomCollection * rc) {
-  Path * working = pamm.activate();
-  working->init(mostLikelyRoom);
-  paths.push_front(working);
-  enlargePaths(rc);
-}
-
-
-
-void Parser::enlargePaths(RoomCollection * rc) {
-  #ifdef DEBUG
-  fprintf(stderr, "enlarging paths with %i rooms, from event: %s\n ", rc->numRooms(), mudEvents.front()->getProperties()->get(0)->getText());
-  #endif
-
-  list<Path *>::iterator i = paths.begin();
-  set<Room *>::iterator j = 0;
-  
-  Coordinate * c = 0;
-  
+  state = INSERTING;
+  for (i = shortPaths->begin(); i != shortPaths->end(); ++i) {
+    c = getExpectedCoordinate((*i)->getRoom());
+    emit newSimilarRoom(mudEvents.front(), c, activeTerrain);
+    cmm.deactivate(c);
+  }
+  state = EXPERIMENTING;
+  insertLock.unlock();
 
   Path * working = 0;
-  Path * best = 0;
-  Path * second = 0;
-  double prevBest = paths.front()->getProb();
-  stack<Room *> releaseSchedule;
-  
-  for (j = rc->begin(); j != rc->end(); j++) {
-	(*j)->hold(); // make sure the rooms don't get deleted by accident
-	releaseSchedule.push(*j);
-  }
-
-  int k = paths.size();
-  
-
-  for (int l = 0; l < k; l++) {
-    c = getExpectedCoordinate((*i)->getRoom());
-    working = 0;
-    j = 0;
-
-    
-    while (j != rc->end()/*j++ is done only if no new room*/) { 
-      if (working == 0) {
-	j = rc->begin();
-	emit newSimilarRoom(mudEvents.front(), c, activeTerrain);
-	//Room * newRoom = admin->quickInsert(mudEvents.front(), c, activeTerrain);
-	if (newRoom != 0) {
-	  newRoom->hold();
-	  releaseSchedule.push(newRoom);
-	  working = (*i)->fork(newRoom, c);
-	  working->setProb(working->getProb()/pathAcceptance);
-	}
-	else {
-	  working = (*i);
-	  continue;
-	}  
-
-      }
-      else {
-	working = (*i)->fork(*j, c);
-	j++;
-      }
-
-      if (working->getProb() < prevBest/pathAcceptance) {
-	(*i)->removeChild(working);
-	pamm.deactivate(working);
-      }
-      else {
-	if (best == 0) best = working;
-	else if (working->getProb() > best->getProb()) {
-	  paths.push_back(best);
-	  second = best;
-	  best = working;
-	}
-	else {
-	  if (second == 0) second = working;
-	  paths.push_back(working);
-	}
-      }
-    } 
-
-    i++;
-    cmm.deactivate(c);
-  } 
-  Room * old = mostLikelyRoom;
-  mostLikelyRoom = 0;
-
-  for (int l = 0; l < k; l++) {
+  for (i = shortPaths.begin(); i != shortPaths.end(); ++i) {
     working = paths.front();
     paths.pop_front();
     if (!(working->hasChildren())) working->deny();	
   }
-
+ 
   if (best != 0) {
     paths.push_front(best);
     if (second == 0 || best->getProb() > second->getProb()*pathAcceptance) { // excactly one path left -> go APPROVED
       unify();
     }
     else {
+      Room * old = mostLikelyRoom;
       mostLikelyRoom = paths.front()->getRoom();
       emit playerMoved(old->getCoordinate(), mostLikelyRoom->getCoordinate());
     }
   }
   else {
     state = SYNCING;
-    emit playerMoved(old->getCoordinate(), 0);
+    emit playerMoved(mostLikelyRoom->getCoordinate(), 0);
+    mostLikelyRoom = 0;
   }
-  
+
   while (!releaseSchedule.empty()) {
     releaseSchedule.top()->release();
     releaseSchedule.pop();
   }
+
+  delete(shortPaths);
+  shortPaths = 0;
+  playerPop();
+  mudPop();
 }
+
+void Parser::experimentingRoom(Room * room) {
+  if (shortPaths == 0) {
+    paths->push_front(pamm.activate());
+    paths->front()->init(room);
+  }
+  else {
+    for (i = shortPaths.begin(); i != shortPaths.end(); ++i) {
+      Coordinate * c = getExpectedCoordinate((*i)->getRoom());
+      Path * working = (*i)->fork(room, c);
+      checkPath(working);
+      cmm.deactivate(c);
+    }
+  }
+}
+
+
+void Parser::newRoom(Room * newRoom) {
+  insertLock.lock();
+  if (state == INSERTING) {
+    newRoom->hold();
+    releaseSchedule.push(newRoom);
+    Path * working = (*i)->fork(newRoom, c);
+    working->setProb(working->getProb()/pathAcceptance);
+    checkPath(working);
+  }
+  insertLock.unlock();
+}
+
+void Parser::checkPath(Path * working) {
+  if (working->getProb() < prevBest/pathAcceptance) {
+    (*i)->removeChild(working);
+    pamm.deactivate(working);
+  }
+  else {
+    if (best == 0) best = working;
+    else if (working->getProb() > best->getProb()) {
+      paths.push_back(best);
+      second = best;
+      best = working;
+    }
+    else {
+      if (second == 0) second = working;
+      paths.push_back(working);
+   }
+  }
+}
+
+
+
+
 
 
 Coordinate * Parser::getExpectedCoordinate(Room * base) {
