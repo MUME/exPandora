@@ -55,7 +55,7 @@ void RoomAdmin::assignId(Room * room) {
   mapLock.unlock();
 }
 
-Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Coordinate * c, Terrain * t) {
+Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Coordinate * c, int t) {
   mapLock.lock();
   unusedIds.push(id);
   Room * room = insertRoom(event, c, t);
@@ -64,7 +64,7 @@ Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Coordinate * c, Terrain
 }
 
 
-Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition, Terrain * t) {
+Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition, int t) {
 
   if (deepestMatch == 0) return 0; // we tried to insert this event before and it didn't work
 
@@ -82,7 +82,7 @@ Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosi
   return room;
 }
 
-Room * RoomAdmin::insertRoom(ParseEvent * event, Coordinate * expectedPosition, Terrain * t) {
+Room * RoomAdmin::insertRoom(ParseEvent * event, Coordinate * expectedPosition, int t) {
 
   mapLock.lock();    
   Room * room = IntermediateNode::insertRoom(event);
@@ -93,8 +93,8 @@ Room * RoomAdmin::insertRoom(ParseEvent * event, Coordinate * expectedPosition, 
   return room;
 }
 
-RoomSearchNode * RoomAdmin::getRooms(ParseEvent * event) {
-  RoomSearchNode * ret;
+AbstractRoomContainer * RoomAdmin::getRooms(ParseEvent * event) {
+  AbstractRoomContainer * ret;
 
   mapLock.lock();
   ret = IntermediateNode::getRooms(event);

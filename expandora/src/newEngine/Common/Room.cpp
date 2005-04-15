@@ -1,7 +1,7 @@
 #include "Room.h"
 #include "RoomCollection.h"
 
-int defaultTolerance = 1;
+
 
 ObjectRecycler<Room> rmm;
 
@@ -63,7 +63,8 @@ void Room::addExit(int direc, Room * target) {
 
 RoomCollection * Room::go(BaseEvent * dir) {
   RoomCollection * ret = rcmm.activate();
-  if (dir->type == NONE) {
+  Coordinate * move = Coordinate::stdMoves[dir->type];
+  if (move->x == move->y == move->z == 0) {
     ret->addRoom(this);
     return ret;
   }

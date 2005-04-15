@@ -1,20 +1,20 @@
 #include "Parser.h"
-#include "RoomAdmin.h"
-#include "LexDefs.h"
+
+
 #include "RoomCollection.h"
-#include "Display.h"
+#include<stack>
 
 
 Parser::Parser() {
   mostLikelyRoom = 0;
   state = SYNCING;
-  admin = 0;
-  display = 0;
+  matchingTolerance = 0;
+  pathAcceptance = 5.0;
 }
 
 void Parser::setTerrain(Property * ter) {
 	
-  activeTerrain = (terrains.find(ter->get(0)))->second; // the first character has to be the terrain id
+  activeTerrain = ter->get(0); // the first character has to be the terrain id
 }
 
 void Parser::dropNote(ParseEvent * note) {
@@ -73,7 +73,6 @@ void Parser::checkQueues() {
     syncing();
     break;
   }
-  display->toggle_renderer_reaction();
 }	
 
 
@@ -92,21 +91,25 @@ void Parser::approved() {
   // now we have a move and a room on the event queues;
   Room * perhaps = 0;
   RoomCollection * possible = mostLikelyRoom->go(playerEvents.front());
-  if ((perhaps = possible->matchOne(mudEvents.front())) != 0) { // narrows possible by the event and return a Room if exactly one is left
+  if ((perhaps = possible->matchOne(mudEvents.front(), matchingTolerance)) != 0) { // narrows possible by the event and return a Room if exactly one is left
+    emit playerMoved(mostLikelyRoom->getCoordinate(), perhaps->getCoordinate());
     mostLikelyRoom = perhaps;
   }
   else { // try to match by coordinate
     Coordinate * c = getExpectedCoordinate(mostLikelyRoom);
-    perhaps = admin->getRoom(c);
-    if ((perhaps == 0) || (!perhaps->fastCompare(mudEvents.front()))) {
+    emit lookingForRooms(this, c);
+    //perhaps = admin->getRoom(c);
+    if ((perhaps == 0) || (!perhaps->fastCompare(mudEvents.front(), matchingTolerance))) {
       // not found - go EXPERIMENTING
       state = EXPERIMENTING;
       rcmm.deactivate(possible);
-      possible = (RoomCollection *)admin->getRooms(mudEvents.front());
+      emit lookingForRooms(this, mudEvents.front());
+      //possible = (RoomCollection *)admin->getRooms(mudEvents.front());
       buildPaths(possible);
     }
     else { // found => add the exit
       mostLikelyRoom->addExit(playerEvents.front()->type, perhaps);
+      emit playerMoved(mostLikelyRoom->getCoordinate(), perhaps->getCoordinate());
       mostLikelyRoom = perhaps;
     }
     cmm.deactivate(c);
@@ -142,11 +145,13 @@ void Parser::syncing() {
   }
 	
   // now we have a move and a room on the event queues;
-	
-  RoomSearchNode * possible = admin->getRooms(mudEvents.front());
+  
+  emit lookingForRooms(this, mudEvents.front());
+  //RoomSearchNode * possible = admin->getRooms(mudEvents.front());
   if (possible->numRooms() == 1) {
     state = APPROVED;
     mostLikelyRoom = *(((RoomCollection *)possible)->begin());
+    emit playerMoved(0, mostLikelyRoom->getCoordinate());
     rcmm.deactivate((RoomCollection *)possible);
   }
   else if (possible->numRooms() >= 0)
@@ -159,7 +164,11 @@ void Parser::syncing() {
 
 void Parser::unify() {
   state = APPROVED;
+  
+  Room * old = mostLikelyRoom;
   mostLikelyRoom = paths.front()->getRoom();
+  emit playerMoved(old->getCoordinate(), mostLikelyRoom->getCoordinate());
+  
   paths.front()->approve();
   paths.pop_front();
   list<Path *>::iterator i = paths.begin();
@@ -180,8 +189,9 @@ void Parser::experimenting() {
     playerPop();
     return;
   }
-	
-  RoomSearchNode * possible = admin->getRooms(mudEvents.front());
+  
+  emit lookingForRooms(this, mudEvents.front());
+  //RoomSearchNode * possible = admin->getRooms(mudEvents.front());
   if (possible->numRooms() == -1) possible = rcmm.activate();
   enlargePaths((RoomCollection *)possible);
   rcmm.deactivate((RoomCollection *) possible);
@@ -191,7 +201,7 @@ void Parser::experimenting() {
 
 void Parser::buildPaths(RoomCollection * rc) {
   Path * working = pamm.activate();
-  working->init(mostLikelyRoom, admin);
+  working->init(mostLikelyRoom);
   paths.push_front(working);
   enlargePaths(rc);
 }
@@ -232,12 +242,13 @@ void Parser::enlargePaths(RoomCollection * rc) {
     while (j != rc->end()/*j++ is done only if no new room*/) { 
       if (working == 0) {
 	j = rc->begin();
-	Room * newRoom = admin->quickInsert(mudEvents.front(), c, activeTerrain);
+	emit newSimilarRoom(mudEvents.front(), c, activeTerrain);
+	//Room * newRoom = admin->quickInsert(mudEvents.front(), c, activeTerrain);
 	if (newRoom != 0) {
 	  newRoom->hold();
 	  releaseSchedule.push(newRoom);
 	  working = (*i)->fork(newRoom, c);
-	  working->setProb(working->getProb()/PATH_ACCEPT);
+	  working->setProb(working->getProb()/pathAcceptance);
 	}
 	else {
 	  working = (*i);
@@ -250,7 +261,7 @@ void Parser::enlargePaths(RoomCollection * rc) {
 	j++;
       }
 
-      if (working->getProb() < prevBest/PATH_ACCEPT) {
+      if (working->getProb() < prevBest/pathAcceptance) {
 	(*i)->removeChild(working);
 	pamm.deactivate(working);
       }
@@ -271,6 +282,7 @@ void Parser::enlargePaths(RoomCollection * rc) {
     i++;
     cmm.deactivate(c);
   } 
+  Room * old = mostLikelyRoom;
   mostLikelyRoom = 0;
 
   for (int l = 0; l < k; l++) {
@@ -281,15 +293,21 @@ void Parser::enlargePaths(RoomCollection * rc) {
 
   if (best != 0) {
     paths.push_front(best);
-    mostLikelyRoom = paths.front()->getRoom();
-    if (second == 0 || best->getProb() > second->getProb()*PATH_ACCEPT) { // excactly one path left -> go APPROVED
+    if (second == 0 || best->getProb() > second->getProb()*pathAcceptance) { // excactly one path left -> go APPROVED
       unify();
     }
+    else {
+      mostLikelyRoom = paths.front()->getRoom();
+      emit playerMoved(old->getCoordinate(), mostLikelyRoom->getCoordinate());
+    }
   }
-  else state = SYNCING;
+  else {
+    state = SYNCING;
+    emit playerMoved(old->getCoordinate(), 0);
+  }
   
   while (!releaseSchedule.empty()) {
-    releaseSchedule.top()->release(admin);
+    releaseSchedule.top()->release();
     releaseSchedule.pop();
   }
 }
@@ -297,7 +315,7 @@ void Parser::enlargePaths(RoomCollection * rc) {
 
 Coordinate * Parser::getExpectedCoordinate(Room * base) {
   Coordinate * c = cmm.activate();
-  if (!playerEvents.empty()) c->add(stdMoves[playerEvents.front()->type]);
+  if (!playerEvents.empty()) c->add(Coordinate::stdMoves[playerEvents.front()->type]);
   if (base != 0) c->add(base->getCoordinate());
   return c;
 }

@@ -29,8 +29,8 @@ Room * IntermediateNode::insertRoom(ParseEvent * event) {
 }
 	
 
-RoomSearchNode * IntermediateNode::getRooms(ParseEvent * event) {
-  RoomSearchNode * ret = 0;
+AbstractRoomContainer * IntermediateNode::getRooms(ParseEvent * event) {
+  AbstractRoomContainer * ret = 0;
   if (event->next() == 0) {
     ret = rcmm.activate();
     ret->merge(rooms);
@@ -43,7 +43,7 @@ RoomSearchNode * IntermediateNode::getRooms(ParseEvent * event) {
   }
 }
 
-RoomSearchNode * IntermediateNode::skipDown(ParseEvent * event) {
+AbstractRoomContainer * IntermediateNode::skipDown(ParseEvent * event) {
   bool many = false;
   ParseEvent * copy = 0;
 

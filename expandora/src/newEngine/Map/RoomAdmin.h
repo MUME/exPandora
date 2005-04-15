@@ -7,7 +7,7 @@
 #include <stack>
 #include "Room.h"
 #include "Map.h"
-#include "Terrain.h"
+
 
 
 using namespace std;
@@ -19,30 +19,30 @@ class RoomAdmin : public IntermediateNode {
   RoomAdmin();
 		
   int lastId() {return greatestUsedId;}
-  RoomSearchNode * getRooms(ParseEvent * event);
+  AbstractRoomContainer * getRooms(ParseEvent * event);
 
   // inserts a room based on an event we already getRoom()'d on
   // like this we don't traverse the upper part of the tree once again
-  Room * quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition, Terrain * t = 0);
+  Room * quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition, int t = 0);
   Room * getRoom(int id);
   Room * getRoom(Coordinate * pos);
 		
 
-  Room * insertRoom(ParseEvent * event, int id, Coordinate * c, Terrain * t = 0); 	// inserts the room with predefined id, 
+  Room * insertRoom(ParseEvent * event, int id, Coordinate * c, int t = 0); 	// inserts the room with predefined id, 
   // only use when building the tree from the database 
-  Room * insertRoom(ParseEvent * event, Coordinate * expectedPosition, Terrain * t = 0);
+  Room * insertRoom(ParseEvent * event, Coordinate * expectedPosition, int t = 0);
   void removeRoom(int id); 
  private:
   Map map;
   void assignId(Room * room); 
-  RoomSearchNode * deepestMatch;
+  AbstractRoomContainer * deepestMatch;
   vector<Room *> roomIndex;
   stack<int>  unusedIds;
   int greatestUsedId;
   QMutex mapLock;
 };
 
-//extern RoomAdmin roomAdmin; //globally visible roomAdmin ...
+
 #endif
 	
 

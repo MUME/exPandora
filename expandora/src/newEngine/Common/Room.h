@@ -15,6 +15,7 @@ class RoomCollection;
 
 class Room {
  public:
+
   void setTerrain(int t) {terrain = t;}
   int getTerrain() {return terrain;}
   void hold() {holdCount++;}
@@ -36,6 +37,7 @@ class Room {
   Coordinate * getCoordinate(){return c;};
   RoomCollection * getHome() {return home;};
   void resetTime(double ts) {timestamp = ts;}
+
  private:
   RoomCollection * home;
   TinyList<SimpleString *> properties;		/* name, desc, exit names - properties we need for tree searching */
@@ -49,7 +51,7 @@ class Room {
   double timestamp; 		/*last modification */
   Coordinate * c;			/* coordinates on our map */
   int id; 			/* identifier */
-  char terrain; 		/* terrain type */ 		
+  int terrain; 		/* terrain type */ 		
 
 };
 

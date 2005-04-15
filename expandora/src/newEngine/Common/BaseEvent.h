@@ -7,7 +7,6 @@
 #define UNIQUE -1
 #define MOVE_FAIL -2 
 #define UNKNOWN -5
-#define NONE -6
 
 //#include "ObjectRecycler.h"
 

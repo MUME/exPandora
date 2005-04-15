@@ -18,7 +18,7 @@ SearchTreeNode::SearchTreeNode(char * _myChars, TinyList<RoomSearchNode *> * _ch
 
 /**
  */
-RoomSearchNode * SearchTreeNode::getRooms(ParseEvent * event) {
+AbstractRoomContainer * SearchTreeNode::getRooms(ParseEvent * event) {
   RoomSearchNode * selectedChild = 0;
   for (int i = 0; myChars[i] != 0; i++) {
     if (event->current()->next() != myChars[i]) {
@@ -80,10 +80,10 @@ Room * SearchTreeNode::insertRoom(ParseEvent * event) {
 /**
  * checking if another property needs to be skipped is done in the intermediate nodes
  */
-RoomSearchNode * SearchTreeNode::skipDown(ParseEvent * event) {
+AbstractRoomContainer * SearchTreeNode::skipDown(ParseEvent * event) {
   RoomSearchNode * selectedChild = 0;
-  RoomSearchNode * ret = rcmm.activate();
-  RoomSearchNode * add;
+  AbstractRoomContainer * ret = rcmm.activate();
+  AbstractRoomContainer * add;
   ParseEvent * copy = 0;
   for (unsigned int i = 0; i < 256; i++) {
     if ((selectedChild = children->get(i)) != 0) {

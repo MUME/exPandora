@@ -2,10 +2,9 @@
 #define PATH
 
 #include "Room.h"
-#include "RoomAdmin.h"
 #include <set>
 
-using namespace std;
+
 
 class Path {
  public:
@@ -13,7 +12,7 @@ class Path {
   void removeChild(Path * p);
   void setParent(Path * p);
   bool hasChildren() {return (!children.empty());};
-  void init(Room * room, RoomAdmin * _admin);
+  void init(Room * room);
   Room * getRoom() {return room;};
   Path * fork(Room * room, Coordinate * expectedCoordinate); //new Path is fetched from pamm, distance between rooms is calculated and probability is updated accordingly
   double getProb() {return probability;};	
@@ -32,7 +31,6 @@ class Path {
   set<Path *> children;
   double probability;
   Room * room; // in fact a path only has one room, one parent and soem children(forks).
-  RoomAdmin * admin;
 };
 
 extern ObjectRecycler<Path> pamm;

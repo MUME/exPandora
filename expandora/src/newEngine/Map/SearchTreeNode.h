@@ -22,11 +22,11 @@ class SearchTreeNode : public RoomSearchNode {
 		SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode *> * children = new TinyList<RoomSearchNode *>());
 		SearchTreeNode(char * string, TinyList<RoomSearchNode *> * children = new TinyList<RoomSearchNode *>());
 		virtual ~SearchTreeNode() {printf("warning: SearchTreeNode destroyed");}
-		virtual RoomSearchNode * getRooms(ParseEvent * event);
+		virtual AbstractRoomContainer * getRooms(ParseEvent * event);
 		virtual Room * insertRoom(ParseEvent * event);
 		
 		virtual void setChild(char, RoomSearchNode *);
-		virtual RoomSearchNode * skipDown(ParseEvent * event);
+		virtual AbstractRoomContainer * skipDown(ParseEvent * event);
 };
 #endif
 

@@ -2,7 +2,7 @@
 #define PARSER
 #include <queue>
 #include <list>
-#include "Terrain.h"
+#include <qobject.h>
 #include "ParseEvent.h"
 #include "Property.h"
 #include "Path.h"
@@ -14,17 +14,26 @@
 #define EXPERIMENTING 1
 #define SYNCING 2
 
-class Display;
 
-class Parser {
+class Parser : public QObject{
+ public slots:
+  void setTerrain(Property *);
+  void matchFound(Room *);
+
+ signals:
+  void lookingForRooms(Parser *, ParseEvent *);
+  void lookingForRooms(Parser *, int);
+  void lookingForRooms(Parser *, Coordinate *);
+  void playerMoved(Coordinate *, Coordinate *);
+  void newSimilarRoom(ParseEvent *, Coordinate *, int);
+
  public:
   Parser();
-  void attachRoomAdmin(RoomAdmin * _admin) {admin = _admin;}         
-  void attachDisplay(Display * _display) {display = _display;}
-  void setTerrain(Property * ter);
+
   void event(ParseEvent * ev);
   Room * getMostLikely() {return mostLikelyRoom;}
  private:
+  Q_OBJECT
   void mudPop();
   void playerPop();
   void unify();
@@ -36,16 +45,17 @@ class Parser {
   void approved();
   void enlargePaths(RoomCollection * enlargingRooms);
   void buildPaths(RoomCollection * initialRooms);
+  Coordinate * getExpectedCoordinate(Room * base);
 
   char state;
+  int matchingTolerance;
   queue<ParseEvent *> playerEvents;
   queue<ParseEvent *> mudEvents;
-  Terrain * activeTerrain;
+  int activeTerrain;
   list<Path *> paths;
   Room * mostLikelyRoom;
-  RoomAdmin * admin;
-  Display * display;
-  Coordinate * getExpectedCoordinate(Room * base);
+  double pathAcceptance;
+
 };	
 
 #endif

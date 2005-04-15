@@ -28,6 +28,7 @@ ROOMCOL		\33\[32m
 
 
 {ROOMCOL}				BEGIN(ROOMNAME);
+"You flee head over heels"  pushEvent(UNKNOWN); /* drop the current room and flee in UNKOWN dir */
 
 <*>{OTHERCOL}[^\33]*{ENDCOL}			/* throw away some message in other colors*/
 <*>"You just see a dense fog around you..."                     |
@@ -102,13 +103,10 @@ ROOMCOL		\33\[32m
 
 %%
 
-/* we should also find things like "You skillfully discover a xy" or "The xy seems to be closed" in the initial state and drop a note on these*/
-/* "You flee head over heels" should be transformed into a MOVE event without direction (which will be queued in the user queue by the parser), 
-"flee" shouldn't generate an event on the user side*/
-/*TODO: define mudLexer.append(), if possible use flex's own buffer and just move pointers around, append(int) appends only the i'th character*/
-/*	mudLexer.pushProperty and mudLexer.pushOptional flush the buffer.*/
-/*	matchCompleteRoom matches one room we believe to be fully specified, matchIncompleteRoom matches a description where the last parts are missing*/
-/*	jumpProperty indicates that we left out one property, jumpLastProperty indicates that we left out all following but the last property */
-/*		- this has to be represented in our search tree somehow so that we can match rooms with title and exits*/
-/*	perhaps we should also drop a note in the current room if the user types "exits" or if he searches and finds a hidden exit*/
-/*	markTerrain should tell the Room-Algorithm which property determines the terrain type for the rendering*/
+/*TODO:
+- we should also find things like "You skillfully discover a hidden xy" or "The xy seems to be closed" in the initial state and drop a note on these.
+- perhaps we should also drop a note in the current room if the user types "exits" or if he searches and finds a hidden exit.
+- leader recogition: "You start following xy" should set some variable to xy. 
+  "xy leaves z" should then be recognized and z should be remembered in another variable until "You follow xy". 
+  Then a move event like "pushEvent(Coordinate::moveCodes.find(z)->second)" should be generated.
+*/

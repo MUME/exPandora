@@ -5,12 +5,12 @@
 #include <AbstractRoomContainer.h>
 
 
-class RoomSearchNode : AbstractRoomContainer {
+class RoomSearchNode : public AbstractRoomContainer {
 	public:
 		
-		virtual RoomSearchNode * getRooms(ParseEvent *) {return 0;}
+		virtual AbstractRoomContainer * getRooms(ParseEvent *) {return 0;}
 		virtual void setChild(char, RoomSearchNode *) {;}
-		virtual RoomSearchNode * skipDown(ParseEvent *) {return 0;}
+		virtual AbstractRoomContainer * skipDown(ParseEvent *) {return 0;}
 };
 
 #endif
