@@ -1,4 +1,4 @@
-TEMPLATE	= app
+TEMPLATE	= lib
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
@@ -27,7 +27,6 @@ HEADERS += AbstractRoomContainer.h
 
 
 SOURCES += BaseEvent.cpp
-SOURCES += Controller.cpp
 SOURCES += Coordinate.cpp
 SOURCES += ParseEvent.cpp
 SOURCES += Property.cpp
@@ -35,6 +34,6 @@ SOURCES += Room.cpp
 SOURCES += RoomCollection.cpp
 SOURCES += SimpleString.cpp
 
-TARGET		= ../expandora
+DESTDIR = ../lib
 
 !mac:unix:LIBS		+= -lm -lqt-mt

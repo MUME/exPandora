@@ -10,8 +10,8 @@ CONFIG		+= qt opengl warn_on debug thread
 # Input
 HEADERS += LexDefs.h Lexer.h
 SOURCES += Lexer.cpp
-SOURCES += ../Common/ParseEvent.cpp
-SOURCES += ../Common/Property.cpp
-SOURCES += ../Common/SimpleString.cpp
 
 LEXSOURCES += mud.lex player.lex
+
+DESTDIR = ../lib/
+LIBS += -L../lib/ -lCommon

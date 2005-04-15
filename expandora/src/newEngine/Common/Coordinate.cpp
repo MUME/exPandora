@@ -1,6 +1,6 @@
 #include "Coordinate.h"
 
-
+vector<Coordinate *> Coordinate::stdMoves = vector<Coordinate *>();
 ObjectRecycler<Coordinate> cmm;
 
 
