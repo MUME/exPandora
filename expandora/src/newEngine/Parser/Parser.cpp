@@ -137,7 +137,7 @@ void Parser::approved() {
   playerPop(); 
 }
 
-
+/*
 void Parser::syncingRoom(Room * room) {
     state = DANGLING_APPROVED;
     lastMostLikely = mostLikelyRoom;
@@ -159,7 +159,7 @@ void Parser::match(Room * room) {
   else if (state == SYNCING) syncingRoom(room);
   inserLock.unlock();
 }
-
+*/
 
 void Parser::playerPop() {
   pemm.deactivate(playerEvents.front());
@@ -191,9 +191,8 @@ void Parser::syncing() {
   QThread::usleep(remoteMapDelay);
 
   paths = sync->evaluate();
+  evaluatePaths();
 
-  if (state == DANGLING_APPROVED) state = APPROVED;
-  //RoomSearchNode * possible = admin->getRooms(mudEvents.front());
   if (!(playerEvents.empty())) playerPop();
   mudPop();
 }	
@@ -225,6 +224,10 @@ void Parser::experimenting() {
   
   paths = exp->evaluate();
   delete(exp);
+
+  evaluatePaths();
+  playerPop();
+  mudPop();
 }
 
 void Parser::evaluatePaths() {
@@ -249,8 +252,7 @@ void Parser::evaluatePaths() {
   }
 
   if (newCoord != oldCoord) emit playerMoved(oldCoord, newCoord);
-  playerPop();
-  mudPop();
+  
 }
 
 

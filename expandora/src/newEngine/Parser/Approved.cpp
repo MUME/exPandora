@@ -2,13 +2,13 @@
 
 void Approved::foundRoom(QObject * sender, Room * perhaps) {  
   if (matchedRoom != 0 && perhaps->fastCompare(myEvent, matchingTolerance)) {
-      matchedRoom = perhaps;
-      owner = sender;
+    matchedRoom = perhaps;
+    owner = sender;
   }
   else {
     QObject::connect(this, SIGNAL(releaseRoom(int)), sender, SLOT(releaseRoom(int)));
     emit releaseRoom(perhaps->getId());
-    QObject::disconnect(this, SIGNAL(releaseRoom(int)), 0, 0);
+    QObject::disconnect(this, SIGNAL(releaseRoom(int)), sender, 0);
     if (matchedRoom != 0) moreThanOnde = true; 
   }
 }
@@ -30,6 +30,9 @@ Room * Approved::oneMatch() {
 }
 
 void Approved::reset() {
+  QObject::connect(this, SIGNAL(releaseRoom(int)), owner, SLOT(releaseRoom(int)));
+  emit releaseRoom(matchedRoom->getId());
+  QObject::disconnect(this, SIGNAL(releaseRoom(int)), owner, 0);
   matchedRoom = 0;
   moreThanOne = false;
   owner = 0;

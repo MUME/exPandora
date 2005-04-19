@@ -42,7 +42,7 @@ void foundRoom(QObject * map, Room * room) {
 }
   
 
-list<Path *> * Experimenting::evaluatePaths() {
+list<Path *> * Experimenting::evaluate() {
   Path * working = 0;
   for (i = shortPaths.begin(); i != shortPaths.end(); ++i) {
     working = paths.front();
