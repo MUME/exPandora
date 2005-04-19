@@ -9,8 +9,9 @@ Parser::Parser() : insertLock(true) {
   mostLikelyRoom = 0;
   state = SYNCING;
   matchingTolerance = 0;
+  remoteMapDelay = 0;
   pathAcceptance = 5.0;
-  paths = new list<Path *>();
+  paths = 0;
   shortPaths = 0;
 }
 
@@ -89,43 +90,53 @@ void Parser::approved() {
     return;
   }
 	
+
   // now we have a move and a room on the event queues;
-  Room * perhaps = 0;
-  RoomCollection * possible = mostLikelyRoom->go(playerEvents.front());
-  if ((perhaps = possible->matchOne(mudEvents.front(), matchingTolerance)) != 0) { // narrows possible by the event and return a Room if exactly one is left
+
+  Approved * appr = new Approved(mudEvents.front(), matchingTolerance, mostLikelyRoom);
+  set<int> * possible = mostLikelyRoom->go(playerEvents.front());
+  for (set<int>::iterator i = possible->begin(); i != possible->end(); ++i) {
+    emit lookingForRooms(appr, *i);
+  }
+  
+  QThread::usleep(remoteMapDelay);
+  
+  Room * perhaps = appr->oneMatch();
+
+  Coordinate * c = 0;
+  if (perhaps == 0) { // try to match by coordinate
+    appr->reset();
+    c = getExpectedCoordinate(mostLikelyRoom);
+    emit lookingForRooms(appr, c);
+    QThread::usleep(remoteMapDelay);
+    perhaps = appr->oneMatch();
+    if (perhaps != 0) {
+      parserMutex.lock();
+      QObject::connect(this, SIGNAL(addExit(int, int, char)), appr->getOwner(), SLOT(addExit(int, int, char)));
+      emit addExit(mostLikelyRoom->getId(), perhaps->getId(), playerEvents.front()->type);
+      QObject::disconnect(this, SIGNAL(addExit(int, int, char)), 0,0);
+      parserMutex.unlock();
+    }
+    cmm.deactivate(c);
+  }
+  if (perhaps != 0) {
     emit playerMoved(mostLikelyRoom->getCoordinate(), perhaps->getCoordinate());
     mostLikelyRoom = perhaps;
   }
-  else { // try to match by coordinate
-    Coordinate * c = getExpectedCoordinate(mostLikelyRoom);
-    inputLock.lock();
-    emit lookingForRooms(c);
-    inputLock.unlock();
-    //perhaps = admin->getRoom(c);
-    if (state == DANGLING_APPROVED) state = APPROVED;
-    cmm.deactivate(c);
+  else {
+    state = EXPERIMENTING;
+    Path * root = pamm.activate();
+    root->init(mostLikelyRoom);
+    paths->push_front(root);
+    experimenting();
   }
-  rcmm.deactivate(possible);
+
+  delete(appr);
+
   mudPop();
   playerPop(); 
 }
 
-void Parser::approvedRoom(Room * perhaps) {  
-  if ((perhaps == 0) || (!perhaps->fastCompare(mudEvents.front(), matchingTolerance))) {
-    // not found - go EXPERIMENTING
-    state = EXPERIMENTING;
-    experimentingRoom(mostLikelyRoom);
-    isertLock.unlock();
-    experimenting();
-    insertLock.lock();
-  }
-  else { // found => add the exit
-    state = DANGLING_APPROVED;
-    mostLikelyRoom->addExit(playerEvents.front()->type, perhaps);
-    emit playerMoved(mostLikelyRoom->getCoordinate(), perhaps->getCoordinate());
-    mostLikelyRoom = perhaps;
-  }
-}
 
 void Parser::syncingRoom(Room * room) {
     state = DANGLING_APPROVED;
@@ -175,30 +186,18 @@ void Parser::syncing() {
 	
   // now we have a move and a room on the event queues;
 
-  insertLock.lock();
-  emit lookingForRooms(this, mudEvents.front());
-  insertLock.unlock();
+  Syncing * sync = new Syncing(paths);
+  emit lookingForRooms(sync, mudEvents.front());
+  QThread::usleep(remoteMapDelay);
+
+  paths = sync->evaluate();
+
   if (state == DANGLING_APPROVED) state = APPROVED;
   //RoomSearchNode * possible = admin->getRooms(mudEvents.front());
   if (!(playerEvents.empty())) playerPop();
   mudPop();
 }	
 
-void Parser::unify() {
-  state = APPROVED;
-  
-  Room * old = mostLikelyRoom;
-  mostLikelyRoom = paths.front()->getRoom();
-  emit playerMoved(old->getCoordinate(), mostLikelyRoom->getCoordinate());
-  
-  paths.front()->approve();
-  paths.pop_front();
-  list<Path *>::iterator i = paths.begin();
-  for (; i != paths.end(); i++) {
-    (*i)->deny();
-  }
-  paths.clear();
-}
 
 void Parser::experimenting() {
   if (playerEvents.front()->type == UNIQUE) {
@@ -212,108 +211,47 @@ void Parser::experimenting() {
     return;
   }
 
-  prevBest = paths.front()->getProb();
-  shortPaths = paths;
-  paths = new list<Path *>();
-  best = 0;
-  seconf = 0;
+  Experimenting * exp = new Experimenting(this, paths, pahAcceptance);
 
-  insertLock.lock(); // make sure no other parser pushes rooms in our paths
-  emit lookingForRooms(mudEvents.front());
-  
-  state = INSERTING;
-  for (i = shortPaths->begin(); i != shortPaths->end(); ++i) {
+  for (i = paths->begin(); i != paths->end(); ++i) {
     c = getExpectedCoordinate((*i)->getRoom());
-    emit newSimilarRoom(mudEvents.front(), c, activeTerrain);
+    emit newRoom(mudEvents.front(), c, activeTerrain);
     cmm.deactivate(c);
   }
-  state = EXPERIMENTING;
-  insertLock.unlock();
 
-  Path * working = 0;
-  for (i = shortPaths.begin(); i != shortPaths.end(); ++i) {
-    working = paths.front();
-    paths.pop_front();
-    if (!(working->hasChildren())) working->deny();	
-  }
- 
-  if (best != 0) {
-    paths.push_front(best);
-    if (second == 0 || best->getProb() > second->getProb()*pathAcceptance) { // excactly one path left -> go APPROVED
-      unify();
-    }
-    else {
-      Room * old = mostLikelyRoom;
-      mostLikelyRoom = paths.front()->getRoom();
-      emit playerMoved(old->getCoordinate(), mostLikelyRoom->getCoordinate());
-    }
-  }
-  else {
+  emit lookingForRooms(exp, mudEvents.front());
+  
+  QThread::usleep(remoteMapDelay);
+  
+  paths = exp->evaluate();
+  delete(exp);
+}
+
+void Parser::evaluatePaths() {
+  Coordinate * oldCoor = 0;  
+  if (mostLikelyRoom)
+    oldCoord = mostLikelyRoom->getCoordinate();
+  Coordinate * newCoord = 0;
+  if (paths->empty()) {
     state = SYNCING;
-    emit playerMoved(mostLikelyRoom->getCoordinate(), 0);
     mostLikelyRoom = 0;
   }
-
-  while (!releaseSchedule.empty()) {
-    releaseSchedule.top()->release();
-    releaseSchedule.pop();
+  else if (++paths->begin() == paths->end()) {
+    state = APPROVED;
+    mostLikelyRoom = paths->front()->getRoom();
+    newCoord = mostLikelyRoom->getCoordinate();
+    paths->front()->approve();
+    paths->pop_front();
+  } 
+  else {
+    mostLikelyRoom = paths.front()->getRoom();
+    newCoord = mostLikelyRoom->getCoordinate();
   }
 
-  delete(shortPaths);
-  shortPaths = 0;
+  if (newCoord != oldCoord) emit playerMoved(oldCoord, newCoord);
   playerPop();
   mudPop();
 }
-
-void Parser::experimentingRoom(Room * room) {
-  if (shortPaths == 0) {
-    paths->push_front(pamm.activate());
-    paths->front()->init(room);
-  }
-  else {
-    for (i = shortPaths.begin(); i != shortPaths.end(); ++i) {
-      Coordinate * c = getExpectedCoordinate((*i)->getRoom());
-      Path * working = (*i)->fork(room, c);
-      checkPath(working);
-      cmm.deactivate(c);
-    }
-  }
-}
-
-
-void Parser::newRoom(Room * newRoom) {
-  insertLock.lock();
-  if (state == INSERTING) {
-    newRoom->hold();
-    releaseSchedule.push(newRoom);
-    Path * working = (*i)->fork(newRoom, c);
-    working->setProb(working->getProb()/pathAcceptance);
-    checkPath(working);
-  }
-  insertLock.unlock();
-}
-
-void Parser::checkPath(Path * working) {
-  if (working->getProb() < prevBest/pathAcceptance) {
-    (*i)->removeChild(working);
-    pamm.deactivate(working);
-  }
-  else {
-    if (best == 0) best = working;
-    else if (working->getProb() > best->getProb()) {
-      paths.push_back(best);
-      second = best;
-      best = working;
-    }
-    else {
-      if (second == 0) second = working;
-      paths.push_back(working);
-   }
-  }
-}
-
-
-
 
 
 

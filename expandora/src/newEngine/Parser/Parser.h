@@ -10,68 +10,59 @@
 #include "Path.h"
 #include "Room.h"
 #include "Coordinate.h"
-
+#include "Experimenting.h"
+#include "Approved.h"
+#include "Syncing.h"
 
 #define APPROVED 0
 #define EXPERIMENTING 1
 #define SYNCING 2
-#define DANGLING_APPROVED 3
-#define INSERTING 4
+
+
 
 class Parser : public QObject{
  public slots:
   void event(ParseEvent *);
   void setTerrain(Property *);
-  void match(Room *);
-  void newRoom(Room *);
 
  signals:
-  void lookingForRooms(ParseEvent *);
-  void lookingForRooms(int);
-  void lookingForRooms(Coordinate *);
+  // the QObjects in the signals denote the recipient of the results
+  // the map shoud keep track of them and only deliver results to 
+  // the interested objects
+  void lookingForRooms(QObject *,ParseEvent *);
+  void lookingForRooms(QObject *,int);
+  void lookingForRooms(QObject *,Coordinate *);
   void playerMoved(Coordinate *, Coordinate *);
-  void newSimilarRoom(ParseEvent *, Coordinate *, int);
-
+  void createRoom(QObject *,ParseEvent *, Coordinate *, int);
+  void addExit(int, int, char);
 
  public:
   Parser();
+  Coordinate * getExpectedCoordinate(Room * base);
 
-
-  Room * getMostLikely() {return mostLikelyRoom;}
  private:
   Q_OBJECT
   void mudPop();
   void playerPop();
-  void unify();
 		
   void dropNote(ParseEvent * ev);
   void checkQueues();
   void experimenting();
   void syncing();
   void approved();
-  void enlargePaths(RoomCollection * enlargingRooms);
-  void buildPaths(RoomCollection * initialRooms);
-  Coordinate * getExpectedCoordinate(Room * base);
+  void evaluatePaths();
 
-  // for inserting newly created rooms
-  Coordinate * c;  
-  list<Path *>::iterator i;
-  QMutex insertLock;
-  stack<Room *> releaseSchedule;
-  list<Path *> * shortPaths;
-  Path * best;
-  Path * second;
-  double prevBest;
-
-  // others
+  QMutex parserMutex;
   char state;
   int matchingTolerance;
+  int remoteMapDelay;
   queue<ParseEvent *> playerEvents;
   queue<ParseEvent *> mudEvents;
   int activeTerrain;
   list<Path *> * paths;
   Room * mostLikelyRoom;
   double pathAcceptance;
+
 
 };	
 
