@@ -9,36 +9,19 @@ ObjectRecycler<Room> rmm;
 Room::Room() {
   c = 0;
   timestamp = 0;
-  holdCount = 0;
   id = 0;
   terrain = 0;
   unique = false;
-  home = 0;
-}
-
-/**
- * return value tells if the room feels like being removed
- */
-bool Room::release() {
-  holdCount--;
-  if (holdCount == 0) {
-    return true;
-    //admin->removeRoom(id);
-    //rmm.deactivate(this);
-  }
-  else if (holdCount < 0) 
-    printf("fatal: trying to double-remove room\n");
-  return false;
 }
 
 
-void Room::init(ParseEvent * event, RoomCollection * _home) {
+void Room::init(ParseEvent * event) {
 
   TinyList<Property *> * _properties = event->getProperties();
 
-  #ifdef DEBUG
+#ifdef DEBUG
   fprintf(stderr, "creating room: %s\n", _properties->get(0)->getText());
-  #endif
+#endif
 
   for (char i = 0; _properties->get(i); i++)
     properties.put(i, _properties->get(i)->copyString());
@@ -46,36 +29,34 @@ void Room::init(ParseEvent * event, RoomCollection * _home) {
   TinyList<Property *> * _optionalProperties = event->getOptionals();
   for (char i = 0; _optionalProperties->get(i) != 0; i++)
     optionalProperties.put(i, _optionalProperties->get(i)->copyString());
-
-  home = _home;
 }
 
 
-void Room::addExit(int direc, Room * target) {
-  RoomCollection * roomsInDir = exits.get(direc);
+void Room::addExit(int direc, int target) {
+  set<int> * roomsInDir = exits.get(direc);
   if (roomsInDir == 0) {
-    roomsInDir = rcmm.activate();
+    roomsInDir = new set<int>;
     exits.put(direc, roomsInDir);
   }
-  roomsInDir->addRoom(target);
+  roomsInDir->insert(target);
 }
 
 
-RoomCollection * Room::go(BaseEvent * dir) {
-  RoomCollection * ret = rcmm.activate();
+set<int> * Room::go(BaseEvent * dir) {
+  set<int> * ret  = new set<int>();;
   Coordinate * move = Coordinate::stdMoves[dir->type];
   if (move->x == move->y == move->z == 0) {
-    ret->addRoom(this);
+    ret->insert(id);
     return ret;
   }
   else if (dir->type == UNKNOWN) {
     for (unsigned int i = 0; i < exits.size(); i++) {
-      ret->merge(exits.get(i));
+      ret->insert(exits.get(i)->begin(), exits.get(i)->end());
     }
     return ret;
   }
   else {
-    ret->merge(exits.get(dir->type));
+    ret->insert(exits.get(dir->type)->begin(), exits.get(dir->type)->end());
     return ret;
   }
 }
@@ -85,9 +66,9 @@ RoomCollection * Room::go(BaseEvent * dir) {
  */
 void Room::clear() {
 
-  #ifdef DEBUG
+#ifdef DEBUG
   fprintf(stderr, "deleting room: '%s' with id %i\n", properties.get(0)->getText(), id);
-  #endif
+#endif
 
   for (char i = 0; properties.get(i) != 0; i++) {
     ssmm.deactivate(properties.get(i));
@@ -101,12 +82,9 @@ void Room::clear() {
     if (exits.get(i) != 0) exits.get(i)->clear();
   terrain = 0;
   timestamp = 0;
-  holdCount = 0;
-  home->removeRoom(this);
   cmm.deactivate(c);
   c = 0;
   unique = false;
-  home = 0;
   id = 0;
 }
 	

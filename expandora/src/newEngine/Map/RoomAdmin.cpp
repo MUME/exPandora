@@ -64,23 +64,6 @@ Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Coordinate * c, int t) 
 }
 
 
-Room * RoomAdmin::quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition, int t) {
-
-  if (deepestMatch == 0) return 0; // we tried to insert this event before and it didn't work
-
-  mapLock.lock();
-
-  Room * room = deepestMatch->insertRoom(knownEvent);
-
-  if (room != 0) deepestMatch = room->getHome();
-  else deepestMatch = 0;
-
-  map.setNearest(expectedPosition, room);
-  room->setTerrain(t);	
-  assignId(room);
-  mapLock.unlock();  
-  return room;
-}
 
 Room * RoomAdmin::insertRoom(ParseEvent * event, Coordinate * expectedPosition, int t) {
 

@@ -3,17 +3,21 @@
 
 #include <qobject.h>
 #include "Room.h"
-#include "ParserEvent.h"
+#include "ParseEvent.h"
 
 
 class Approved : public QObject{
  private:
    Q_OBJECT
    Room * matchedRoom;
-   bool moreThanOne;
-   int matchingTolerance;
    ParseEvent * myEvent;
+   int matchingTolerance;   
    QObject * owner;
+   bool moreThanOne;
+   
+   
+
+
 
  public slots:
    void foundRoom(QObject *, Room *);
@@ -26,4 +30,5 @@ class Approved : public QObject{
    Room * oneMatch();
    QObject * getOwner(); 
    void reset();
-}
+};
+#endif

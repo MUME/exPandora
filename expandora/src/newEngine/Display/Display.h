@@ -4,6 +4,7 @@
 #include <qthread.h>
 #include <qgl.h>
 #include "Room.h"
+#include "CachedRoom.h"
 
 #define MAX_TEXTURES    100
 #define DIST_Z	1	/* the distance between 2 rooms */
@@ -21,8 +22,6 @@ class QWidget;
 class QPushButton;
 
 
-
-
 class RendererWidget : public QGLWidget {
 
  private:
@@ -31,6 +30,7 @@ class RendererWidget : public QGLWidget {
   static const int texture_visibilit_range = 300;
   static const int details_visibility_range = 500;
 
+  map<int, CachedRoom *> unfinishedRooms;
   GLfloat       colour[4];
   float         m_Frustum[6][4];
   GLuint        basic_gllist;

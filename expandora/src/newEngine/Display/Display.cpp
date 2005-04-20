@@ -215,20 +215,19 @@ void RendererWidget::drawMarker(Coordinate * pos) {
 
 void RendererWidget::drawRoom(Room * pr)
 {
-  GLfloat dx, dx2, dy, dy2, dz, dz2;
-  RoomCollection * rc;
+  GLfloat dx, dy, dz;
+  set<int> * rc;
   Coordinate * r;
   Coordinate * p = pr->getCoordinate();
   unsigned int k;
   char lines, texture;
   float distance;
 
+  roomCache[pr->getId()] = p;
+
   dx = p->x - curx;
   dy = p->y - cury;
   dz = (p->z - curz) * DIST_Z;
-  dx2 = 0;
-  dy2 = 0;
-  dz2 = 0;
   lines = 1;
   texture = 1;
     
@@ -306,69 +305,19 @@ void RendererWidget::drawRoom(Room * pr)
     {
       rc = pr->getNeighbours(k);
       if (rc == 0) continue;
-      for(set<Room *>::iterator i = rc->begin(); i != rc->end(); i++) {
-
-	GLfloat kx, ky, kz;
-	GLfloat sx, sy;
-
-
-	r = (*i)->getCoordinate();
-	dx2 = r->x - curx;
-	dy2 = r->y - cury;
-	dz2 = (r->z - curz) * DIST_Z;
-
-	dx2 = (dx + dx2) / 2;
-	dy2 = (dy + dy2) / 2;
-	dz2 = (dz + dz2) / 2;
-
-
-	kx = 0;
-	ky = 0;
-	kz = 0;
-
-	sx = 0;
-	sy = 0;
+      for(set<int>::iterator i = rc->begin(); i != rc->end(); i++) {
+	if (halfDrawnSources.find(*i) == halfDrawnSources.end()) {
+	  HalfExit * h = undrawnExits[pr->getId()];
+	  if (h == 0) {
+	    h =  new HalfExit(pr->getCoordinate());
+	    undrawnExits[pr->getId()] = h;
+	  }
+	  h[k].insert(*i);
+	}
+	else Coordinate * r = undrawnExits[*i]->from;
 	
-	Coordinate * dir = 0;
-	if (k < Coordinate::stdMoves.size()) 
-	  dir = Coordinate::stdMoves[k];
-	else 
-	  dir = cmm.activate();
-
-	if (dir->y > 0) {
-	  ky = +(ROOM_SIZE + 0.2);
-	  sy = +ROOM_SIZE;
-	} 
-	else if (dir->y < 0) {
-	  ky = -(ROOM_SIZE + 0.2);
-	  sy = -ROOM_SIZE;
-	}
-	if (dir->x > 0) {
-	  kx = +(ROOM_SIZE + 0.2);
-	  sx = +ROOM_SIZE;
-	} 
-	else if (dir->x < 0) {
-	  kx = -(ROOM_SIZE + 0.2);
-	  sx = -ROOM_SIZE;
-	}
-	if (dir->z > 0) {
-	  kz = +(ROOM_SIZE + 0.2);
-	} else if (dir->z < 0) {
-	  kz = -(ROOM_SIZE + 0.2);
-	} 
-
-	glColor4f(0, 1.0, 0.0, colour[3] + 0.2);
-
-                
-	glBegin(GL_LINES);
-	glVertex3f(dx + sx, dy + sy, dz);
-	glVertex3f(dx + kx, dy + ky, dz + kz);
-	glVertex3f(dx + kx, dy + ky, dz + kz);
-	glVertex3f(dx2, dy2, dz2);
-	glEnd();
-
-	glColor4f(colour[0], colour[1], colour[2], colour[3]);
-
+	drawExit(dx, dy, dz, r);
+	
       } 
 
 
@@ -378,6 +327,68 @@ void RendererWidget::drawRoom(Room * pr)
     
 }
 
+
+void RendererWidget::drawExit(int dx, int dy, int dz, Coordinate * r) {
+  GLfloat kx, ky, kz;
+  GLfloat sx, sy;
+
+  int dx2 = r->x - curx;
+  int dy2 = r->y - cury;
+  int dz2 = (r->z - curz) * DIST_Z;
+  
+  dx2 = (dx + dx2) / 2;
+  dy2 = (dy + dy2) / 2;
+  dz2 = (dz + dz2) / 2;
+
+
+  kx = 0;
+  ky = 0;
+  kz = 0;
+  
+  sx = 0;
+  sy = 0;
+	
+  Coordinate * dir = 0;
+  if (k < Coordinate::stdMoves.size()) 
+    dir = Coordinate::stdMoves[k];
+  else 
+    dir = cmm.activate();
+
+  if (dir->y > 0) {
+    ky = +(ROOM_SIZE + 0.2);
+    sy = +ROOM_SIZE;
+  } 
+  else if (dir->y < 0) {
+    ky = -(ROOM_SIZE + 0.2);
+    sy = -ROOM_SIZE;
+  }
+  if (dir->x > 0) {
+    kx = +(ROOM_SIZE + 0.2);
+    sx = +ROOM_SIZE;
+  } 
+  else if (dir->x < 0) {
+    kx = -(ROOM_SIZE + 0.2);
+    sx = -ROOM_SIZE;
+  }
+  if (dir->z > 0) {
+    kz = +(ROOM_SIZE + 0.2);
+  } else if (dir->z < 0) {
+    kz = -(ROOM_SIZE + 0.2);
+  } 
+
+  glColor4f(0, 1.0, 0.0, colour[3] + 0.2);
+
+                
+  glBegin(GL_LINES);
+  glVertex3f(dx + sx, dy + sy, dz);
+  glVertex3f(dx + kx, dy + ky, dz + kz);
+  glVertex3f(dx + kx, dy + ky, dz + kz);
+  glVertex3f(dx2, dy2, dz2);
+  glEnd();
+
+  glColor4f(colour[0], colour[1], colour[2], colour[3]);
+
+}
 
 
 void RendererWidget::shiftView()

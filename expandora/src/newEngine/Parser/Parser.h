@@ -5,6 +5,8 @@
 #include <stack>
 #include <qobject.h>
 #include <qmutex.h>
+#include <qthread.h>
+
 #include "ParseEvent.h"
 #include "Property.h"
 #include "Path.h"
@@ -20,7 +22,7 @@
 
 
 
-class Parser : public QObject{
+class Parser : public QObject, private QThread {
  public slots:
   void event(ParseEvent *);
   void setTerrain(Property *);
@@ -33,7 +35,7 @@ class Parser : public QObject{
   void lookingForRooms(QObject *,int);
   void lookingForRooms(QObject *,Coordinate *);
   void playerMoved(Coordinate *, Coordinate *);
-  void createRoom(QObject *,ParseEvent *, Coordinate *, int);
+  void createRoom(ParseEvent *, Coordinate *, int);
   void addExit(int, int, char);
 
  public:

@@ -21,9 +21,6 @@ class RoomAdmin : public IntermediateNode {
   int lastId() {return greatestUsedId;}
   AbstractRoomContainer * getRooms(ParseEvent * event);
 
-  // inserts a room based on an event we already getRoom()'d on
-  // like this we don't traverse the upper part of the tree once again
-  Room * quickInsert(ParseEvent * knownEvent, Coordinate * expectedPosition, int t = 0);
   Room * getRoom(int id);
   Room * getRoom(Coordinate * pos);
 		

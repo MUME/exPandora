@@ -5,14 +5,13 @@
 #include <stack>
 
 
-Parser::Parser() : insertLock(true) {
+Parser::Parser() {
   mostLikelyRoom = 0;
   state = SYNCING;
   matchingTolerance = 0;
   remoteMapDelay = 0;
   pathAcceptance = 5.0;
-  paths = 0;
-  shortPaths = 0;
+  paths = new list<Path *>;
 }
 
 void Parser::setTerrain(Property * ter) {
@@ -93,7 +92,7 @@ void Parser::approved() {
 
   // now we have a move and a room on the event queues;
 
-  Approved * appr = new Approved(mudEvents.front(), matchingTolerance, mostLikelyRoom);
+  Approved * appr = new Approved(mudEvents.front(), matchingTolerance);
   set<int> * possible = mostLikelyRoom->go(playerEvents.front());
   for (set<int>::iterator i = possible->begin(); i != possible->end(); ++i) {
     emit lookingForRooms(appr, *i);
@@ -126,7 +125,7 @@ void Parser::approved() {
   else {
     state = EXPERIMENTING;
     Path * root = pamm.activate();
-    root->init(mostLikelyRoom);
+    root->init(mostLikelyRoom, 0);
     paths->push_front(root);
     experimenting();
   }
@@ -200,7 +199,7 @@ void Parser::syncing() {
 
 void Parser::experimenting() {
   if (playerEvents.front()->type == UNIQUE) {
-    unify();
+    // do something ....
     playerPop();
     return;
   }
@@ -210,11 +209,11 @@ void Parser::experimenting() {
     return;
   }
 
-  Experimenting * exp = new Experimenting(this, paths, pahAcceptance);
+  Experimenting * exp = new Experimenting(this, paths, pathAcceptance);
 
-  for (i = paths->begin(); i != paths->end(); ++i) {
-    c = getExpectedCoordinate((*i)->getRoom());
-    emit newRoom(mudEvents.front(), c, activeTerrain);
+  for (list<Path *>::iterator i = paths->begin(); i != paths->end(); ++i) {
+    Coordinate * c = getExpectedCoordinate((*i)->getRoom());
+    emit createRoom(mudEvents.front(), c, activeTerrain);
     cmm.deactivate(c);
   }
 
@@ -231,7 +230,7 @@ void Parser::experimenting() {
 }
 
 void Parser::evaluatePaths() {
-  Coordinate * oldCoor = 0;  
+  Coordinate * oldCoord = 0;  
   if (mostLikelyRoom)
     oldCoord = mostLikelyRoom->getCoordinate();
   Coordinate * newCoord = 0;
@@ -247,7 +246,7 @@ void Parser::evaluatePaths() {
     paths->pop_front();
   } 
   else {
-    mostLikelyRoom = paths.front()->getRoom();
+    mostLikelyRoom = paths->front()->getRoom();
     newCoord = mostLikelyRoom->getCoordinate();
   }
 

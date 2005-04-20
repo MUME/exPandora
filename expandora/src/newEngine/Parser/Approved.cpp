@@ -1,3 +1,4 @@
+
 #include "Approved.h"
 
 void Approved::foundRoom(QObject * sender, Room * perhaps) {  
@@ -9,15 +10,15 @@ void Approved::foundRoom(QObject * sender, Room * perhaps) {
     QObject::connect(this, SIGNAL(releaseRoom(int)), sender, SLOT(releaseRoom(int)));
     emit releaseRoom(perhaps->getId());
     QObject::disconnect(this, SIGNAL(releaseRoom(int)), sender, 0);
-    if (matchedRoom != 0) moreThanOnde = true; 
+    if (matchedRoom != 0) moreThanOne = true; 
   }
 }
 
-Approved(ParseEvent * event, int tolerance) :
+Approved::Approved(ParseEvent * event, int tolerance) :
   myEvent(event),
   matchingTolerance(tolerance),
   owner(0),
-  moreThanOne(false);
+  moreThanOne(false)
 {
 }
 

@@ -3,23 +3,25 @@
 
 #include "Room.h"
 #include <set>
-#incldue <qobject.h>
+#include <qobject.h>
+#include <qmutex.h>
 
 class PathSignalHandler : public QObject {
  private:
   Q_OBJECT
   map<Room *, QObject *> owners;
   map<Room *, int> holdCount;
+  QMutex releaseMutex;
 
  public:
-  hold(Room * room, QObject * owner);
-  release(Room * room);
-  forget(Room * room);
+  void hold(Room * room, QObject * owner);
+  void release(Room * room);
+  void forget(Room * room);
 
  signals:
-  holdRoom(int);
-  releaseRoom(int);
-}
+  void holdRoom(int);
+  void releaseRoom(int);
+};
 
 class Path {
  public:
@@ -29,7 +31,8 @@ class Path {
   bool hasChildren() {return (!children.empty());};
   void init(Room * room, QObject * owner);
   Room * getRoom() {return room;};
-  Path * fork(Room * room, Coordinate * expectedCoordinate, QObject * owner); //new Path is fetched from pamm, distance between rooms is calculated and probability is updated accordingly
+  Path * fork(Room * room, Coordinate * expectedCoordinate, QObject * owner, double pathAcceptance); 
+  //new Path is fetched from pamm, distance between rooms is calculated and probability is updated accordingly
   double getProb() {return probability;};	
   void approve();
   void deny(); 	// removes this path and all parents up to the next branch 

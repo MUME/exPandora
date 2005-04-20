@@ -15,5 +15,7 @@ class Syncing : public QObject {
  public:
    Syncing(list<Path *> * in);
    list<Path *> * evaluate();
-}
+};
+
+#endif
    

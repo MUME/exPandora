@@ -20,7 +20,7 @@ RoomCollection * RoomCollection::skipDown(ParseEvent *) {
 
 Room * RoomCollection::insertRoom(ParseEvent * event) {
   Room * room = rmm.activate();
-  room->init(event, this);
+  room->init(event);
 	
   rooms.insert(room);
   return room;

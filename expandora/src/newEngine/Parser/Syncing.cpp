@@ -8,7 +8,7 @@ Syncing::Syncing(list<Path *> * pa) :
 
 void Syncing::foundRoom(QObject * sender, Room * room) {
   Path * path = pamm.activate();
-  path->init(room);
+  path->init(room, sender);
   paths->push_front(path);
 }
   

@@ -2,6 +2,7 @@
 
 
 ObjectRecycler<Path> pamm;
+PathSignalHandler Path::signaler;
 
 void Path::init(Room * in_room, QObject * owner) {
   if (active) {
@@ -23,7 +24,7 @@ void Path::init(Room * in_room, QObject * owner) {
  * distance between rooms is calculated 
  * and probability is updated accordingly
  */
-Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, QObject * owner) {
+Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, QObject * owner, double pathAcceptance) {
   if (!active) {
     throw "fatal: path inactive";
   }
@@ -36,8 +37,8 @@ Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, QObject * own
   ret->init(in_room, owner);
   ret->setParent(this);
   children.insert(ret);
-  double dist = expectedCoordinate->distance(_room->getCoordinate());
-  if (dist < 1) dist = 1.0/PATH_ACCEPT;
+  double dist = expectedCoordinate->distance(in_room->getCoordinate());
+  if (dist < 1) dist = 1.0/pathAcceptance;
   ret->setProb(probability / dist);
   return ret;
 }
@@ -114,7 +115,7 @@ void Path::removeChild(Path * p) {
 
 
 void PathSignalHandler::hold(Room * room, QObject * owner) {
-  owners.[room] == owner;
+  owners[room] == owner;
   ++holdCount[room];
 }
 

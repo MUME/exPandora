@@ -4,19 +4,18 @@
 #include <qobject.h>
 #include <qmutex.h>
 #include "Room.h"
+#include "Path.h"
 
 class Parser;
 
 class Experimenting : public QObject {
  private:
   Q_OBJECT
-  map<Room *, int> releaseSchedule;
-  map<Room *, QObject *> roomOwners;
   list<Path *> * paths;
   list<Path *> * shortPaths;
   double prevBest;
-  Room * best;
-  Room * second;
+  Path * best;
+  Path * second;
   double pathAcceptance;
   Parser * parent;
   QMutex deleteLock;
@@ -30,7 +29,7 @@ class Experimenting : public QObject {
 
  signals:
   void releaseRoom(int);
-}
+};
 
 #endif
 
