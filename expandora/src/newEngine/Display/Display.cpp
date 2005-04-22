@@ -10,7 +10,7 @@
 #include "Display.h"
 #include "RoomCollection.h"
 #include "MainWindow.h"
-
+#include "CachedRoom.h"
 
 const GLfloat RendererWidget::marker_colour[]  =  {1.0, 0.2, 0.0, 0.6};
 
@@ -213,17 +213,17 @@ void RendererWidget::drawMarker(Coordinate * pos) {
 
 
 
-void RendererWidget::drawRoom(Room * pr)
+void RendererWidget::drawRoom(QObject * owner, Room * pr)
 {
   GLfloat dx, dy, dz;
-  set<int> * rc;
-  Coordinate * r;
+  
+  
   Coordinate * p = pr->getCoordinate();
-  unsigned int k;
+
   char lines, texture;
   float distance;
 
-  roomCache[pr->getId()] = p;
+  CachedRoom * cr = new CachedRoom(pr, owner);
 
   dx = p->x - curx;
   dy = p->y - cury;
@@ -300,41 +300,23 @@ void RendererWidget::drawRoom(Room * pr)
   if (lines == 0)
     return;
     
-  for (k = 0; k < pr->numExits(); k++) 
-
-    {
-      rc = pr->getNeighbours(k);
-      if (rc == 0) continue;
-      for(set<int>::iterator i = rc->begin(); i != rc->end(); i++) {
-	if (halfDrawnSources.find(*i) == halfDrawnSources.end()) {
-	  HalfExit * h = undrawnExits[pr->getId()];
-	  if (h == 0) {
-	    h =  new HalfExit(pr->getCoordinate());
-	    undrawnExits[pr->getId()] = h;
-	  }
-	  h[k].insert(*i);
-	}
-	else Coordinate * r = undrawnExits[*i]->from;
-	
-	drawExit(dx, dy, dz, r);
-	
-      } 
-
-
-    }
-
-        
+  // make the cached room draw its exits
+  cr->drawExits(this);
     
 }
 
 
-void RendererWidget::drawExit(int dx, int dy, int dz, Coordinate * r) {
+void RendererWidget::drawExit(Coordinate * from, Coordinate * to, unsigned int k) {
   GLfloat kx, ky, kz;
   GLfloat sx, sy;
 
-  int dx2 = r->x - curx;
-  int dy2 = r->y - cury;
-  int dz2 = (r->z - curz) * DIST_Z;
+  int dx = from->x - curx;
+  int dy = from->y - cury;
+  int dz = (from->z - curz) * DIST_Z;
+
+  int dx2 = to->x - curx;
+  int dy2 = to->y - cury;
+  int dz2 = (to->z - curz) * DIST_Z;
   
   dx2 = (dx + dx2) / 2;
   dy2 = (dy + dy2) / 2;

@@ -24,7 +24,7 @@ HEADERS += RoomCollection.h
 HEADERS += SimpleString.h
 HEADERS += TinyList.h
 HEADERS += AbstractRoomContainer.h
-
+HEADERS += RoomSignalHandler.h
 
 SOURCES += BaseEvent.cpp
 SOURCES += Coordinate.cpp
@@ -33,6 +33,7 @@ SOURCES += Property.cpp
 SOURCES += Room.cpp
 SOURCES += RoomCollection.cpp
 SOURCES += SimpleString.cpp
+SOURCES += RoomSignalHandler.cpp
 
 DESTDIR = ../lib
 

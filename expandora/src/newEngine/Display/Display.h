@@ -30,7 +30,7 @@ class RendererWidget : public QGLWidget {
   static const int texture_visibilit_range = 300;
   static const int details_visibility_range = 500;
 
-  map<int, CachedRoom *> unfinishedRooms;
+
   GLfloat       colour[4];
   float         m_Frustum[6][4];
   GLuint        basic_gllist;
@@ -44,9 +44,9 @@ class RendererWidget : public QGLWidget {
   
   bool PointInFrustum(float x, float y, float z);
 
-  public slots:
-  void moveMarker(Coordinate * from, Coordinate * to);
-  void drawRoom(Room * pr);
+ public slots:
+  void moveMarker(Coordinate *, Coordinate *);
+  void drawRoom(QObject *,Room *);
   
  public:
   GLfloat       angley;
@@ -57,7 +57,8 @@ class RendererWidget : public QGLWidget {
   int           userz;		/* additional shift added by user */
 
   RendererWidget( QWidget *parent, const char *name=0 );
-  void shiftView(void);
+  void drawExit(Coordinate * from, Coordinate * to, unsigned int dir);
+  void shiftView();
   void CalculateFrustum();
 
  protected:

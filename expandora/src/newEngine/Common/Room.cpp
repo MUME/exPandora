@@ -8,7 +8,6 @@ ObjectRecycler<Room> rmm;
 
 Room::Room() {
   c = 0;
-  timestamp = 0;
   id = 0;
   terrain = 0;
   unique = false;
@@ -74,20 +73,33 @@ void Room::clear() {
     ssmm.deactivate(properties.get(i));
     properties.remove(i);
   }
-  for (char i = 0; optionalProperties.get(i) != 0; i++) {
+  for (char i = 0; optionalProperties.get(i) != 0; ++i) {
     ssmm.deactivate(optionalProperties.get(i));
     optionalProperties.remove(i);
   }
-  for (unsigned int i = 0; i < exits.size(); i++) 
+  for (unsigned int i = 0; i < exits.size(); ++i) {
     if (exits.get(i) != 0) exits.get(i)->clear();
+  }
+  for (unsigned int i = 0; i < reverseExits.size(); ++i) {
+    if (reverseExits.get(i) != 0) reverseExits.get(i)->clear();
+  }
+
   terrain = 0;
-  timestamp = 0;
   cmm.deactivate(c);
   c = 0;
   unique = false;
   id = 0;
 }
 	
+Room::~Room() {
+  clear();
+  for (unsigned int i = 0; i < exits.size(); ++i) {
+    if (exits.get(i) != 0) delete(exits.get(i));
+  }
+  for (unsigned int i = 0; i < reverseExits.size(); ++i) {
+    if (reverseExits.get(i) != 0) delete(reverseExits.get(i));
+  }
+}
 
 /** compare the optional properties that are not present in the search tree
  * perhaps we should allow a tolerance, too?

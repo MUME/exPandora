@@ -9,8 +9,8 @@ CONFIG		+= qt opengl warn_on debug thread
 
 
 # Input
-HEADERS += Display.h MainWindow.h Terrain.h
-SOURCES += Display.cpp MainWindow.cpp Terrain.cpp
+HEADERS += Display.h MainWindow.h Terrain.h CachedRoom.h
+SOURCES += Display.cpp MainWindow.cpp Terrain.cpp CachedRoom.cpp
 
 LIBS += -L../lib -lCommon
 

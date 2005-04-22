@@ -2,28 +2,11 @@
 #define PATH
 
 #include "Room.h"
-#include <set>
-#include <qobject.h>
-#include <qmutex.h>
+#include "RoomSignalHandler.h"
 
-class PathSignalHandler : public QObject {
- private:
-  Q_OBJECT
-  map<Room *, QObject *> owners;
-  map<Room *, int> holdCount;
-  QMutex releaseMutex;
-
- public:
-  void hold(Room * room, QObject * owner);
-  void release(Room * room);
-  void forget(Room * room);
-
- signals:
-  void holdRoom(int);
-  void releaseRoom(int);
-};
 
 class Path {
+
  public:
   Path() {active = false;}
   void removeChild(Path * p);
@@ -40,11 +23,9 @@ class Path {
   // and removes the respective rooms if experimental
   void clear();
   void setProb(double p) {probability = p;};
-  //void cutDeadBranch(); 	// removes this path and recursively all chldren 
-  // and gives them back to the pamm
-  // and removes all respective experimental rooms
+
  private:
-  static PathSignalHandler signaler;
+  static RoomSignalHandler signaler;
   bool active;
   Path * parent;
   set<Path *> children;

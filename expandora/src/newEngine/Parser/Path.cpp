@@ -2,7 +2,7 @@
 
 
 ObjectRecycler<Path> pamm;
-PathSignalHandler Path::signaler;
+RoomSignalHandler Path::signaler;
 
 void Path::init(Room * in_room, QObject * owner) {
   if (active) {
@@ -39,7 +39,9 @@ Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, QObject * own
   children.insert(ret);
   double dist = expectedCoordinate->distance(in_room->getCoordinate());
   if (dist < 1) dist = 1.0/pathAcceptance;
+  if (in_room->isNew()) dist *= pathAcceptance; 
   ret->setProb(probability / dist);
+  
   return ret;
 }
 
@@ -54,7 +56,7 @@ void Path::approve() {
   if (!active) {
     throw "fatal: path inactive";
   }
-  signaler.forget(room);
+  signaler.keep(room);
   room = 0;
   set<Path *>::iterator i = children.begin();
   for(; i != children.end(); ++i) {
@@ -113,29 +115,3 @@ void Path::removeChild(Path * p) {
   children.erase(p);
 }
 
-
-void PathSignalHandler::hold(Room * room, QObject * owner) {
-  owners[room] == owner;
-  ++holdCount[room];
-}
-
-void PathSignalHandler::release(Room * room) {
-  if (holdCount.find(room) == holdCount.end()) return;
-  if (--holdCount[room] == 0) {
-    QObject * rcv = owners[room];
-    if (rcv != 0) {
-      releaseMutex.lock();
-      QObject::connect(this, SIGNAL(releaseRoom(int)), rcv, SLOT(releaseRoom(int)));
-      emit(releaseRoom(room->getId()));
-      QObject::disconnect(this, SIGNAL(releaseRoom(int)), 0, 0);
-      releaseMutex.unlock();
-    }
-    owners.erase(room);
-    holdCount.erase(room);
-  }
-}
-
-void PathSignalHandler::forget(Room * room) {
-  owners.erase(room);
-  holdCount.erase(room);
-}

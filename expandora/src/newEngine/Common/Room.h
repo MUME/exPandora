@@ -11,31 +11,38 @@
 using namespace std;
 
 
-class RoomCollection;
-
 
 class Room {
  public:
+  Room();  
+  ~Room();
+  void clear();
+
   void setTerrain(int t) {terrain = t;}
   int getTerrain() {return terrain;}
+  
   void addExit(int direction, int destination);	
   void addReverseExit(int direction, int source);
+  bool isNew(); // room is new if no reverse exits are present
   set<int> * go(BaseEvent * event);
   set<int> * getNeighbours(int k) {return exits.get(k);} 
+  set<int> * getReverseNeighbours(int k) {return reverseExits.get(k);}
   unsigned int numExits() {return exits.size();}
-  Room();
+  unsigned int numReverseExits() {return reverseExits.size();}
+  
   void setUnique(){unique = true;};
   bool isUnique(){return unique;};
+  
   void addOptional(Property * note) {optionalProperties.put(optionalProperties.size(), note->copyString());}
+  bool containsOptionals(TinyList<Property *> * optionals);  
   void init(ParseEvent * event);
+  bool fastCompare(ParseEvent * props, int tolerance);
+  
   void setId(int in_id) {id = in_id;};
   int getId() {return id;}
-  bool containsOptionals(TinyList<Property *> * optionals);
-  bool fastCompare(ParseEvent * props, int tolerance);
-  void clear();
+  
   void setCoordinate(Coordinate * in_c) {c = in_c;};
   Coordinate * getCoordinate(){return c;};
-  void resetTime(double ts) {timestamp = ts;}
 
  private:
   TinyList<SimpleString *> properties;		/* name, desc, exit names - properties we need for tree searching */
@@ -46,7 +53,6 @@ class Room {
   TinyList<set<int> *> exits;	 	        /* we only match the defined standard exits and keep one field for "weird" exits */						   
   TinyList<set<int> *> reverseExits;
   bool unique;
-  double timestamp; 		/* last modification */
   Coordinate * c;		/* coordinates on our map */
   int id; 			/* identifier */
   int terrain; 		        /* terrain type */ 		
