@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = lib
-INCLUDEPATH += .
+INCLUDEPATH += . ../include/
 
 # Input
 HEADERS += Configuration.h

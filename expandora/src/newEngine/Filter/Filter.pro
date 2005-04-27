@@ -3,8 +3,10 @@
 ######################################################################
 
 TEMPLATE = lib
-INCLUDEPATH += .
+INCLUDEPATH += . ../include/
 
 # Input
 HEADERS += TelnetFilter.h
 SOURCES += TelnetFilter.cpp
+
+DESTDIR = ../lib

@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = lib
-INCLUDEPATH += . ../Common/
+INCLUDEPATH += . ../include/
 
 CONFIG		+= qt opengl warn_on debug thread
 

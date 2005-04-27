@@ -2,6 +2,8 @@ TEMPLATE	= lib
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
+INCLUDEPATH += . ../include/
+
 CONFIG		+= qt opengl warn_on debug thread
 
 win32 {
