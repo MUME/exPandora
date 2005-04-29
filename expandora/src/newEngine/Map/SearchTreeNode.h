@@ -19,8 +19,8 @@ class SearchTreeNode : public RoomSearchNode {
 		//int start; // position of the first character of myChars
 		//int next; // position of the first character after myChars
 	public:
-		SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode *> * children = new TinyList<RoomSearchNode *>());
-		SearchTreeNode(char * string, TinyList<RoomSearchNode *> * children = new TinyList<RoomSearchNode *>());
+		SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode *> * children = 0);
+		SearchTreeNode(char * string, TinyList<RoomSearchNode *> * children = 0);
 		virtual ~SearchTreeNode() {printf("warning: SearchTreeNode destroyed");}
 		virtual AbstractRoomContainer * getRooms(ParseEvent * event);
 		virtual Room * insertRoom(ParseEvent * event);
