@@ -7,13 +7,13 @@ using namespace std;
 
 ObjectRecycler<RoomCollection> rcmm;
 
-RoomCollection * RoomCollection::getRooms(ParseEvent *) {
+RoomSearchNode * RoomCollection::getRooms(ParseEvent *) {
   RoomCollection * ret = rcmm.activate();
   ret->merge(this);
   return ret;
 }
 
-RoomCollection * RoomCollection::skipDown(ParseEvent *) {
+RoomSearchNode * RoomCollection::skipDown(ParseEvent *) {
   RoomCollection * ret = rcmm.activate();
   ret->merge(this);
   return ret;
@@ -69,7 +69,7 @@ Room * RoomCollection::matchOne(ParseEvent * target) {
   else return 0;
 }
 
-RoomCollection * RoomCollection::merge(RoomSearchNode * other) {
+RoomSearchNode * RoomCollection::merge(RoomSearchNode * other) {
   if (other != 0 && other->numRooms() > 0) {
     rooms.insert(((RoomCollection *)other)->begin(), ((RoomCollection *)other)->end());
   }

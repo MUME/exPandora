@@ -10,6 +10,7 @@
 #include "LexDefs.h"
 #include "Coordinate.h"
 #undef PLAYER
+
 %}
 
 %%

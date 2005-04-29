@@ -10,13 +10,13 @@ using namespace std;
 
 class RoomCollection : public RoomSearchNode {
 	public:
-		RoomCollection() {};
+		RoomCollection() {}
 		virtual ~RoomCollection() {} // implement it !
 		virtual int numRooms() {return rooms.size();} //let's hope this is implemented in some efficient way ...
 		Room * insertRoom(ParseEvent * event);
 		RoomCollection * filterByOptionals(ParseEvent * event);
 		void addRoom(Room * room);
-		RoomCollection * merge(RoomSearchNode * other);
+		RoomSearchNode * merge(RoomSearchNode * other);
 		void clear();
 		void removeRoom(Room * room); 
 		void checkConsistency(); // checks if any rooms are deactivated
@@ -25,8 +25,8 @@ class RoomCollection : public RoomSearchNode {
 		set<Room *>::iterator begin() {return rooms.begin();};
 		set<Room *>::iterator end() {return rooms.end();};
 
-		virtual RoomCollection * getRooms(ParseEvent *);
-		virtual RoomCollection * skipDown(ParseEvent *);
+		virtual RoomSearchNode * getRooms(ParseEvent *);
+		virtual RoomSearchNode * skipDown(ParseEvent *);
 	private:
 		set<Room *> rooms;
 		

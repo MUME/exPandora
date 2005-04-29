@@ -4,16 +4,19 @@
 using namespace std;
 
 
-SearchTreeNode::SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode *> * _children) {
+SearchTreeNode::SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode *> * in_children) {
+  
   myChars = new char[strlen(event->current()->rest())];
   strcpy(myChars, event->current()->rest()+1); 	// we copy the string so that we can remove rooms independetly of tree nodes
-  children = _children;
+  if (in_children == 0) in_children = new TinyList<RoomSearchNode *>();
+  children = in_children;
 }
 
 
-SearchTreeNode::SearchTreeNode(char * _myChars, TinyList<RoomSearchNode *> * _children) {
-  myChars = _myChars; 
-  children = _children;
+SearchTreeNode::SearchTreeNode(char * in_myChars, TinyList<RoomSearchNode *> * in_children) {
+  myChars = in_myChars; 
+  if (in_children == 0) in_children = new TinyList<RoomSearchNode *>();
+  children = in_children;
 }
 
 /**
