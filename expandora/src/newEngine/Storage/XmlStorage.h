@@ -1,10 +1,10 @@
 #include <qxml.h>
 #include <stack>
 
-#include "Terrain.h"
+
 #include "ParseEvent.h"
 #include "Room.h"
-#include "RoomAdmin.h"
+
 #include "Coordinate.h"
 #include "Property.h"
 
@@ -23,10 +23,9 @@ typedef struct Exit {
 } Exit;
 
 
-class StructureParser: public QXmlDefaultHandler
-{
+class StructureParser: public QXmlDefaultHandler {
 public:
-  StructureParser(RoomAdmin * admin);
+  StructureParser();
   bool characters(const QString& ch);
   bool startElement( const QString&, const QString&, const QString& ,
 		     const QXmlAttributes& );
@@ -39,7 +38,6 @@ private:
   void buildProperties(char * roomDesc);
 
   stack<Exit *> exits;
-  RoomAdmin * roomAdmin;
 
   /* some flags */
   int flag;
@@ -48,7 +46,7 @@ private:
   int i;
   char tid;
   double ts; 
-  Terrain * t;
+  int t;
   ParseEvent * roomProps;
   Coordinate * c;    
   Property * prop;
@@ -58,11 +56,8 @@ private:
 
 class XmlStorage {
  public:
-  void attachRoomAdmin(RoomAdmin * admin) {roomAdmin = admin;}
   void xml_writebase(char *filename);
   void xml_readbase(char *filename);
- private:
-  RoomAdmin * roomAdmin;
 };
 
 

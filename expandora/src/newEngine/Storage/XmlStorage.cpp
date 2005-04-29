@@ -7,7 +7,7 @@
 
 */
 #include "XmlStorage.h"
-#include "LexDefs.h"
+
 
 
 
@@ -15,7 +15,6 @@
 
 void XmlStorage::xml_readbase( char *filename)
 {
-  if (roomAdmin == 0) throw "no roomAdmin"; 
 
   QFile xmlFile( filename);
   QXmlInputSource source( &xmlFile );
@@ -23,7 +22,7 @@ void XmlStorage::xml_readbase( char *filename)
   QXmlSimpleReader reader;
 
 
-  StructureParser * handler = new StructureParser(roomAdmin);
+  StructureParser * handler = new StructureParser();
   reader.setContentHandler( handler );
     
 	
@@ -40,17 +39,8 @@ void XmlStorage::xml_readbase( char *filename)
 
 
 void StructureParser::addExits() {
-  Exit * e;
-  Room * from;
-  Room * to;
   while (!(exits.empty())) {
-    e = exits.top();
-    exits.pop();
-    from = roomAdmin->getRoom(e->sourceId);
-    to = roomAdmin->getRoom(e->destId);
-	    
-    from->addExit(e->dir, to);
-		
+    emit addExit(e->sourceId, e->destId, e->dir);		
   }
 }
 
@@ -69,8 +59,8 @@ void StructureParser::buildProperties(char * desc) {
 
 
 
-StructureParser::StructureParser(RoomAdmin * admin)
-  : QXmlDefaultHandler(), roomAdmin(admin)
+StructureParser::StructureParser()
+  : QXmlDefaultHandler()
 {
 
   roomProps = 0;
@@ -95,8 +85,9 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
     prop->add(tid);
     roomProps->push(prop);
     Room * room = roomAdmin->insertRoom(roomProps, id, c, t);
-    room->hold();
-    room->resetTime(ts);
+    // roomCache needed
+    //room->hold();
+
     pemm.deactivate(roomProps);
     roomProps = 0;
     c->clear();

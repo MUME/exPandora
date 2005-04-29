@@ -14,20 +14,22 @@ macx {
 }
 
 
-HEADERS += BaseEvent.h
-HEADERS += Coordinate.h
-HEADERS += ListCycler.h
-HEADERS += ListStack.h
-HEADERS += ObjectRecycler.h
-HEARDER += ParseEvent.h
-HEADERS += Property.h
-HEADERS += Room.h
-HEADERS += RoomCollection.h
-HEADERS += SimpleString.h
-HEADERS += TinyList.h
-HEADERS += AbstractRoomContainer.h
-HEADERS += RoomSignalHandler.h
+HEADERS += ../include/Component.h
+HEADERS += ../include/BaseEvent.h
+HEADERS += ../include/Coordinate.h
+HEADERS += ../include/ListCycler.h
+HEADERS += ../include/ListStack.h
+HEADERS += ../include/ObjectRecycler.h
+HEARDER += ../include/ParseEvent.h
+HEADERS += ../include/Property.h
+HEADERS += ../include/Room.h
+HEADERS += ../include/RoomCollection.h
+HEADERS += ../include/SimpleString.h
+HEADERS += ../include/TinyList.h
+HEADERS += ../include/AbstractRoomContainer.h
+HEADERS += ../include/RoomSignalHandler.h
 
+SOURCES += Component.cpp
 SOURCES += BaseEvent.cpp
 SOURCES += Coordinate.cpp
 SOURCES += ParseEvent.cpp
