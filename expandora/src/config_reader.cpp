@@ -169,8 +169,10 @@ ACMD(parse_automerge);
 ACMD(parse_texturesvisibility);
 ACMD(parse_detailsvisibility);
 ACMD(parse_angrylinker);
+#ifdef NEW_ENGINE
 ACMD(parse_characterTable);
-  
+#endif
+
 struct config_commands_type {
   const char *command;
   void (*command_pointer) (char *line);
@@ -201,8 +203,9 @@ const config_commands_type commands[] = {
   {"texturesvisibilityrange",      parse_texturesvisibility},
   {"detailsvisibilityrange",       parse_detailsvisibility},
   {"angrylinker",       parse_angrylinker},
+  #ifdef NEW_ENGINE
   {"characterTable",	parse_characterTable},
-  
+  #endif
   {NULL, NULL}
 };
 
@@ -659,6 +662,7 @@ ACMD(parse_roomcolour)
   printf("Roomname colour check: %sRoomname colour example%s.\r\n", roomname_start, roomname_end);
 }
 
+#ifdef NEW_ENGINE
 ACMD(parse_characterTable)
 {
 	char *p;
@@ -669,6 +673,7 @@ ACMD(parse_characterTable)
 	strcpy(characterTable_file, arg);
 	
 }
+#endif
 
 int parse_config(char *filename)
 {

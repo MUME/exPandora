@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 #ifndef LISTCYCLER
 #define LISTCYCLER
 #include "TinyList.h"

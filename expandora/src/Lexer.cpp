@@ -4,6 +4,7 @@
 #include <iostream>
 #include "utils.h"
 
+
 void Lexer::pushUserInput (char * input) {
   inputLock.lock();
   userInput.push(input);
@@ -81,7 +82,7 @@ void GenericLexer::skipSomeProperties() {
   event->push(property);
   property = pmm.activate();
 }
-		
+	
 
 		
 

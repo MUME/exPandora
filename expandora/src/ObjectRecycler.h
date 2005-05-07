@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 #ifndef OBJECTRECYCLER
 #define OBJECTRECYCLER
 #include "TinyList.h"

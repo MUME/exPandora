@@ -1,3 +1,4 @@
+
 #include "ParseEvent.h"
 #include <math.h>
 #include "defines.h"
@@ -80,7 +81,6 @@ void ParseEvent::pushOptional(Property * newProp) {
   optionals.put(opTos++, newProp);
   if (timestamp == 0) timestamp = m_timestamp();
 }
-
 
 
 

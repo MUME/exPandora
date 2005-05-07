@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <time.h>
 
+
 #include "defines.h"
 
 
@@ -332,15 +333,15 @@ long m_timestamp()
 double m_timestamp(void) /* ms */
 #endif
 {
-#ifdef Q_OS_LINUX || Q_OS_MACX
+#if defined Q_OS_LINUX || defined Q_OS_MACX
   struct timeval tv;
   struct timezone tz;
 
   gettimeofday(&tv, &tz);
 #ifdef NEW_ENGINE
-  return tv.tv_sec*1000000 + tv_usec);
+  return (tv.tv_sec*1000000 + tv.tv_usec);
 #else
-  return(tv.tv_sec*1.+tv.tv_usec/1000000.);
+  return (tv.tv_sec*1.+tv.tv_usec/1000000.);
 #endif
 #else
   return 0;

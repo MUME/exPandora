@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 #ifndef TINYLIST
 #define TINYLIST
 
