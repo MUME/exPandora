@@ -1,7 +1,4 @@
 #include <qgl.h>
-#ifdef Q_OS_MACX
-#include "cmath"
-#endif
 
 
 

@@ -1,9 +1,9 @@
 /* automapper/database module for powwow. Part of the Pandora Project (c) 2003 */
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <qthread.h>
 #include <qmutex.h>
 

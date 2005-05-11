@@ -1,12 +1,11 @@
-#include <stdio.h>
+#include <cstdio>
 
-#include <math.h>
+
 #include <qgl.h>
 #include <qimage.h>
 #include <qapplication.h>
 #include <qdatetime.h>
 
-//#include "defines.h"
 #include "renderer.h"
 #include "struct.h"
 

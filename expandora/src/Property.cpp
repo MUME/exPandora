@@ -1,5 +1,5 @@
 #include "Property.h"
-#include <string.h>
+#include <cstring>
 
 ObjectRecycler<Property> pmm;
 

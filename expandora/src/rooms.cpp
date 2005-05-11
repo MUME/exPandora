@@ -1,7 +1,7 @@
 /* Implementation of room manager of Pandora Project (c) Azazello 2003 */
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 #include <qdatetime.h>
 
 #include "defines.h"

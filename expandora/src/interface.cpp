@@ -4,7 +4,7 @@
 #include <qwidget.h>
 #include <qnamespace.h>
 #include <qimage.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <qaction.h> 
 #include <qcombobox.h> 
@@ -23,7 +23,7 @@
 #include <qpushbutton.h>
 #include <qtextedit.h>
 
-//#include <math.h>
+
 
 #include "defines.h"
 #include "struct.h"

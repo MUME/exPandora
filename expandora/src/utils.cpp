@@ -1,9 +1,9 @@
 /* utilities, string functions and stuff */
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <time.h>
+#include <cstdio>
+#include <cstring>
+#include <cctype>
+#include <cstdarg>
+#include <ctime>
 
 
 #include "defines.h"

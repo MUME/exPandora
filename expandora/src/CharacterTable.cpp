@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include "defines.h"
 
 char characterTable_file[MAX_STR_LEN] = "characterTable";

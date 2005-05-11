@@ -4,7 +4,7 @@ TEMPLATE	= app
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
-CONFIG		+= qt opengl warn_on debug thread new_engine
+CONFIG		+= qt opengl warn_on debug thread 
 win32 {
 	CONFIG	+= console
 }

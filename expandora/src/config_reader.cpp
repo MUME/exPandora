@@ -1,7 +1,7 @@
 /* config file parser and reader */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <qmutex.h>
 #ifdef NEW_ENGINE
 #include <qstring.h>
