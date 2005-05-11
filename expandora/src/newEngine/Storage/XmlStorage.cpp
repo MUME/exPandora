@@ -39,7 +39,10 @@ void XmlStorage::xml_readbase( char *filename)
 
 
 void StructureParser::addExits() {
+  Exit * e = 0;
   while (!(exits.empty())) {
+    e = exits.top();
+    exits.top();
     emit addExit(e->sourceId, e->destId, e->dir);		
   }
 }
@@ -70,7 +73,6 @@ StructureParser::StructureParser()
   ts = 0;
   t = 0;
   id = 0;
-  tid = 0;
 }
 
 
@@ -82,9 +84,10 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
     fprintf(stderr, "inserting room: %i\n", id);
 #endif
     prop = pmm.activate();
-    prop->add(tid);
+    prop->add(t);
     roomProps->push(prop);
-    Room * room = roomAdmin->insertRoom(roomProps, id, c, t);
+    emit addRoom(roomProps, id, c, t);
+    //Room * room = roomAdmin->insertRoom(roomProps, id, c, t);
     // roomCache needed
     //room->hold();
 
@@ -92,7 +95,7 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
     roomProps = 0;
     c->clear();
     id = 0;
-    tid = 0;
+    
 
   }        
   flag = 0;    
@@ -153,7 +156,6 @@ bool StructureParser::startElement( const QString& , const QString& ,
     
     
   if (qName == "exit") {
-    unsigned int dir;
     unsigned int to;
         
     /* special */
@@ -166,7 +168,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
     strncpy( data, (const char*) s, s.length() );
     data[ s.length() ] = 0;
     char d = data[0];
-    dir = numbydir(data[0]);
+    
       
     s = attributes.value("to");
     strncpy( data, (const char*) s, s.length() );
@@ -184,7 +186,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
     /* if there is a door, then the exit (represented by d) is an optional property else it is a required property */
     prop = pmm.activate();
     prop->add(d); 
-    if (data[0] == 0) {
+    if (d == 0) {
       roomProps->push(prop);
     }
     else {
@@ -193,7 +195,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
     if (to != INT_MAX) { 
       Exit  * e = new Exit;
       e->sourceId = id;
-      e->dir = dir;
+      e->dir = d;
       e->destId = to;
       exits.push(e);
     }
@@ -235,8 +237,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
       }
 
       if (attributes.qName(i) == "terrain") {
-	tid = terrainIDs.find(s)->second;
-	t = terrains.find(tid)->second;
+	t = data[0];
 	continue;
       }
       if (attributes.qName(i) == "timestamp") {
@@ -336,6 +337,7 @@ void XmlStorage::xml_writebase(char *filename)
   
 }
 
+/*
 int StructureParser::numbydir(char dir)
 {
     if (dir == 'n')
@@ -353,3 +355,4 @@ int StructureParser::numbydir(char dir)
 
     return -1;
 }
+*/

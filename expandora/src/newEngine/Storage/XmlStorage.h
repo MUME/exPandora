@@ -1,4 +1,5 @@
 #include <qxml.h>
+#include <qobject.h>
 #include <stack>
 
 
@@ -15,6 +16,11 @@
 #define XML_NOTE        4
 
 /* buffered reading from file */
+/* finally I changed the syntax: 
+   - exit pattern is now a character representation of the offset in the std exits
+   - terrain pattern is now a character that maps to the respective terrain (in mume: the terrain character in the prompt)
+   it should be quite easy to convert existing maps.
+*/
 
 typedef struct Exit {
   int sourceId;
@@ -23,7 +29,7 @@ typedef struct Exit {
 } Exit;
 
 
-class StructureParser: public QXmlDefaultHandler {
+class StructureParser: public QObject, public QXmlDefaultHandler {
 public:
   StructureParser();
   bool characters(const QString& ch);
@@ -33,7 +39,7 @@ public:
   void addExits();
 
 private:
-  int numbydir(char dir);
+  Q_OBJECT
   double timeFromString(QString &);
   void buildProperties(char * roomDesc);
 
@@ -44,13 +50,16 @@ private:
   char data[MAX_DATA_LEN];
   QString s;
   int i;
-  char tid;
   double ts; 
-  int t;
+  char t;
   ParseEvent * roomProps;
   Coordinate * c;    
   Property * prop;
   int id;
+
+ signals:
+  void addExit(int, int, int);
+  void addRoom(ParseEvent *, int, Coordinate *, char);
 };
 
 

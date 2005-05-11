@@ -9,3 +9,5 @@ DESTDIR = ../lib
 # Input
 HEADERS += XmlStorage.h
 SOURCES += XmlStorage.cpp
+
+LIBS += -lCommon -L../lib

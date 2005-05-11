@@ -18,8 +18,8 @@ class Room {
   ~Room();
   void clear();
 
-  void setTerrain(int t) {terrain = t;}
-  int getTerrain() {return terrain;}
+  void setTerrain(char t) {terrain = t;}
+  char getTerrain() {return terrain;}
   
   void addExit(int direction, int destination);	
   void addReverseExit(int direction, int source);
@@ -55,7 +55,7 @@ class Room {
   bool unique;
   Coordinate * c;		/* coordinates on our map */
   int id; 			/* identifier */
-  int terrain; 		        /* terrain type */ 		
+  char terrain; 		        /* terrain type */ 		
 };
 
 extern ObjectRecycler<Room> rmm;
