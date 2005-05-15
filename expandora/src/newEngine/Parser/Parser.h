@@ -15,14 +15,19 @@
 #include "Experimenting.h"
 #include "Approved.h"
 #include "Syncing.h"
+#include "Component.h"
 
 #define APPROVED 0
 #define EXPERIMENTING 1
 #define SYNCING 2
 
 
-
-class Parser : public QObject, private QThread {
+/**
+ * the parser determines the relations between incoming move- and room-events
+ * and decides if rooms have to be added (and where) and where the player is
+ * the results are published via signals
+ */
+class Parser : public Component, private QThread {
  public slots:
   void event(ParseEvent *);
   void setTerrain(Property *);
@@ -40,6 +45,8 @@ class Parser : public QObject, private QThread {
 
  public:
   Parser();
+  void run();
+  void start(Priority priority = InheritPriority) {QThread::start(priority);}
   Coordinate * getExpectedCoordinate(Room * base);
 
  private:
@@ -54,6 +61,7 @@ class Parser : public QObject, private QThread {
   void approved();
   void evaluatePaths();
 
+  QWaitCondition parserSync;
   QMutex parserMutex;
   char state;
   int matchingTolerance;

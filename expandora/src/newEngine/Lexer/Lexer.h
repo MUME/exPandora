@@ -23,6 +23,7 @@
 #include <qmutex.h>
 #include <queue>
 #include <qobject.h>
+#include "Component.h"
 #include "ParseEvent.h"
 #include "Property.h"
 #include "ObjectRecycler.h"
@@ -96,11 +97,12 @@ class PlayerLexer : public GenericLexer, public PlayerFlexLexer {
 the interface the lexer provides for the proxy; you can attach a parser, and feed it with input
 from mud and player. The threading is handled inside this class 
 */
-class Lexer : public QObject, public QThread {
+class Lexer : public Component, public QThread {
 
  public:
   Lexer() {}
   virtual void run();
+  void start(Priority priority = InheritPriority) {QThread::start(priority);}
 
  public slots:
   void pushUserInput(char * input);

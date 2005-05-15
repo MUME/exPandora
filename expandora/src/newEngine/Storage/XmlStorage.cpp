@@ -9,7 +9,14 @@
 #include "XmlStorage.h"
 
 
-
+/**
+ * this method is called when a component of this type should be
+ * created from a library. MY_EXPORT is defined in Component.h
+ * and handles platform specific issues
+ */
+extern "C" MY_EXPORT XmlStorage * createComponent() {
+  return new XmlStorage;
+}
 
 
 

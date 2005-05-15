@@ -2,6 +2,8 @@
 #define ROOMADMIN
 #include "RoomSearchNode.h"
 #include "IntermediateNode.h"
+#include "Component.h"
+#include <qthread.h>
 #include <qmutex.h>
 #include <vector>
 #include <stack>
@@ -13,11 +15,14 @@
 using namespace std;
 
 
-
-class RoomAdmin : public IntermediateNode {
+/**
+ * The RoomAdmin organizes rooms and their relations to each other.
+ */
+class RoomAdmin : public IntermediateNode, public Component {
  public:
   RoomAdmin();
-		
+
+  void start(QThread::Priority) {}	
   int lastId() {return greatestUsedId;}
   AbstractRoomContainer * getRooms(ParseEvent * event);
 
@@ -30,6 +35,7 @@ class RoomAdmin : public IntermediateNode {
   Room * insertRoom(ParseEvent * event, Coordinate * expectedPosition, int t = 0);
   void removeRoom(int id); 
  private:
+  Q_OBJECT
   Map map;
   void assignId(Room * room); 
   AbstractRoomContainer * deepestMatch;

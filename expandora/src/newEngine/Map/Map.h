@@ -6,6 +6,11 @@
 #include <vector>
 using namespace std;
 
+/**
+ * The Map stores the geographic relations of rooms to each other
+ * it doesn't store the search tree. The Map class is only used by the 
+ * RoomAdmin, which also stores the search tree
+ */
 class Map {
 	public:
 		bool defined(Coordinate *c);

@@ -12,6 +12,16 @@
 #include "MainWindow.h"
 #include "CachedRoom.h"
 
+/**
+ * this method is called when a component of this type should be
+ * created from a library. MY_EXPORT is defined in Component.h
+ * and handles platform specific issues
+ */
+extern "C" MY_EXPORT DisplayThread * createComponent() {
+  return new DisplayThread;
+}
+
+
 const GLfloat RendererWidget::marker_colour[]  =  {1.0, 0.2, 0.0, 0.6};
 
 

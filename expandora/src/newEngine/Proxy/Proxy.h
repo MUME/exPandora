@@ -19,7 +19,7 @@ class Proxy : public Component {
  public:
   Proxy();
   ~Proxy();
-  void start();
+  void start(QThread::Priority priority);
   void acceptConnection(ConnectionAccepter * source, int socket);
 
  private:

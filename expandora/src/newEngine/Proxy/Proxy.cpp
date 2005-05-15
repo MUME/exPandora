@@ -8,7 +8,18 @@
 #include "Proxy.h"
 #include <qvariant.h>
 
-void Proxy::start()
+
+/**
+ * this method is called when a component of this type should be
+ * created from a library. MY_EXPORT is defined in Component.h
+ * and handles platform specific issues
+ */
+extern "C" MY_EXPORT Proxy * createComponent() {
+  return new Proxy;
+}
+
+
+void Proxy::start(QThread::Priority)
 {
   // we will get the accepter back when it is connected
   new ConnectionAccepter(this, property("localPort").toInt());

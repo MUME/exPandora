@@ -15,8 +15,9 @@ class Configuration : public QXmlDefaultHandler, public Component {
  public:
   Configuration();
   void parseFile(QString & filename);
-  QObject * get(QString & id);
-  void put(QString & id, QObject * component);
+  Component * get(QString & id);
+  void put(QString & id, Component * component);
+  void start(QThread::Priority) {}
 
 
   //bool characters(const QString& ch);
@@ -28,7 +29,7 @@ class Configuration : public QXmlDefaultHandler, public Component {
   void newComponent(const QXmlAttributes & atts);
   void addOption(const QXmlAttributes & atts);
   void connectComponents(const QXmlAttributes & atts);
-  map<QString, QObject *> components;  
+  map<QString, Component *> components;  
   Component * currentComponent;
   map<QString, QLibrary *> libs;
 };

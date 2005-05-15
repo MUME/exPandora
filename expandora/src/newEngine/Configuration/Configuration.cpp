@@ -24,13 +24,13 @@ void Configuration::parseFile(QString & filename) {
   reader.parse( source );
 }
 
-QObject * Configuration::get(QString & id) {
+Component * Configuration::get(QString & id) {
   return (*components.find(id)).second;
 }
 
 
-void Configuration::put(QString & id, QObject * component) {
-  pair<QString , QObject *> val;
+void Configuration::put(QString & id, Component * component) {
+  pair<QString , Component *> val;
   val.first = id;
   val.second = component;
   components.insert(val);

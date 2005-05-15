@@ -3,6 +3,7 @@
 
 #include <qthread.h>
 #include <qgl.h>
+#include "Component.h"
 #include "Room.h"
 #include "CachedRoom.h"
 
@@ -72,9 +73,10 @@ class RendererWidget : public QGLWidget {
 
 
 class MainWindow;
-class DisplayThread : public QThread {
+class DisplayThread : public QThread, public Component {
  public:
   void run();
+  void start(Priority priority = InheritPriority) {QThread::start(priority);}
   void toggle_renderer_reaction();
   void CalculateFrustum();
 

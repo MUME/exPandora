@@ -1,7 +1,14 @@
 #include "RoomAdmin.h"
 #include "IntermediateNode.h"
 
-//RoomAdmin roomAdmin;
+/**
+ * this method is called when a component of this type should be
+ * created from a library. MY_EXPORT is defined in Component.h
+ * and handles platform specific issues
+ */
+extern "C" MY_EXPORT RoomAdmin * createComponent() {
+  return new RoomAdmin;
+}
 
 RoomAdmin::RoomAdmin() : IntermediateNode(), mapLock(true) {
   mapLock.lock();

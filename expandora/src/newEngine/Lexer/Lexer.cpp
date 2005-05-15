@@ -7,6 +7,17 @@
 #include <sys/time.h>
 #endif
 
+
+/**
+ * this method is called when a component of this type should be
+ * created from a library. MY_EXPORT is defined in Component.h
+ * and handles platform specific issues
+ */
+extern "C" MY_EXPORT Lexer * createComponent() {
+  return new Lexer;
+}
+
+
 void Lexer::pushUserInput (char * input) {
   inputLock.lock();
   userInput.push(input);

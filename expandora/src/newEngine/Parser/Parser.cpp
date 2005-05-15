@@ -5,7 +5,20 @@
 #include <stack>
 
 
-Parser::Parser() {
+/**
+ * this method is called when a component of this type should be
+ * created from a library. MY_EXPORT is defined in Component.h
+ * and handles platform specific issues
+ */
+extern "C" MY_EXPORT Parser * createComponent()
+{
+  return new Parser;
+}
+
+
+
+Parser::Parser()
+{
   mostLikelyRoom = 0;
   state = SYNCING;
   matchingTolerance = 0;
@@ -14,26 +27,43 @@ Parser::Parser() {
   paths = new list<Path *>;
 }
 
-void Parser::setTerrain(Property * ter) {
+void Parser::run()
+{
+  while(true)
+  {
+    parserSync.wait();
+    checkQueues();
+  }
+}
+
+void Parser::setTerrain(Property * ter)
+{
   activeTerrain = ter->get(0); // the first character has to be the terrain id
 }
 
-void Parser::dropNote(ParseEvent * note) {
-  if (mostLikelyRoom != 0) { 
+void Parser::dropNote(ParseEvent * note)
+{
+  if (mostLikelyRoom != 0)
+  {
     while (note->next() != 0) mostLikelyRoom->addOptional(note->current());
   }
   pemm.deactivate(note);
 }
 
-void Parser::event(ParseEvent * ev) {
-  if (ev->type >= 0) {
+void Parser::event(ParseEvent * ev)
+{
+  parserMutex.lock();
+  if (ev->type >= 0)
+  {
     // a move event
     playerEvents.push(ev);
   }
-	
-  else {
-		
-    switch (ev->type) {
+
+  else
+  {
+
+    switch (ev->type)
+    {
     case ROOM:
     case MOVE_FAIL:
       mudEvents.push(ev);
@@ -46,24 +76,30 @@ void Parser::event(ParseEvent * ev) {
       return;
     }
   }
-  checkQueues();
-}       
+  parserMutex.unlock();
+  parserSync.wakeOne();
+  //checkQueues();
+}
 
-void Parser::checkQueues() {
+void Parser::checkQueues()
+{
   if (mudEvents.empty()) return;
-  if (playerEvents.empty()) {
+  if (playerEvents.empty())
+  {
     if (state != SYNCING) state = SYNCING;
   }
-  else while ( (!(mudEvents.empty())) && mudEvents.front()->timestamp < playerEvents.front()->timestamp) {
-    mudPop();
-    state = SYNCING;
-  }
+  else while ( (!(mudEvents.empty())) && mudEvents.front()->timestamp < playerEvents.front()->timestamp)
+    {
+      mudPop();
+      state = SYNCING;
+    }
   if (mudEvents.empty()) return;
-	
-  //now we are sure we have a user event that happened before the mud event
-	
 
-  switch (state) {
+  //now we are sure we have a user event that happened before the mud event
+
+
+  switch (state)
+  {
   case APPROVED:
     approved();
     break;
@@ -74,42 +110,48 @@ void Parser::checkQueues() {
     syncing();
     break;
   }
-}	
+}
 
 
-void Parser::approved() {
-  if (playerEvents.front()->type == UNIQUE) {
+void Parser::approved()
+{
+  if (playerEvents.front()->type == UNIQUE)
+  {
     mostLikelyRoom->setUnique();
     playerPop();
     return;
   }
-  if (mudEvents.front()->type == MOVE_FAIL) {
+  if (mudEvents.front()->type == MOVE_FAIL)
+  {
     mudPop();
     playerPop();
     return;
   }
-	
+
 
   // now we have a move and a room on the event queues;
 
   Approved * appr = new Approved(mudEvents.front(), matchingTolerance);
   set<int> * possible = mostLikelyRoom->go(playerEvents.front());
-  for (set<int>::iterator i = possible->begin(); i != possible->end(); ++i) {
+  for (set<int>::iterator i = possible->begin(); i != possible->end(); ++i)
+  {
     emit lookingForRooms(appr, *i);
   }
-  
+
   QThread::usleep(remoteMapDelay);
-  
+
   Room * perhaps = appr->oneMatch();
 
   Coordinate * c = 0;
-  if (perhaps == 0) { // try to match by coordinate
+  if (perhaps == 0)
+  { // try to match by coordinate
     appr->reset();
     c = getExpectedCoordinate(mostLikelyRoom);
     emit lookingForRooms(appr, c);
     QThread::usleep(remoteMapDelay);
     perhaps = appr->oneMatch();
-    if (perhaps != 0) {
+    if (perhaps != 0)
+    {
       parserMutex.lock();
       QObject::connect(this, SIGNAL(addExit(int, int, char)), appr->getOwner(), SLOT(addExit(int, int, char)));
       emit addExit(mostLikelyRoom->getId(), perhaps->getId(), playerEvents.front()->type);
@@ -118,11 +160,13 @@ void Parser::approved() {
     }
     cmm.deactivate(c);
   }
-  if (perhaps != 0) {
+  if (perhaps != 0)
+  {
     emit playerMoved(mostLikelyRoom->getCoordinate(), perhaps->getCoordinate());
     mostLikelyRoom = perhaps;
   }
-  else {
+  else
+  {
     state = EXPERIMENTING;
     Path * root = pamm.activate();
     root->init(mostLikelyRoom, 0);
@@ -133,7 +177,7 @@ void Parser::approved() {
   delete(appr);
 
   mudPop();
-  playerPop(); 
+  playerPop();
 }
 
 /*
@@ -143,7 +187,7 @@ void Parser::syncingRoom(Room * room) {
     mostLikelyRoom = room;
     emit playerMoved(0, mostLikelyRoom->getCoordinate());
 }
-
+ 
 void Parser::match(Room * room) {
   insertLock.lock();
   if (state == DANGLING_APPROVED) { // a second room was found in approved
@@ -160,29 +204,34 @@ void Parser::match(Room * room) {
 }
 */
 
-void Parser::playerPop() {
+void Parser::playerPop()
+{
   pemm.deactivate(playerEvents.front());
   playerEvents.pop();
 }
-			
-void Parser::mudPop() {
+
+void Parser::mudPop()
+{
   pemm.deactivate(mudEvents.front());
   mudEvents.pop();
 }
 
-void Parser::syncing() {
+void Parser::syncing()
+{
   if (mudEvents.empty()) return;
-  if (!(playerEvents.empty()) && (playerEvents.front()->type == UNIQUE)) {
+  if (!(playerEvents.empty()) && (playerEvents.front()->type == UNIQUE))
+  {
     // unique doesn't work when syncing ...
     playerPop();
     return;
   }
-  if (mudEvents.front()->type == MOVE_FAIL) {
+  if (mudEvents.front()->type == MOVE_FAIL)
+  {
     mudPop();
     if (!playerEvents.empty()) playerPop();
     return;
   }
-	
+
   // now we have a move and a room on the event queues;
 
   Syncing * sync = new Syncing(paths);
@@ -194,16 +243,19 @@ void Parser::syncing() {
 
   if (!(playerEvents.empty())) playerPop();
   mudPop();
-}	
+}
 
 
-void Parser::experimenting() {
-  if (playerEvents.front()->type == UNIQUE) {
+void Parser::experimenting()
+{
+  if (playerEvents.front()->type == UNIQUE)
+  {
     // do something ....
     playerPop();
     return;
   }
-  if (mudEvents.front()->type == MOVE_FAIL) {
+  if (mudEvents.front()->type == MOVE_FAIL)
+  {
     mudPop();
     playerPop();
     return;
@@ -211,16 +263,17 @@ void Parser::experimenting() {
 
   Experimenting * exp = new Experimenting(this, paths, pathAcceptance);
 
-  for (list<Path *>::iterator i = paths->begin(); i != paths->end(); ++i) {
+  for (list<Path *>::iterator i = paths->begin(); i != paths->end(); ++i)
+  {
     Coordinate * c = getExpectedCoordinate((*i)->getRoom());
     emit createRoom(mudEvents.front(), c, activeTerrain);
     cmm.deactivate(c);
   }
 
   emit lookingForRooms(exp, mudEvents.front());
-  
+
   QThread::usleep(remoteMapDelay);
-  
+
   paths = exp->evaluate();
   delete(exp);
 
@@ -229,34 +282,39 @@ void Parser::experimenting() {
   mudPop();
 }
 
-void Parser::evaluatePaths() {
-  Coordinate * oldCoord = 0;  
+void Parser::evaluatePaths()
+{
+  Coordinate * oldCoord = 0;
   if (mostLikelyRoom)
     oldCoord = mostLikelyRoom->getCoordinate();
   Coordinate * newCoord = 0;
-  if (paths->empty()) {
+  if (paths->empty())
+  {
     state = SYNCING;
     mostLikelyRoom = 0;
   }
-  else if (++paths->begin() == paths->end()) {
+  else if (++paths->begin() == paths->end())
+  {
     state = APPROVED;
     mostLikelyRoom = paths->front()->getRoom();
     newCoord = mostLikelyRoom->getCoordinate();
     paths->front()->approve();
     paths->pop_front();
-  } 
-  else {
+  }
+  else
+  {
     mostLikelyRoom = paths->front()->getRoom();
     newCoord = mostLikelyRoom->getCoordinate();
   }
 
   if (newCoord != oldCoord) emit playerMoved(oldCoord, newCoord);
-  
+
 }
 
 
 
-Coordinate * Parser::getExpectedCoordinate(Room * base) {
+Coordinate * Parser::getExpectedCoordinate(Room * base)
+{
   Coordinate * c = cmm.activate();
   if (!playerEvents.empty()) c->add(Coordinate::stdMoves[playerEvents.front()->type]);
   if (base != 0) c->add(base->getCoordinate());
