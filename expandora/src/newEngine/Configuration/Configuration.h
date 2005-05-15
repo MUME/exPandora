@@ -1,7 +1,7 @@
 #ifndef CONFIGURATION
 #define CONFIGURATION
 
-
+#include "Component.h"
 #include <qxml.h>
 #include <qstring.h>
 #include <map>
@@ -11,7 +11,7 @@ using namespace std;
 
 
 
-class Configuration : public QXmlDefaultHandler, public QObject {
+class Configuration : public QXmlDefaultHandler, public Component {
  public:
   Configuration();
   void parseFile(QString & filename);
@@ -29,10 +29,10 @@ class Configuration : public QXmlDefaultHandler, public QObject {
   void addOption(const QXmlAttributes & atts);
   void connectComponents(const QXmlAttributes & atts);
   map<QString, QObject *> components;  
-  QObject * currentComponent;
+  Component * currentComponent;
   map<QString, QLibrary *> libs;
 };
 
-typedef Configuration * (*componentCreator)();
+typedef Component * (*componentCreator)();
 
 #endif

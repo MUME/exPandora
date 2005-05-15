@@ -3,6 +3,16 @@
 
 #include <qobject.h>
 
+#ifdef Q_WS_WIN
+# define MY_EXPORT __declspec(dllexport)
+#else
+# define MY_EXPORT
+#endif
+
+/**
+ * every class that should be available from a library should inherit Component.
+ * and implement a componentCreator which is available via "extern "C" MY_EXPORT ..."
+ */
 class Component : public QObject {
  private:
   Q_OBJECT

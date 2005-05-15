@@ -2,11 +2,11 @@
 #include <utility>
 #include <qvariant.h>
 
-#ifdef Q_WS_WIN
-# define MY_EXPORT __declspec(dllexport)
-#else
-# define MY_EXPORT
-#endif
+/**
+ * this method is called when a component of this type should be
+ * created from a library. MY_EXPORT is defined in Component.h
+ * and handles platform specific issues
+ */
 extern "C" MY_EXPORT Configuration * createComponent() {
   return new Configuration;
 }
