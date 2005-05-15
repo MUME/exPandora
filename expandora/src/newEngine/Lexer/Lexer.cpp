@@ -2,7 +2,10 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-
+#if defined Q_OX_MACX || defined Q_OS_LINUX
+#include <ctime>
+#include <sys/time.h>
+#endif
 
 void Lexer::pushUserInput (char * input) {
   inputLock.lock();
@@ -86,12 +89,12 @@ void GenericLexer::skipSomeProperties() {
 
 long GenericLexer::m_timestamp()
 {
-#ifdef Q_OS_LINUX || Q_OS_MACX
+#if defined Q_OS_LINUX || defined Q_OS_MACX
   struct timeval tv;
   struct timezone tz;
 
   gettimeofday(&tv, &tz);
-  return tv.tv_sec*1000000 + tv_usec);
+  return (tv.tv_sec*1000000 + tv.tv_usec);
 #else
   return 0;
 #endif

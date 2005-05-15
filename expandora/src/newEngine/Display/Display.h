@@ -72,7 +72,7 @@ class RendererWidget : public QGLWidget {
 
 
 class MainWindow;
-class Display : public QThread {
+class DisplayThread : public QThread {
  public:
   void run();
   void toggle_renderer_reaction();

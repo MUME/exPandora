@@ -130,7 +130,7 @@ void RendererWidget::resizeGL( int width, int height )
 }
 
 
-void Display::run()
+void DisplayThread::run()
 {
   printf("Starting renderer ...\n");
 
@@ -273,7 +273,7 @@ void RendererWidget::drawRoom(QObject * owner, Room * pr)
 
     
   glTranslatef(dx, dy, dz);
-  if (pr->getTerrain() != NULL && texture) {
+  if ((pr->getTerrain() != 0) && texture) {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, (terrains.find(pr->getTerrain()))->second->texture);
 
@@ -405,7 +405,7 @@ void RendererWidget::shiftView()
 
 
 
-void Display::toggle_renderer_reaction()
+void DisplayThread::toggle_renderer_reaction()
 {
   QKeyEvent * k = new QKeyEvent(QEvent::KeyPress, 0, 'r', 0, NULL, FALSE, 0);
   QApplication::postEvent( renderer_window->renderer, k );
