@@ -16,11 +16,11 @@ public:
   ~Frustum();
   
   bool PointInFrustum(Coordinate * c);
-  void NormalizePlane(int side);
   void rebuild(float * proj, float * modl);
   float getDistance(Coordinate * c);
 
 private:
+  void NormalizePlane(int side);
   float frustum[6][4];
 
 };

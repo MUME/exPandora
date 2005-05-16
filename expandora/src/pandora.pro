@@ -74,6 +74,7 @@ HEADERS		+=struct.h
 HEADERS		+=tree.h
 HEADERS		+=userfunc.h
 HEADERS		+=utils.h
+HEADERS		+=xml2.h
 
 SOURCES		+=auda.cpp
 SOURCES		+=config_reader.cpp

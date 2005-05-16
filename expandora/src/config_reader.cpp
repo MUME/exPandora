@@ -3,15 +3,19 @@
 #include <cstdlib>
 #include <cstring>
 #include <qmutex.h>
+
+
 #ifdef NEW_ENGINE
 #include <qstring.h>
+#include "CharacterTable.h"
+#include "Terrain.h"
 #endif
 
 
 #include "rooms.h"
 #include "defines.h"
 #include "struct.h"
-#include "CharacterTable.h"
+
 #include "utils.h"
 #include "renderer.h"
 #include "config_reader.h"
@@ -19,9 +23,7 @@
 #include "dispatch.h"
 #include "event.h"
 
-#ifdef NEW_ENGINE
-#include "Terrain.h"
-#endif
+
 
 #define BUFFER_SIZE 4096
 
