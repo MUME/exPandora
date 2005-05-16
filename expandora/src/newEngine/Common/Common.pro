@@ -13,7 +13,7 @@ macx {
 	HEADERS += cmath
 }
 
-
+HEADERS	+= ../include/Frustum.h
 HEADERS += ../include/Component.h
 HEADERS += ../include/BaseEvent.h
 HEADERS += ../include/Coordinate.h
@@ -29,6 +29,7 @@ HEADERS += ../include/TinyList.h
 HEADERS += ../include/AbstractRoomContainer.h
 HEADERS += ../include/RoomSignalHandler.h
 
+SOURCES += Frustum.cpp
 SOURCES += Component.cpp
 SOURCES += BaseEvent.cpp
 SOURCES += Coordinate.cpp
