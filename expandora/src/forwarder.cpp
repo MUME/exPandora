@@ -4,16 +4,18 @@
  * for solaris: gcc forwarder.c -lsocket -lnsl
  *
  */
+#include <csignal>
+#include <qglobal.h>
+
+#if defined Q_OS_LINUX || defined Q_OS_MACX || defined Q_OS_FREEBSD
+
 #include <unistd.h>
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <netinet/in.h>
-#include <csignal>
 #include <sys/socket.h>
-#include <qglobal.h>
 
-#if defined Q_OS_LINUX || defined Q_OS_MACX
 #define WSAEWOULDBLOCK EWOULDBLOCK
 #define WSAEINPROGRESS EINPROGRESS
 #define WSAGetLastError() errno
@@ -21,6 +23,8 @@
 #define closesocket close
 #define SOCKET int
 #define ioctlsocket ioctl
+
+
 
 #elif defined Q_OS_WIN32
 #define socklen_t int
@@ -50,7 +54,7 @@ int proxy_hangsock;
 fd_set proxy_descr1, proxy_descr2;
 struct sockaddr_in my_net_name, his_net_name;
 
-#if defined Q_OS_LINUX || defined Q_OS_MACX
+#if defined Q_OS_LINUX || defined Q_OS_MACX || defined Q_OS_FREEBSD
 
   void refresh(int)
   {
@@ -181,7 +185,7 @@ int proxy_init()
 
 
 
-#if defined Q_OS_LINUX || defined Q_OS_MACX
+#if defined Q_OS_LINUX || defined Q_OS_MACX || defined Q_OS_FREEBSD
   signal (SIGXCPU, refresh);
 #endif
 

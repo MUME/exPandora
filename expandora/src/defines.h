@@ -1,8 +1,5 @@
-
-
 #include <qglobal.h>
 
-//#define NEW_ENGINE
 
 #define TRUE            1
 #define FALSE           0
