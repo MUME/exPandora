@@ -1,0 +1,68 @@
+\documentclass[11pt]{article}
+\author{alve}
+\begin{document}
+\title{the component model for expandora}
+\maketitle
+
+\section{Motivation}
+While developing the new engine described in expandora.tex I noticed that 
+the source code got more and more bloated and confusing. It was obviously 
+impossible to separate old- and new engine specific code and in order
+to compile the new engine a lot of code that wasn't used anymore in the
+new engine had to be included. I partially solved that with preprocessor
+directives but of course that did not solve the whole problem.
+Additionally the need for a muli-user functionality where several people could 
+play with a single map or multiple maps from different people could be 
+synchronized at run time arose. That's why I started to split up the so far
+monolithic new engine code into several distinct components.
+
+\section{Requirements for a component}
+In order to fulfill the object orientation paradigms we should rely on to
+keep the code clean a component should support the general characteristics 
+of an object. Among these are:
+\begin{enumerate}
+\item information hiding
+\item inheritence from other components
+\item some sort of introspection, so that external code can be informed about 
+the component's capabilities at runtime
+\item a means to send and receive messages
+\end{enumerate}
+Additionally as components should be as far as possible independend of each 
+other, they should remain in seperately built entities, such as libraries.
+To allow communicating components to stay on different hosts I chose a rather
+simple model of serialization: A signal sent or received by a component should
+only contain objects that are serializable. Objects are serializable if they 
+only contain local data. Especially no serializable object should hold a pointer
+to a piece of data referenced by any other object. The purpose of this 
+constraint is the difficulty of referencing non-local data on remote hosts.
+
+\subsection{Serializable Objects}
+Each serializable object should subclass a abstract class named Serializable
+that will provide methods for writing the information contained in this object
+to a character array and reading an object from a character array. The objects
+I identified to need serialization methods so far are: Room, ParseEvent, 
+Frustum, Coordinate, Property and the various container classes.
+
+\section{Implementation}
+QT provides the concept of signals and slots, so it is obvious to just
+make Component a subclass of QObject to fulfill requirement (4).
+By choosing Component to be a subclass of QT's QObject we also get all of 
+QObjects meta object features for free, thus providing feature (3). The only 
+problem left will be the runtime determination of signals and slots from 
+components. QObject only provides Macros SIGNAL and SLOT to translate from 
+textual representations to internal representations. As we can't use these 
+macros on runtime variables it is necessary to rewrite them as functions which 
+will be done in the component class. Of course this is dangerous as the encoding
+of signals and slots might change in future versions of QT, yet it is still
+cleaner than including an own form of introspections via signal tables and slot
+tables. It is also obvious that requirements (1) and (2) are also fulfilled
+like this. Each component will then be in a seperate platform dependent 
+library that is accessible via QLibrary. This library exports a C symbol named
+createComponent that will return the new component. By using either the  meta 
+objects or a predefined configurations signals and slots of various components 
+can then be connected. Like this communication components can be created to
+serialize and transmit or deserialize and relay signals. Of course the signals'
+arguments have to be serializable to do this. To implement the actual 
+serialization the QDataStream class could be helpful.
+
+\end{document}
