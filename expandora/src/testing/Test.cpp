@@ -1,14 +1,36 @@
 //#include <qstring.h>
 //#include "../SearchTreeNode.h"
 //#include "../Room.h"
-#include <stdio.h>
-#include <set>
+#include <iostream>
+#include <qmetaobject.h>
+using namespace std;
 
-set<int> * baum = new set<int>;
+#include "Test.h"
+
+void Baum::baumel(int, int) {cout << "baumel\n";}
+void Baum::semmel(char * in) {cout << "semmel" << in << "\n";}
+void Baum::go() {
+  emit gurke("hannes");
+} 
 
 int main(int argc, char **argv) {
   
-  printf("sizeof(set<int>): %i\n", sizeof(baum));
+  Baum baum;
+  int i = baum.metaObject()->numSlots();
+  cout << i;
+  cout << "baum\n";
+  QStrList l = baum.metaObject()->signalNames(); //->signalNames();
+  QStrList m = baum.metaObject()->slotNames(); //->signalNames();
+  for (int j = 0; j != i; ++j) {
+    cout << l.at(j) << "\n";
+  }
+  cout << SIGNAL(gurke(char *)) << "\n";
+  cout << SLOT(semmel(char *)) << "\n";
+  QObject::connect(&baum, SIGNAL(gurke(char *)), &baum, SLOT(semmel(char *)));
+  baum.go();
+
+  //cout << baum.metaObject()->signalNames(); //->slotNames();
+
 //SearchTreeNode * test = new SearchTreeNode("baum");
 
 /*
