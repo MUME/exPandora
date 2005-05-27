@@ -30,9 +30,14 @@ void RoomAdmin::removeRoom(int id)
 void RoomAdmin::lookingForRooms(QObject * recipient, Coordinate * pos)
 {
   mapLock.lock();
-  connect(this, SIGNAL(foundRoom(foundRoom(QObject *, Room *))), recipient, SLOT(foundRoom(QObject *, Room *)));
-  emit foundRoom(this,  map.get(pos));
-  disconnect(this, SIGNAL(foundRoom(foundRoom(QObject *, Room *))), recipient, SLOT(foundRoom(QObject *, Room *)));
+  Room * r = map.get(pos);
+  if (r)
+  {
+    locks[r->getId()].insert(recipient);
+    connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
+    emit foundRoom(this, r);
+    disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
+  }
   mapLock.unlock();
 }
 
@@ -41,9 +46,12 @@ void RoomAdmin::lookingForRooms(QObject * recipient, int id)
   mapLock.lock();
   if (greatestUsedId >= id)
   {
-    connect(this, SIGNAL(foundRoom(foundRoom(QObject *, Room *))), recipient, SLOT(foundRoom(QObject *, Room *)));
-    emit foundRoom(this, roomIndex[id]);
-    disconnect(this, SIGNAL(foundRoom(foundRoom(QObject *, Room *))), recipient, SLOT(foundRoom(QObject *, Room *)));
+    Room * r = roomIndex[id];
+    connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
+    locks[id].insert(recipient);
+
+    emit foundRoom(this, r);
+    disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
   }
   mapLock.unlock();
 }
@@ -66,7 +74,11 @@ void RoomAdmin::assignId(Room * room)
 #endif
   room->setId(id);
 
-  if ((int)roomIndex.size() <= id) roomIndex.resize(id + 1, 0);
+  if ((int)roomIndex.size() <= id)
+  {
+    roomIndex.resize(id + 1, 0);
+    locks.resize(id + 1);
+  }
   roomIndex[id] = room;
   mapLock.unlock();
 }
@@ -76,6 +88,7 @@ void RoomAdmin::createPredefinedRoom(ParseEvent * event, Coordinate * c, char t,
   mapLock.lock();
   unusedIds.push(id);
   createRoom(event, c, t);
+  locks[id].insert(0);
   mapLock.unlock();
 }
 
@@ -94,22 +107,33 @@ void RoomAdmin::createRoom(ParseEvent * event, Coordinate * expectedPosition, ch
 void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
 {
   AbstractRoomContainer * ret;
+  Room * r;
   mapLock.lock();
   ret = IntermediateNode::getRooms(event);
   if (ret->numRooms() >= 0)
   {
+
     connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
     for(set<Room *>::iterator i = ((RoomCollection*)ret)->begin(); i != ((RoomCollection*)ret)->end(); ++i)
     {
-      emit foundRoom(this, *i);
+      r = *i;
+      locks[r->getId()].insert(recipient);
+      emit foundRoom(this, r);
     }
     disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
     delete ret;
   }
   mapLock.unlock();
 
-  event->reset(); // we can't tell where that node came from
+  // in the future the cycling will be done inside the map ONLY,
+  // so this won't be needed anymore and rooms can be searched in several maps in parallel
+  event->reset();
 
 }
 
-
+void RoomAdmin::addExit(int f, int t, int d) {
+	Room * from = roomIndex[f];
+	Room * to = roomIndex[t];
+	from->addExit(d, t);
+	to->addReverseExit(d, f);
+}

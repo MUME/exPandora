@@ -41,7 +41,7 @@ class Parser : public Component, private QThread {
   void lookingForRooms(QObject *,Coordinate *);
   void playerMoved(Coordinate *, Coordinate *);
   void createRoom(ParseEvent *, Coordinate *, int);
-  void addExit(int, int, char);
+  void addExit(int, int, int);
 
  public:
   Parser();

@@ -153,9 +153,9 @@ void Parser::approved()
     if (perhaps != 0)
     {
       parserMutex.lock();
-      QObject::connect(this, SIGNAL(addExit(int, int, char)), appr->getOwner(), SLOT(addExit(int, int, char)));
+      QObject::connect(this, SIGNAL(addExit(int, int, int)), appr->getOwner(), SLOT(addExit(int, int, int)));
       emit addExit(mostLikelyRoom->getId(), perhaps->getId(), playerEvents.front()->type);
-      QObject::disconnect(this, SIGNAL(addExit(int, int, char)), 0,0);
+      QObject::disconnect(this, SIGNAL(addExit(int, int, int)), 0,0);
       parserMutex.unlock();
     }
     cmm.deactivate(c);

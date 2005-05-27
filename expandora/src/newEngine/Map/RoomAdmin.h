@@ -1,15 +1,19 @@
 #ifndef ROOMADMIN
 #define ROOMADMIN
+
 #include "RoomSearchNode.h"
 #include "IntermediateNode.h"
 #include "Component.h"
 #include "Frustum.h"
+#include "Room.h"
+#include "Map.h"
+
 #include <qthread.h>
 #include <qmutex.h>
 #include <vector>
 #include <stack>
-#include "Room.h"
-#include "Map.h"
+#include <set>
+#include <map>
 
 
 
@@ -29,6 +33,7 @@ class RoomAdmin : public IntermediateNode, public Component {
 
   Map map;
   vector<Room *> roomIndex;
+  vector<set<QObject *> > locks;
   stack<int>  unusedIds;
   int greatestUsedId;
   QMutex mapLock;
@@ -54,7 +59,7 @@ class RoomAdmin : public IntermediateNode, public Component {
   void createPredefinedRoom(ParseEvent *, Coordinate *, char, int);
 
   // addExit doesn't lock a room either
-  void addExit(int, int, char);
+  void addExit(int, int, int);
 
   // removes the lock on a room
   // after the last lock is removed, the room is deleted

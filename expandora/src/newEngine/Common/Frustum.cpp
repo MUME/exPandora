@@ -44,10 +44,6 @@ bool Frustum::PointInFrustum(Coordinate * c)
 }
 
 
-/*Coordinate * getCorner(int side1, int side2, int side3) {
-  Coordinate * corner = new Coordinate();
-
-  }*/
 
 void Frustum::rebuild(float * proj, float * modl)
 {
@@ -139,16 +135,16 @@ void Frustum::rebuild(float * proj, float * modl)
   // get the distance of the origin to the center
   // the distance to front is negative, the one to back is positive
   float dist = (frustum[BACK][A] * clip[12]
-  	+	frustum[BACK][B] * clip[13]
-	+	frustum[BACK][C] * clip[14]
-	+	frustum[BACK][D]
-	-	frustum[FRONT][A] * clip[12]
-  	-	frustum[FRONT][B] * clip[13]
-	-	frustum[FRONT][C] * clip[14]
-	-	frustum[FRONT][D])
-	/ 	2.0;
+               +	frustum[BACK][B] * clip[13]
+               +	frustum[BACK][C] * clip[14]
+               +	frustum[BACK][D]
+               -	frustum[FRONT][A] * clip[12]
+               -	frustum[FRONT][B] * clip[13]
+               -	frustum[FRONT][C] * clip[14]
+               -	frustum[FRONT][D]) / 2.0 ;
 
-	    
+
+
   // translate the origin by dist*(normal vector of FRONT)
   center.x = (int)(clip[12] + frustum[FRONT][A]*dist);
   center.y = (int)(clip[13] + frustum[FRONT][B]*dist);
@@ -157,6 +153,7 @@ void Frustum::rebuild(float * proj, float * modl)
 }
 
 
-float Frustum::getDistance(Coordinate * c, int side) {
+float Frustum::getDistance(Coordinate * c, int side)
+{
   return frustum[side][A] * c->x + frustum[side][B] * c->y + frustum[side][C] * c->z + frustum[side][D];
 }
