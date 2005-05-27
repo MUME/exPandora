@@ -24,21 +24,22 @@ void RoomAdmin::removeRoom(int id) {
   mapLock.unlock();
 }
 
-Room * RoomAdmin::getRoom(Coordinate * pos) {
+void RoomAdmin::lookingForRooms(QObject * recipient, Coordinate * pos) {
   mapLock.lock();
-  Room * ret = map.get(pos);
+  connect(this, SIGNAL(foundRoom(foundRoom(QObject *, Room *))), recipient, SLOT(foundRoom(QObject *, Room *)));
+  emit foundRoom(this,  map.get(pos));
+  disconnect(this, SIGNAL(foundRoom(foundRoom(QObject *, Room *))), recipient, SLOT(foundRoom(QObject *, Room *)));
   mapLock.unlock();
-  return ret;
 }
 
-Room * RoomAdmin::getRoom(int id) {
-  Room * ret = 0;
+void RoomAdmin::lookingForRooms(QObject * recipient, int id) {
   mapLock.lock();
   if (greatestUsedId >= id) {
-    ret = roomIndex[id];
+    connect(this, SIGNAL(foundRoom(foundRoom(QObject *, Room *))), recipient, SLOT(foundRoom(QObject *, Room *)));
+    emit foundRoom(this, roomIndex[id]);
+    disconnect(this, SIGNAL(foundRoom(foundRoom(QObject *, Room *))), recipient, SLOT(foundRoom(QObject *, Room *)));
   }
   mapLock.unlock();
-  return ret;
 }
 
 void RoomAdmin::assignId(Room * room) {
@@ -62,38 +63,38 @@ void RoomAdmin::assignId(Room * room) {
   mapLock.unlock();
 }
 
-Room * RoomAdmin::insertRoom(ParseEvent * event, int id, Coordinate * c, int t) {
+void RoomAdmin::createPredefinedRoom(ParseEvent * event, int id, Coordinate * c, int t) {
   mapLock.lock();
   unusedIds.push(id);
-  Room * room = insertRoom(event, c, t);
+  Room * room = createRoom(event, c, t);
   mapLock.unlock();
-  return room;
 }
 
 
 
-Room * RoomAdmin::insertRoom(ParseEvent * event, Coordinate * expectedPosition, int t) {
-
+void RoomAdmin::createRoom(ParseEvent * event, Coordinate * expectedPosition, int t) {
   mapLock.lock();    
   Room * room = IntermediateNode::insertRoom(event);
   room->setTerrain(t);
   map.setNearest(expectedPosition, room);
   assignId(room);
   mapLock.unlock();
-  return room;
 }
 
-AbstractRoomContainer * RoomAdmin::getRooms(ParseEvent * event) {
+void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event) {
   AbstractRoomContainer * ret;
-
   mapLock.lock();
   ret = IntermediateNode::getRooms(event);
   if (ret->numRooms() < 0) ret = rcmm.activate();
-  deepestMatch = this; 
+  connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
+  for(set<Room *>::iterator i = ret.begin(); i != ret.end(); ++i) {
+    emit foundRoom(this, *i);
+  }
+  disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));    
   mapLock.unlock();
 
   event->reset(); // we can't tell where that node came from
-  return ret;
+
 }
 
 

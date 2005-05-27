@@ -27,7 +27,6 @@ class RoomAdmin : public IntermediateNode, public Component {
   Q_OBJECT
 
   Map map;
-  AbstractRoomContainer * deepestMatch;
   vector<Room *> roomIndex;
   stack<int>  unusedIds;
   int greatestUsedId;
