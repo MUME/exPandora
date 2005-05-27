@@ -29,7 +29,7 @@ void Frustum::NormalizePlane(int side)
 bool Frustum::PointInFrustum(Coordinate * c)
 {
   // Go through all the sides of the frustum
-  for(int i = 0; i < 6; i++ )
+  for(int i = 0; i < 6; ++i )
   {
     // Calculate the plane equation and check if the point is behind a side of the frustum
     if(frustum[i][A] * c->x + frustum[i][B] * c->y + frustum[i][C] * c->z + frustum[i][D] <= 0)
@@ -43,10 +43,17 @@ bool Frustum::PointInFrustum(Coordinate * c)
   return true;
 }
 
+
+/*Coordinate * getCorner(int side1, int side2, int side3) {
+  Coordinate * corner = new Coordinate();
+
+  }*/
+
 void Frustum::rebuild(float * proj, float * modl)
 {
   float   clip[16];                               // This will hold the clipping planes
 
+  // To combine 2 matrices, we multiply them.
   clip[ 0] = modl[ 0] * proj[ 0] + modl[ 1] * proj[ 4] + modl[ 2] * proj[ 8] + modl[ 3] * proj[12];
   clip[ 1] = modl[ 0] * proj[ 1] + modl[ 1] * proj[ 5] + modl[ 2] * proj[ 9] + modl[ 3] * proj[13];
   clip[ 2] = modl[ 0] * proj[ 2] + modl[ 1] * proj[ 6] + modl[ 2] * proj[10] + modl[ 3] * proj[14];
@@ -127,8 +134,24 @@ void Frustum::rebuild(float * proj, float * modl)
   // Normalize the FRONT side
   NormalizePlane(FRONT);
 
+  // find out the center of the frustum
+  // first get the origin of the coordinate system
+  center.x = clip[12];
+  center.y = clip[13];
+  center.z = clip[14];
+
+  // get the distance of the origin to the center
+  // the distance to front is negative, the one to back is positive
+  float dist = (getDistance(center, BACK) - getDistance(center, FRONT)) / 2.0;
+
+  // translate the origin by dist*(normal vector of FRONT)
+  center.x += frustum[FRONT][A]*dist;
+  center.y += frustum[FRONT][B]*dist;
+  center.z += frustum[FRONT][C]*dist;
+
 }
 
-float Frustum::getDistance(Coordinate * c) {
-  return frustum[FRONT][A] * c->x + frustum[FRONT][B] * c->y + frustum[FRONT][C] * c->z + frustum[FRONT][D];
+
+float Frustum::getDistance(Coordinate * c, int side) {
+  return frustum[side][A] * c->x + frustum[side][B] * c->y + frustum[side][C] * c->z + frustum[side][D];
 }

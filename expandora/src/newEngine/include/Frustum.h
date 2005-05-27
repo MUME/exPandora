@@ -8,22 +8,6 @@ represents a viewable Frustum in the coordinate system
  
 @author alve,,,
 */
-class Frustum
-{
-public:
-  Frustum();
-
-  ~Frustum();
-  
-  bool PointInFrustum(Coordinate * c);
-  void rebuild(float * proj, float * modl);
-  float getDistance(Coordinate * c);
-
-private:
-  void NormalizePlane(int side);
-  float frustum[6][4];
-
-};
 
 // We create an enum of the sides so we don't have to call each side 0 or 1.
 // This way it makes it more understandable and readable when dealing with frustum sides.
@@ -43,6 +27,26 @@ enum PlaneData {
     B = 1,              // The Y value of the plane's normal
     C = 2,              // The Z value of the plane's normal
     D = 3               // The distance the plane is from the origin
+};
+
+
+class Frustum
+{
+public:
+  Frustum();
+
+  ~Frustum();
+  
+  Coordinate * getCenter() {return &center;}
+  bool PointInFrustum(Coordinate * c);
+  void rebuild(float * proj, float * modl);
+  float getDistance(Coordinate * c, int side = FRONT);
+
+private:
+  Coordinate center;
+  void NormalizePlane(int side);
+  float frustum[6][4];
+
 };
 
 

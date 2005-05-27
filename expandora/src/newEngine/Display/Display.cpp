@@ -23,6 +23,8 @@ extern "C" MY_EXPORT DisplayThread * createComponent() {
 
 
 const GLfloat RendererWidget::marker_colour[]  =  {1.0, 0.2, 0.0, 0.6};
+const int RendererWidget::texture_visibilit_range = 300;
+const int RendererWidget::details_visibility_range = 500;
 
 
 RendererWidget::RendererWidget( QWidget *parent, const char *name )
@@ -436,10 +438,10 @@ void RendererWidget::CalculateFrustum()
 
   glGetFloatv( GL_MODELVIEW_MATRIX, modl );
 
-  frustum.rebuild(proj, modl);
-  // Now that we have our modelview and projection matrix, if we combine these 2 matrices,
-  // it will give us our clipping planes.  To combine 2 matrices, we multiply them.
 
+  // Now that we have our modelview and projection matrix, if we combine these 2 matrices,
+  // it will give us our clipping planes.  
+  frustum.rebuild(proj, modl);
   
 }
 

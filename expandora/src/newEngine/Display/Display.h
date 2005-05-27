@@ -29,8 +29,8 @@ class RendererWidget : public QGLWidget {
  private:
   Q_OBJECT 
   static const GLfloat marker_colour[4];
-  static const int texture_visibilit_range = 300;
-  static const int details_visibility_range = 500;
+  static const int texture_visibilit_range;
+  static const int details_visibility_range;
 
 
   GLfloat       colour[4];
