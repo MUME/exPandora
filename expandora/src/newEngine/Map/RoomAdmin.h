@@ -3,6 +3,7 @@
 #include "RoomSearchNode.h"
 #include "IntermediateNode.h"
 #include "Component.h"
+#include "Frustum.h"
 #include <qthread.h>
 #include <qmutex.h>
 #include <vector>
@@ -37,7 +38,7 @@ class RoomAdmin : public IntermediateNode, public Component {
   void assignId(Room * room); 
   int lastId() {return greatestUsedId;}
 
- slots:
+ public slots:
   // looking for rooms leads to a bunch of foundRoom() signals
   void lookingForRooms(QObject *,ParseEvent *);
   void lookingForRooms(QObject *,int); // by id

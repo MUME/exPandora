@@ -136,18 +136,23 @@ void Frustum::rebuild(float * proj, float * modl)
 
   // find out the center of the frustum
   // first get the origin of the coordinate system
-  center.x = clip[12];
-  center.y = clip[13];
-  center.z = clip[14];
-
   // get the distance of the origin to the center
   // the distance to front is negative, the one to back is positive
-  float dist = (getDistance(center, BACK) - getDistance(center, FRONT)) / 2.0;
+  float dist = (frustum[BACK][A] * clip[12]
+  	+	frustum[BACK][B] * clip[13]
+	+	frustum[BACK][C] * clip[14]
+	+	frustum[BACK][D]
+	-	frustum[FRONT][A] * clip[12]
+  	-	frustum[FRONT][B] * clip[13]
+	-	frustum[FRONT][C] * clip[14]
+	-	frustum[FRONT][D])
+	/ 	2.0;
 
+	    
   // translate the origin by dist*(normal vector of FRONT)
-  center.x += frustum[FRONT][A]*dist;
-  center.y += frustum[FRONT][B]*dist;
-  center.z += frustum[FRONT][C]*dist;
+  center.x = (int)(clip[12] + frustum[FRONT][A]*dist);
+  center.y = (int)(clip[13] + frustum[FRONT][B]*dist);
+  center.z = (int)(clip[14] + frustum[FRONT][C]*dist);
 
 }
 
