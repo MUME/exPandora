@@ -446,6 +446,7 @@ void engine()
 
   analyzer_mutex.lock();
 
+  
   TIMER_START("analyzer");
   
   copy_stacks();

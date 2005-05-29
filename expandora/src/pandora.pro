@@ -4,13 +4,10 @@ TEMPLATE	= app
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
-CONFIG		+= qt opengl warn_on debug thread 
+CONFIG		+= qt opengl warn_on release thread 
 
 win32 {
 	CONFIG	+= console
-}
-macx {
-	HEADERS += cmath
 }
 
 new_engine {
@@ -95,7 +92,7 @@ SOURCES		+=utils.cpp
 
 TARGET		= ../pandora
 
-!mac:unix:LIBS		+= -lm -lqt-mt
-
+unix:LIBS		+= -lm -lqt-mt
+mac:LIBS += /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
 
 

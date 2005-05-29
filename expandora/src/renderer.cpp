@@ -580,8 +580,10 @@ void RendererWidget::glDrawRoom(Room * pr)
 
 void RendererWidget::draw(void)
 {
+
 #ifndef NEW_ENGINE
-    struct Troom *p;
+  //double time = m_timestamp();
+  struct Troom *p;
 #else
     Coordinate * p = 0;
     Room * pr = 0;
@@ -702,6 +704,10 @@ void RendererWidget::draw(void)
   
     this->swapBuffers();
     glredraw = 0;
+#ifndef NEW_ENGINE
+    //time = m_timestamp() - time;
+    //printf("rendering took %f time\n", time); 
+#endif
 }
 
 void RendererWidget::display(void)
@@ -742,6 +748,8 @@ void NormalizePlane(float frustum[6][4], int side)
     frustum[side][C] /= magnitude;
     frustum[side][D] /= magnitude; 
 }
+
+
 
 void RendererWidget::CalculateFrustum()
 {    
@@ -838,6 +846,8 @@ void RendererWidget::CalculateFrustum()
     
 }
 
+
+
 bool RendererWidget::PointInFrustum( float x, float y, float z )
 {
     // Go through all the sides of the frustum
@@ -854,3 +864,4 @@ bool RendererWidget::PointInFrustum( float x, float y, float z )
     // The point was inside of the frustum (In front of ALL the sides of the frustum)
     return true;
 }
+

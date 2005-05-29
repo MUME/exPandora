@@ -3,7 +3,7 @@
 #define ACMD(name)  void name(char *line)
 
 
-int parse_config(char *filename);
+int parse_config(char * path, char *filename);
 
 #ifdef DMALLOC
 #include <dmalloc.h>

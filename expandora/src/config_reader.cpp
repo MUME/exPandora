@@ -129,7 +129,7 @@ int buffered_file::open(char *fname)
 
 
 class buffered_file *current_buffered_reader = NULL;
-
+char * path = NULL;
 
 #define CONFIG_ERROR(message) \
   printf("-!!- %s:%i: Error : %s.\r\n", \
@@ -238,7 +238,7 @@ ACMD(parse_include)
   GET_NEXT_ARGUMENT(p, line, arg, 0);
   
   old_buffered_reader = current_buffered_reader;
-  parse_config(arg);
+  parse_config(path, arg);
   current_buffered_reader = old_buffered_reader;
 }
 
@@ -405,8 +405,9 @@ ACMD(parse_terraintype)
   p = one_argument(p, arg, 1);          /* get as is - file name */ 
   
 
-  terrain->filename = (char *) malloc(strlen(arg)+1);
-  strcpy(terrain->filename, arg);
+  terrain->filename = (char *) malloc(strlen(arg)+strlen(path)+1);
+  strcpy(terrain->filename, path);
+  strcat(terrain->filename, arg);
 
   p = skip_spaces(p);                        
   if (!*p) {                                    
@@ -634,7 +635,8 @@ ACMD(parse_basefile)
   
   GET_NEXT_ARGUMENT(p, line, arg, 1); /* get as is */
   
-  strcpy(base_file, arg);
+  strcpy(base_file, path);
+  strcat(base_file, arg);
 }
 
 ACMD(parse_logfile)
@@ -677,14 +679,20 @@ ACMD(parse_characterTable)
 }
 #endif
 
-int parse_config(char *filename)
+int parse_config(char * in_path, char *fn)
 {
+  char * old_path = path;
+  path = in_path;
   char line[MAX_STR_LEN];
   class buffered_file *buffered;
   
   
   buffered = new class buffered_file;
-  
+
+  char * filename = (char *) malloc(strlen(fn)+strlen(path)+1);
+  strcpy(filename, path);
+  strcat(filename, fn);  
+
   printf("Loading config file %s\r\n", filename);
 
   current_buffered_reader = buffered;
@@ -705,6 +713,8 @@ int parse_config(char *filename)
   buffered->close();
   delete buffered;
   
+  free(filename);
+  path = old_path;
   return 0;
 }
 

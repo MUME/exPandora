@@ -30,7 +30,9 @@
 #ifdef NEW_ENGINE
 #include "RoomAdmin.h"
 #endif
-
+#ifdef Q_OS_MACX
+#include <CoreFoundation/CoreFoundation.h>
+#endif
 
 /* global flags */
 int glredraw = 1;		/* redraw is needed */
@@ -94,7 +96,7 @@ char    **auda_argv;
     
 void print_usage()
 {
-  printf("Usage: auda <options>\r\n");
+  printf("Usage: pandora <options>\r\n");
   printf("Options:\r\n\r\n");
   printf("  --help / -h                   - this helpfile.\r\n");
   printf("  --base / -b  <filename>       - override the database file.\r\n");
@@ -110,20 +112,41 @@ void print_usage()
 int main(int argc, char *argv[])
 {
     int i;
-
+    char *  resPath = 0;
     char    override_base_file[MAX_STR_LEN] = "";
     int     override_local_port = 0;
     char    override_remote_host[MAX_STR_LEN] = "";
     int     override_remote_port = 0;
-    
-    char    default_base_file[MAX_STR_LEN] = "base.xml";
+    char    configfile[MAX_STR_LEN] = ""; 
     int     default_local_port = 3000;
-    char    default_remote_host[MAX_STR_LEN] = "warpmud.org";
     int     default_remote_port = 4242;
+    
+#ifdef Q_OS_MACX
+    CFURLRef pluginRef = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+    CFStringRef macPath = CFURLCopyFileSystemPath(pluginRef, 
+						  kCFURLPOSIXPathStyle);
+    const char *appPath = CFStringGetCStringPtr(macPath, 
+						CFStringGetSystemEncoding());
+    resPath = (char *)malloc(strlen(appPath)+25);
+    strcpy(resPath, appPath);
+    strcat(resPath, "/Contents/Resources/");
 
-    char configfile[MAX_STR_LEN];
+    char    default_base_file[MAX_STR_LEN] = "databases/base.xml";   
+    char    default_remote_host[MAX_STR_LEN] = "";
+    strcpy(configfile, "configs/default.conf");
+
+    CFRelease(pluginRef);
+    CFRelease(macPath);
+
+#else
+    resPath = "";
+    char    default_base_file[MAX_STR_LEN] = "base.xml";   
+    char    default_remote_host[MAX_STR_LEN] = "warpmud.org";
+#endif
+
+
   
-    /* parce arguments */
+    /* parse arguments */
     auda_argc = argc;
     auda_argv = argv;
 
@@ -138,6 +161,7 @@ int main(int argc, char *argv[])
         }
         i++;
         strcpy(configfile, argv[i]);
+	resPath[0] = 0; // obviously the user has an own config file - including the path
       } 
       
       if ((strcmp(argv[i], "--emulate") == 0) || ( strcmp(argv[i], "-e") == 0)) 
@@ -154,7 +178,7 @@ int main(int argc, char *argv[])
           exit(1);
         }
         i++;
-        strcpy(override_base_file, argv[i]);
+        strcpy(override_base_file, argv[i]); // overriding the database file is possible even with default config file
       } 
 
       if ((strcmp(argv[i], "--hostname") == 0) || ( strcmp(argv[i], "-hn") == 0)) 
@@ -203,7 +227,7 @@ int main(int argc, char *argv[])
     engine_init();
     
     printf("Using config file : %s.\r\n", configfile);
-    parse_config(configfile);
+    parse_config(resPath, configfile);
     
     
     if (override_base_file[0] != 0) {

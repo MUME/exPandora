@@ -16,6 +16,7 @@
 
 #define MAX_INPUT_LENGTH	1024	/* Max length per *line* of input */
 #define TIMER_START(ken) {timer_now = m_timestamp(); strcpy(timer_ken, ken);}
+
 #define TIMER_STOP(ms) if ((m_timestamp() - timer_now) * 1000 > (ms)) printf("[timer] %s: %.3fms\r\n", timer_ken, (m_timestamp() - timer_now) * 1000);
 
 struct boolean_struct {
