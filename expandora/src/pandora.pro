@@ -92,7 +92,12 @@ SOURCES		+=utils.cpp
 
 TARGET		= ../pandora
 
+macx {
+LIBS += /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+
+}
+
+
 unix:LIBS		+= -lm -lqt-mt
-mac:LIBS += /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
 
 
