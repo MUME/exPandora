@@ -10,3 +10,4 @@ HEADERS += Configuration.h
 SOURCES += Configuration.cpp
 
 DESTDIR = ../lib/
+LIBS += -L../lib -lCommon

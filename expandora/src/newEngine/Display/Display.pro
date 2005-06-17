@@ -14,4 +14,4 @@ SOURCES += Display.cpp MainWindow.cpp Terrain.cpp CachedRoom.cpp
 
 LIBS += -L../lib -lCommon
 
-DESTDIR = ../lib
+Destdir = ../lib

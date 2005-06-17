@@ -10,19 +10,6 @@
 
 
 
-/*
-  #include "XmlStorage.h"
-
-  #include "Display.h"
-  #include "Proxy.h"
-  #include "Configuration.h"
-  #include "Lexer.h"
-  #include "Parser.h"
-  #include "RoomAdmin.h"
-*/
-
-
-
     
     
 void print_usage()

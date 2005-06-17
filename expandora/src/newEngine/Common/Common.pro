@@ -37,6 +37,6 @@ SOURCES += RoomCollection.cpp
 SOURCES += SimpleString.cpp
 SOURCES += RoomSignalHandler.cpp
 
-DESTDIR = ../lib
+DESTDIR = ../lib/
 
 !mac:unix:LIBS		+= -lm -lqt-mt

@@ -15,8 +15,8 @@ Configuration::Configuration()  : currentComponent(this) {
   put(*(new QString("configuration")), this);
 }
 
-void Configuration::parseFile(QString & filename) {
-  QFile xmlFile( filename);
+void Configuration::start(QThread::Priority) {
+  QFile xmlFile( property("fileName").toString());
   QXmlInputSource source( &xmlFile );
 
   QXmlSimpleReader reader;

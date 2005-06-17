@@ -7,17 +7,23 @@
 #include <map>
 #include <qlibrary.h>
 #include <qobject.h>
+#include <qvariant.h>
+
 using namespace std;
 
 
 
-class Configuration : public QXmlDefaultHandler, public Component {
+class Configuration : public Component, public QXmlDefaultHandler {
+ Q_PROPERTY( QString fileName READ fileName )
  public:
   Configuration();
-  void parseFile(QString & filename);
+  
+  QString fileName() const {return property("fileName").toString();}
+  //void parseFile(QString & filename);
   Component * get(QString & id);
   void put(QString & id, Component * component);
-  void start(QThread::Priority) {}
+  
+  void start(QThread::Priority = QThread::InheritPriority);
 
 
   //bool characters(const QString& ch);
@@ -25,6 +31,9 @@ class Configuration : public QXmlDefaultHandler, public Component {
 		     const QXmlAttributes& );
   //bool endElement( const QString&, const QString&, const QString& );
  private:
+  Q_OBJECT
+  
+
 
   void newComponent(const QXmlAttributes & atts);
   void addOption(const QXmlAttributes & atts);
