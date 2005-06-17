@@ -9,9 +9,6 @@ CONFIG		+= qt opengl warn_on debug thread
 win32 {
 	CONFIG	+= console
 }
-macx {
-	HEADERS += cmath
-}
 
 HEADERS	+= ../include/Frustum.h
 HEADERS += ../include/Component.h
