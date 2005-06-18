@@ -19,7 +19,7 @@ int main (int argc, char *argv[]) {
   
   if (s) {
     Configuration config;
-    config.setProperty("fileName", s);
+    config.setFileName(s);
     config.start();
   }
   else {

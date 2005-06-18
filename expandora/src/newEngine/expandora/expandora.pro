@@ -4,6 +4,7 @@
 
 TEMPLATE = app
 CONFIG -= moc
+CONFIG += debug
 INCLUDEPATH += ../Configuration/
 INCLUDEPATH += ../include/
 

@@ -73,10 +73,18 @@ void Configuration::addOption(const QXmlAttributes & atts) {
 
 void Configuration::connectComponents(const QXmlAttributes & atts) {
   QString from = atts.value("from");
-  QString signal = atts.value("signal");
+  QString sig = atts.value("signal");
   QString to = atts.value("to");
-  QString slot = atts.value("slot");
+  QString sl = atts.value("slot");
   
-  get(to)->connect(get(from), signal, slot);
+  
+get(to)->connect(get(from), signal(sig), slot(sl));
 }
 
+QString & Configuration::signal(QString & name) {
+  return name.prepend(QSIGNAL_CODE); 
+}
+
+QString & Configuration::slot(QString & name) {
+  return name.prepend(QSLOT_CODE); 
+}

@@ -14,12 +14,10 @@ using namespace std;
 
 
 class Configuration : public Component, public QXmlDefaultHandler {
- Q_PROPERTY( QString fileName READ fileName )
+ 
  public:
   Configuration();
-  
-  QString fileName() const {return property("fileName").toString();}
-  //void parseFile(QString & filename);
+    //void parseFile(QString & filename);
   Component * get(QString & id);
   void put(QString & id, Component * component);
   
@@ -32,9 +30,15 @@ class Configuration : public Component, public QXmlDefaultHandler {
   //bool endElement( const QString&, const QString&, const QString& );
  private:
   Q_OBJECT
-  
+  Q_PROPERTY( QString fileName READ getFileName WRITE setFileName ) 
+
+  QString getFileName() const {return property("fileName").toString();}
+  void setFileName(QString & name) {/*setProperty("fileName", name);*/}
 
 
+
+  QString & signal(QString &);
+  QString & slot(QString &);
   void newComponent(const QXmlAttributes & atts);
   void addOption(const QXmlAttributes & atts);
   void connectComponents(const QXmlAttributes & atts);
