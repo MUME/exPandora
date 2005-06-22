@@ -3,13 +3,26 @@
 ######################################################################
 
 TEMPLATE = app
-CONFIG -= moc
-CONFIG += debug
-INCLUDEPATH += ../Configuration/
-INCLUDEPATH += ../include/
 
-DESTDIR = ../
-LIBS += -L../lib -lConfiguration -lCommon
+INCLUDEPATH += ../Configuration/
+OBJECTS_DIR	= obj
+MOC_DIR		= moc
+
+CONFIG += debug thread qt opengl warn_on
+win32 {
+	CONFIG	+= console
+}
+
+!macx {
+	DESTDIR = ../../../bin
+}
+
+macx {
+	DESTDIR = ../../../
+}
+
+LIBS += -L../../../lib -lConfiguration
 
 # Input
 SOURCES += main.cpp
+HEADERS += ../Configuration/Configuration.h

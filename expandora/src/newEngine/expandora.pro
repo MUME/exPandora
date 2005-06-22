@@ -1,6 +1,7 @@
 
 TEMPLATE	= subdirs
 
+SUBDIRS += Common
 SUBDIRS += Lexer
 SUBDIRS += Parser
 SUBDIRS += Map
@@ -9,7 +10,8 @@ SUBDIRS += Filter
 SUBDIRS += Display
 SUBDIRS += Configuration
 SUBDIRS += Proxy
-SUBDIRS += Common
+SUBDIRS += expandora
+
 
 
 

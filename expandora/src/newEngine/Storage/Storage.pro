@@ -4,10 +4,17 @@
 
 TEMPLATE = lib
 INCLUDEPATH += . ../include
-DESTDIR = ../lib
+DESTDIR = ../../../lib/
+LIBS += -L../../../lib -lCommon
+
 
 # Input
 HEADERS += XmlStorage.h
 SOURCES += XmlStorage.cpp
 
-LIBS += -lCommon -L../lib
+OBJECTS_DIR	= obj
+MOC_DIR		= moc
+CONFIG += debug thread qt opengl warn_on
+win32 {
+	CONFIG	+= console
+}

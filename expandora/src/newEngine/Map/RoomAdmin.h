@@ -23,7 +23,7 @@ using namespace std;
 /**
  * The RoomAdmin organizes rooms and their relations to each other.
  */
-class RoomAdmin : public IntermediateNode, public Component {
+class RoomAdmin : public Component, public IntermediateNode {
  public:
   RoomAdmin();
   void start(QThread::Priority) {}	

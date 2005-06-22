@@ -2,13 +2,12 @@ TEMPLATE	= lib
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
-INCLUDEPATH += . ../include/
-
-CONFIG		+= qt opengl warn_on debug thread
-
+INCLUDEPATH += ../include
+CONFIG += debug thread qt opengl warn_on
 win32 {
 	CONFIG	+= console
 }
+DESTDIR = ../../../lib/
 
 HEADERS	+= ../include/Frustum.h
 HEADERS += ../include/Component.h
@@ -37,6 +36,3 @@ SOURCES += RoomCollection.cpp
 SOURCES += SimpleString.cpp
 SOURCES += RoomSignalHandler.cpp
 
-DESTDIR = ../lib/
-
-!mac:unix:LIBS		+= -lm -lqt-mt

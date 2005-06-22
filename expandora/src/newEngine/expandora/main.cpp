@@ -1,4 +1,3 @@
-#include "Component.h"
 #include "Configuration.h"
 #include <iostream>
 #include <qfiledialog.h>

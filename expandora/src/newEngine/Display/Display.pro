@@ -5,13 +5,16 @@
 TEMPLATE = lib
 INCLUDEPATH += . ../include/
 
-CONFIG		+= qt opengl warn_on debug thread
-
 
 # Input
 HEADERS += Display.h MainWindow.h Terrain.h CachedRoom.h
 SOURCES += Display.cpp MainWindow.cpp Terrain.cpp CachedRoom.cpp
 
-LIBS += -L../lib -lCommon
-
-Destdir = ../lib
+DESTDIR = ../../../lib/
+LIBS += -L../../../lib -lCommon
+OBJECTS_DIR	= obj
+MOC_DIR		= moc
+CONFIG += debug thread qt opengl warn_on
+win32 {
+	CONFIG	+= console
+}

@@ -4,14 +4,17 @@
 
 TEMPLATE = lib
 INCLUDEPATH += . ../include/
-
-CONFIG		+= qt opengl warn_on debug thread
-
+OBJECTS_DIR	= obj
+MOC_DIR		= moc
+CONFIG += debug thread qt opengl warn_on
+win32 {
+	CONFIG	+= console
+}
 # Input
 HEADERS += LexDefs.h Lexer.h
 SOURCES += Lexer.cpp
 
 LEXSOURCES += mud.lex player.lex
 
-DESTDIR = ../lib/
-LIBS += -L../lib/ -lCommon
+DESTDIR = ../../../lib/
+LIBS += -L../../../lib -lCommon
