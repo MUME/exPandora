@@ -39,13 +39,20 @@ void Configuration::put(QString & id, Component * component) {
 
 
 bool Configuration::startElement( const QString& , const QString& , 
-                                    const QString& qName, 
-                                    const QXmlAttributes& attributes)
+				  const QString& qName, 
+				  const QXmlAttributes& attributes)
 {
   if (qName == "component") newComponent(attributes);
   else if (qName == "option") addOption(attributes);
   else if (qName == "connection") connectComponents(attributes);
   else return false;
+  return true;
+}
+
+bool Configuration::endElement ( const QString &, const QString &, 
+				      const QString & qName ) 
+{
+  if (qName == "component") currentComponent->start();  
   return true;
 }
 

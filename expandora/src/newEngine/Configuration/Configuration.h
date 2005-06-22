@@ -14,9 +14,13 @@ using namespace std;
 
 
 class Configuration : public Component, public QXmlDefaultHandler {
+ Q_PROPERTY( QString fileName READ getFileName WRITE setFileName ) 
  
  public:
   Configuration();
+  QString getFileName() const {return fileName;}
+  void setFileName(QString & name) {fileName = name;}
+
     //void parseFile(QString & filename);
   Component * get(QString & id);
   void put(QString & id, Component * component);
@@ -27,15 +31,9 @@ class Configuration : public Component, public QXmlDefaultHandler {
   //bool characters(const QString& ch);
   bool startElement( const QString&, const QString&, const QString& ,
 		     const QXmlAttributes& );
-  //bool endElement( const QString&, const QString&, const QString& );
+  bool endElement( const QString&, const QString&, const QString& );
  private:
   Q_OBJECT
-  Q_PROPERTY( QString fileName READ getFileName WRITE setFileName ) 
-
-  QString getFileName() const {return property("fileName").toString();}
-  void setFileName(QString & name) {/*setProperty("fileName", name);*/}
-
-
 
   QString & signal(QString &);
   QString & slot(QString &);
@@ -45,6 +43,7 @@ class Configuration : public Component, public QXmlDefaultHandler {
   map<QString, Component *> components;  
   Component * currentComponent;
   map<QString, QLibrary *> libs;
+  QString fileName;
 };
 
 typedef Component * (*componentCreator)();
