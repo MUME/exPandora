@@ -1,0 +1,9 @@
+<configuration>
+<component id="Parser" file="Parser"/>
+<component id="Lexer" file="Lexer"/>
+<component id="Filter" file="Filter"/>
+<component id="Map" file="Map"/>
+<component id="Display" file="Display"/>
+<component id="Proxy" file="Proxy"/>
+<component id="Storage" file="Storage"/>
+</configuration>
