@@ -1,13 +1,14 @@
+#ifndef ROOMS_H 
+#define ROOMS_H 
+
 #include <qgl.h>
-
-
+#include "defines.h"
 
 #define MAX_ROOMS       30000		/* maximal amount of rooms */
 #define EXIT_UNDEFINED  (MAX_ROOMS+1)
 #define EXIT_DEATH      (MAX_ROOMS+2)
-
-
-/* room manager of the Pandora Project (c) Azazello 2003 */
+#define MAX_SQUARE_SIZE         40
+#define MAX_SQUARE_ROOMS        40
 
 struct room_sectors_data {
   char   *desc;             /* name of this flag */
@@ -22,12 +23,61 @@ extern struct room_sectors_data *room_sectors;
 extern struct room_sectors_data *death_terrain;
   
 extern const struct room_flag_data room_flags[];
-  
-
-
 
 void reset_room(struct Troom *r);	/* Only for new rooms */
 
+
+
+enum SquareTypes {
+    Left_Upper = 0,             
+    Right_Upper = 1,            
+    Left_Lower = 2,
+    Right_Lower = 3
+};
+
+
+class CSquare {
+public:
+    /* subsquares */
+    CSquare     *subsquares[4];
+    /* coordinates of this square's left (upper) and right (lower) points */
+    int         leftx, lefty;
+    int         rightx, righty;
+    int         centerx, centery;
+    
+    /* amount of rooms in this square, -1 for empty */
+    ResizableArray<unsigned int> ids;
+
+    
+    CSquare(int leftx, int lefty, int rightx, int righty);
+    CSquare();
+    ~CSquare();
+
+    /* mode == SquareType */
+    int         get_mode(struct Troom *room);
+    int         get_mode(int x, int y);
+    bool        to_be_passed();
+    bool        is_inside(struct Troom *room);  
+    
+    void        add_subsquare_by_mode(int mode);
+    void        add_room_by_mode(struct Troom *room, int mode);
+        
+    void        addroom(struct Troom *room);
+    void        removeroom(struct Troom *room);
+};
+
+class CPlane {
+    /* levels/planes. each plane stores a tree of CSquare type and its z coordinate */
+public:
+    int         z;
+
+    CSquare     *squares;
+    CPlane      *next;
+
+    CPlane();
+    ~CPlane();
+    CPlane(struct Troom *room);
+};
 
 class roommanager {
   /* structures */
@@ -35,10 +85,9 @@ class roommanager {
   Troom *ids[MAX_ROOMS];	/* array of pointers */
 
   /* additional structures */
-  int check_arraya[2000];
   int mark[EXIT_UNDEFINED+1];
-  int check_arrayb[2000];
     
+  
 
 public:
   unsigned int amount;		/* the amount of rooms in the base */
@@ -46,8 +95,11 @@ public:
 
   unsigned int oneway_room_id;
 
-  unsigned int order[MAX_ROOMS];
-
+  /* plane support */  
+  CPlane        *planes;        /* planes/levels of the map, sorted by the Z coordinate, lower at first */
+  void          add_to_plane(struct Troom *room);
+  void          remove_from_plane(struct Troom *room);
+  void          expand_plane(CPlane *plane, struct Troom *room);
 
   roommanager();
   void init();
@@ -71,12 +123,10 @@ public:
 
 
   void fixfree();
-  void resort_rooms();
   
   
   void delete_room(struct Troom *r, int mode);  /* user interface function */
   void small_delete_room(struct Troom *r);  /* user interface function */
-  void integrity_check();
 
   struct Ttree * findrooms(char *name);  
 
@@ -101,6 +151,9 @@ public:
 };
 
 extern class roommanager roomer;/* room manager */
+
+#endif
+
 
 #ifdef DMALLOC
 #include <dmalloc.h>

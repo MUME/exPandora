@@ -547,17 +547,12 @@ void MainWindow::mouseMoveEvent( QMouseEvent *e)
       ON_OFF(LeftButtonPressed), ON_OFF(RightButtonPressed), dist_x, dist_y);
   
   if (LeftButtonPressed) {
-    
-    if ( ((dist_x * dist_x) + (dist_y * dist_y)) >= 100) {
-      
-      renderer->userx -= dist_x / 10;
-      renderer->usery += dist_y / 10;
+      renderer->userx += (float) dist_x / 10.0;
+      renderer->usery -= (float) dist_y / 10.0;
       glredraw = 1;
 
       renderer->display();
       old_pos = pos;
-    }
-    
   } else if (RightButtonPressed) {
     renderer->anglex += dist_y;
     renderer->angley += dist_x;

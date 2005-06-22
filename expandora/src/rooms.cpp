@@ -8,9 +8,9 @@
 #include "struct.h"
 
 #include "rooms.h"
+#include "utils.h"
 #include "tree.h"
 #include "stacks.h"
-#include "utils.h"
 #include "dispatch.h"
 #include "renderer.h"
 
@@ -245,44 +245,6 @@ struct Ttree *roommanager::findrooms(char *name)
     return namer.find_by_name(name);
 }
 
-/* ----------- findroom ENDS ----------------- */
-int comparerooms(const void *a, const void *b)
-{
-    struct Troom *ra, *rb;
-
-    ra = roomer.getroom(*(unsigned int *) a);
-    rb = roomer.getroom(*(unsigned int *) b);
-    if (ra->z == rb->z)
-	return 0;
-    if (ra->z < rb->z)
-	return -1;
-    if (ra->z > rb->z)
-	return 1;
-
-    return 0;
-}
-
-
-void roommanager::resort_rooms()
-{
-  struct Troom *p;
-  int k;
-
-  p = getroom(0);
-  p = p->next;
-
-  memset(order, 0, MAX_ROOMS);
-  
-  print_debug(DEBUG_ROOMS, "resorting rooms");
-
-  k = 0;
-  while (p != NULL) {
-      order[k++] = p->id;
-      p = p->next;
-  }
-
-  qsort(order, amount, sizeof(int), comparerooms);
-}
 
 void roommanager::changenote(char *note, struct Troom *p)
 {
@@ -308,62 +270,6 @@ void roommanager::changename(char *name, struct Troom *p)
   
   room_modified(p);
 }
-
-/* --------- integrity_check ----------- */
-void roommanager::integrity_check()
-{
-    /* gotta check if all rooms are one  or another way reachable 
-       from the base (0) room */
-    int *a;
-    int *b;
-    int *t;
-    int amount, newamount;
-    int i, k;
-    struct Troom *p, *next;
-
-    a = check_arraya;		/* init */
-    b = check_arrayb;
-
-    for (i = 0; i < MAX_ROOMS; i++)
-	mark[i] = 0;
-
-    mark[0] = 1;		/* dont check 0 room (and non-existing connections bebez ! */
-    mark[1] = 1;		/* as well as first room is checked already */
-    mark[EXIT_UNDEFINED] = 1;		/* dont walk in undefined connections */
-    a[0] = 1;
-    amount = 1;
-
-    while (amount > 0) {
-	newamount = 0;
-	for (i = 0; i < amount; i++) {	/* normal step */
-	    p = getroom(a[i]);
-	    for (k = 0; k <= 5; k++)
-		if (mark[p->exits[k]] == 0)	/* not visited room allocated */
-		    b[newamount++] = p->exits[k];
-	    mark[a[i]] = 1;	/* mark this room */
-	}
-	/* ok new array created, marks given, prepare next round */
-	t = a;
-	a = b;			/* swap ! */
-	b = t;
-	amount = newamount;
-    }
-
-
-    p = getroom(0);
-    p = p->next;
-    while (p != NULL) {
-	if (mark[p->id] == 0) {
-	    next = p->next;
-	    delete_room(p, 1);	/* deleting "left behind" room */
-	    p = next;
-	    continue;
-	}
-	p = p->next;
-    }
-}
-
-/* ------- integrity_check ENDS -------- */
 
 /* ------------ fixfree ------------- */
 void roommanager::fixfree()
@@ -419,12 +325,12 @@ void roommanager::addroom_nonsorted(struct Troom *room)
   
   amount++;
   fixfree();
+  add_to_plane(room);
 }
 
 void roommanager::addroom(struct Troom *room)
 {
   addroom_nonsorted(room);
-  resort_rooms();
 }
 /* ------------ addroom ENDS ---------- */
 
@@ -467,6 +373,8 @@ void roommanager::init()
     reset_room(rooms);
 
     ids[0] = rooms;
+    planes = NULL;
+    
 }
 
 /*------------- Constructor of the room manager ENDS  ---------------*/
@@ -476,10 +384,24 @@ void roommanager::reinit()
 {
     struct Troom *p, *p2;
     unsigned int i;
-
+    
     amount = 0;
     next_free = 1;
 
+    {
+        CPlane *p, *next;
+        
+        printf("Resetting Cplane structures ... \r\n");
+        p = planes;
+        while (p) {
+            next = p->next;
+            delete p;
+            p = next;
+        }
+        planes = NULL;
+    }
+
+        
     for (i = 0; i < MAX_ROOMS; i++)
       ids[i] = NULL;
     ids[0] = rooms;
@@ -507,7 +429,6 @@ void roommanager::reinit()
     rooms->next = NULL;
  
     namer.reinit();
-    resort_rooms();
 }
 
 /* -------------- reinit ENDS --------- */
@@ -567,6 +488,7 @@ void roommanager::small_delete_room(struct Troom *r)
     }
 
     namer.delete_item(r->name, r->id);
+    remove_from_plane(r);
 
     free(r->name);
     r->name = NULL;
@@ -590,7 +512,6 @@ void roommanager::small_delete_room(struct Troom *r)
     
     amount--;
     fixfree();
-    resort_rooms();
     room_modified(NULL);
 }
 
@@ -640,7 +561,6 @@ void roommanager::setz(unsigned int id, int z)
   p = getroom(id);
   p->z = z;
   
-  resort_rooms();       /* resorting only when z coordinate changes */
   modified = 1;
 }
 
@@ -737,4 +657,308 @@ void roommanager::send_room(struct Troom *r)
     }
 
     send_to_user("%s\r\n", line);
+}
+
+
+/* -------------------------------------------------------------------------*/
+/*  Planes (CPlane) and Square-tree (CSquare) implementation is below       */
+/* -------------------------------------------------------------------------*/
+CSquare::CSquare()
+{
+    subsquares[Left_Upper] = NULL;
+    subsquares[Right_Upper] = NULL;
+    subsquares[Left_Lower] = NULL;
+    subsquares[Right_Lower] = NULL;
+    
+    leftx =  -MAX_SQUARE_SIZE/2;      
+    lefty =   MAX_SQUARE_SIZE/2;      
+    rightx =  MAX_SQUARE_SIZE/2;
+    righty = -MAX_SQUARE_SIZE/2;
+    centerx = 0;
+    centery = 0;
+}
+
+CSquare::~CSquare()
+{
+    if (subsquares[0]) {
+        delete subsquares[0];
+    }
+    if (subsquares[1]) {
+        delete subsquares[1];
+    }
+    if (subsquares[2]) {
+        delete subsquares[2];
+    }
+    if (subsquares[3]) {
+        delete subsquares[3];
+    }
+}
+
+
+CSquare::CSquare(int lx, int ly, int rx, int ry)
+{
+    subsquares[Left_Upper] = NULL;
+    subsquares[Right_Upper] = NULL;
+    subsquares[Left_Lower] = NULL;
+    subsquares[Right_Lower] = NULL;
+
+    leftx = lx;
+    lefty = ly;
+    rightx = rx;
+    righty = ry;
+    
+    centerx = leftx + (rightx - leftx) / 2;
+    centery = righty + (lefty - righty) / 2;
+}
+
+
+void CSquare::add_subsquare_by_mode(int mode)
+{
+    switch (mode)
+    {
+            case Left_Upper : 
+                    subsquares[Left_Upper] =  new CSquare(leftx, lefty, centerx, centery);
+                    break;
+            case Right_Upper :
+                    subsquares[Right_Upper] = new CSquare(centerx, lefty, rightx, centery);
+                    break;
+            case Left_Lower:
+                    subsquares[Left_Lower] =  new CSquare(leftx, centery, centerx, righty);
+                    break;
+            case Right_Lower:
+                    subsquares[Right_Lower] = new CSquare(centerx, centery, rightx, righty);
+                    break;
+    }
+}
+
+
+void CSquare::add_room_by_mode(struct Troom *room, int mode)
+{
+    mode = get_mode(room);
+    if (subsquares[mode] == NULL) 
+        this->add_subsquare_by_mode(mode);
+        
+    subsquares[ mode ]->addroom(room);
+}
+
+
+bool CSquare::to_be_passed()
+{
+    if (ids.get_amount() > 0)
+        return false;
+    
+    /* if we have ANY children, the node has to be passed */
+    if (subsquares[0] || subsquares[1] || subsquares[2] || subsquares[3] )
+        return true;
+    
+    return false;
+}
+
+void CSquare::addroom(struct Troom *room)
+{
+    struct Troom *r;
+    int i;
+        
+    if (to_be_passed() ) {
+        add_room_by_mode(room, get_mode(room) );
+        return;
+    }
+    
+    if (( ids.get_amount() < MAX_SQUARE_ROOMS) && ( (rightx - leftx) < MAX_SQUARE_SIZE) ) {
+        ids.add(room->id);
+        return;
+    } else {
+        for (i=0; i< ids.get_amount(); i++) {
+            r = roomer.getroom( ids.get(i) );
+            add_room_by_mode(r, get_mode(r) );
+        }
+        ids.removeall();
+
+        add_room_by_mode(room, get_mode(room) );
+    }
+}
+
+void roommanager::remove_from_plane(struct Troom *room)
+{
+    CPlane *p;
+    
+    p = planes;
+    while (p->z != room->z) {
+        if (!p) {
+            printf(" FATAL ERROR. remove_fromplane() the given has impossible Z coordinate!\r\n");
+            return;     /* no idea what happens next ... */
+        }
+        p = p->next;
+    }
+
+    p->squares->removeroom(room);
+}
+
+
+void CSquare::removeroom(struct Troom *room)
+{
+    CSquare *p;
+    int i;
+    
+    p = this;
+    while (p) {
+        if (!p->to_be_passed()) {
+            /* just for check */
+            i = p->ids.find(room->id);
+            if (i == -1) {
+                printf("FATAL ERROR! CSquare::removeroom given room is not in the supposed CSquare!\r\n");
+                return;
+            }
+            p->ids.remove(room->id);
+        }
+        
+        p = p->subsquares[ p->get_mode(room) ];
+    }
+}
+
+int CSquare::get_mode(struct Troom *room)
+{
+    return get_mode(room->x, room->y);
+}
+
+int CSquare::get_mode(int x, int y)
+{
+    if (this->centerx > x) {
+        if (this->centery > y) {
+            return Left_Lower;
+        } else {
+            return Left_Upper;
+        }
+    } else {
+        if (this->centery > y) {
+            return Right_Lower;
+        } else {
+            return Right_Upper;
+        }
+    }
+}
+
+bool CSquare::is_inside(struct Troom *room)
+{
+    /* note : right and lower borders are inclusive */
+    
+    if ((leftx <  room->x) && (rightx >= room->x) &&  
+        (lefty >  room->y) && (righty <= room->y)    )
+        return true;    /* yes the room is inside this square then */
+    
+    return false; /* else its not */
+}
+
+/* CPlane classes implementation */
+
+CPlane::CPlane()
+{
+    z = 0;
+    next = NULL;
+    squares = NULL;
+}
+
+CPlane::~CPlane()
+{
+    delete squares;
+}
+
+CPlane::CPlane(struct Troom *room)
+{
+    next = NULL;
+
+    z = room->z;
+
+    
+    squares = new CSquare(  room->x - ( MAX_SQUARE_SIZE - 1) / 2,  
+                            room->y + ( MAX_SQUARE_SIZE - 1 ) / 2,
+                            room->x + ( MAX_SQUARE_SIZE - 1 ) / 2,
+                            room->y - ( MAX_SQUARE_SIZE - 1 ) / 2);
+
+/*    printf("Created a new square lx ly: %i %i, rx ry: %i %i, cx cy: %i %i, for room x y: %i %i\r\n",
+            squares->leftx, squares->lefty, squares->rightx, squares->righty, 
+            squares->centerx, squares->centery, room->x, room->y);
+*/
+    
+    squares->ids.add(room->id);
+}
+
+void  roommanager::add_to_plane(struct Troom *room)
+{
+    CPlane *p, *prev, *tmp;
+
+    if (planes == NULL) {
+        planes = new CPlane(room);
+        return;
+    }
+    
+    p = planes;
+    prev = NULL;
+    while (p) {
+        if (room->z < p->z) {
+            tmp = new CPlane(room);
+            tmp->next = p;
+            if (prev)
+                prev->next = tmp;
+            else 
+                planes = tmp;
+            return;
+        }
+        /* existing plane with already set borders */
+        if (room->z == p->z) {
+            expand_plane(p, room);
+            return;
+        }
+        prev = p;
+        p = p->next;
+    }
+    
+    /* else .. this is a plane with highest yet found Z coordinate */
+    /* we add it to the end of the list */
+    prev->next = new CPlane(room);
+}
+
+
+void roommanager::expand_plane(CPlane *plane, struct Troom *room)
+{
+    CSquare *p, *new_root = NULL;
+    int size;
+    
+    p = plane->squares;
+    
+/*    printf("Preparing to expand the plane lx ly: %i %i, rx ry: %i %i, cx cy: %i %i, for room x y: %i %i\r\n",
+            p->leftx, p->lefty, p->rightx, p->righty, p->centerx, p->centery, room->x, room->y);
+*/    
+    while ( p->is_inside(room) != true ) {
+        /* plane fork/expanding cycle */
+        
+        size = p->rightx - p->leftx;
+        
+        switch ( p->get_mode(room) )
+        {
+            case  Left_Upper:
+                new_root = new CSquare(p->leftx - size, p->lefty + size, p->rightx, p->righty);
+                new_root->subsquares[ Right_Lower ] = p;
+                break;
+            case  Right_Upper:
+                new_root = new CSquare(p->leftx,  p->lefty + size, p->rightx + size, p->righty);
+                new_root->subsquares[ Left_Lower ] = p;
+                break;
+            case  Right_Lower:
+                new_root = new CSquare(p->leftx,  p->lefty, p->rightx + size, p->righty - size);
+                new_root->subsquares[ Left_Upper ] = p;
+                break;
+            case  Left_Lower:
+                new_root = new CSquare(p->leftx - size,  p->lefty, p->rightx , p->righty - size);
+                new_root->subsquares[ Right_Upper ] = p;
+                break;
+        }
+        
+        p = new_root;
+    }    
+
+/*    printf("Ok, it fits. Adding!\r\n");
+*/    
+    p->addroom(room);
+    plane->squares = p;
 }

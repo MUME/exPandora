@@ -5,6 +5,7 @@
 #include <qstringlist.h> 
 #include <qgl.h>
 #include "defines.h"
+#include "rooms.h"
 #ifdef NEW_ENGINE
 #include "Room.h"
 #endif
@@ -85,9 +86,17 @@ public:
   GLfloat       angley;
   GLfloat       anglex;
   GLfloat       anglez;
-  int           userx;
-  int           usery;
-  int           userz;		/* additional shift added by user */
+  float         userx;
+  float         usery;
+  float         userz;		/* additional shift added by user */
+
+  int           current_plane_z;        /* to avoid arguments usage */
+
+
+    
+  int           rooms_drawn_csquare;
+  int           rooms_drawn_total;
+  int           square_frustum_checks;
 
   RendererWidget( QWidget *parent, const char *name=0 );
 
@@ -111,13 +120,19 @@ private:
   int           cury;
   int           curz;			/* current rooms position */ 
   
+
+
   void glDrawMarkers();
 #ifndef NEW_ENGINE
   void glDrawRoom(struct Troom *p);
 #else
   void glDrawRoom(Room * pr);
 #endif
+  
+  void glDrawCSquare(CSquare *p);
   bool PointInFrustum(float x, float y, float z);
+  bool SquareInFrustum(CSquare *p);
+  
 };
 
 

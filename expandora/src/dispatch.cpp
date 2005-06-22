@@ -11,12 +11,12 @@
 
 #include "struct.h"
 
+#include "utils.h"
 #include "tree.h"
 #include "stacks.h"
 #include "xml2.h"
 #include "event.h"
 #include "dispatch.h"
-#include "utils.h"
 #include "engine.h"
 
 #include "userfunc.h"

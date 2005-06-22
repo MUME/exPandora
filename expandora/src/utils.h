@@ -1,6 +1,6 @@
 /* Utilities, String functions and stuff */
-
-
+#ifndef UTILS_H 
+#define UTILS_H 
 
 #define log			basic_mud_log
 
@@ -16,7 +16,6 @@
 
 #define MAX_INPUT_LENGTH	1024	/* Max length per *line* of input */
 #define TIMER_START(ken) {timer_now = m_timestamp(); strcpy(timer_ken, ken);}
-
 #define TIMER_STOP(ms) if ((m_timestamp() - timer_now) * 1000 > (ms)) printf("[timer] %s: %.3fms\r\n", timer_ken, (m_timestamp() - timer_now) * 1000);
 
 struct boolean_struct {
@@ -84,6 +83,7 @@ int MIN(int a, int b);
 #define MAX_N   ( MAX_LINES_DESC * 80 )
 #define MAX_M   ( MAX_LINES_DESC * 80 )
 
+
 class Strings_Comparator {
     private:
         int D[ MAX_N ] [MAX_M ];
@@ -115,6 +115,8 @@ class Strings_Comparator {
 };
 
 extern Strings_Comparator comparator;
+
+#endif
 
 #ifdef DMALLOC
 #include <dmalloc.h>

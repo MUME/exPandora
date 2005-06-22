@@ -307,18 +307,19 @@ ECMD(engine_command_done)
 
 ECMD(engine_command_resync)
 {
-  unsigned int j;
-  Ttree *found_names;
+  int j;
+  Ttree *n;
+  
 
   engine_command_mappingoff();
   
   print_debug(DEBUG_ANALYZER, "FULL RESYNC");
-  found_names = roomer.findrooms(engine_flags.last_roomname);
-  if (found_names != NULL)
-    for (j = 0; j < found_names->amount; j++) {
-      if (strcmp(engine_flags.last_roomname, roomer.getname( *(found_names->ids + j)) ) == 0) {
+  n = roomer.findrooms(engine_flags.last_roomname);
+  if (n != NULL)
+    for (j = 0; j < n->ids.get_amount(); j++) {
+      if (strcmp(engine_flags.last_roomname, roomer.getname( n->ids.get(j) )) == 0) {
         print_debug(DEBUG_ANALYZER, "Adding matches");
-        stacker.put(found_names->ids[j]);
+        stacker.put( n->ids.get(j) );
       } 
     }
 
@@ -446,7 +447,6 @@ void engine()
 
   analyzer_mutex.lock();
 
-  
   TIMER_START("analyzer");
   
   copy_stacks();

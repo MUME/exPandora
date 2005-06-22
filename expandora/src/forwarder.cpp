@@ -200,6 +200,12 @@ int proxy_init()
     exit(1);
   }
 
+  int opt = 1;
+  if(setsockopt(proxy_hangsock, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)) == -1) {
+      perror("Couldn't set the SO_REUSEADDR.\r\n");
+      exit(1);
+  } 
+
   my_net_name.sin_family=AF_INET;
   my_net_name.sin_addr.s_addr=INADDR_ANY;
   my_net_name.sin_port=htons(local_port);

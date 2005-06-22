@@ -100,7 +100,7 @@ void xml_readbase( char *filename)
 
 #ifndef NEW_ENGINE
   printf("sorting rooms... \n");
-  roomer.resort_rooms();
+//  roomer.resort_rooms();
   printf("done sorting. \n");
 #else
   //pop all the exits and addExit(...) them into the rooms

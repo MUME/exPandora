@@ -4,7 +4,7 @@ TEMPLATE	= app
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
-CONFIG		+= qt opengl warn_on release thread 
+CONFIG		+= qt opengl warn_on debug thread
 
 win32 {
 	CONFIG	+= console
@@ -98,7 +98,7 @@ macx {
 
 unix:LIBS		+= -lm -lqt-mt
 
-release {
+!debug {
 	unix:QMAKE_POST_LINK=strip $(TARGET)
 }
 

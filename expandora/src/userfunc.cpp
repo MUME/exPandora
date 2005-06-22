@@ -607,7 +607,17 @@ USERCMD(usercmd_maction)
   int local;
   unsigned int i;
   char exit;
+  
+  const char *short_exits[] = {
+      "n",
+      "e",
+      "s",
+      "w",
+      "u",
+      "d"
+  };
 
+  
   userfunc_print_debug;
   
   p = skip_spaces(line);
@@ -623,7 +633,7 @@ USERCMD(usercmd_maction)
   }
 
 //  PARSE_DIR_ARGUMENT(dir, arg);
-  dir = parse_dir(arg);               
+  dir = parse_dir(arg);    
   if (dir == -1) {                      
     if (is_abbrev(arg, "all")) {
       dir = -1;
@@ -646,9 +656,9 @@ USERCMD(usercmd_maction)
     }
     
     if (!local) 
-      send_to_mud("%s exit %s\n", arg, exits[dir]);
+      send_to_mud("%s exit %s\n", arg, short_exits[dir]);
       
-    send_to_user("%s exit %s\r\n", arg, exits[dir]);
+    send_to_user("%s exit %s\r\n", arg, short_exits[dir]);
     
     send_to_user(last_prompt);
     return USER_PARSE_DONE;
@@ -668,9 +678,9 @@ USERCMD(usercmd_maction)
       for (z = 0; z <= 5; z++)
         if (r->doors[z] != NULL && strcmp(r->doors[z], "exit") != 0 ) {
           if (!local) 
-            send_to_mud("%s %s %s\n", arg, r->doors[z] , exits[z]);
+            send_to_mud("%s %s %s\n", arg, r->doors[z] , short_exits[z]);
           
-          send_to_user("%s %s %s\r\n", arg, r->doors[z] , exits[z]);
+          send_to_user("%s %s %s\r\n", arg, r->doors[z] , short_exits[z]);
         }
         
     } else {
@@ -679,9 +689,9 @@ USERCMD(usercmd_maction)
         exit = 1;         /* set the flag that 'exit' exit should be opened */
       } else {
         if (!local) 
-          send_to_mud("%s %s %s\n", arg, r->doors[dir] , exits[dir]);
+          send_to_mud("%s %s %s\n", arg, r->doors[dir] , short_exits[dir]);
         
-        send_to_user("%s %s %s\r\n", arg, r->doors[dir] , exits[dir]);
+        send_to_user("%s %s %s\r\n", arg, r->doors[dir] , short_exits[dir]);
       }
       
     }
@@ -692,9 +702,9 @@ USERCMD(usercmd_maction)
   /* open the exit only once */
   if (exit && dir != -1) {
     if (!local) 
-      send_to_mud("%s %s %s\n", arg, "exit", exits[dir]);
+      send_to_mud("%s %s %s\n", arg, "exit", short_exits[dir]);
       
-    send_to_user("%s %s %s\r\n", arg, "exit", exits[dir]);
+    send_to_user("%s %s %s\r\n", arg, "exit", short_exits[dir]);
   }
   
   send_to_user(last_prompt);

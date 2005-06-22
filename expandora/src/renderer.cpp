@@ -347,6 +347,8 @@ void RendererWidget::glDrawRoom(Room * pr)
     char lines, texture;
     float distance;
 
+    rooms_drawn_csquare++;
+    
     dx = p->x - curx;
     dy = p->y - cury;
     dz = (p->z - curz) * DIST_Z;
@@ -358,6 +360,8 @@ void RendererWidget::glDrawRoom(Room * pr)
     
     if (PointInFrustum(dx, dy, dz) != true)
       return;
+    
+    rooms_drawn_total++;
 
     distance = m_Frustum[FRONT][A] * dx + m_Frustum[FRONT][B] * dy + 
                m_Frustum[FRONT][C] * dz + m_Frustum[FRONT][D];
@@ -403,23 +407,13 @@ void RendererWidget::glDrawRoom(Room * pr)
       return;
     
     for (k = 0; k <= 5; k++) 
-#ifndef NEW_ENGINE
       if (p->exits[k] != 0) {
         if (p->exits[k] < EXIT_UNDEFINED) {
-#else
-      {
-	  rc = pr->getNeighbours(k);
-	  if (rc == 0) continue;
-	  for(set<Room *>::iterator i = rc->begin(); i != rc->end(); i++) {
-#endif
             GLfloat kx, ky, kz;
             GLfloat sx, sy;
 
-#ifndef NEW_ENGINE
             r = roomer.getroom(p->exits[k]);
-#else
-	    r = (*i)->getCoordinate();
-#endif
+
             dx2 = r->x - curx;
             dy2 = r->y - cury;
             dz2 = (r->z - curz) * DIST_Z;
@@ -454,17 +448,13 @@ void RendererWidget::glDrawRoom(Room * pr)
             } else if (k == DOWN) {
                 kz = -(ROOM_SIZE + 0.2);
             } 
-#ifndef NEW_ENGINE
             if (p->doors[k] != NULL) {
                 if (strcmp(p->doors[k], "exit") == 0) {
-#endif
                     glColor4f(0, 1.0, 0.0, colour[3] + 0.2);
-#ifndef NEW_ENGINE
                 } else {
                     glColor4f(1.0, 0.0, 0.0, colour[3] + 0.2);
                 }
             }
-#endif
                 
             glBegin(GL_LINES);
             glVertex3f(dx + sx, dy + sy, dz);
@@ -577,19 +567,50 @@ void RendererWidget::glDrawRoom(Room * pr)
 }
 
 
+void RendererWidget::glDrawCSquare(CSquare *p)
+{
+    int k;
+    struct Troom *room;
+    
+    if (!SquareInFrustum(p)) {
+        return; /* this square is not in view */
+    }
+        
+    if (p->to_be_passed()) {
+        /* go deeper */
+        if (p->subsquares[ Left_Upper ])
+            glDrawCSquare( p->subsquares[ Left_Upper ]);
+        if (p->subsquares[ Right_Upper ])
+            glDrawCSquare( p->subsquares[ Right_Upper ]);
+        if (p->subsquares[ Left_Lower ])
+            glDrawCSquare( p->subsquares[ Left_Lower ]);
+        if (p->subsquares[ Right_Lower ])
+            glDrawCSquare( p->subsquares[ Right_Lower ]);
+    } else {
+        for (k = 0; k < p->ids.get_amount(); k++) {
+            room = roomer.getroom( p->ids.get(k) );
+            glDrawRoom(room);
+        } 
+    }
+}
+
+
 
 void RendererWidget::draw(void)
 {
-
 #ifndef NEW_ENGINE
-  //double time = m_timestamp();
-  struct Troom *p;
+    struct Troom *p;
+    CPlane *plane;  
+
+    rooms_drawn_csquare=0;
+    rooms_drawn_total=0;
+    square_frustum_checks = 0;
+    
 #else
     Coordinate * p = 0;
     Room * pr = 0;
 #endif
-    unsigned int k = 0;
-    int z = 0, new_z = 0;
+    int z = 0;
     
     print_debug(DEBUG_RENDERER, "in draw()");
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -610,15 +631,8 @@ void RendererWidget::draw(void)
     glTranslatef(userx, usery, 0);
  
     print_debug(DEBUG_RENDERER, "taking base coordinates");
-#ifndef NEW_ENGINE
     if (stacker.amount >= 1) {
 	p = roomer.getroom(stacker.get(1));
-#else
-	pr = parser.getMostLikely();
-	if (pr == 0) pr = roomAdmin.getRoom(1);
-	if (pr == 0) p = 0;
-	else p = pr->getCoordinate();
-#endif
         if (p != NULL) {
             curx = p->x;
             cury = p->y;
@@ -626,9 +640,7 @@ void RendererWidget::draw(void)
         } else {
             printf("RENDERER ERROR: cant get base coordinates.\r\n");
         }
-#ifndef NEW_ENGINE
     }
-#endif
 
 
     CalculateFrustum();
@@ -639,63 +651,41 @@ void RendererWidget::draw(void)
     glColor4f(0.1, 0.8, 0.8, 0.4);
     colour[0] = 0.1; colour[1] = 0.8; colour[2] = 0.8; colour[3] = 0.4; 
 
-
-    z = 9999;
-#ifndef NEW_ENGINE
-    for (k = 1; k <= roomer.amount; k++) {
-	p = roomer.getroom(roomer.order[k - 1]);
-#else
-    for (k = 1; (int)k <= roomAdmin.lastId(); k++) {
-      pr = roomAdmin.getRoom(k);
-      if (pr == 0) continue;
-      else p = pr->getCoordinate();
-      if (p == 0) continue;
-#endif
-        new_z = p->z - curz;
-        if (z != new_z) {
-          z = new_z;
-          if (z == 0) {
-              colour[0] = 0.1; colour[1] = 0.8; colour[2] = 0.8; colour[3] = 0.6; 
-          }
-          if (z > 1) {
-              colour[0] = 0.0; colour[1] = 0.5; colour[2] = 0.9; colour[3] = 0.1; 
-          }
-          if (z < -1) {
-              colour[0] = 0.4; colour[1] = 0.4; colour[2] = 0.4; colour[3] = 0.3; 
-          }
-          if (z == -1) {
-              colour[0] = 0.5; colour[1] = 0.5; colour[2] = 0.5; colour[3] = 0.4; 
-          }
-          if (z == 1) {
-              colour[0] = 0.0; colour[1] = 0.5; colour[2] = 0.9; colour[3] = 0.2; 
-          }
-  
-          if (z <= -5) {
-              colour[0] = 0.3; colour[1] = 0.3; colour[2] = 0.3; colour[3] = 0.2; 
-          }
-          if (z <= -10) {
-              colour[0] = 0.1; colour[1] = 0.1; colour[2] = 0.1; colour[3] = 0.1; 
-          }
-          if (z <= -14) {
-              colour[0] = 0; colour[1] = 0; colour[2] = 0; colour[3] = 0; 
-          }
-        }
-
-        glColor4f(colour[0], colour[1], colour[2], colour[3]);
-#ifndef NEW_ENGINE
-        glDrawRoom(p);
-#else
-	glDrawRoom(pr);
-#endif
+    plane = roomer.planes;
+    while (plane) {
         
-    } /* for */
-
-
-
-
+        z = plane->z - curz;
+        
+        
+        if (z == 0) {
+          colour[0] = 0.1; colour[1] = 0.8; colour[2] = 0.8; colour[3] = 0.6; 
+        } else if (z > 1) {
+          colour[0] = 0.0; colour[1] = 0.5; colour[2] = 0.9; colour[3] = 0.1; 
+        } else if (z < -1) {
+          colour[0] = 0.4; colour[1] = 0.4; colour[2] = 0.4; colour[3] = 0.3; 
+        } else if (z == -1) {
+          colour[0] = 0.5; colour[1] = 0.5; colour[2] = 0.5; colour[3] = 0.4; 
+        } else if (z == 1) {
+          colour[0] = 0.0; colour[1] = 0.5; colour[2] = 0.9; colour[3] = 0.2; 
+        } else if (z <= -5) {
+          colour[0] = 0.3; colour[1] = 0.3; colour[2] = 0.3; colour[3] = 0.2; 
+        } else if (z <= -10) {
+          colour[0] = 0.1; colour[1] = 0.1; colour[2] = 0.1; colour[3] = 0.1; 
+        } else if (z <= -14) {
+          colour[0] = 0; colour[1] = 0; colour[2] = 0; colour[3] = 0; 
+        }
+        glColor4f(colour[0], colour[1], colour[2], colour[3]);
+        
+        current_plane_z = plane->z;
+        
+        glDrawCSquare(plane->squares);
+        
+        plane = plane->next;
+    }
     
     
-    print_debug(DEBUG_RENDERER, "Done with rooms");
+    print_debug(DEBUG_RENDERER, "Drawn %i rooms, after dot elimination %i, %i square frustum checks done", 
+            rooms_drawn_csquare, rooms_drawn_total, square_frustum_checks);
     print_debug(DEBUG_RENDERER, "Drawing markers");
 
     glDrawMarkers();
@@ -704,10 +694,6 @@ void RendererWidget::draw(void)
   
     this->swapBuffers();
     glredraw = 0;
-#ifndef NEW_ENGINE
-    //time = m_timestamp() - time;
-    //printf("rendering took %f time\n", time); 
-#endif
 }
 
 void RendererWidget::display(void)
@@ -749,43 +735,23 @@ void NormalizePlane(float frustum[6][4], int side)
     frustum[side][D] /= magnitude; 
 }
 
-
-
 void RendererWidget::CalculateFrustum()
 {    
     float   proj[16];                               // This will hold our projection matrix
     float   modl[16];                               // This will hold our modelview matrix
     float   clip[16];                               // This will hold the clipping planes
 
-    glGetFloatv( GL_PROJECTION_MATRIX, proj );
-
-    glGetFloatv( GL_MODELVIEW_MATRIX, modl );
-
-    // Now that we have our modelview and projection matrix, if we combine these 2 matrices,
-    // it will give us our clipping planes.  To combine 2 matrices, we multiply them.
-
-    clip[ 0] = modl[ 0] * proj[ 0] + modl[ 1] * proj[ 4] + modl[ 2] * proj[ 8] + modl[ 3] * proj[12];
-    clip[ 1] = modl[ 0] * proj[ 1] + modl[ 1] * proj[ 5] + modl[ 2] * proj[ 9] + modl[ 3] * proj[13];
-    clip[ 2] = modl[ 0] * proj[ 2] + modl[ 1] * proj[ 6] + modl[ 2] * proj[10] + modl[ 3] * proj[14];
-    clip[ 3] = modl[ 0] * proj[ 3] + modl[ 1] * proj[ 7] + modl[ 2] * proj[11] + modl[ 3] * proj[15];
-
-    clip[ 4] = modl[ 4] * proj[ 0] + modl[ 5] * proj[ 4] + modl[ 6] * proj[ 8] + modl[ 7] * proj[12];
-    clip[ 5] = modl[ 4] * proj[ 1] + modl[ 5] * proj[ 5] + modl[ 6] * proj[ 9] + modl[ 7] * proj[13];
-    clip[ 6] = modl[ 4] * proj[ 2] + modl[ 5] * proj[ 6] + modl[ 6] * proj[10] + modl[ 7] * proj[14];
-    clip[ 7] = modl[ 4] * proj[ 3] + modl[ 5] * proj[ 7] + modl[ 6] * proj[11] + modl[ 7] * proj[15];
-
-    clip[ 8] = modl[ 8] * proj[ 0] + modl[ 9] * proj[ 4] + modl[10] * proj[ 8] + modl[11] * proj[12];
-    clip[ 9] = modl[ 8] * proj[ 1] + modl[ 9] * proj[ 5] + modl[10] * proj[ 9] + modl[11] * proj[13];
-    clip[10] = modl[ 8] * proj[ 2] + modl[ 9] * proj[ 6] + modl[10] * proj[10] + modl[11] * proj[14];
-    clip[11] = modl[ 8] * proj[ 3] + modl[ 9] * proj[ 7] + modl[10] * proj[11] + modl[11] * proj[15];
-
-    clip[12] = modl[12] * proj[ 0] + modl[13] * proj[ 4] + modl[14] * proj[ 8] + modl[15] * proj[12];
-    clip[13] = modl[12] * proj[ 1] + modl[13] * proj[ 5] + modl[14] * proj[ 9] + modl[15] * proj[13];
-    clip[14] = modl[12] * proj[ 2] + modl[13] * proj[ 6] + modl[14] * proj[10] + modl[15] * proj[14];
-    clip[15] = modl[12] * proj[ 3] + modl[13] * proj[ 7] + modl[14] * proj[11] + modl[15] * proj[15];
+    glPushMatrix ();
     
-    // Now we actually want to get the sides of the frustum.  To do this we take
-    // the clipping planes we received above and extract the sides from them.
+    glGetFloatv(GL_PROJECTION_MATRIX, proj);
+
+    glGetFloatv(GL_MODELVIEW_MATRIX, modl);
+    
+    glLoadMatrixf (proj);
+    glMultMatrixf (modl);
+    
+    glGetFloatv(GL_MODELVIEW_MATRIX, clip);
+    glPopMatrix (); 
 
     // This will extract the RIGHT side of the frustum
     m_Frustum[RIGHT][A] = clip[ 3] - clip[ 0];
@@ -846,8 +812,6 @@ void RendererWidget::CalculateFrustum()
     
 }
 
-
-
 bool RendererWidget::PointInFrustum( float x, float y, float z )
 {
     // Go through all the sides of the frustum
@@ -865,3 +829,35 @@ bool RendererWidget::PointInFrustum( float x, float y, float z )
     return true;
 }
 
+
+bool RendererWidget::SquareInFrustum(CSquare *p)
+{
+    float x, y, z, size;
+
+
+    square_frustum_checks++;
+    
+    /* normalize the coordinates to the real view coordinates */
+    /* see glDrawRoom for similar functions */
+    x = p->centerx -curx;
+    y = p->centery - cury;
+    z = (current_plane_z - curz) * DIST_Z;
+    size = ( (p->rightx - p->leftx) / 2 - curz ) * DIST_Z;
+
+    for(int i = 0; i < 6; i++ )
+    {
+        if(m_Frustum[i][A] * (x - size) + m_Frustum[i][B] * (y - size) + m_Frustum[i][C] * (float) z + m_Frustum[i][D] >= 0)
+           continue;
+        if(m_Frustum[i][A] * (x + size) + m_Frustum[i][B] * (y - size) + m_Frustum[i][C] * (float) z + m_Frustum[i][D] >= 0)
+           continue;
+        if(m_Frustum[i][A] * (x - size) + m_Frustum[i][B] * (y + size) + m_Frustum[i][C] * (float) z + m_Frustum[i][D] >= 0)
+           continue;
+        if(m_Frustum[i][A] * (x + size) + m_Frustum[i][B] * (y + size) + m_Frustum[i][C] * (float) z + m_Frustum[i][D] >= 0)
+           continue;
+
+        // If we get here, it isn't in the frustum
+        return false;
+    }
+
+    return true;
+}

@@ -8,7 +8,7 @@ struct Troom {
   char *note; 			/* note, if needed, additional info etc */
   char *desc;			/* descrition */
   struct room_sectors_data *sector; /* terrain sector */ 		
-                                /* no need to free this one */
+                                /* _no need to free this one_ */
   
   unsigned int exits[6];	/* 0 if no connection, id if there is any */ 
   char *doors[6];		/* if the door is secret */

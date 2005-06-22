@@ -4,7 +4,7 @@
 #include <cctype>
 #include <cstdarg>
 #include <ctime>
-
+#include <cstdlib>
 
 #include "defines.h"
 

@@ -1,15 +1,20 @@
+#ifndef TREE_H 
+#define TREE_H 
+
 
 #define ALPHABET_SIZE	27	/*  26 letters */
 #define A_SIZE		ALPHABET_SIZE
 #define MAX_HASH_LEN	150	/* this caps top length of the tree thread */
 
-	
 
 struct Ttree {
     Ttree *leads[A_SIZE];	/* pointers to the next part letter */
-    unsigned int amount;	/* amount of rooms with this name (sequence) */
-    unsigned int size;	/* current max size of ids array */ 
-    unsigned int *ids;
+    ResizableArray<unsigned int>        ids;
+    
+//    unsigned int amount;	/* amount of rooms with this name (sequence) */
+//    unsigned int size;	/* current max size of ids array */ 
+//    unsigned int *ids;
+
 };
 
 struct levels_data_type {
@@ -21,7 +26,6 @@ struct levels_data_type {
 class Ctree {
   int diving_delete(Ttree *p, char *part, unsigned int id);
   void genhash(char *name, char *hash);
-  void delete_id(unsigned int id, Ttree *t);
   void delete_all(Ttree *t);
     
   /* for gathering debug info only*/
@@ -45,6 +49,8 @@ public:
 };
 
 extern class Ctree namer;
+
+#endif
 
 #ifdef DMALLOC
 #include <dmalloc.h>
