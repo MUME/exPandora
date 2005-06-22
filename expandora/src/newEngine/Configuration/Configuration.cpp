@@ -7,7 +7,7 @@
  * created from a library. MY_EXPORT is defined in Component.h
  * and handles platform specific issues
  */
-extern "C" MY_EXPORT Configuration * createComponent() {
+extern "C" MY_EXPORT Component * createComponent() {
   return new Configuration;
 }
 
@@ -45,6 +45,7 @@ bool Configuration::startElement( const QString& , const QString& ,
   if (qName == "component") newComponent(attributes);
   else if (qName == "option") addOption(attributes);
   else if (qName == "connection") connectComponents(attributes);
+  else if (qName == "configuration") return true;
   else return false;
   return true;
 }

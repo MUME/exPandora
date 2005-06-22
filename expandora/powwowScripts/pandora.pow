@@ -45,13 +45,13 @@
 #bind C-z ^Z=&suspend
 #bind Del ^?=&del-char-left
 #bind Down ^[[B=&next-line
-#bind KP2 ^[Or=s
+#bind KP2 ^[[6~=s
 #bind KP3 ^[Os=d
-#bind KP4 ^[Ot=w
+#bind KP4 ^[[H=w
 #bind KP5 ^[Ou=exits
-#bind KP6 ^[Ov=e
+#bind KP6 ^[[F=e
 #bind KP7 ^[Ow=look
-#bind KP8 ^[Ox=n
+#bind KP8 ^[[5~=n
 #bind KP9 ^[Oy=u
 #bind LF ^J=&enter-line
 #bind Left ^[[D=&prev-char
