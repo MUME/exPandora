@@ -46,6 +46,6 @@ class Configuration : public Component, public QXmlDefaultHandler {
   QString fileName;
 };
 
-typedef Component * (*componentCreator)();
+
 
 #endif

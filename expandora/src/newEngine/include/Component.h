@@ -10,10 +10,12 @@
 # define MY_EXPORT
 #endif
 
+
 /**
  * every component that should be available from a library should inherit Component
  * and implement a componentCreator which is available via "extern "C" MY_EXPORT ..."
  */
+
 class Component : public QObject {
  private:
   Q_OBJECT
@@ -26,4 +28,7 @@ class Component : public QObject {
   virtual void start(QThread::Priority priority = QThread::InheritPriority) = 0; 
 
 };
+
+typedef Component * (*componentCreator)();
+
 #endif

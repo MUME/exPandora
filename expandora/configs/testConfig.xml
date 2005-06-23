@@ -4,6 +4,10 @@
 <component id="Filter" file="Filter"/>
 <component id="Map" file="Map"/>
 <component id="Display" file="Display"/>
-<component id="Proxy" file="Proxy"/>
+<component id="Proxy" file="Proxy">
+	<option name="localPort" value="3000"/>
+	<option name="remoteHost" value="mume.org"/>
+	<option name="remotePort" value="4242"/>
+</component>
 <component id="Storage" file="Storage"/>
 </configuration>

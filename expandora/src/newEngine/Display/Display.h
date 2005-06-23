@@ -77,7 +77,7 @@ class MainWindow;
 class DisplayThread : public QThread, public Component {
  public:
   void run();
-  void start(Priority priority = InheritPriority) {QThread::start(priority);}
+  void start(Priority priority = InheritPriority);
   void toggle_renderer_reaction();
   void CalculateFrustum();
 

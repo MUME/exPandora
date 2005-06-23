@@ -4,9 +4,8 @@
 
 TEMPLATE = app
 
-INCLUDEPATH += ../Configuration/ ../include
+INCLUDEPATH += ../include
 OBJECTS_DIR	= obj
-MOC_DIR		= moc
 
 CONFIG += debug thread qt opengl warn_on
 win32 {
@@ -21,8 +20,7 @@ macx {
 	DESTDIR = ../../../
 }
 
-LIBS += -L../../../lib -lConfiguration -lCommon
+
 
 # Input
 SOURCES += main.cpp
-HEADERS += ../Configuration/Configuration.h

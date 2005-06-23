@@ -1,5 +1,5 @@
 #include "Configuration.h"
-//#include <utility>
+#include <iostream>
 #include <qvariant.h>
 
 /**
@@ -69,6 +69,11 @@ void Configuration::newComponent(const QXmlAttributes & atts) {
   else lib = (*libs.find(file)).second;
   
   componentCreator creator = (componentCreator) lib->resolve("createComponent");
+	if (creator == 0) {
+		if (lib->isLoaded()) cout << "library loaded but creator not found: " << lib->library() << "\n";
+		else cout << "library can't be loaded: " << lib->library() << "\n";
+		return;
+	}
   currentComponent = creator();
   put(id, currentComponent);
 }
@@ -76,7 +81,7 @@ void Configuration::newComponent(const QXmlAttributes & atts) {
 void Configuration::addOption(const QXmlAttributes & atts) {
   QString  name = atts.value("name");
   QString  value = atts.value("value");
-  currentComponent->setProperty((const char*)name, *(new QVariant(value)));
+  currentComponent->setProperty((const char*)name, value);
 }
 
 void Configuration::connectComponents(const QXmlAttributes & atts) {
