@@ -4,7 +4,7 @@
 
 TEMPLATE = app
 
-INCLUDEPATH += ../Configuration/
+INCLUDEPATH += ../Configuration/ ../include
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
@@ -21,7 +21,7 @@ macx {
 	DESTDIR = ../../../
 }
 
-LIBS += -L../../../lib -lConfiguration
+LIBS += -L../../../lib -lConfiguration -lCommon
 
 # Input
 SOURCES += main.cpp

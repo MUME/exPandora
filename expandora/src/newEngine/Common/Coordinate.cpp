@@ -1,24 +1,28 @@
 #include "Coordinate.h"
 
-vector<Coordinate *> Coordinate::stdMoves = vector<Coordinate *>();
-map<QString, char> Coordinate::moveCodes = map<QString, char>();
+
+vector<Coordinate *> Coordinate::stdMoves = *(new vector<Coordinate *>);
+map<QString, char> Coordinate::moveCodes = *(new map<QString, char>);
+
+
+
 
 ObjectRecycler<Coordinate> cmm;
 
 void Coordinate::insertMoves(map<QString, Coordinate *> & moves) {
   map<QString, Coordinate *>::iterator i = moves.begin();
   char pos;
-  for(; i != moves.end(); i++) {
+  for(; i != moves.end(); ++i) {
     QString name = i->first;
     Coordinate * value = i->second;
     if (moveCodes.find(name) == moveCodes.end()) {
       moveCodes.insert(make_pair(name, pos = stdMoves.size()));
-      stdMoves.resize(pos);
+      stdMoves.resize(pos+1);
       stdMoves[pos] = value;
     }
     else {
       pos = moveCodes.find(name)->second;
-      delete(stdMoves[pos]);
+      delete (stdMoves[pos]);
       stdMoves[pos] = value; // overwriting ...
     }
   }

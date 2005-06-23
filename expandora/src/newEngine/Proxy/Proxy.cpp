@@ -14,7 +14,8 @@
  * created from a library. MY_EXPORT is defined in Component.h
  * and handles platform specific issues
  */
-extern "C" MY_EXPORT Proxy * createComponent() {
+
+extern "C" MY_EXPORT Component * createComponent() {
   return new Proxy;
 }
 

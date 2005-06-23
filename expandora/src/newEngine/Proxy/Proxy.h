@@ -17,8 +17,8 @@ class Proxy : public Component {
   void processMudStream();
 
  public:
-  Proxy();
-  ~Proxy();
+  Proxy() {};
+  ~Proxy() {};
   void start(QThread::Priority priority);
   void acceptConnection(ConnectionAccepter * source, int socket);
 
