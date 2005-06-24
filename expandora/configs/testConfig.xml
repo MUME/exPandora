@@ -1,4 +1,4 @@
-<configuration>
+<configuration path="/home/alve/expandora/lib">
 <component id="Parser" file="Parser"/>
 <component id="Lexer" file="Lexer"/>
 <component id="Filter" file="Filter"/>
