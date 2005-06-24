@@ -37,7 +37,6 @@ class Configuration : public Component, public QXmlDefaultHandler {
 
   QString & signal(QString &);
   QString & slot(QString &);
-	void setPath(const QXmlAttributes & atts);
   void newComponent(const QXmlAttributes & atts);
   void addOption(const QXmlAttributes & atts);
   void connectComponents(const QXmlAttributes & atts);

@@ -18,8 +18,8 @@
  * and handles platform specific issues
  */
 extern "C" MY_EXPORT Component * createComponent() {
-	return new DisplayThread;
-	}
+	return new DisplayComponent;
+}
 
 
 const GLfloat RendererWidget::marker_colour[] = {
@@ -40,7 +40,7 @@ RendererWidget::RendererWidget( QWidget *parent, const char *name )
 	curx = 0;
 	cury = 0;
 	curz = 0;			/* current rooms position */
-	}
+}
 
 
 void RendererWidget::initializeGL() {
@@ -78,7 +78,7 @@ void RendererWidget::initializeGL() {
 		glEnd();
 
 		glEndList();
-		}
+	}
 
 	for ( map<char, Terrain *>::iterator i = terrains.begin(); i != terrains.end(); i++ ) {
 		p = ( *i ).second;
@@ -123,11 +123,11 @@ void RendererWidget::initializeGL() {
 
 
 			glEndList();
-			}
 		}
-
-
 	}
+
+
+}
 
 
 void RendererWidget::resizeGL( int width, int height ) {
@@ -138,16 +138,16 @@ void RendererWidget::resizeGL( int width, int height ) {
 	gluPerspective( 50.0f, ( GLfloat ) width / ( GLfloat ) height, 0.5f, 1000.0f );
 	glMatrixMode ( GL_MODELVIEW );
 	shiftView();
-	}
+}
 
-void DisplayThread::start( Priority ) {
+void DisplayComponent::start( QThread::Priority ) {
 	printf( "Starting renderer ...\n" );
 
-	QApplication::setColorSpec( QApplication::CustomColor );
+	
 	if ( !QGLFormat::hasOpenGL() ) {
 		qWarning( "This system has no OpenGL support. Exiting." );
-		return ;
-		}
+		exit(-1);
+	}
 
 	renderer_window = new MainWindow( 0, "MainWindow" );
 	qApp->setMainWidget( renderer_window );
@@ -162,21 +162,21 @@ void DisplayThread::start( Priority ) {
 
 	renderer_window->show();
 	printf( "Renderer: ready and awaiting for events...\r\n" );
-	QThread::start();
-	}
+
+}
 
 
 void RendererWidget::moveMarker( Coordinate * oldPos, Coordinate * newPos ) {
 	if ( oldPos != 0 ) {
 		glColor4f( 0, 0, 0, 0 );
 		drawMarker( oldPos );
-		}
+	}
 
 	if ( newPos != 0 ) {
 		glColor4f( marker_colour[ 0 ], marker_colour[ 1 ], marker_colour[ 2 ], marker_colour[ 3 ] );
 		drawMarker( newPos );
-		}
 	}
+}
 
 
 void RendererWidget::drawMarker( Coordinate * pos ) {
@@ -214,7 +214,7 @@ void RendererWidget::drawMarker( Coordinate * pos ) {
 	glVertex3f( dx - ROOM_SIZE, -MARKER_SIZE + dy, 0.0f + dz );
 	glEnd();
 
-	}
+}
 
 
 
@@ -245,42 +245,42 @@ void RendererWidget::drawRoom( QObject * owner, Room * pr ) {
 		colour[ 1 ] = 0;
 		colour[ 2 ] = 0;
 		colour[ 3 ] = 0;
-		} else if ( z <= -10 ) {
+	} else if ( z <= -10 ) {
 		colour[ 0 ] = 0.1;
 		colour[ 1 ] = 0.1;
 		colour[ 2 ] = 0.1;
 		colour[ 3 ] = 0.1;
-		} else if ( z <= -5 ) {
+	} else if ( z <= -5 ) {
 		colour[ 0 ] = 0.3;
 		colour[ 1 ] = 0.3;
 		colour[ 2 ] = 0.3;
 		colour[ 3 ] = 0.2;
-		} else if ( z < -1 ) {
+	} else if ( z < -1 ) {
 		colour[ 0 ] = 0.4;
 		colour[ 1 ] = 0.4;
 		colour[ 2 ] = 0.4;
 		colour[ 3 ] = 0.3;
-		} else if ( z == -1 ) {
+	} else if ( z == -1 ) {
 		colour[ 0 ] = 0.5;
 		colour[ 1 ] = 0.5;
 		colour[ 2 ] = 0.5;
 		colour[ 3 ] = 0.4;
-		} else if ( z == 0 ) {
+	} else if ( z == 0 ) {
 		colour[ 0 ] = 0.1;
 		colour[ 1 ] = 0.8;
 		colour[ 2 ] = 0.8;
 		colour[ 3 ] = 0.6;
-		} else if ( z == 1 ) {
+	} else if ( z == 1 ) {
 		colour[ 0 ] = 0.0;
 		colour[ 1 ] = 0.5;
 		colour[ 2 ] = 0.9;
 		colour[ 3 ] = 0.2;
-		} else {
+	} else {
 		colour[ 0 ] = 0.0;
 		colour[ 1 ] = 0.5;
 		colour[ 2 ] = 0.9;
 		colour[ 3 ] = 0.1;
-		}
+	}
 
 
 	distance = frustum.getDistance( &d );
@@ -311,9 +311,9 @@ void RendererWidget::drawRoom( QObject * owner, Room * pr ) {
 		glEnd();
 		glDisable( GL_TEXTURE_2D );
 
-		} else {
+	} else {
 		glCallList( basic_gllist );
-		}
+	}
 
 
 
@@ -326,7 +326,7 @@ void RendererWidget::drawRoom( QObject * owner, Room * pr ) {
 	// make the cached room draw its exits
 	cr->drawExits( this );
 
-	}
+}
 
 
 void RendererWidget::drawExit( Coordinate * from, Coordinate * to, unsigned int k ) {
@@ -362,22 +362,22 @@ void RendererWidget::drawExit( Coordinate * from, Coordinate * to, unsigned int 
 	if ( dir->y > 0 ) {
 		ky = + ( ROOM_SIZE + 0.2 );
 		sy = + ROOM_SIZE;
-		} else if ( dir->y < 0 ) {
+	} else if ( dir->y < 0 ) {
 		ky = -( ROOM_SIZE + 0.2 );
 		sy = -ROOM_SIZE;
-		}
+	}
 	if ( dir->x > 0 ) {
 		kx = + ( ROOM_SIZE + 0.2 );
 		sx = + ROOM_SIZE;
-		} else if ( dir->x < 0 ) {
+	} else if ( dir->x < 0 ) {
 		kx = -( ROOM_SIZE + 0.2 );
 		sx = -ROOM_SIZE;
-		}
+	}
 	if ( dir->z > 0 ) {
 		kz = + ( ROOM_SIZE + 0.2 );
-		} else if ( dir->z < 0 ) {
+	} else if ( dir->z < 0 ) {
 		kz = -( ROOM_SIZE + 0.2 );
-		}
+	}
 
 	glColor4f( 0, 1.0, 0.0, colour[ 3 ] + 0.2 );
 
@@ -391,7 +391,7 @@ void RendererWidget::drawExit( Coordinate * from, Coordinate * to, unsigned int 
 
 	glColor4f( colour[ 0 ], colour[ 1 ], colour[ 2 ], colour[ 3 ] );
 
-	}
+}
 
 
 void RendererWidget::shiftView() {
@@ -424,14 +424,14 @@ void RendererWidget::shiftView() {
 
 
 	emit viewableAreaChanged( &frustum );
-	}
+}
 
 
 
-void DisplayThread::toggle_renderer_reaction() {
+void DisplayComponent::toggle_renderer_reaction() {
 	QKeyEvent * k = new QKeyEvent( QEvent::KeyPress, 0, 'r', 0, NULL, FALSE, 0 );
 	QApplication::postEvent( renderer_window->renderer, k );
-	}
+}
 
 
 
@@ -451,6 +451,6 @@ void RendererWidget::CalculateFrustum() {
 	// it will give us our clipping planes.
 	frustum.rebuild( proj, modl );
 
-	}
+}
 
 

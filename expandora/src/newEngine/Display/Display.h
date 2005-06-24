@@ -74,10 +74,9 @@ class RendererWidget : public QGLWidget {
 
 
 class MainWindow;
-class DisplayThread : public QThread, public Component {
+class DisplayComponent : public Component {
  public:
-  void run();
-  void start(Priority priority = InheritPriority);
+  void start(QThread::Priority priority = QThread::InheritPriority);
   void toggle_renderer_reaction();
   void CalculateFrustum();
 

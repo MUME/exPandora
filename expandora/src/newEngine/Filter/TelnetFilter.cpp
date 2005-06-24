@@ -13,9 +13,9 @@ extern "C" MY_EXPORT TelnetFilter * createComponent() {
   /** these methods purge protocol-specific things from the imput, save a copy 
       in the buffer, then call the analyzer thread via a QWaitCondition; so they
       return before the buffer is analyzed ... */
-int TelnetFilter::analyzeMudStream(char * input, int length) {
+void TelnetFilter::analyzeMudStream(char * input, int length) {
   emit newMudInput(purgeProtocolSequences(input, length)); // pushes the input and wakes the parser thread
-  return length;
+  return;
 } 
 
 
@@ -24,13 +24,13 @@ int TelnetFilter::analyzeMudStream(char * input, int length) {
       
   /** this one should probably be handled differently - not everything is to be
       passed on - a hackish way will be modifying the input ... */
-int TelnetFilter::analyzeUserStream(char * input, int length) {
+void TelnetFilter::analyzeUserStream(char * input, int length) {
   emit newUserInput(purgeProtocolSequences(input, length));
   /*if(input[0] == MAP_COMMAND_PREFIX) {
     input[0] = 0;
     return 0;
   }
-  else*/ return length;
+  else*/ return;
 }
 
 

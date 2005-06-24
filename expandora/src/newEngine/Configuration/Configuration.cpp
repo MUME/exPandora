@@ -50,16 +50,12 @@ bool Configuration::startElement( const QString& , const QString& ,
 	else if ( qName == "connection" )
 		connectComponents( attributes );
 	else if ( qName == "configuration" )
-		setPath( attributes );
+		return true;
 	else
 		return false;
 	return true;
 }
 
-void Configuration::setPath( const QXmlAttributes & atts ) {
-	QString path = atts.value( "path" );
-	qApp->addLibraryPath( path );
-}
 
 bool Configuration::endElement ( const QString &, const QString &,
                                  const QString & qName ) {
@@ -109,10 +105,17 @@ void Configuration::connectComponents( const QXmlAttributes & atts ) {
 			                  ( from ), signal( sig ), slot( sl ) );
 }
 
+
+/**
+ * an ugyl hack; let's hope qt itself will contain function replacements 
+ * for the SIGNAL and SLOT macros in the future
+ * @param name name of the signal
+ * @return mangled name of the signal
+ */
 QString & Configuration::signal( QString & name ) {
-	return name.prepend( QSIGNAL_CODE );
+	return name.prepend( "2" );
 }
 
 QString & Configuration::slot( QString & name ) {
-	return name.prepend( QSLOT_CODE );
+	return name.prepend( "1" );
 }

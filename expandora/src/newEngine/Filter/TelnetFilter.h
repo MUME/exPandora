@@ -8,24 +8,26 @@
 
 
 
-class TelnetFilter : public Component
-{
-private:
-  Q_OBJECT
-  char * purgeProtocolSequences(char * input, int length);
+class TelnetFilter : public Component {
+	private:
+		Q_OBJECT
+		char * purgeProtocolSequences( char * input, int length );
 
-public slots:
+	public:
+		void start( QThread::Priority ) {}
 
-  /** these methods make a "clean" copy of the passed string, 
-   *  wake the lexer thread and return
-   */
-  int analyzeMudStream(char * input, int length);
-  int analyzeUserStream(char * input, int length);
-  void start(QThread::Priority) {}
-  
-signals:
-  void newMudInput(char *);
-  void newUserInput(char *);
+	public slots:
+
+		/** these methods make a "clean" copy of the passed string,
+		 *  wake the lexer thread and return
+		 */
+		void analyzeMudStream( char * input, int length );
+		void analyzeUserStream( char * input, int length );
+
+
+	signals:
+		void newMudInput( char * );
+		void newUserInput( char * );
 };
 
 #endif
