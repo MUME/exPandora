@@ -1,14 +1,26 @@
-//#include <qstring.h>
+#include <qstring.h>
+#include <qstringlist.h>
+#include <qptrcollection.h>
+#include <qstrlist.h>
+#include <string>
 //#include "../SearchTreeNode.h"
 //#include "../Room.h"
-#include <stdio.h>
-#include <set>
+#include <iostream>
+#include <list>
 
-set<int> * baum = new set<int>;
+
 
 int main(int argc, char **argv) {
-  
-  printf("sizeof(set<int>): %i\n", sizeof(baum));
+	using namespace std;
+  cout << "sizeof(string) " << sizeof(string) << "\n";
+	cout << "sizeof(QString) " << sizeof(QString) << "\n";
+	cout << "sizeof(QStringList) " << sizeof(QStringList) << "\n";
+	cout << "sizeof(list<string>) " << sizeof(list<string>) << "\n";
+	cout << "sizeof(QStrList) " << sizeof(QStrList) << "\n";
+	cout << "sizeof(QPtrCollection) " << sizeof(QPtrCollection) << "\n";
+	cout << "sizeof(QChar)" << sizeof(QChar) << "\n";
+	cout << "sizeof(void *)" << sizeof(void *) << "\n";
+	cout << "sizeof(QStringData)" << sizeof(QstringData) << "\n";
 //SearchTreeNode * test = new SearchTreeNode("baum");
 
 /*

@@ -21,7 +21,6 @@ class Configuration : public Component, public QXmlDefaultHandler {
   QString getFileName() const {return fileName;}
   void setFileName(QString & name) {fileName = name;}
 
-    //void parseFile(QString & filename);
   Component * get(QString & id);
   void put(QString & id, Component * component);
   

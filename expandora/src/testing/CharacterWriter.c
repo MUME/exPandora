@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+/*
 int main(int argc, char *argv[]) {
 	int i;
 	FILE * file = fopen("characterTable", "w");
@@ -18,4 +18,4 @@ int main(int argc, char *argv[]) {
 	fputc(136, file);
 	fclose(file);
 	return 0;
-}
+}*/

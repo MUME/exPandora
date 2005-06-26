@@ -1,6 +1,8 @@
+#ifndef XML_STORAGE
+#define XML_STORAGE
+
 #include <qxml.h>
-#include <qthread.h>
-#include <qobject.h>
+#include <qmutex.h>
 #include <stack>
 
 #include "Component.h"
@@ -23,62 +25,77 @@
    it should be quite easy to convert existing maps.
 */
 
-typedef struct Exit
-{
-  int sourceId;
-  int dir;
-  int destId;
+typedef struct Exit {
+	int sourceId;
+	int dir;
+	int destId;
 }
 Exit;
 
 
-class StructureParser: public QObject, public QXmlDefaultHandler
-{
-public:
-  StructureParser();
-  bool characters(const QString& ch);
-  bool startElement( const QString&, const QString&, const QString& ,
-                     const QXmlAttributes& );
-  bool endElement( const QString&, const QString&, const QString& );
-  void addExits();
-  
+class StructureParser: public QObject, public QXmlDefaultHandler {
 
-private:
-  Q_OBJECT
-  double timeFromString(QString &);
-  void buildProperties(char * roomDesc);
+	public:
+		StructureParser();
+		bool characters( const QString& ch );
+		bool startElement( const QString&, const QString&, const QString& ,
+		                   const QXmlAttributes& );
+		bool endElement( const QString&, const QString&, const QString& );
+		void addExits();
 
-  stack<Exit *> exits;
 
-  /* some flags */
-  int flag;
-  char data[MAX_DATA_LEN];
-  QString s;
-  int i;
-  double ts;
-  char t;
-  ParseEvent * roomProps;
-  Coordinate * c;
-  Property * prop;
-  int id;
+	private:
+		Q_OBJECT
+		double timeFromString( QString & );
+		void buildProperties( char * roomDesc );
 
-signals:
-  void addExit(int, int, int);
-  void addRoom(ParseEvent *, int, Coordinate *, char);
+		stack<Exit *> exits;
+
+		/* some flags */
+		int flag;
+		char data[ MAX_DATA_LEN ];
+		QString s;
+		int i;
+		ParseEvent * roomProps;
+		Property * prop;
+		Coordinate * c;
+		double ts;
+		char t;
+		int id;
+
+	signals:
+		void addExit( int, int, int );
+		void addRoom( ParseEvent *, int, Coordinate *, char );
 };
 
 
-class XmlStorage: public Component
-{
-public:
-  void xml_writebase(char *filename);
-  void xml_readbase(char *filename);
-  void start(QThread::Priority) {}
-private:
-  Q_OBJECT
+class XmlStorage: public Component {
+		Q_PROPERTY( QString fileName READ getFileName WRITE setFileName )
+	public:
+		XmlStorage() : fileName( "" ) {}
+		QString getFileName() const {
+			return fileName;
+		}
+		void setFileName( QString & name ) {
+			fileName = name;
+		}
+		void xml_writebase();
+		void xml_readbase();
+		void start( QThread::Priority = QThread::InheritPriority ) {
+			xml_readbase();
+		}
+	public slots:
+		void writeRoom( Room * room );
+		void writeExit( int, int, int );
+	private:
+		Q_OBJECT
+		QString fileName;
+		QMutex ioMutex;
+	signals:
+		void addExit( int, int, int );
+		void addRoom( ParseEvent *, int, Coordinate *, char );
 };
 
 
-#ifdef DMALLOC
-#include <dmalloc.h>
 #endif
+
