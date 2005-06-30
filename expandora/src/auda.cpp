@@ -117,9 +117,10 @@ int main(int argc, char *argv[])
     int     override_local_port = 0;
     char    override_remote_host[MAX_STR_LEN] = "";
     int     override_remote_port = 0;
-    char    configfile[MAX_STR_LEN] = ""; 
+    char    configfile[MAX_STR_LEN] = "configs/default.conf"; 
     int     default_local_port = 3000;
     int     default_remote_port = 4242;
+
     
 #ifdef Q_OS_MACX
     CFURLRef pluginRef = CFBundleCopyBundleURL(CFBundleGetMainBundle());
@@ -160,8 +161,9 @@ int main(int argc, char *argv[])
           exit(1);
         }
         i++;
+
         strcpy(configfile, argv[i]);
-	resPath[0] = 0; // obviously the user has an own config file - including the path
+	resPath = ""; // obviously the user has an own config file - including the path
       } 
       
       if ((strcmp(argv[i], "--emulate") == 0) || ( strcmp(argv[i], "-e") == 0)) 
@@ -222,6 +224,8 @@ int main(int argc, char *argv[])
       }
       
     }
+
+
 
     /* set analyzer engine defaults */
     engine_init();
