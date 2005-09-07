@@ -412,7 +412,7 @@ void MainWindow::hide_roominfo()
 
 void MainWindow::keyPressEvent( QKeyEvent *k )
 {
-    switch ( tolower(k->ascii()) ) {
+    switch ( LOWER(k->ascii()) ) {
         case 'c':                               
 #ifndef NEW_ENGINE  
 	  engine();

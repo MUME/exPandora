@@ -2,6 +2,7 @@
 /*
   $Id$
 */
+#include <cstdlib>
 #include <string.h>
 #include <qapplication.h>
 #include <qfile.h>

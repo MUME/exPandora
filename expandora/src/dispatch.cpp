@@ -379,7 +379,7 @@ int Cdispatcher::check_failure(char *nline)
 
   if (strncmp(nline, leader_pattern, strlen(leader_pattern)) == 0) {
     strcpy(leader, nline + strlen(leader_pattern));
-    leader[ strlen(leader) - 1 ] = 0; /* remove the dot (... follow Duj.)" */
+    one_argument(nline, leader, 1);
     following_leader = 1;
     send_to_user("-- [Pandora: Following leader : ");
     send_to_user(leader);
