@@ -17,28 +17,10 @@
 #include "utils.h"
 #include "dispatch.h"
 
-#ifdef NEW_ENGINE
-#include <stack>
-using namespace std;
-#include "Terrain.h"
-#include "ParseEvent.h"
-#include "Room.h"
-#include "RoomAdmin.h"
-#include "Coordinate.h"
-#include "Property.h"
-#endif
 
 #define XML_ROOMNAME    (1 << 0)
 #define XML_DESC        (1 << 1)
 #define XML_NOTE        (1 << 2)
-
-#ifdef NEW_ENGINE
-typedef struct Exit {
-  int sourceId;
-  int dir;
-  int destId;
-} Exit;
-#endif
 
 class StructureParser: public QXmlDefaultHandler
 {
@@ -49,10 +31,6 @@ public:
   bool startElement( const QString&, const QString&, const QString& ,
 		     const QXmlAttributes& );
   bool endElement( const QString&, const QString&, const QString& );
-#ifdef NEW_ENGINE
-  void addExits();
-
-#endif
 private:
   /* some flags */
   int flag;
@@ -62,22 +40,8 @@ private:
 
 
   int i;
-#ifndef NEW_ENGINE
   struct Troom *r;
     
-#else
-  double timeFromString(QString &);
-  void buildProperties(char * roomDesc);
-   
-  char tid;
-  double ts; 
-  Terrain * t;
-  ParseEvent * roomProps;
-  Coordinate * c;    
-  stack<Exit *> exits;
-  Property * prop;
-  int id;
-#endif
 };
 
 
@@ -99,61 +63,16 @@ void xml_readbase( char *filename)
     
   reader.parse( source );
 
-#ifndef NEW_ENGINE
   printf("sorting rooms... \n");
 //  roomer.resort_rooms();
   printf("done sorting. \n");
-#else
-  //pop all the exits and addExit(...) them into the rooms
-  handler->addExits();	  
-#endif
   return;
 }
-
-#ifdef NEW_ENGINE
-void StructureParser::addExits() {
-  Exit * e;
-  Room * from;
-  Room * to;
-  while (!(exits.empty())) {
-    e = exits.top();
-    exits.pop();
-    from = roomAdmin.getRoom(e->sourceId);
-    to = roomAdmin.getRoom(e->destId);
-	    
-    from->addExit(e->dir, to);
-		
-  }
-}
-
-void StructureParser::buildProperties(char * desc) {
-  char * lastLineBegin = desc;
-  for (int i = 0; desc[i] != 0; i++) {
-    if (desc[i] == '|') {
-      desc[i] = 0;
-      prop->add(lastLineBegin);
-      roomProps->push(prop);
-      prop = pmm.activate();
-      lastLineBegin = desc+i+1;
-    }
-  }
-}
-#endif
 
 
 StructureParser::StructureParser()
   : QXmlDefaultHandler()
 {
-#ifdef NEW_ENGINE
-  roomProps = 0;
-  prop = 0;
-  c = cmm.activate();
-  c->clear();
-  ts = 0;
-  t = 0;
-  id = 0;
-  tid = 0;
-#endif
 }
 
 
@@ -161,24 +80,7 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
 {
 
   if (qName == "room") {
-#ifndef NEW_ENGINE
     roomer.addroom_nonsorted(r);	/* tada! */
-#else
-#ifdef DEBUG
-    fprintf(stderr, "inserting room: %i\n", id);
-#endif
-    prop = pmm.activate();
-    prop->add(tid);
-    roomProps->push(prop);
-    Room * room = roomAdmin.insertRoom(roomProps, id, c, t);
-    room->hold();
-    room->resetTime(ts);
-    pemm.deactivate(roomProps);
-    roomProps = 0;
-    c->clear();
-    id = 0;
-    tid = 0;
-#endif
   }        
   flag = 0;    
     
@@ -189,23 +91,6 @@ bool StructureParser::characters( const QString& ch)
 {
   strncpy( data, (const char*) ch, ch.length() );
   data[ ch.length() ] = 0;
-#ifdef NEW_ENGINE	
-#ifdef DEBUG
-    fprintf(stderr, "parsing data: %s\n", data);
-#endif
-  prop = pmm.activate();
-  if (flag != XML_DESC) prop->add(data);	
-  else buildProperties(data);
-  if (roomProps != 0 && flag != 0) {
-    if (flag == XML_NOTE) roomProps->pushOptional(prop);
-    else if (flag == XML_ROOMNAME) roomProps->push(prop);
-  }
-  else {
-    pmm.deactivate(prop);
-    prop = 0;
-  }
-  return TRUE;
-#else
   if (ch == NULL || ch == "")
     return TRUE;
     
@@ -230,7 +115,6 @@ bool StructureParser::characters( const QString& ch)
 
     
   return TRUE;
-#endif
 } 
 
 

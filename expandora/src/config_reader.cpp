@@ -5,13 +5,6 @@
 #include <qmutex.h>
 
 
-#ifdef NEW_ENGINE
-#include <qstring.h>
-#include "CharacterTable.h"
-#include "Terrain.h"
-#endif
-
-
 #include "rooms.h"
 #include "defines.h"
 #include "struct.h"
@@ -171,9 +164,6 @@ ACMD(parse_automerge);
 ACMD(parse_texturesvisibility);
 ACMD(parse_detailsvisibility);
 ACMD(parse_angrylinker);
-#ifdef NEW_ENGINE
-ACMD(parse_characterTable);
-#endif
 
 struct config_commands_type {
   const char *command;
@@ -205,9 +195,6 @@ const config_commands_type commands[] = {
   {"texturesvisibilityrange",      parse_texturesvisibility},
   {"detailsvisibilityrange",       parse_detailsvisibility},
   {"angrylinker",       parse_angrylinker},
-  #ifdef NEW_ENGINE
-  {"characterTable",	parse_characterTable},
-  #endif
   {NULL, NULL}
 };
 
@@ -376,11 +363,7 @@ ACMD(parse_terraintype)
 {
   char *p;
   char arg[MAX_STR_LEN];
-#ifndef NEW_ENGINE
   struct room_sectors_data *terrain = new room_sectors_data;
-#else
-  Terrain * terrain = new Terrain();
-#endif
   
   p = skip_spaces(line);                        
   if (!*p) {                                    
@@ -420,16 +403,8 @@ ACMD(parse_terraintype)
 
   terrain->pattern = arg[0];
   
-#ifndef NEW_ENGINE
   terrain->next = room_sectors;
-  
   room_sectors = terrain;
-#else 
-  terrains.insert(make_pair(arg[0], terrain));
-  terrainIDs.insert(make_pair(QString::fromAscii(terrain->desc), arg[0]));
-#endif
-  
-  
 }
 
 
@@ -665,19 +640,6 @@ ACMD(parse_roomcolour)
   
   printf("Roomname colour check: %sRoomname colour example%s.\r\n", roomname_start, roomname_end);
 }
-
-#ifdef NEW_ENGINE
-ACMD(parse_characterTable)
-{
-	char *p;
-	char arg[MAX_STR_LEN];
-  
-	GET_NEXT_ARGUMENT(p, line, arg, 1);   /* as is */
-  
-	strcpy(characterTable_file, arg);
-	
-}
-#endif
 
 int parse_config(char * in_path, char *fn)
 {

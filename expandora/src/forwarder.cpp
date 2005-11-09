@@ -31,21 +31,15 @@
 #include <winsock.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
 #include <qmutex.h>
 
 
 #include "defines.h"
 #include "dispatch.h"
-
-#ifdef NEW_ENGINE
-#include "TelnetFilter.h"
-#include "Lexer.h"
-TelnetFilter * filter;
-#endif
 
 QMutex tcp_mutex;
 
@@ -247,13 +241,6 @@ int proxy_init()
   }
 #endif
 */
-#ifdef NEW_ENGINE
-  Lexer * lexer = new Lexer();
-  filter = new TelnetFilter();
-  filter->attachLexer(lexer);
-  lexer->attachParser(&parser);
-  lexer->start();
-#endif
   return 0;
 }
 
@@ -364,11 +351,7 @@ int proxy_loop(void)
                 fflush(debug_file);
               #endif
               
-#ifndef NEW_ENGINE
               dispatcher.analyze_user_stream(intbuff, &rd);
-  #else
-	      rd = filter->analyzeUserStream(intbuff, rd);
-#endif
               if (!mud_emulation) {
                 tcp_mutex.lock();
 
@@ -408,11 +391,7 @@ int proxy_loop(void)
                 fflush(debug_file);
               #endif
               
-#ifndef NEW_ENGINE
               dispatcher.analyze_mud_stream(intbuff, &rd);
-              #else
-	      rd = filter->analyzeMudStream(intbuff, rd);
-#endif
               tcp_mutex.lock();
 
               #ifdef DEBUG

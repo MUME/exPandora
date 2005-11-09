@@ -6,9 +6,6 @@
 #include <qgl.h>
 #include "defines.h"
 #include "rooms.h"
-#ifdef NEW_ENGINE
-#include "Room.h"
-#endif
 
 class QAction; 
 class QLabel; 
@@ -123,11 +120,7 @@ private:
 
 
   void glDrawMarkers();
-#ifndef NEW_ENGINE
   void glDrawRoom(struct Troom *p);
-#else
-  void glDrawRoom(Room * pr);
-#endif
   
   void glDrawCSquare(CSquare *p);
   bool PointInFrustum(float x, float y, float z);
