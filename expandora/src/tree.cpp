@@ -8,6 +8,20 @@
 
 class Ctree namer;
 
+
+void Ctree::remove_id(unsigned int id, vector<unsigned int> ids)
+{
+  vector<unsigned int>::iterator i;
+
+  for (i = ids.begin(); i != ids.end(); i++)
+      if (*i == id) {
+          i = ids.erase(i);
+          return;
+      }
+    
+}
+
+
 void Ctree::calculate_info(Ttree *t, int level, int single)
 {
   unsigned int i;
@@ -19,7 +33,7 @@ void Ctree::calculate_info(Ttree *t, int level, int single)
   
   
   levels_data[level].nodes++;
-  levels_data[level].items += t->ids.get_amount();
+  levels_data[level].items += t->ids.size();
   l = 0;
   
   for (i = 0; i < A_SIZE; i++)
@@ -29,7 +43,7 @@ void Ctree::calculate_info(Ttree *t, int level, int single)
       
       levels_data[level].leads++;
       
-      calculate_info(t->leads[i], level+1, t->ids.get_amount() ? single + 1 : 0);
+      calculate_info(t->leads[i], level+1, t->ids.size() ? single + 1 : 0);
     }
     
   if (l == 0 && single > 0) 
@@ -85,12 +99,12 @@ int Ctree::diving_delete(Ttree * p, char *part, unsigned int id)
     if (strlen(part) == 0) {	/* we've found our item */
 	for (i = 0; i < A_SIZE; i++)
             if (p->leads[i] != NULL) {	/* shall not delete this item */
-                p->ids.remove(id);
+                remove_id(id, p->ids);
                 return -1;	/* return state DID NOT DELETE - its used */
             }
 
-            p->ids.remove(id);
-            if (p->ids.is_empty()) {
+            remove_id(id, p->ids);
+            if (p->ids.empty()) {
                 delete p;
                 return 1;
             }
@@ -110,7 +124,7 @@ int Ctree::diving_delete(Ttree * p, char *part, unsigned int id)
 
     p->leads[(int) part[0]] = NULL;	/* clear this lead */
 
-    if (p->ids.get_amount() != 0)
+    if (p->ids.size() != 0)
 	return -1;		/* nop, still in use */
 
     for (i = 0; i < A_SIZE; i++)
@@ -125,7 +139,7 @@ int Ctree::diving_delete(Ttree * p, char *part, unsigned int id)
 void Ctree::delete_item(char *name, unsigned int id)
 {
     Ttree *p;
-    int i;
+    unsigned int i;
     char hash[MAX_HASH_LEN];	
 	
     genhash(name, hash);
@@ -135,12 +149,13 @@ void Ctree::delete_item(char *name, unsigned int id)
 	return;
     }
 
-    i = p->ids.find(id);
-    if (i >= 0)
-        if (diving_delete(root, hash, id) == 1) {
-            /* meaning - occasioanly freed our ROOT element */
-            Ctree();	/* reinit */
-            return;
+    for (i = 0; i < p->ids.size(); i++)
+        if (p->ids[i] == id) {
+            if (diving_delete(root, hash, id) == 1) {
+                /* meaning - occasioanly freed our ROOT element */
+                Ctree();	/* reinit */
+                return;
+            }
         }
 }
 
@@ -183,7 +198,7 @@ void Ctree::addname(char *name, unsigned int id)
   }
 
   /* ok, we found totaly similar or created new entry, add id to it */
-  p->ids.add(id);
+  p->ids.push_back(id);
 }
 
 Ttree *Ctree::find_by_name(char *name)
@@ -229,6 +244,7 @@ void Ctree::genhash(char *name, char *hash)
     hash[i]=hash[i]-'a'+1;
 }
 
+/*
 void Ctree::print_element(Ttree *t)
 {
 	int i, k;
@@ -236,7 +252,7 @@ void Ctree::print_element(Ttree *t)
 	
 	printf("-----------------\n");
 	printf("Element address: %i, ids amount : %i, ids array size : %i\n", 
-            (int) t, t->ids.get_amount(), t->ids.get_size());
+            (int) t, t->ids.size(), t->ids.capacity());
 		
 	printf("Ids: ");
 	for (i = 0; (k = t->ids.find(i)) >= 0; ++i) 
@@ -260,3 +276,4 @@ void Ctree::print_element(Ttree *t)
 	printf("-----------------\n");
 		
 }
+*/

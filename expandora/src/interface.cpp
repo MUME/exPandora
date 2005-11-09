@@ -35,12 +35,6 @@
 
 #include "userfunc.h"
 
-#ifdef NEW_ENGINE
-#include "Parser.h"
-#include "Room.h"
-#include "Coordinate.h"
-#endif
-
 RoomInfo::RoomInfo(QWidget* parent, const char* name)
  : QWidget(parent, name)
 {
@@ -111,10 +105,6 @@ void RoomInfo::update_info()
 {
   char str[200];
   
-#ifdef NEW_ENGINE
-  Room * rr;
-  Coordinate * r;
-#else
   int i;
   struct Troom *r;
 
@@ -138,28 +128,16 @@ void RoomInfo::update_info()
   id_label->setText(tr(str));
 
   r = roomer.getroom(stacker.get(1));
-#endif
-#ifdef NEW_ENGINE  
-  rr = parser.getMostLikely();
-  if (rr) r = rr->getCoordinate();
-  else r = cmm.activate();
-#endif
   sprintf(str, "Coord: X: %i, Y %i, Z: %i", r->x, r->y, r->z);
   coord_label->setText( str );
   
-#ifndef NEW_ENGINE
   if (r->sector) {
     sprintf(str, " %s ", r->sector->desc);
-#else
-  if(rr) {
-    sprintf(str, " %s ", rr->getTerrain()->desc);
-#endif
     
     terrain_label->setText( str );
   } else {
     terrain_label->setText(" T: NONE ");
   }
-#ifndef NEW_ENGINE
   if (r->name) {
     name_edit->setText( r->name );
   } else {
@@ -214,7 +192,6 @@ void RoomInfo::update_info()
       }
       
   exits_label->setText( str );
-#endif  
   
 }
 
@@ -414,10 +391,8 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
 {
     switch ( LOWER(k->ascii()) ) {
         case 'c':                               
-#ifndef NEW_ENGINE  
 	  engine();
-#endif
-            break;
+          break;
          
         case 'x':
             renderer->userz += 1;

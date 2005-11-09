@@ -1,6 +1,8 @@
 #ifndef TREE_H 
 #define TREE_H 
 
+#include <vector>
+using namespace std;
 
 #define ALPHABET_SIZE	27	/*  26 letters */
 #define A_SIZE		ALPHABET_SIZE
@@ -9,7 +11,7 @@
 
 struct Ttree {
     Ttree *leads[A_SIZE];	/* pointers to the next part letter */
-    ResizableArray<unsigned int>        ids;
+    vector<unsigned int>        ids;
     
 //    unsigned int amount;	/* amount of rooms with this name (sequence) */
 //    unsigned int size;	/* current max size of ids array */ 
@@ -43,9 +45,9 @@ public:
   void reset_ttree(Ttree *t);
   Ttree * find_by_name(char *name);
   void delete_item(char *name, unsigned int id);
-  void print_element(Ttree *t);
   void reinit();
   void print_tree_stats();
+  void remove_id(unsigned int id, vector<unsigned int> ids);
 };
 
 extern class Ctree namer;

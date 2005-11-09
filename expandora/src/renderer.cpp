@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cmath>
 #include <cstdlib>
+#include <vector>
 
 #include <qgl.h>
 #include <qimage.h>
@@ -17,11 +18,7 @@
 
 #include "userfunc.h"
 
-#ifdef NEW_ENGINE
-#include "RoomAdmin.h"
-#include "Parser.h"
-#include "RoomCollection.h"
-#endif
+using namespace std;
 
 #if defined(Q_CC_MSVC)
 #pragma warning(disable:4305) // init: truncation from const double to float
@@ -77,11 +74,7 @@ RendererWidget::RendererWidget( QWidget *parent, const char *name )
 void RendererWidget::initializeGL()
 {
   QImage tex1, buf1;
-#ifndef NEW_ENGINE
   struct room_sectors_data *p;
-#else 
-  Terrain * p;
-#endif
 
   glShadeModel(GL_SMOOTH);
   glClearColor (0.0, 0.0, 0.0, 0.0);	/* This Will Clear The Background Color To Black */
@@ -122,20 +115,13 @@ void RendererWidget::initializeGL()
     }
 
     
-#ifndef NEW_ENGINE    
     p = room_sectors;
     while (p) {
-#else
-      for (map<char, Terrain *>::iterator i = terrains.begin(); i != terrains.end(); i++) {
-	p = (*i).second;
-#endif
       glGenTextures(1, &p->texture);
       print_debug(DEBUG_RENDERER, "loading texture %s", p->filename);
 
-#ifndef NEW_ENGINE
       if (strcmp( p->desc, "DEATH" ) == 0 ) 
         death_terrain = p;
-#endif
 
       buf1.load( p->filename );
       tex1 = QGLWidget::convertToGLFormat( buf1 ); // flipped 32bit RGBA
@@ -176,9 +162,7 @@ void RendererWidget::initializeGL()
         
         glEndList();
       }
-#ifndef NEW_ENGINE
       p = p->next;
-#endif
     }
     
 
@@ -248,19 +232,13 @@ int renderer_main()
 
 void RendererWidget::glDrawMarkers()
 {
-#ifndef NEW_ENGINE
     struct Troom *p;
     unsigned int k;
-#else
-    Room * pr;
-    Coordinate * p;
-#endif
     
     int dx, dy, dz;
 
     
     glColor4f(marker_colour[0],marker_colour[1],marker_colour[2],marker_colour[3]);
-#ifndef NEW_ENGINE
     for (k = 1; k <= stacker.amount; k++) {
       
       p = roomer.getroom(stacker.get(k));
@@ -269,18 +247,6 @@ void RendererWidget::glDrawMarkers()
         printf("RENDERER ERROR: Stuck upon corrupted room while drawing red pointers.\r\n");
           continue;
       }
-#else
-      pr = parser.getMostLikely();
-      if (pr == 0) pr = roomAdmin.getRoom(1);
-      if (pr == 0) return; //silently die when there is no room for the marker
-      
-      p = pr->getCoordinate();
-#endif
-
-
-
-
-
 
       dx = p->x - curx;
       dy = p->y - cury;
@@ -320,9 +286,7 @@ void RendererWidget::glDrawMarkers()
       glEnd();
 
 //      glTranslatef(-dx, -dy, -dz);
-#ifndef NEW_ENGINE
     }
-#endif
 
 
 }
@@ -330,20 +294,10 @@ void RendererWidget::glDrawMarkers()
 
 
 
-#ifndef NEW_ENGINE
 void RendererWidget::glDrawRoom(struct Troom *p)
-#else
-void RendererWidget::glDrawRoom(Room * pr)
-#endif
 {
     GLfloat dx, dx2, dy, dy2, dz, dz2;
-#ifndef NEW_ENGINE
     struct Troom *r;
-#else
-    RoomCollection * rc;
-    Coordinate * r;
-    Coordinate * p = pr->getCoordinate();
-#endif 
     int k;
     char lines, texture;
     float distance;
@@ -375,15 +329,9 @@ void RendererWidget::glDrawRoom(Room * pr)
 
     
     glTranslatef(dx, dy, dz);
-#ifndef NEW_ENGINE
     if (p->sector != NULL && texture) {
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, p->sector->texture);
-#else    
-      if (pr->getTerrain() != NULL && texture) {
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, pr->getTerrain()->texture);
-#endif
       glBegin(GL_QUADS);
       
       glTexCoord2f(0.0, 1.0);
@@ -468,7 +416,6 @@ void RendererWidget::glDrawRoom(Room * pr)
 
         } 
 
-#ifndef NEW_ENGINE
 	  else {
             GLfloat kx, ky, kz;
 
@@ -560,7 +507,6 @@ void RendererWidget::glDrawRoom(Room * pr)
             glColor4f(colour[0], colour[1], colour[2], colour[3]);
             
         }
-#endif
     }
 
         
@@ -570,8 +516,8 @@ void RendererWidget::glDrawRoom(Room * pr)
 
 void RendererWidget::glDrawCSquare(CSquare *p)
 {
-    int k;
     struct Troom *room;
+    vector<unsigned int>::iterator k;
     
     if (!SquareInFrustum(p)) {
         return; /* this square is not in view */
@@ -588,8 +534,8 @@ void RendererWidget::glDrawCSquare(CSquare *p)
         if (p->subsquares[ Right_Lower ])
             glDrawCSquare( p->subsquares[ Right_Lower ]);
     } else {
-        for (k = 0; k < p->ids.get_amount(); k++) {
-            room = roomer.getroom( p->ids.get(k) );
+        for (k = p->ids.begin(); k != p->ids.end(); ++k) {
+            room = roomer.getroom( *k );
             glDrawRoom(room);
         } 
     }
@@ -599,7 +545,6 @@ void RendererWidget::glDrawCSquare(CSquare *p)
 
 void RendererWidget::draw(void)
 {
-#ifndef NEW_ENGINE
     struct Troom *p;
     CPlane *plane;  
 
@@ -607,10 +552,6 @@ void RendererWidget::draw(void)
     rooms_drawn_total=0;
     square_frustum_checks = 0;
     
-#else
-    Coordinate * p = 0;
-    Room * pr = 0;
-#endif
     int z = 0;
     
     print_debug(DEBUG_RENDERER, "in draw()");

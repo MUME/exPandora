@@ -209,11 +209,12 @@ void printstacks()
     sprintf(line,
 	    "Conf: Mapping %s, AutoChecks [Desc %s, Exits %s, Terrain %s],\r\n"
             "      AutoRefresh settings %s (RName/Desc quotes %i/%i), \r\n"
-            "      AngryLinker %s\r\n", 
+            "      AngryLinker %s\r\n"
+            " Current leader: %s\r\n", 
             ON_OFF(engine_flags.mapping), ON_OFF(engine_flags.automerge), 
             ON_OFF(engine_flags.exits_check), ON_OFF(engine_flags.terrain_check),
             ON_OFF(engine_flags.autorefresh), comparator.name_quote, comparator.desc_quote,
-            ON_OFF(engine_flags.angrylinker)
+            ON_OFF(engine_flags.angrylinker), dispatcher.get_leader()
             );
     
     send_to_user(line);

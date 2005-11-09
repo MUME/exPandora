@@ -1419,6 +1419,7 @@ USERCMD(usercmd_mload)
   if (!*p) {
     /* no arguments */
     send_to_user(" * Loading the base %s from the disk...\r\n", base_file);
+      
     xml_readbase(base_file);
   } else {
     p = one_argument(p, arg, 1);        /* do not lower or upper case - filename */

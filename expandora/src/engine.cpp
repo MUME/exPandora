@@ -307,7 +307,7 @@ ECMD(engine_command_done)
 
 ECMD(engine_command_resync)
 {
-  int j;
+  unsigned int j;
   Ttree *n;
   
 
@@ -316,10 +316,10 @@ ECMD(engine_command_resync)
   print_debug(DEBUG_ANALYZER, "FULL RESYNC");
   n = roomer.findrooms(engine_flags.last_roomname);
   if (n != NULL)
-    for (j = 0; j < n->ids.get_amount(); j++) {
-      if (strcmp(engine_flags.last_roomname, roomer.getname( n->ids.get(j) )) == 0) {
+    for (j = 0; j < n->ids.size(); j++) {
+      if (strcmp(engine_flags.last_roomname, roomer.getname( n->ids[j] )) == 0) {
         print_debug(DEBUG_ANALYZER, "Adding matches");
-        stacker.put( n->ids.get(j) );
+        stacker.put( n->ids[j] );
       } 
     }
 

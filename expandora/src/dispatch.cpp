@@ -379,11 +379,11 @@ int Cdispatcher::check_failure(char *nline)
 
   if (strncmp(nline, leader_pattern, strlen(leader_pattern)) == 0) {
     strcpy(leader, nline + strlen(leader_pattern));
-    one_argument(nline, leader, 1);
+    one_argument(leader, leader, 1);
     following_leader = 1;
-    send_to_user("-- [Pandora: Following leader : ");
-    send_to_user(leader);
-    send_to_user("\r\n");
+    if (leader[strlen(leader)-1] == '.')
+        leader[strlen(leader)-1] = 0;
+    send_to_user("-- [Pandora: Following leader : '%s'\r\n", leader);
     
     return 1;
   }

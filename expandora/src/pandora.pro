@@ -34,13 +34,13 @@ SOURCES		+=event.cpp
 SOURCES		+=exits.cpp
 SOURCES		+=forwarder.cpp
 SOURCES		+=interface.cpp
-SOURCES		+=qtxml.cpp
 SOURCES		+=renderer.cpp
 SOURCES		+=rooms.cpp
 SOURCES		+=stacks.cpp
 SOURCES		+=tree.cpp
 SOURCES		+=userfunc.cpp
 SOURCES		+=utils.cpp
+SOURCES		+=xml2.cpp
 
 TARGET		= ../pandora
 

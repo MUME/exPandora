@@ -2,7 +2,10 @@
 #define ROOMS_H 
 
 #include <qgl.h>
+#include <vector>
 #include "defines.h"
+using namespace std;
+
 
 #define MAX_ROOMS       30000		/* maximal amount of rooms */
 #define EXIT_UNDEFINED  (MAX_ROOMS+1)
@@ -46,7 +49,7 @@ public:
     int         centerx, centery;
     
     /* amount of rooms in this square, -1 for empty */
-    ResizableArray<unsigned int> ids;
+    vector<unsigned int> ids;
 
     
     CSquare(int leftx, int lefty, int rightx, int righty);

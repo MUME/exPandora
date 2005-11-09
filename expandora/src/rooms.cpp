@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <cstring>
 #include <qdatetime.h>
+#include <vector>
+using namespace std;
 
 #include "defines.h"
 #include "struct.h"
@@ -744,7 +746,7 @@ void CSquare::add_room_by_mode(struct Troom *room, int mode)
 
 bool CSquare::to_be_passed()
 {
-    if (ids.get_amount() > 0)
+    if (ids.size() > 0)
         return false;
     
     /* if we have ANY children, the node has to be passed */
@@ -757,23 +759,26 @@ bool CSquare::to_be_passed()
 void CSquare::addroom(struct Troom *room)
 {
     struct Troom *r;
-    int i;
-        
-    if (to_be_passed() ) {
+    unsigned int i;
+    
+    if (to_be_passed() ) 
+    {
         add_room_by_mode(room, get_mode(room) );
         return;
     }
     
-    if (( ids.get_amount() < MAX_SQUARE_ROOMS) && ( (rightx - leftx) < MAX_SQUARE_SIZE) ) {
-        ids.add(room->id);
+    if (( ids.size() < MAX_SQUARE_ROOMS) && ( (rightx - leftx) < MAX_SQUARE_SIZE) ) 
+    {
+        ids.push_back(room->id);
         return;
     } else {
-        for (i=0; i< ids.get_amount(); i++) {
-            r = roomer.getroom( ids.get(i) );
+        
+        for (i=0; i < ids.size(); i++) {
+            r = roomer.getroom( ids[i] );
             add_room_by_mode(r, get_mode(r) );
         }
-        ids.removeall();
-
+        ids.clear();
+        ids.resize(0);
         add_room_by_mode(room, get_mode(room) );
     }
 }
@@ -798,18 +803,17 @@ void roommanager::remove_from_plane(struct Troom *room)
 void CSquare::removeroom(struct Troom *room)
 {
     CSquare *p;
-    int i;
+    vector<unsigned int>::iterator i;
     
     p = this;
     while (p) {
         if (!p->to_be_passed()) {
             /* just for check */
-            i = p->ids.find(room->id);
-            if (i == -1) {
-                printf("FATAL ERROR! CSquare::removeroom given room is not in the supposed CSquare!\r\n");
-                return;
-            }
-            p->ids.remove(room->id);
+            for (i=ids.begin(); i != ids.end(); ++i)
+                if (room->id == *i) {
+                    i = ids.erase(i);
+                    return;             /* we are done there, right ? */
+                }
         }
         
         p = p->subsquares[ p->get_mode(room) ];
@@ -880,7 +884,7 @@ CPlane::CPlane(struct Troom *room)
             squares->centerx, squares->centery, room->x, room->y);
 */
     
-    squares->ids.add(room->id);
+    squares->ids.push_back(room->id);
 }
 
 void  roommanager::add_to_plane(struct Troom *room)

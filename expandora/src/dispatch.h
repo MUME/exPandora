@@ -39,12 +39,12 @@ class Cdispatcher
     char roomdesc[PROXY_BUFFER_SIZE];
     char brief_mode;
     char getting_desc;          /* desc shall be incoming - just got roomname */
-    
+ 
     char last_leaders_movement;
     char leader[MAX_STR_LEN];
     char following_leader;
+
     
-	
     int check_roomname(char *line);
     int check_exits(char *line);
     int check_failure(char *nline);
@@ -59,6 +59,7 @@ public:
     void  analyze_mud_stream(char *buf, int *n);
     void analyze_user_stream(char *buf, int *n);
     int is_brief() { return brief_mode; }
+    char *get_leader() {return leader; }
     
     void dispatch_buffer(); 
 	

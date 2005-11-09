@@ -42,12 +42,12 @@ char roomname_end[MAX_STR_LEN] = { "[0m"};
 char logfile_name[MAX_STR_LEN] = "logfile.txt";
 
 
+
+/* RENDERER THREAD MAIN DEFINES*/
 class RendererThread : public QThread {
 
-    public:
-
+public:
         virtual void run();
-
 } renderer_thread;
 
 void RendererThread::run()
@@ -55,20 +55,21 @@ void RendererThread::run()
   renderer_main();
   print_debug(DEBUG_RENDERER, "quiting child thread function"); 
 }
+/* RENDERER THREAD ENDS*/
 
 
+
+/* PROXY THREAD DEFINES */
 class ProxyThread : public QThread {
-
-    public:
-
+public:
         virtual void run();
-
 } proxy_thread;
 
 void ProxyThread::run()
 {
   proxy_loop();
 }
+/* PROX THREAD ENDS */
 
 
 const char *exitnames[] = { "north", "east", "south", "west", "up", "down" };
