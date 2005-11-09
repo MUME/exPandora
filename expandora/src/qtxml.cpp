@@ -275,7 +275,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
     /* special */
     if (attributes.length() < 3) {
       printf("Not enough exit attributes in XML file!");
-      exit(1);
+      _Exit(1);
     }        
       
     s = attributes.value("dir");
