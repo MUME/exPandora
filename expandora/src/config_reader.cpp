@@ -5,9 +5,11 @@
 #include <qmutex.h>
 
 
+
 #include "rooms.h"
 #include "defines.h"
 #include "struct.h"
+#include "configurator.h"
 
 #include "utils.h"
 #include "renderer.h"
@@ -148,12 +150,11 @@ ACMD(parse_basefile);
 ACMD(parse_roomcolour);
 ACMD(parse_autocheckexits);
 ACMD(parse_autocheckterrain);
-ACMD(parse_movementfailure);
+ACMD(parse_pattern);
 ACMD(parse_mapperbriefmode);
 ACMD(parse_exitspattern);
 ACMD(parse_terraintype);
 ACMD(parse_leadersetup);
-ACMD(parse_logfile);
 ACMD(parse_debug);
 ACMD(parse_include);
 ACMD(parse_engine);
@@ -165,43 +166,72 @@ ACMD(parse_texturesvisibility);
 ACMD(parse_detailsvisibility);
 ACMD(parse_angrylinker);
 
+ACMD(update_localport);
+ACMD(update_remoteport);
+ACMD(update_remotehost);
+ACMD(update_basefile);
+ACMD(update_roomcolour);
+ACMD(update_autocheckexits);
+ACMD(update_autocheckterrain);
+ACMD(update_pattern);
+ACMD(update_mapperbriefmode);
+ACMD(update_exitspattern);
+ACMD(update_terraintype);
+ACMD(update_leadersetup);
+ACMD(update_debug);
+ACMD(update_include);
+ACMD(update_engine);
+ACMD(update_roomnamequote);
+ACMD(update_descquote);
+ACMD(update_autorefresh);
+ACMD(update_automerge);
+ACMD(update_texturesvisibility);
+ACMD(update_detailsvisibility);
+ACMD(update_angrylinker);
+
+
+
 struct config_commands_type {
   const char *command;
-  void (*command_pointer) (char *line);
+  void (*parse_command) (char *line);
+  void (*update_command) (char *line);
+    
 };
 
 
 const config_commands_type commands[] = {
-  {"localport",         parse_localport},
-  {"remoteport",        parse_remoteport},
-  {"remotehost",        parse_remotehost},
-  {"basefile",          parse_basefile},
-  {"roomcolour",        parse_roomcolour},
-  {"autocheckexits",    parse_autocheckexits},
-  {"autocheckterrain",  parse_autocheckterrain},
-  {"movementfailure",   parse_movementfailure},
-  {"mapperbriefmode",   parse_mapperbriefmode},
-  {"exitspattern",      parse_exitspattern},
-  {"terraintype",       parse_terraintype},
-  {"leadersetup",       parse_leadersetup},
-  {"logfile",           parse_logfile},
-  {"debug",             parse_debug},
-  {"include",           parse_include},
-  {"engine",            parse_engine},
-  {"roomnamesimilarityquote",     parse_roomnamequote},
-  {"descsimilarityquote",         parse_descquote},
-  {"autorefresh",       parse_autorefresh},
-  {"automerge",			parse_automerge},
-  {"texturesvisibilityrange",      parse_texturesvisibility},
-  {"detailsvisibilityrange",       parse_detailsvisibility},
-  {"angrylinker",       parse_angrylinker},
-  {NULL, NULL}
+  {"localport",         parse_localport, update_localport},
+  {"remoteport",        parse_remoteport, update_remoteport},
+  {"remotehost",        parse_remotehost, update_remotehost},
+  {"basefile",          parse_basefile, update_basefile},
+  {"roomcolour",        parse_roomcolour, update_roomcolour},
+  {"autocheckexits",    parse_autocheckexits, update_autocheckexits},
+  {"autocheckterrain",  parse_autocheckterrain, update_autocheckterrain},
+  {"pattern",           parse_pattern, update_pattern},
+  {"mapperbriefmode",   parse_mapperbriefmode, update_mapperbriefmode},
+  {"exitspattern",      parse_exitspattern, update_exitspattern},
+  {"terraintype",       parse_terraintype, update_terraintype},
+  {"leadersetup",       parse_leadersetup, update_leadersetup},
+  {"debug",             parse_debug, update_debug},
+  {"include",           parse_include, update_include},
+  {"engine",            parse_engine, update_engine},
+  {"roomnamesimilarityquote",     parse_roomnamequote, update_roomnamequote},
+  {"descsimilarityquote",         parse_descquote, update_descquote},
+  {"autorefresh",       parse_autorefresh, update_autorefresh},
+  {"automerge",			parse_automerge, update_automerge},
+  {"texturesvisibilityrange",      parse_texturesvisibility, update_texturesvisibility},
+  {"detailsvisibilityrange",       parse_detailsvisibility, update_detailsvisibility},
+  {"angrylinker",       parse_angrylinker, update_angrylinker},
+  {NULL, NULL, NULL}
 };
+
+
+
 
 void parse_line(char *line);
 
 
-
+/* PARSE SECTION */
 
 
 ACMD(parse_leadersetup)
@@ -233,7 +263,6 @@ ACMD(parse_engine)
 {
   char *p;
   char arg[MAX_STR_LEN];
-  int i;
   char cause_type, result_type;
   
   
@@ -246,14 +275,7 @@ ACMD(parse_engine)
   p = one_argument(p, arg, 2);         /* to upper case */
 
   
-  cause_type = -1;
-  for (i = 0; event_types[i].name; i++) 
-    if ( (event_types[i].group == E_CAUSE) &&               
-         (strcmp(arg, event_types[i].name) == 0) ) 
-    {
-      cause_type = event_types[i].type;
-      break;
-    }
+  cause_type = get_cause_type_by_line(arg);
     
   if (cause_type == -1) {
     CONFIG_ERROR("bad cause type");
@@ -269,15 +291,7 @@ ACMD(parse_engine)
   }                                             
   p = one_argument(p, arg, 2);  /* to upper case */          
   
-  result_type = -1;
-  for (i = 0; event_types[i].name; i++) 
-    if ( (event_types[i].group == E_RESULT) &&               
-         (strcmp(arg, event_types[i].name) == 0) ) 
-    {
-      result_type = event_types[i].type;
-      break;
-    }
-
+  result_type = get_result_type_by_line(arg);
   if (result_type == -1) {
     CONFIG_ERROR("bad result type");
     return;                                     
@@ -322,40 +336,45 @@ ACMD(parse_debug)
   CONFIG_ERROR("incorrect debug option");
 }
 
-ACMD(parse_movementfailure)
+ACMD(parse_pattern)
 {
   char *p;
   char arg[MAX_STR_LEN];
-  struct TFailureData *failure;
-  
+  QString data;
+  char marker, r;
+    
   p = skip_spaces(line);                        
   if (!*p) {               
     CONFIG_ERROR("missing movement failures label");
     return;                                     
   }                                             
+  p = one_argument(p, arg, 2); 
+  
+  r = get_result_type_by_line(arg);
+  if (r != -1) {
+      marker = 'R';
+  } else {
+    r = get_cause_type_by_line(arg);
+    if (r == -1) {
+      CONFIG_ERROR("wrong type of the pattern");
+      return;                                     
+    }                                             
+    marker = 'C';
+  }    
+      
+  p = skip_spaces(p);                        
   p = one_argument(p, arg, 0); 
   
-  failure = new TFailureData;
-  
-  failure->data = (char *) malloc(strlen(arg)+1);
-  strcpy(failure->data, arg);
+  data = arg;
   
   p = skip_spaces(p);                        
   if (!*p) {                                 
     CONFIG_ERROR("missing pattern");
-    free(failure->data);
-    free(failure);
     return;                                     
   }                                             
-  
-  failure->pattern = (char *) malloc(strlen(p)+1);
-  strcpy(failure->pattern, p);
-  
-  failure->type = R_FAIL;
-  
-  failure->next = failure_data;
-  
-  failure_data = failure;
+  conf.add_pattern(p, data, marker, r);
+  return;
+      
 }
 
 
@@ -415,14 +434,16 @@ ACMD(parse_autocheckexits)
 
   GET_NEXT_ARGUMENT(p, line, arg, 0);
 
-  engine_flags.exits_check = get_input_boolean(arg);
-  if (engine_flags.exits_check == -1) {
+  char c = get_input_boolean(arg);
+    
+  if (c == -1) {
     CONFIG_ERROR("bad boolean value");
-    engine_flags.exits_check = FALSE;
     return;
+  } else {
+    conf.set_exits_check(c);
   }
   
-  printf("Exits check is %s.\r\n", ON_OFF(engine_flags.exits_check) );
+  printf("Exits check is %s.\r\n", ON_OFF(conf.get_exits_check() ) );
 }
 
 
@@ -433,14 +454,13 @@ ACMD(parse_automerge)
 
   GET_NEXT_ARGUMENT(p, line, arg, 0);
   
-  engine_flags.automerge  = get_input_boolean(arg);
-  if (engine_flags.automerge == -1) {
+  if (char c = get_input_boolean(arg) == -1) {
     CONFIG_ERROR("bad boolean value");
-    engine_flags.automerge = TRUE;
     return;
-  }
+  } else 
+    conf.set_automerge(c);
   
-  printf("AutoMerge check is %s.\r\n", ON_OFF(engine_flags.automerge) );
+  printf("AutoMerge check is %s.\r\n", ON_OFF(conf.get_automerge() ) );
 }
 
 
@@ -450,15 +470,14 @@ ACMD(parse_angrylinker)
   char arg[MAX_STR_LEN];
 
   GET_NEXT_ARGUMENT(p, line, arg, 0);
-  
-  engine_flags.angrylinker = get_input_boolean(arg);
-  if (engine_flags.angrylinker == -1) {
+
+  if (char c = get_input_boolean(arg) == -1) {
     CONFIG_ERROR("bad boolean value");
-    engine_flags.angrylinker = FALSE;
     return;
-  }
+  } else 
+    conf.set_angrylinker(c);
   
-  printf("AngryLinker is %s.\r\n", ON_OFF(engine_flags.angrylinker) );
+  printf("AngryLinker is %s.\r\n", ON_OFF(conf.get_angrylinker() ) );
 }
 
 ACMD(parse_autocheckterrain)
@@ -468,14 +487,13 @@ ACMD(parse_autocheckterrain)
 
   GET_NEXT_ARGUMENT(p, line, arg, 0);
   
-  engine_flags.terrain_check= get_input_boolean(arg);
-  if (engine_flags.terrain_check == -1) {
+  if (char c = get_input_boolean(arg) == -1) {
     CONFIG_ERROR("bad boolean value");
-    engine_flags.terrain_check = TRUE;
     return;
-  }
+  } else 
+    conf.set_terrain_check(c);
   
-  printf("Terrain check is %s.\r\n", ON_OFF(engine_flags.terrain_check) );
+  printf("Terrain check is %s.\r\n", ON_OFF(conf.get_terrain_check() ) );
 }
 
 
@@ -486,14 +504,13 @@ ACMD(parse_autorefresh)
 
   GET_NEXT_ARGUMENT(p, line, arg, 0);
   
-  engine_flags.autorefresh = get_input_boolean(arg);
-  if (engine_flags.autorefresh == -1) {
+  if (char c = get_input_boolean(arg) == -1) {
     CONFIG_ERROR("bad boolean value");
-    engine_flags.autorefresh = TRUE;
     return;
-  }
+  } else 
+    conf.set_autorefresh(c);
   
-  printf("AutoRefresh is %s.\r\n", ON_OFF(engine_flags.autorefresh) );
+  printf("AutoRefresh is %s.\r\n", ON_OFF( conf.get_autorefresh() ) );
 }
 
 
@@ -513,8 +530,8 @@ ACMD(parse_mapperbriefmode)
     return;
   }
   
-  dispatcher.set_brief_mode(i);
-  printf("MBriefMode is %s.\r\n", ON_OFF( dispatcher.get_brief_mode() ) );
+  conf.set_brief_mode(i);
+  printf("MBriefMode is %s.\r\n", ON_OFF( conf.get_brief_mode() ) );
 }  
   
 ACMD(parse_localport)
@@ -524,7 +541,7 @@ ACMD(parse_localport)
   
   GET_NEXT_ARGUMENT(p, line, arg, 0);
   
-  local_port = atoi(arg);
+  conf.set_local_port(atoi(arg));
 }
 
 
@@ -535,7 +552,7 @@ ACMD(parse_remoteport)
   
   GET_NEXT_ARGUMENT(p, line, arg, 0);
   
-  remote_port = atoi(arg);
+  conf.set_remote_port(atoi(arg));
 }
 
 ACMD(parse_remotehost)
@@ -545,7 +562,7 @@ ACMD(parse_remotehost)
   
   GET_NEXT_ARGUMENT(p, line, arg, 0);
   
-  strcpy(remote_host, arg);
+  conf.set_remote_host(arg);
 }
 
 
@@ -557,7 +574,7 @@ ACMD(parse_descquote)
   
   GET_NEXT_ARGUMENT(p, line, arg, 0);
   
-  comparator.set_desc_quote(atoi(arg));
+  conf.set_desc_quote(atoi(arg));
 }
 
 ACMD(parse_roomnamequote)
@@ -567,7 +584,7 @@ ACMD(parse_roomnamequote)
   
   GET_NEXT_ARGUMENT(p, line, arg, 0);
   
-  comparator.set_roomname_quote(atoi(arg));
+  conf.set_roomname_quote(atoi(arg));
 }
 
 ACMD(parse_texturesvisibility)
@@ -577,7 +594,7 @@ ACMD(parse_texturesvisibility)
   
   GET_NEXT_ARGUMENT(p, line, arg, 0);
   
-  texture_visibilit_range = atoi(arg);
+  conf.set_texture_vis(atoi(arg));
 }
 
 ACMD(parse_detailsvisibility)
@@ -587,7 +604,7 @@ ACMD(parse_detailsvisibility)
   
   GET_NEXT_ARGUMENT(p, line, arg, 0);
   
-  details_visibility_range = atoi(arg);
+  conf.set_details_vis(atoi(arg));
 }
 
 
@@ -599,7 +616,7 @@ ACMD(parse_exitspattern)
   GET_NEXT_ARGUMENT(p, line, arg, 1);   /* get as is */
   
   printf("New exits pattern: \"%s\".\r\n", arg); 
-  strcpy(exits_pattern, arg);
+  conf.set_exits_pat(arg);
 }
 
 
@@ -610,20 +627,10 @@ ACMD(parse_basefile)
   
   GET_NEXT_ARGUMENT(p, line, arg, 1); /* get as is */
   
-  strcpy(base_file, path);
-  strcat(base_file, arg);
+  QString str = path;
+  str += arg;
+  conf.set_base_file(str);
 }
-
-ACMD(parse_logfile)
-{
-  char *p;
-  char arg[MAX_STR_LEN];
-  
-  GET_NEXT_ARGUMENT(p, line, arg, 1); /* get as is */
-  
-  strcpy(logfile_name, arg);
-}
-
 
 ACMD(parse_roomcolour)
 {
@@ -632,13 +639,14 @@ ACMD(parse_roomcolour)
   
   GET_NEXT_ARGUMENT(p, line, arg, 1);   /* as is */
   
-  strcpy(roomname_start, arg);
+  conf.set_look_col(arg);
   
   GET_NEXT_ARGUMENT(p, p, arg, 1);      /* as is */
 
-  strcpy(roomname_end, arg);
+  //strcpy(roomname_end, arg);
   
-  printf("Roomname colour check: %sRoomname colour example%s.\r\n", roomname_start, roomname_end);
+  printf("Roomname colour check: %sRoomname colour example%s.\r\n", 
+        (const char *) conf.get_look_col(), (const char *) conf.get_end_col());
 }
 
 int parse_config(char * in_path, char *fn)
@@ -703,11 +711,126 @@ void parse_line(char *line)
     return;
   
   for (i = 0; commands[i].command != NULL; i++) {
-    if (strcmp(arg, commands[i].command) == 0 && commands[i].command_pointer !=NULL ) 
+    if (strcmp(arg, commands[i].command) == 0 && commands[i].parse_command !=NULL ) 
     {
-      ((*commands[i].command_pointer) (p));
+      ((*commands[i].parse_command) (p));
     }
   }
   
   
+}
+
+
+
+
+/* ------------- UPDATE SECTION ---------------- */
+
+ACMD(update_localport) 
+{
+    
+}
+
+ACMD(update_remoteport)
+{
+    
+}
+
+ACMD(update_remotehost)
+{
+    
+}
+
+ACMD(update_basefile)
+{
+    
+}
+
+ACMD(update_roomcolour)
+{
+    
+}
+
+ACMD(update_autocheckexits)
+{
+    
+}
+
+ACMD(update_autocheckterrain)
+{
+    
+}
+
+ACMD(update_pattern)
+{
+    
+}
+
+ACMD(update_mapperbriefmode)
+{
+    
+}
+
+ACMD(update_exitspattern)
+{
+    
+}
+
+ACMD(update_terraintype)
+{
+    
+}
+
+ACMD(update_leadersetup)
+{
+    
+}
+
+ACMD(update_debug)
+{
+    
+}
+
+ACMD(update_include)
+{
+    
+}
+
+ACMD(update_engine)
+{
+    
+}
+
+ACMD(update_roomnamequote)
+{
+    
+}
+
+ACMD(update_descquote)
+{
+    
+}
+
+ACMD(update_autorefresh)
+{
+    
+}
+
+ACMD(update_automerge)
+{
+    
+}
+
+ACMD(update_texturesvisibility)
+{
+    
+}
+
+ACMD(update_detailsvisibility)
+{
+    
+}
+
+ACMD(update_angrylinker)
+{
+    
 }

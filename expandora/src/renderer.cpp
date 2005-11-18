@@ -10,6 +10,7 @@
 
 #include "renderer.h"
 #include "struct.h"
+#include "configurator.h"
 
 
 #include "stacks.h"
@@ -28,8 +29,6 @@ GLfloat marker_colour[4] =  {1.0, 0.2, 0.0, 0.6};
 
 
 #define MARKER_SIZE           (ROOM_SIZE/2.0)
-int texture_visibilit_range = 300;
-int details_visibility_range = 500;
 
 class MainWindow *renderer_window;
 
@@ -321,10 +320,10 @@ void RendererWidget::glDrawRoom(struct Troom *p)
     distance = m_Frustum[FRONT][A] * dx + m_Frustum[FRONT][B] * dy + 
                m_Frustum[FRONT][C] * dz + m_Frustum[FRONT][D];
     
-    if (distance >= details_visibility_range) 
+    if (distance >= conf.get_details_vis()) 
       lines = 0;
 
-    if (distance >= texture_visibilit_range) 
+    if (distance >= conf.get_texture_vis()) 
       texture = 0;
 
     
@@ -517,7 +516,7 @@ void RendererWidget::glDrawRoom(struct Troom *p)
 void RendererWidget::glDrawCSquare(CSquare *p)
 {
     struct Troom *room;
-    vector<unsigned int>::iterator k;
+    unsigned int k;
     
     if (!SquareInFrustum(p)) {
         return; /* this square is not in view */
@@ -534,8 +533,8 @@ void RendererWidget::glDrawCSquare(CSquare *p)
         if (p->subsquares[ Right_Lower ])
             glDrawCSquare( p->subsquares[ Right_Lower ]);
     } else {
-        for (k = p->ids.begin(); k != p->ids.end(); ++k) {
-            room = roomer.getroom( *k );
+        for (k = 0; k < p->ids.size(); k++) {
+            room = roomer.getroom( p->ids[k] );
             glDrawRoom(room);
         } 
     }

@@ -42,14 +42,18 @@ extern struct Tevent *pre_Rstack;
 extern QMutex stacks_mutex;
 
 
-void preRAdd(char type, char *data);
-void preCAdd(char type, char *data);
+void preRAdd(char type, const char *data);
+void preCAdd(char type, const char *data);
 
 
 void Rremove(); /* remove an items from Result stack */
 void Cremove(); /* remove an items from Result stack */
 void addtostack(struct Tevent *stack, char type, char *data);
 void printstacks();
+
+char get_cause_type_by_line(char *line);
+char get_result_type_by_line(char *line);
+
 
 void clear_events_stacks();
 

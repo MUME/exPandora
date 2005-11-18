@@ -2,10 +2,10 @@
 #include <cstring>
 #include <cstdio>
 
-
-#include "defines.h"
 #include <qmutex.h>
 
+#include "defines.h"
+#include "configurator.h"
 
 #include "struct.h"
 
@@ -119,7 +119,7 @@ void addtostack(struct Tevent *stack, char type, char *data)
 
 }
 
-void preRAdd(char type, char *data)
+void preRAdd(char type, const char *data)
 {
     struct Tevent *n, *p;
 
@@ -157,7 +157,7 @@ void preRAdd(char type, char *data)
     stacks_mutex.unlock();
 }
 
-void preCAdd(char type, char *data)
+void preCAdd(char type, const char *data)
 {
     struct Tevent *n, *p;
 
@@ -211,10 +211,10 @@ void printstacks()
             "      AutoRefresh settings %s (RName/Desc quotes %i/%i), \r\n"
             "      AngryLinker %s\r\n"
             " Current leader: %s\r\n", 
-            ON_OFF(engine_flags.mapping), ON_OFF(engine_flags.automerge), 
-            ON_OFF(engine_flags.exits_check), ON_OFF(engine_flags.terrain_check),
-            ON_OFF(engine_flags.autorefresh), comparator.name_quote, comparator.desc_quote,
-            ON_OFF(engine_flags.angrylinker), dispatcher.get_leader()
+            ON_OFF(engine_flags.mapping), ON_OFF(conf.get_automerge()), 
+            ON_OFF(conf.get_exits_check() ), ON_OFF(conf.get_terrain_check() ),
+            ON_OFF(conf.get_autorefresh() ), conf.get_name_quote(), conf.get_desc_quote(),
+            ON_OFF(conf.get_angrylinker() ), dispatcher.get_leader()
             );
     
     send_to_user(line);
@@ -262,4 +262,26 @@ void printstacks()
     send_to_user("\n");
 
     stacker.printstacks();
+}
+
+char get_cause_type_by_line(char *line)
+{
+  int i;
+    
+  for (i = 0; event_types[i].name; i++) 
+    if ( (event_types[i].group == E_CAUSE) && (strcmp(line, event_types[i].name) == 0) ) 
+      return event_types[i].type;
+    
+  return -1;     
+}
+
+char get_result_type_by_line(char *line)
+{
+  int i;
+    
+  for (i = 0; event_types[i].name; i++) 
+    if ( (event_types[i].group == E_RESULT) && (strcmp(line, event_types[i].name) == 0) ) 
+      return event_types[i].type;
+    
+  return -1;  
 }

@@ -7,6 +7,7 @@
 #include <cstdlib>
 
 #include "defines.h"
+#include "configurator.h"
 
 
 
@@ -435,11 +436,11 @@ int Strings_Comparator::compare_with_quote(char *str, char *text, int quote)
 
 int Strings_Comparator::strcmp_roomname(char *name, char *text)
 {
-    return compare_with_quote(name, text, name_quote);
+    return compare_with_quote(name, text, conf.get_name_quote());
 }
 
 
 int Strings_Comparator::strcmp_desc(char *name, char *text)
 {
-    return compare_with_quote(name, text, desc_quote);
+    return compare_with_quote(name, text, conf.get_desc_quote());
 }

@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstring>
+#include <qregexp.h>
 
 //#include <arpa/telnet.h>
 #define IAC 255
@@ -10,6 +11,7 @@
 
 
 #include "struct.h"
+#include "configurator.h"
 
 #include "utils.h"
 #include "tree.h"
@@ -28,7 +30,6 @@ char    last_prompt[MAX_STR_LEN];
 Cdispatcher::Cdispatcher() {
   amount = 0;
   roomdesc[0]=0;
-  brief_mode = 0;
   getting_desc = 0;
   leader[0] = 0;        /* no leader yet */
   following_leader = 0;
@@ -43,33 +44,29 @@ void Cdispatcher::set_leaderpatter(char *line)
 
 int Cdispatcher::check_roomname(char *line) {
     char roomname[MAX_STR_LEN];
+    QRegExp rx;
+    unsigned int i;
     
-    unsigned int i, z;
 
-	
-    if (strlen(line) <= (strlen(roomname_start)+strlen(roomname_end)) ) 
-	return 0;
-	
-    if (strncmp(line, roomname_start, strlen(roomname_start)) != 0)
-        return 0;
+    rx = conf.get_roomname_exp();
     
-    
-    /* as rule - roomname ends as soon as we meet ESC char */
-		
-    z=0;
-    /* going to the next char */
-    for (i=strlen(roomname_start);i<strlen(line); i++) {
-		
-	if (line[i]!=roomname_end[0]) {
-            z++;			
-
-        } else {
-            roomname[0] = 0;
+    if (rx.search(line) == 0) {
+        /* so we got a roomname in this line */
+        
+        for (i = 0; i<strlen(line); i++) {
+            int rn_start;
+            int rn_end;
+            int rn_len;
             
-            strncpy(roomname, &line[strlen(roomname_start)], z);
-            roomname[z] = 0;
+            rn_start = strlen( (const char*) conf.get_look_col() );
+            rn_end = strlen( (const char *) conf.get_end_col() );
+            rn_len = strlen(line) - rn_start - rn_end;
             
-            print_debug(DEBUG_DISPATCHER, "ROOMNAME: %s%s%s", roomname_start, roomname, roomname_end);
+            strncpy(roomname, &line[rn_start], rn_len); 
+            roomname[ rn_len] = 0;
+            print_debug(DEBUG_DISPATCHER, "ROOMNAME:..%s..%s..%s..", 
+                (const char *) conf.get_look_col(),
+                roomname, (const char *) conf.get_end_col() );
             
             preRAdd(R_ROOM, roomname);
             notify_analyzer();
@@ -77,32 +74,29 @@ int Cdispatcher::check_roomname(char *line) {
             getting_desc = 1;   /* get desc if it will be there */
             
             return 1;
+            
         }
-		
-		
-    }
-
-    printf("ERROR IN PROXY - reached line end without reaching end of the room desc!\n");
+        
+    } 
+      
     return 0;
 }
 
 int Cdispatcher::check_exits(char *line)
 {
-    unsigned int i;
-   
-    i = 0;
+    QRegExp rx;
+
+    rx = conf.get_exits_exp();
     
-    if (strlen(exits_pattern) <= strlen(line))
-	if (strncmp(line, exits_pattern, strlen(exits_pattern)) == 0) {
-            preRAdd(R_EXITS, &line[ strlen(exits_pattern) ]);
-            
-            print_debug(DEBUG_DISPATCHER, "EXITS: %s [%i]", &line[6], strlen(&line[6]) );
-            getting_desc = 0;   /* do not react on desc alike strings anymore */
-            notify_analyzer();
-            return 1;
-	}
-	
-	return 0;
+    if (rx.search(line) == 0) {
+        preRAdd(R_EXITS, &line[ strlen( (const char *) conf.get_exits_pat() ) ]);
+        print_debug(DEBUG_DISPATCHER, "EXITS: %s [%i]", &line[6], strlen(&line[6]) );
+        getting_desc = 0;   /* do not react on desc alike strings anymore */
+        notify_analyzer();
+        return 1;
+    }
+    
+    return 0;
 }
 
 void Cdispatcher::dispatch_buffer() 
@@ -295,7 +289,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             strcat(roomdesc, buffer[i].line);
             strcat(roomdesc, "|");
             
-            if (brief_mode)
+            if (conf.get_brief_mode())
                 continue;
         }
         
@@ -363,19 +357,20 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
 int Cdispatcher::check_failure(char *nline)
 {
   char tmp_leader_moves[MAX_STR_LEN];
-  struct TFailureData *p;
-  
-  p = failure_data;
-  while (p) {
-    if (strcmp(nline, p->pattern) == 0 ) {
-      print_debug(DEBUG_DISPATCHER, "Got failure %s!", p->data);
-      preRAdd(p->type, p->data);
+
+  for (unsigned int i = 0; i < conf.patterns.size(); i++) {
+    if (conf.patterns[i].rexp.exactMatch(nline) ) {
+      print_debug(DEBUG_DISPATCHER, "Got pattern match type %c, %s!", 
+            conf.patterns[i].type, (const char*)conf.patterns[i].data);
+      if (  conf.patterns[i].marker == 'R')
+        preRAdd(conf.patterns[i].type, (const char *)conf.patterns[i].data);
+      else if (conf.patterns[i].marker == 'C')
+        preCAdd(conf.patterns[i].type, (const char *)conf.patterns[i].data);
+          
       notify_analyzer();
       return 1;
-    }
-    p = p->next;
+    }         
   }
-  
 
   if (strncmp(nline, leader_pattern, strlen(leader_pattern)) == 0) {
     strcpy(leader, nline + strlen(leader_pattern));
@@ -435,6 +430,7 @@ int Cdispatcher::check_failure(char *nline)
 
   }
   
+/*
   if (strcmp(nline, "It is pitch black...") == 0) {
       print_debug(DEBUG_DISPATCHER, "Blinded movement detected!");
       preRAdd(R_BLIND, NULL);
@@ -457,30 +453,9 @@ int Cdispatcher::check_failure(char *nline)
       return 1;
     }
   }
-
-  if ( (strlen(nline) > 26) && (strncmp(nline, "The ", 4) == 0) ) {
-    unsigned int i;
-
-    i = 4;
-    while (i < strlen(nline)) {
-      if (nline[i] == ' ')
-        break;
-      i++;
-    }
-    if (strcmp(&nline[i], " seems to be closed.") == 0) {
-      print_debug(DEBUG_DISPATCHER, "Movement failure WALL");
-      preRAdd(R_FAIL, "door");
-      return 1;
-    }
-  }
-
-/*
-  if ( (strlen(nline) > 26) && (strncmp(nline, "ZBLAM!", 6) == 0 ) ) {
-    print_debug(DEBUG_DISPATCHER, "Movement failure ZBLAM!");
-    preRAdd(R_FAIL, "zblam");
-    return 1;
-  }
 */
+  
+
   return 0;
 }
 

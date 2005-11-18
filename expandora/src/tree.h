@@ -12,11 +12,6 @@ using namespace std;
 struct Ttree {
     Ttree *leads[A_SIZE];	/* pointers to the next part letter */
     vector<unsigned int>        ids;
-    
-//    unsigned int amount;	/* amount of rooms with this name (sequence) */
-//    unsigned int size;	/* current max size of ids array */ 
-//    unsigned int *ids;
-
 };
 
 struct levels_data_type {
@@ -47,7 +42,7 @@ public:
   void delete_item(char *name, unsigned int id);
   void reinit();
   void print_tree_stats();
-  void remove_id(unsigned int id, vector<unsigned int> ids);
+  void remove_id(unsigned int id, Ttree *t);
 };
 
 extern class Ctree namer;

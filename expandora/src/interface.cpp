@@ -27,6 +27,7 @@
 
 #include "defines.h"
 #include "struct.h"
+#include "configurator.h"
 
 #include "renderer.h"
 #include "stacks.h"
@@ -295,10 +296,10 @@ void MainWindow::update_status_bar()
 {
   char str[20];
   
-  if (modified)
-    modLabel->setText(tr(" MOD "));     
+  if (conf.get_data_mod() )
+    modLabel->setText(tr("Data: MOD "));     
   else 
-    modLabel->setText(tr("     "));
+    modLabel->setText(tr("Data: --- "));
   
 
   stacker.get_current(str);
@@ -390,8 +391,12 @@ void MainWindow::hide_roominfo()
 void MainWindow::keyPressEvent( QKeyEvent *k )
 {
     switch ( LOWER(k->ascii()) ) {
-        case 'c':                               
-	  engine();
+        case 'c':
+          if (userland_parser.is_empty())
+            engine();
+          else 
+            userland_parser.parse_command();
+          
           break;
          
         case 'x':

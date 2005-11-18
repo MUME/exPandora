@@ -5,6 +5,7 @@
 
 
 #include "rooms.h"
+#include "configurator.h"
 #include "defines.h"
 #include "struct.h"
 #include "exits.h"
@@ -61,12 +62,12 @@ void do_exits(char *exits_line)
         return;
     }
 
-    if (engine_flags.exits_check) 
+    if (conf.get_exits_check() ) 
       print_debug(DEBUG_ANALYZER, "Autochecking exits");
       
     for (i = 1; i <= stacker.amount; i++) {
       r = roomer.getroom(stacker.get(i));
-      if (engine_flags.exits_check) {
+      if (conf.get_exits_check() ) {
         if (compare_exits(r, exits)) {
           stacker.put(r->id);
           print_debug(DEBUG_ANALYZER, "adding match");

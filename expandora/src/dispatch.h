@@ -1,5 +1,7 @@
 
-
+#include <vector>
+#include <qstring.h>
+using namespace std;
 
 #define IS_PROMPT       1
 #define IS_CRLF         2
@@ -37,9 +39,11 @@ class Cdispatcher
     int amount;
 
     char roomdesc[PROXY_BUFFER_SIZE];
-    char brief_mode;
     char getting_desc;          /* desc shall be incoming - just got roomname */
- 
+
+    char getting_colour_scheme;
+    vector<QString> colour_data;      
+    
     char last_leaders_movement;
     char leader[MAX_STR_LEN];
     char following_leader;
@@ -51,14 +55,11 @@ class Cdispatcher
 	
 public:
 
-    void set_brief_mode(int state) {brief_mode = state;}
-    int get_brief_mode() {return brief_mode;}
     
     void set_leaderpatter(char *line);
     
     void  analyze_mud_stream(char *buf, int *n);
     void analyze_user_stream(char *buf, int *n);
-    int is_brief() { return brief_mode; }
     char *get_leader() {return leader; }
     
     void dispatch_buffer(); 

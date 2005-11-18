@@ -6,6 +6,7 @@
 #include <qmutex.h>
 
 #include "renderer.h"
+#include "configurator.h"
 #include "defines.h"
 #include "struct.h"
 #include "event.h"
@@ -98,8 +99,9 @@ struct engine_program_entry *engine_program = NULL;
 void copy_stacks();
 void engine_run();
 
-
 /* -------------------------- implementations ------------------------------ */ 
+
+
 
 ECMD(engine_command_mappingoff)
 {
@@ -200,7 +202,7 @@ ECMD(engine_command_apply_desc)
   
   if (stacker.next == 1 && match > 0) {
     /* this means we have exactly one match */
-    if (engine_flags.autorefresh) {
+    if (conf.get_autorefresh()) {
       send_to_user("--[ (AutoRefreshed) not exact room desc match: %i errors.\r\n", match);
       roomer.refresh_desc(stacker.get_next(1), r->data);  
     } else {
@@ -258,7 +260,7 @@ ECMD(engine_command_apply_prompt)
   
   for (i = 1; i <= stacker.amount; i++) {
       room = roomer.getroom(stacker.get(i));
-      if (!engine_flags.terrain_check) {
+      if (!conf.get_terrain_check()) {
         stacker.put(room->id);
         continue;
       }
@@ -310,7 +312,6 @@ ECMD(engine_command_resync)
   unsigned int j;
   Ttree *n;
   
-
   engine_command_mappingoff();
   
   print_debug(DEBUG_ANALYZER, "FULL RESYNC");
@@ -539,24 +540,16 @@ void engine_init()
 {
   /* setting defaults */
   engine_flags.done =                   1;            
-  engine_flags.exits_check =            0;
-  engine_flags.terrain_check =          0;
   engine_flags.addingroom =             0;
   engine_flags.resync =                 1;
   engine_flags.mapping =                0;
   engine_flags.gettingfirstroom =       0;
-  engine_flags.autorefresh =            0;
-  engine_flags.automerge =              1;
-  engine_flags.angrylinker =            0;
-  
 
   engine_flags.redraw = 0;
   
   engine_flags.last_roomname[0] = 0;
   engine_flags.last_desc[0] = 0;
   engine_flags.last_terrain = 0;
-  
-  
 }
 
 int engine_parse_command_line(char cause, char result, char *line)
@@ -649,7 +642,7 @@ int check_roomdesc()
         return 0;
     }
 
-    if (engine_flags.automerge == 0) {
+    if (conf.get_automerge() == false) {
         printf("Analyzer: autodesc check if OFF - quiting this routine.\n");
         stacker.put(addedroom->id);
       
@@ -731,7 +724,7 @@ void angrylinker(struct Troom *r)
 
   
     
-  if (!engine_flags.angrylinker) 
+  if (!conf.get_angrylinker()) 
     return; 
 
   print_debug(DEBUG_ROOMS, "AngryLinker is called");

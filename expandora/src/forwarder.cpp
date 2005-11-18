@@ -39,6 +39,7 @@
 
 
 #include "defines.h"
+#include "configurator.h"
 #include "dispatch.h"
 
 QMutex tcp_mutex;
@@ -202,14 +203,15 @@ int proxy_init()
 
   my_net_name.sin_family=AF_INET;
   my_net_name.sin_addr.s_addr=INADDR_ANY;
-  my_net_name.sin_port=htons(local_port);
+  my_net_name.sin_port=htons(conf.get_local_port());
 
   his_net_name.sin_family=AF_INET;
-  his_net_name.sin_port=htons(remote_port);
+  his_net_name.sin_port=htons(conf.get_remote_port());
 
-  if ((hent=gethostbyname(remote_host))==NULL)
+  if ((hent=gethostbyname( (const char *) conf.get_remote_host() ))==NULL)
   {
-    fprintf (stderr, "proxy: %s: Unknown host\n", remote_host);
+    fprintf (stderr, "proxy: %s: Unknown host\n", 
+                                      (const char *) conf.get_remote_host());
     exit(1);
   }
 

@@ -11,6 +11,7 @@
 
 
 #include "defines.h"
+#include "configurator.h"
 
 
 #include "struct.h"
@@ -35,11 +36,7 @@
 int glredraw = 1;		/* redraw is needed */
 int glquit = 0;			/* quiting ... */
 int mud_emulation = 0;          /* we are in emulation mode */
-int modified = 0;
 
-char roomname_start[MAX_STR_LEN] = { "[32m"};
-char roomname_end[MAX_STR_LEN] = { "[0m"};
-char logfile_name[MAX_STR_LEN] = "logfile.txt";
 
 
 
@@ -73,23 +70,10 @@ void ProxyThread::run()
 
 
 const char *exitnames[] = { "north", "east", "south", "west", "up", "down" };
-char exits_pattern[MAX_STR_LEN] = "Exits:";
 
-struct TFailureData *failure_data = NULL;
-
-    
 /* global base settings */
-char    base_file[MAX_STR_LEN] = "";
-int     local_port = 0;
-char    remote_host[MAX_STR_LEN] = "";
-int     remote_port = 0;
-char    engine_config[MAX_STR_LEN] = "";
 int     auda_argc;
 char    **auda_argv;
-    
-
-
-    
     
 void print_usage()
 {
@@ -138,8 +122,8 @@ int main(int argc, char *argv[])
 
 #else
     resPath = "";
-    char    default_base_file[MAX_STR_LEN] = "base.xml";   
-    char    default_remote_host[MAX_STR_LEN] = "warpmud.org";
+    char    default_base_file[MAX_STR_LEN] = "mume.xml";   
+    char    default_remote_host[MAX_STR_LEN] = "129.241.210.221";
 #endif
 
 
@@ -232,39 +216,39 @@ int main(int argc, char *argv[])
     
     
     if (override_base_file[0] != 0) {
-      strcpy(base_file, override_base_file);
-    } else if (base_file[0] == 0) {
-      strcpy(base_file, default_base_file);
+      conf.set_base_file(override_base_file);
+    } else if ( conf.get_base_file() == "") {
+      conf.set_base_file(default_base_file);
     }
-    printf("Using database file : %s.\r\n", base_file);
-
+    printf("Using database file : %s.\r\n", (const char *) conf.get_base_file());
+    
     if (override_remote_host[0] != 0) {
-      strcpy(remote_host, override_remote_host);
-    } else if (remote_host[0] == 0) {
-      strcpy(remote_host, default_remote_host);
+      conf.set_remote_host(override_remote_host);
+    } else if ( conf.get_remote_host() == 0) {
+      conf.set_remote_host(default_remote_host);
     }
-    printf("Using target hostname : %s.\r\n", remote_host);
+    printf("Using target hostname : %s.\r\n", (const char *) conf.get_remote_host() );
 
     if (override_local_port != 0) {
-      local_port = override_local_port;
-    } else if (local_port == 0) {
-      local_port = default_local_port;
+      conf.set_local_port(override_local_port);
+    } else if ( conf.get_local_port() == 0) {
+      conf.set_local_port(default_local_port);
     }
-    printf("Using local port : %i.\r\n", local_port);
+    printf("Using local port : %i.\r\n", conf.get_local_port());
 
     if (override_remote_port != 0) {
-      remote_port = override_remote_port;
-    } else if (remote_port == 0) {
-      remote_port = default_remote_port;
+      conf.set_remote_port(override_remote_port);
+    } else if (conf.get_remote_port() == 0) {
+      conf.set_remote_port(default_remote_port);
     }
-    printf("Using target port : %i.\r\n", remote_port);
+    printf("Using target port : %i.\r\n", conf.get_remote_port());
 
     printf("-- Starting Pandora\n");
   
     proxy_init();
 
     printf("Loading the database ... \r\n");
-    xml_readbase(base_file);
+    xml_readbase( conf.get_base_file() );
 //    roomer.database_integrity_check("After xml reading");
     
     printf("Successfuly loaded %i rooms!\n", roomer.amount);

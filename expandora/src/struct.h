@@ -26,13 +26,6 @@ struct room_flag_data {
 };
 
 
-struct TFailureData {
-  char *pattern;                /* pattern */
-  char *data;                   /* data for event structure */
-  char type;                    /* failure type */
-  struct TFailureData *next;
-};
-
 struct event_types_type {
   char  *name;
   char  type;
@@ -41,15 +34,10 @@ struct event_types_type {
 
 struct engine_flags_type {
   char done;                    /* finish */       
-  char exits_check;             /* apply exits check to stacks */
-  char terrain_check;           /* apply terrain check to stacks */
   char addingroom;              /* adding room right now */
   char resync;                  /* do full resync */
   char mapping;                 /* mapping is On/OFF */
   char gettingfirstroom;        /* getting the very first room in base */
-  char autorefresh;             /* automatic room desc refresh */
-  char automerge;               /* automatic twins merging based on roomdesc */
-  char angrylinker;             /* automatic linking based on coordinates */
   
   
   char redraw;  

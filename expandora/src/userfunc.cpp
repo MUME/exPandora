@@ -5,6 +5,7 @@
 
 #include "rooms.h"
 #include "defines.h"
+#include "configurator.h"
 #include "struct.h"
 #include "dispatch.h"
 #include "stacks.h"
@@ -18,10 +19,14 @@
 #include "renderer.h"
 #include "exits.h"
 
+class Userland userland_parser;
 
 /* ================= ENCHANCED USER FUNCTIONS VERSIONS =============== */
 #define USERCMD_FLAG_SYNC       (1 << 0)       /* sync is required */
 #define USERCMD_FLAG_REDRAW     (1 << 1)       /* redraw after executing */
+#define USERCMD_FLAG_INSTANT    (1 << 2)       /* commands flagged with instant flag */
+                                               /* get executed in dispatcher thread */
+                                               /* all others are executed in interface thread */
 
 #define USER_CONF_MAP         1
 #define USER_CONF_BRIEF       2
@@ -86,6 +91,9 @@ USERCMD(usercmd_mmerge);
 
 USERCMD(usercmd_mnewmap);
 
+    
+        
+
 
 #define USER_DEC_X      1
 #define USER_DEC_Y      2
@@ -124,6 +132,8 @@ USERCMD(usercmd_mquit);
 USERCMD(usercmd_maddroom);
 
 USERCMD(usercmd_mevent);
+
+USERCMD(usercmd_mcalibrate);
 
 
 const struct user_command_type user_commands[] = {
@@ -209,18 +219,17 @@ const struct user_command_type user_commands[] = {
    "    Examples: minfo / minfo 120\r\n\r\n"
    "    This command displays everything know about current room. Roomname, id, flags,\r\n"
    "room description, exits, connections and last update date.\r\n"},
-  {"north",         usercmd_move,         NORTH,          0,   NULL, NULL},
-  {"east",          usercmd_move,         EAST,           0,   NULL, NULL},
-  {"south",         usercmd_move,         SOUTH,          0,   NULL, NULL},
-  {"west",          usercmd_move,         WEST,           0,   NULL, NULL},
-  {"up",            usercmd_move,         UP,             0,   NULL, NULL},
-  {"down",          usercmd_move,         DOWN,           0,   NULL, NULL},
-  {"look",          usercmd_move,         USER_MOVE_LOOK, 0,   NULL, NULL},
-  {"l",             usercmd_move,         USER_MOVE_LOOK, 0,   NULL, NULL},
-  {"look",          usercmd_move,         USER_MOVE_LOOK, 0,   NULL, NULL},
-  {"examine",       usercmd_move,         USER_MOVE_LOOK, 0,   NULL, NULL},
-  {"exa",           usercmd_move,         USER_MOVE_LOOK, 0,   NULL, NULL},
-  {"exam",          usercmd_move,         USER_MOVE_LOOK, 0,   NULL, NULL},
+  {"north",         usercmd_move,         NORTH,          USERCMD_FLAG_INSTANT,   NULL, NULL},
+  {"east",          usercmd_move,         EAST,           USERCMD_FLAG_INSTANT,   NULL, NULL},
+  {"south",         usercmd_move,         SOUTH,          USERCMD_FLAG_INSTANT,   NULL, NULL},
+  {"west",          usercmd_move,         WEST,           USERCMD_FLAG_INSTANT,   NULL, NULL},
+  {"up",            usercmd_move,         UP,             USERCMD_FLAG_INSTANT,   NULL, NULL},
+  {"down",          usercmd_move,         DOWN,           USERCMD_FLAG_INSTANT,   NULL, NULL},
+  {"look",          usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
+//  {"l",             usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
+  {"examine",       usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
+//  {"exa",           usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
+//  {"exam",          usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"mmerge",        usercmd_mmerge,       0,    USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
     "Merge twin rooms - manual launch.",
    "    Usage: mmerge [id] [force]\r\n"
@@ -347,21 +356,56 @@ const struct user_command_type user_commands[] = {
     "Raise an internal event",
     "    Usage: m_event <event|list> [data]\r\n\r\n"
     "   Puts given event in appropriate stack - use together with client actions, but with care.\r\n"
-    "This might corrupt events order and thus cause false sync or malfunction. See manual for event"
+    "This might corrupt events order and thus cause false sync or malfunction. See manual for event\r\n"
     "types (or type mevent list) and additional information.\r\n"},
+    
+  {"mcalibrate",        usercmd_mcalibrate, 0, 0,
+      "Calibrates the used colour scheme",
+    "   Usage: mcalibrate\r\n\r\n"
+    "  This command sends 'change colour' command to mume and then parses the output.\r\n"
+    "It reads the following lines: look, prompt. It also checks if you are using those\r\n"
+    "colours for more then one line - you have to change that if you want a stable mappers\r\n"
+    "behaviour.\r\n"},
     
     
     
   {NULL, NULL, 0, 0, NULL, NULL}
 };
 
+void Userland::add_command(int id, char *arg) 
+{
+    struct queued_command_type t;
+        
+
+    t.id = id;
+    strcpy(t.arg, arg);
+
+    queue_mutex.lock();
+    commands_queue.push_back(t);
+    queue_mutex.unlock();
+    notify_analyzer();
+}
+
+
+void Userland::parse_command()
+{
+  struct queued_command_type t;
+
+    
+  t = commands_queue.front();
+  ((*user_commands[t.id].command_pointer) (t.id, user_commands[t.id].subcmd, t.arg));  
+
+  queue_mutex.lock();
+  commands_queue.pop_front();
+  queue_mutex.unlock();
+}
 
 int parse_user_input_line(char *line)
 {
   char *p;
   char arg[MAX_STR_LEN];
   int i;
-  int parse_result;
+//  int parse_result;
   
   p = skip_spaces(line);
 
@@ -381,7 +425,13 @@ int parse_user_input_line(char *line)
       if (IS_SET(user_commands[i].flags, USERCMD_FLAG_SYNC)) 
         CHECK_SYNC;
       
-      parse_result = ((*user_commands[i].command_pointer) (i, user_commands[i].subcmd, p));
+      if (IS_SET(user_commands[i].flags, USERCMD_FLAG_INSTANT)) {
+        ((*user_commands[i].command_pointer) (i, user_commands[i].subcmd, p));
+      }
+      else {
+        userland_parser.add_command(i, p);
+      }
+
       
       if (IS_SET(user_commands[i].flags, USERCMD_FLAG_REDRAW)) 
         toggle_renderer_reaction();
@@ -389,7 +439,7 @@ int parse_user_input_line(char *line)
       if (renderer_window)
         renderer_window->update_status_bar();
       
-      return parse_result;
+      return USER_PARSE_DONE;
     }
   
   if (mud_emulation) {
@@ -400,6 +450,7 @@ int parse_user_input_line(char *line)
   
   return USER_PARSE_NONE;
 }
+
 
 void display_debug_settings()
 {
@@ -1291,7 +1342,7 @@ USERCMD(usercmd_config)
                   }
                     
                   engine_flags.mapping = 1;
-                  engine_flags.exits_check = 0;
+                  conf.set_exits_check(false);
                   send_to_mud("brief OFF\n");
                   send_to_mud("spam ON\n");
                   send_to_mud("prompt all\n");
@@ -1307,49 +1358,49 @@ USERCMD(usercmd_config)
 		break;
 	case  USER_CONF_BRIEF:
                 if (desired == -1)
-                  dispatcher.set_brief_mode( 1 - dispatcher.get_brief_mode());
+                  conf.set_brief_mode( !conf.get_brief_mode());
                 else 
-                  dispatcher.set_brief_mode(desired);
+                  conf.set_brief_mode(desired);
                 
                 send_to_user("----[ Mapper Brief Mode is now %s.\r\n", 
-                              ON_OFF(dispatcher.get_brief_mode()) );
+                              ON_OFF(conf.get_brief_mode()) );
 		break;
 	case  USER_CONF_AUTOMERGE:
                 if (desired == -1)
-                  engine_flags.automerge = 1 - engine_flags.automerge;
+                  conf.set_automerge( !conf.get_automerge() );
                 else 
-                  engine_flags.automerge = desired;
+                  conf.set_automerge(desired);
                 
                 send_to_user("----[ Description analyzer and automatic merging is now %s.\r\n", 
-                              ON_OFF(engine_flags.automerge) );
+                              ON_OFF(conf.get_automerge()) );
 		break;
 	case  USER_CONF_ANGRYLINKER:
                 if (desired == -1)
-                  engine_flags.angrylinker = 1 - engine_flags.angrylinker;
+                  conf.set_angrylinker( !conf.get_angrylinker() );
                 else 
-                  engine_flags.angrylinker = desired;
+                  conf.set_angrylinker(desired);
                 
                 send_to_user("----[ AngryLinker is now %s.\r\n", 
-                              ON_OFF(engine_flags.angrylinker) );
+                              ON_OFF(conf.get_angrylinker()) );
 		break;
 
         case  USER_CONF_EXITS:
                 if (desired == -1)
-                  engine_flags.exits_check = 1 - engine_flags.exits_check;
+                  conf.set_exits_check( !conf.get_exits_check() );
                 else 
-                  engine_flags.exits_check = desired;
+                  conf.set_exits_check(desired);
                 
                 send_to_user("----[ Exits analyzer is now %s.\r\n", 
-                              ON_OFF(engine_flags.exits_check) );
+                              ON_OFF( conf.get_exits_check() ) );
 		break;
 	case  USER_CONF_TERRAIN:
                 if (desired == -1)
-                  engine_flags.terrain_check = 1 - engine_flags.terrain_check;
+                  conf.set_terrain_check( !conf.get_terrain_check());
                 else 
-                  engine_flags.terrain_check = desired;
+                  conf.set_terrain_check(desired);
                 
                 send_to_user("----[ Terrain analyzer is now %s.\r\n", 
-                              ON_OFF(engine_flags.terrain_check) );
+                              ON_OFF(conf.get_terrain_check()) );
 		break;
   }
 
@@ -1370,9 +1421,9 @@ USERCMD(usercmd_msave)
   p = skip_spaces(line);
   if (!*p) {
     /* no arguments */
-    xml_writebase(base_file);
+    xml_writebase( conf.get_base_file() );
     send_to_user("--[Pandora: Saved...\r\n");
-    modified = 0;
+    conf.set_data_mod(true);
 
     
     send_to_user(last_prompt);
@@ -1383,7 +1434,7 @@ USERCMD(usercmd_msave)
     xml_writebase(arg);
     send_to_user("--[Pandora: Saved to %s...\r\n", arg);
     
-    modified = 0;
+    conf.set_data_mod(true);
 
     send_to_user(last_prompt);
     return USER_PARSE_DONE;
@@ -1418,9 +1469,10 @@ USERCMD(usercmd_mload)
   p = skip_spaces(line);
   if (!*p) {
     /* no arguments */
-    send_to_user(" * Loading the base %s from the disk...\r\n", base_file);
+    send_to_user(" * Loading the file %s from the disk...\r\n", 
+                  (const char *) conf.get_base_file() );
       
-    xml_readbase(base_file);
+    xml_readbase( conf.get_base_file() );
   } else {
     p = one_argument(p, arg, 1);        /* do not lower or upper case - filename */
 
@@ -1437,7 +1489,7 @@ USERCMD(usercmd_mload)
   
   send_to_user("--[Pandora: Done.\r\n");
 
-  modified = 0;
+  conf.set_data_mod(true);
 
   
   send_to_user(last_prompt);
@@ -1587,6 +1639,16 @@ USERCMD(usercmd_mmerge)
 
 
 
+USERCMD(usercmd_mcalibrate)
+{
+  userfunc_print_debug;
+  skip_spaces(line);
+
+  
+  send_to_user(last_prompt);
+  return USER_PARSE_DONE;
+}
+
 USERCMD(usercmd_mstat)
 {
   userfunc_print_debug;
@@ -1666,27 +1728,34 @@ USERCMD(usercmd_move)
     {
           case  NORTH:
                   preCAdd(C_MOVE, "north");
+                  send_to_mud("north\n");
                   break;
           case  EAST:
                   preCAdd(C_MOVE, "east");
+                  send_to_mud("east\n");
                   break;
           case  SOUTH:
                   preCAdd(C_MOVE, "south");
+                  send_to_mud("south\n");
                   break;
           case  WEST:
                   preCAdd(C_MOVE, "west");
+                  send_to_mud("west\n");
                   break;
           case  UP:
                   preCAdd(C_MOVE, "up");
+                  send_to_mud("up\n");
                   break;
           case  DOWN:
                   preCAdd(C_MOVE, "down");
+                  send_to_mud("down\n");
                   break;
           case USER_MOVE_LOOK:
                   p = skip_spaces(line);
                   if (!*p) {      
                     preCAdd(C_LOOK, NULL);
                   }
+                  send_to_mud("look\n");
                   
                   break;
     }      

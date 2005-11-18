@@ -25,7 +25,8 @@ public:
   unsigned int get_next(unsigned int i);
   
   void put(unsigned int id);
-  
+  void remove_room(unsigned int id);    /* swaps */
+
 
   /* DEBUG */
   void printstacks();

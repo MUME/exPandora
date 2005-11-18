@@ -88,25 +88,6 @@ class Strings_Comparator {
     private:
         int D[ MAX_N ] [MAX_M ];
     public:
-        int desc_quote;        /* quote for description - in percents */
-        int name_quote;        /* quote for roomname - in percents */
-        
-        Strings_Comparator() 
-        {
-            desc_quote = 10;
-            name_quote = 10;
-        }
-        
-        void set_roomname_quote(int i)
-        {
-            name_quote = i;
-        }
-
-        void set_desc_quote(int i)
-        {
-            desc_quote = i;
-        }
-        
         int compare(char *pattern, char *text);
         int compare_with_quote(char *str, char *text, int quote);
         int strcmp_roomname(char *name, char *text);

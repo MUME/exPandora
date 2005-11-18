@@ -39,6 +39,16 @@ void stackmanager::printstacks()
     }
 }
 
+void stackmanager::remove_room(unsigned int id)
+{
+  unsigned int i;
+
+  for (i = 1; i <= stacker.amount; i++) 
+    if (stacker.get(i) != id) 
+      stacker.put( stacker.get(i) );
+  stacker.swap();
+}
+
 void stackmanager::put(unsigned int id)
 {
 

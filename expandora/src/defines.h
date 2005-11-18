@@ -51,7 +51,6 @@ extern struct Troom *addedroom;	/* new room, contains new data is addinrroom==1 
 
 extern const char * exitnames[];
 extern char exits_pattern[MAX_STR_LEN];
-extern struct TFailureData *failure_data;
 
 
 int numbydir(char dir);

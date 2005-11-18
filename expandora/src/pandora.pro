@@ -11,6 +11,7 @@ win32 {
 }
 
 HEADERS		+=config_reader.h
+HEADERS		+=configurator.h
 HEADERS		+=defines.h
 HEADERS		+=dispatch.h
 HEADERS		+=engine.h
@@ -28,6 +29,7 @@ HEADERS		+=xml2.h
 
 SOURCES		+=auda.cpp
 SOURCES		+=config_reader.cpp
+SOURCES		+=configurator.cpp
 SOURCES		+=dispatch.cpp
 SOURCES		+=engine.cpp
 SOURCES		+=event.cpp

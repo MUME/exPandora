@@ -9,13 +9,13 @@
 class Ctree namer;
 
 
-void Ctree::remove_id(unsigned int id, vector<unsigned int> ids)
+void Ctree::remove_id(unsigned int id, Ttree *p)
 {
   vector<unsigned int>::iterator i;
 
-  for (i = ids.begin(); i != ids.end(); i++)
+  for (i = p->ids.begin(); i != p->ids.end(); i++)
       if (*i == id) {
-          i = ids.erase(i);
+          i = p->ids.erase(i);
           return;
       }
     
@@ -99,11 +99,11 @@ int Ctree::diving_delete(Ttree * p, char *part, unsigned int id)
     if (strlen(part) == 0) {	/* we've found our item */
 	for (i = 0; i < A_SIZE; i++)
             if (p->leads[i] != NULL) {	/* shall not delete this item */
-                remove_id(id, p->ids);
+                remove_id(id, p);
                 return -1;	/* return state DID NOT DELETE - its used */
             }
 
-            remove_id(id, p->ids);
+            remove_id(id, p);
             if (p->ids.empty()) {
                 delete p;
                 return 1;

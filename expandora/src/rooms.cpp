@@ -4,10 +4,11 @@
 #include <cstring>
 #include <qdatetime.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 #include "defines.h"
 #include "struct.h"
+#include "configurator.h"
 
 #include "rooms.h"
 #include "utils.h"
@@ -107,7 +108,7 @@ void roommanager::database_integrity_check(char *entry_point)
 
 void roommanager::room_modified(struct Troom *r)
 {
-  modified = 1;
+  conf.set_data_mod(true);
   if (r != NULL)
     update_timestamp(r);
 }
@@ -477,8 +478,6 @@ void roommanager::delete_room(struct Troom *r, int mode)
 
 /* --------- _delete_room ENDS --------- */
 
-
-
 /* ------------ small_delete_room --------- */
 void roommanager::small_delete_room(struct Troom *r)
 {
@@ -488,10 +487,10 @@ void roommanager::small_delete_room(struct Troom *r)
 	printf("ERROR (!!): Attempted to delete the base room!\n");
 	return;
     }
-
     namer.delete_item(r->name, r->id);
     remove_from_plane(r);
-
+    stacker.remove_room(r->id);
+    
     free(r->name);
     r->name = NULL;
 
@@ -515,6 +514,9 @@ void roommanager::small_delete_room(struct Troom *r)
     amount--;
     fixfree();
     room_modified(NULL);
+    
+    printf("Done 2.\r\n");
+
 }
 
 /* --------- small_delete_room ENDS --------- */
@@ -542,7 +544,7 @@ void roommanager::setx(unsigned int id, int x)
   p = getroom(id);
   p->x = x;
 
-  modified = 1;
+  conf.set_data_mod(true);
 }
 
 void roommanager::sety(unsigned int id, int y)
@@ -551,7 +553,7 @@ void roommanager::sety(unsigned int id, int y)
     
   p = getroom(id);
   p->y = y;
-  modified = 1;
+  conf.set_data_mod(true);
   
 }
 
@@ -563,7 +565,7 @@ void roommanager::setz(unsigned int id, int z)
   p = getroom(id);
   p->z = z;
   
-  modified = 1;
+  conf.set_data_mod(true);
 }
 
 /* ------------------------------ prints the given room --------------------*/
@@ -575,11 +577,12 @@ void roommanager::send_room(struct Troom *r)
     send_to_user(" Id: %i, Flags: %s, Coord: %i,%i,%i, Last updated: %s\r\n", r->id,
 	    r->sector ? r->sector->desc : "NONE", r->x, r->y, r->z,
             r->timestamp[0] == 0 ? "No Info" : r->timestamp);
-    send_to_user(" %s%s%s\n", roomname_start, r->name, roomname_end);
+    send_to_user(" %s%s%s\n", (const char *) conf.get_look_col(), r->name, 
+                              (const char *) conf.get_look_col() );
 
     line[0] = 0;
     pos = 0;
-    if (!(mud_emulation && dispatcher.is_brief() ) ) {
+    if (!(mud_emulation && conf.get_brief_mode() ) ) {
       for (i = 0; i <= strlen(r->desc); i++)
 	if (r->desc[i] == '|') {
 	    line[pos] = 0;
@@ -603,7 +606,7 @@ void roommanager::send_room(struct Troom *r)
     send_to_user("%s\r\n", line);
 
     
-    if (dispatcher.get_brief_mode() && mud_emulation) {
+    if (conf.get_brief_mode() && mud_emulation) {
       sprintf(line, "Exits: ");
       for (i = 0; i <= 5; i++)
           if (r->exits[i] > 0) {
@@ -746,7 +749,7 @@ void CSquare::add_room_by_mode(struct Troom *room, int mode)
 
 bool CSquare::to_be_passed()
 {
-    if (ids.size() > 0)
+    if (!ids.empty())
         return false;
     
     /* if we have ANY children, the node has to be passed */
@@ -807,15 +810,15 @@ void CSquare::removeroom(struct Troom *room)
     
     p = this;
     while (p) {
-        if (!p->to_be_passed()) {
+        if (!p->to_be_passed()) {       
             /* just for check */
-            for (i=ids.begin(); i != ids.end(); ++i)
+            for (i=p->ids.begin(); i != p->ids.end(); ++i) {
                 if (room->id == *i) {
-                    i = ids.erase(i);
-                    return;             /* we are done there, right ? */
+                    i = p->ids.erase(i);
+                    return;
                 }
+            }
         }
-        
         p = p->subsquares[ p->get_mode(room) ];
     }
 }
@@ -891,6 +894,8 @@ void  roommanager::add_to_plane(struct Troom *room)
 {
     CPlane *p, *prev, *tmp;
 
+    
+    
     if (planes == NULL) {
         planes = new CPlane(room);
         return;
