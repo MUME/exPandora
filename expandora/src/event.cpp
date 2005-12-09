@@ -2,7 +2,7 @@
 #include <cstring>
 #include <cstdio>
 
-#include <qmutex.h>
+#include <QMutex>
 
 #include "defines.h"
 #include "configurator.h"
@@ -101,7 +101,7 @@ void Rremove()
 }
 
 
-void addtostack(struct Tevent *stack, char type, char *data)
+void addtostack(struct Tevent *stack, char type, QByteArray data)
 {
     struct Tevent *n;
 
@@ -112,14 +112,10 @@ void addtostack(struct Tevent *stack, char type, char *data)
     stack->next = n;
 
     n->type = type;
-    n->data[0] = 0;
-
-    if (data != NULL)
-	strcpy(n->data, data);
-
+    n->data = data;
 }
 
-void preRAdd(char type, const char *data)
+void preRAdd(char type, QByteArray data)
 {
     struct Tevent *n, *p;
 
@@ -131,10 +127,7 @@ void preRAdd(char type, const char *data)
     n->prev = NULL;
     
     n->type = type;
-    n->data[0] = 0;
-
-    if (data != NULL)
-	strcpy(n->data, data);
+    n->data = data;
 
     
     /* link */
@@ -157,7 +150,7 @@ void preRAdd(char type, const char *data)
     stacks_mutex.unlock();
 }
 
-void preCAdd(char type, const char *data)
+void preCAdd(char type, QByteArray data)
 {
     struct Tevent *n, *p;
 
@@ -169,10 +162,7 @@ void preCAdd(char type, const char *data)
     n->prev = NULL;
     
     n->type = type;
-    n->data[0] = 0;
-
-    if (data != NULL)
-	strcpy(n->data, data);
+    n->data = data;
 
     
     /* link */

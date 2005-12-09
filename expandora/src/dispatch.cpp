@@ -7,7 +7,7 @@
 
 #include "defines.h"
 
-#include <qmutex.h>
+#include <QMutex>
 
 
 #include "struct.h"
@@ -50,23 +50,25 @@ int Cdispatcher::check_roomname(char *line) {
 
     rx = conf.get_roomname_exp();
     
-    if (rx.search(line) == 0) {
+    if (rx.indexIn(line) >= 0) {
         /* so we got a roomname in this line */
-        
         for (i = 0; i<strlen(line); i++) {
             int rn_start;
             int rn_end;
             int rn_len;
             
-            rn_start = strlen( (const char*) conf.get_look_col() );
-            rn_end = strlen( (const char *) conf.get_end_col() );
+            QByteArray s = conf.get_look_col();
+            rn_start = s.length();
+            
+            s = conf.get_end_col();
+            rn_end = s.length();
             rn_len = strlen(line) - rn_start - rn_end;
             
             strncpy(roomname, &line[rn_start], rn_len); 
             roomname[ rn_len] = 0;
             print_debug(DEBUG_DISPATCHER, "ROOMNAME:..%s..%s..%s..", 
-                (const char *) conf.get_look_col(),
-                roomname, (const char *) conf.get_end_col() );
+                (const char*) conf.get_look_col(),
+                roomname, (const char*) conf.get_end_col() );
             
             preRAdd(R_ROOM, roomname);
             notify_analyzer();
@@ -87,9 +89,8 @@ int Cdispatcher::check_exits(char *line)
     QRegExp rx;
 
     rx = conf.get_exits_exp();
-    
-    if (rx.search(line) == 0) {
-        preRAdd(R_EXITS, &line[ strlen( (const char *) conf.get_exits_pat() ) ]);
+    if (rx.indexIn(line) >= 0) {
+        preRAdd(R_EXITS, &line[ strlen( (const char*) conf.get_exits_pat() ) ]);
         print_debug(DEBUG_DISPATCHER, "EXITS: %s [%i]", &line[6], strlen(&line[6]) );
         getting_desc = 0;   /* do not react on desc alike strings anymore */
         notify_analyzer();
@@ -359,13 +360,13 @@ int Cdispatcher::check_failure(char *nline)
   char tmp_leader_moves[MAX_STR_LEN];
 
   for (unsigned int i = 0; i < conf.patterns.size(); i++) {
-    if (conf.patterns[i].rexp.exactMatch(nline) ) {
+    if (conf.patterns[i].rexp.indexIn(nline) >= 0 ) {
       print_debug(DEBUG_DISPATCHER, "Got pattern match type %c, %s!", 
-            conf.patterns[i].type, (const char*)conf.patterns[i].data);
-      if (  conf.patterns[i].marker == 'R')
-        preRAdd(conf.patterns[i].type, (const char *)conf.patterns[i].data);
-      else if (conf.patterns[i].marker == 'C')
-        preCAdd(conf.patterns[i].type, (const char *)conf.patterns[i].data);
+            conf.patterns[i].type, (const char*) conf.patterns[i].data);
+      if (  conf.patterns[i].group == E_RESULT)
+        preRAdd(conf.patterns[i].type, (const char*) conf.patterns[i].data);
+      else if (conf.patterns[i].group == E_CAUSE)
+        preCAdd(conf.patterns[i].type, (const char*) conf.patterns[i].data);
           
       notify_analyzer();
       return 1;

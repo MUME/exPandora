@@ -4,8 +4,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <qthread.h>
-#include <qmutex.h>
+#include <QThread>
+#include <QMutex>
 
 
 
@@ -24,7 +24,6 @@
 #include "event.h"
 #include "stacks.h"
 #include "forwarder.h"
-#include "config_reader.h"
 #include "utils.h"
 #include "engine.h"
 
@@ -102,6 +101,8 @@ int main(int argc, char *argv[])
     int     default_local_port = 3000;
     int     default_remote_port = 4242;
 
+    
+    
     
 #ifdef Q_OS_MACX
     CFURLRef pluginRef = CFBundleCopyBundleURL(CFBundleGetMainBundle());
@@ -212,7 +213,8 @@ int main(int argc, char *argv[])
     engine_init();
     
     printf("Using config file : %s.\r\n", configfile);
-    parse_config(resPath, configfile);
+    conf.load_config(resPath, configfile);
+    conf.load_engine_config(resPath, "configs/engine.cfg");
     
     
     if (override_base_file[0] != 0) {
@@ -220,14 +222,14 @@ int main(int argc, char *argv[])
     } else if ( conf.get_base_file() == "") {
       conf.set_base_file(default_base_file);
     }
-    printf("Using database file : %s.\r\n", (const char *) conf.get_base_file());
+    printf("Using database file : %s.\r\n", (const char*) conf.get_base_file() );
     
     if (override_remote_host[0] != 0) {
       conf.set_remote_host(override_remote_host);
-    } else if ( conf.get_remote_host() == 0) {
+    } else if ( conf.get_remote_host().isEmpty() ) {
       conf.set_remote_host(default_remote_host);
     }
-    printf("Using target hostname : %s.\r\n", (const char *) conf.get_remote_host() );
+    printf("Using target hostname : %s.\r\n", (const char*) conf.get_remote_host() );
 
     if (override_local_port != 0) {
       conf.set_local_port(override_local_port);

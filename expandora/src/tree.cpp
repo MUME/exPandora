@@ -136,7 +136,7 @@ int Ctree::diving_delete(Ttree * p, char *part, unsigned int id)
     return 1;			/* deleted ! so ... */
 }
 
-void Ctree::delete_item(char *name, unsigned int id)
+void Ctree::delete_item(const char *name, unsigned int id)
 {
     Ttree *p;
     unsigned int i;
@@ -173,7 +173,7 @@ Ctree::Ctree()
     reset_ttree(root);
 }
 
-void Ctree::addname(char *name, unsigned int id)
+void Ctree::addname(const char *name, unsigned int id)
 {
   Ttree *p, *n;
   unsigned int i;
@@ -201,7 +201,7 @@ void Ctree::addname(char *name, unsigned int id)
   p->ids.push_back(id);
 }
 
-Ttree *Ctree::find_by_name(char *name)
+Ttree *Ctree::find_by_name(const char *name)
 {
   unsigned int i;
   Ttree *p;
@@ -221,7 +221,7 @@ Ttree *Ctree::find_by_name(char *name)
   return p;
 }
 
-void Ctree::genhash(char *name, char *hash)
+void Ctree::genhash(const char *name, char *hash)
 {
   unsigned int i;
   unsigned int z;

@@ -4,13 +4,14 @@ TEMPLATE	= app
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
-CONFIG		+= qt opengl warn_on debug thread
+CONFIG		+= qt opengl warn_on thread
+
+QT += xml opengl gui
 
 win32 {
 	CONFIG	+= console
 }
 
-HEADERS		+=config_reader.h
 HEADERS		+=configurator.h
 HEADERS		+=defines.h
 HEADERS		+=dispatch.h
@@ -28,7 +29,6 @@ HEADERS		+=utils.h
 HEADERS		+=xml2.h
 
 SOURCES		+=auda.cpp
-SOURCES		+=config_reader.cpp
 SOURCES		+=configurator.cpp
 SOURCES		+=dispatch.cpp
 SOURCES		+=engine.cpp
@@ -50,8 +50,7 @@ macx {
 	LIBS += /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
 }
 
-unix:LIBS		+= -lm -lqt-mt
-
+unix:LIBS		+= -lm 
 !debug {
 	unix:QMAKE_POST_LINK=strip $(TARGET)
 }

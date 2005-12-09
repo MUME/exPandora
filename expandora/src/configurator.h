@@ -2,32 +2,49 @@
 #define CONFIGURATOR_H 
 /* configurator */
 
-#include <qstring.h>
-#include <qregexp.h>
+#include <QString>
+#include <QRegExp>
 #include <vector>
+#include <QXmlDefaultHandler>
+#include <QGLWidget>
+#include <map>
+
+#define ACMD(name)  void Cconfigurator::name(char *line)
+#define DEF_ACMD(name) void name(char *line)
+
+#define NUM_CONFIG_COMMANDS     23
 
 using namespace std;
 
 typedef struct {
-  QString pattern;                /* pattern */
-  QString data;                   /* data for event structure */
+  QByteArray pattern;                /* pattern */
+  QByteArray data;                   /* data for event structure */
   QRegExp rexp;                   /* expression to match the pattern/WILDCAD */
-  char    marker;                 /* R_FAIL, R_BLIND etc */
-  char    type;                   /* R_something or C_something */
+  char    group;                 /* R or C*/
+  char    type;                   /* R_TYPE, C_TYPE */
 } TPattern;
+
+struct room_sectors_data {
+  QByteArray desc;             /* name of this flag */
+  QByteArray filename;         /* appropriate texture's filename */
+  char   pattern;           /* appropriate pattern */
+  GLuint texture;          /* and texture handler for renderer */
+  GLuint gllist;            /* OpenGL display list */
+};
 
 class Cconfigurator {
     /* general */
     bool        conf_mod;       /* if the config was modified */
+    QByteArray  path;
     
     /* colours */
-    QString     look_col;
-    QString     prompt_col;
-    QString     end_col;
+    QByteArray     look_col;
+    QByteArray     prompt_col;
+    QByteArray     end_col;
     
     
     /* patterns/regexps */
-    QString exits_pat;
+    QByteArray exits_pat;
     
     
     /* regexps */
@@ -36,9 +53,9 @@ class Cconfigurator {
     QRegExp     prompt_exp;
     
     /* data */
-    QString     base_file;
+    QByteArray  base_file;
     int         local_port;
-    QString     remote_host;
+    QByteArray  remote_host;
     int         remote_port;
     bool        db_modified;
     
@@ -50,35 +67,59 @@ class Cconfigurator {
     bool terrain_check;           /* apply terrain check to stacks */
     bool brief_mode;
 
+    
     int texture_visibilit_range;
     int details_visibility_range;
+
     
     int desc_quote;        /* quote for description - in percents */
     int name_quote;        /* quote for roomname - in percents */
     
+    void parse_engine(char *line);
+    void parse_line(char *line);
 
 public:
 
     /* this patterns data should be public for easier read access, write access
         will be implemented via functions anyway */
     vector<TPattern> patterns;
-    void add_pattern(QString pattern, QString data, char marker, char type);
+    void add_pattern(QByteArray pattern, QByteArray data, char marker, char type);
 
+
+
+    /* texture and sectors stuff */
+    vector<struct room_sectors_data> sectors;
+    int get_sector_by_desc(QByteArray desc);
+    int get_sector_by_pattern(char pattern);
+
+    int load_texture(struct room_sectors_data *p);
+    char get_pattern_by_room(Troom *r);
+    GLuint get_texture_by_desc(QByteArray desc);
+    void add_texture(QByteArray desc, QByteArray filename, char pattern);
+    
+    /* */
+    
+    int load_engine_config(QByteArray path, QByteArray filename);
+    
     Cconfigurator();
+
+
+    int load_config(QByteArray path, QByteArray filename);
+    int save_config(QByteArray path, QByteArray filename);
     
     
 
-    void set_look_col(QString str);
-    void set_prompt_col(QString str);
-    void set_end_col(QString str);
+    void set_look_col(QByteArray str);
+    void set_prompt_col(QByteArray str);
+    void set_end_col(QByteArray str);
     
-    QString get_look_col() { return look_col; }
-    QString get_prompt_col() { return prompt_col; }
-    QString get_end_col() { return end_col; }
+    QByteArray get_look_col() { return look_col; }
+    QByteArray get_prompt_col() { return prompt_col; }
+    QByteArray get_end_col() { return end_col; }
     
     /* patterns */
-    QString get_exits_pat() { return exits_pat; }
-    void set_exits_pat(QString str);
+    QByteArray get_exits_pat() { return exits_pat; }
+    void set_exits_pat(QByteArray str);
     
     
     
@@ -94,9 +135,9 @@ public:
     
     
     /* data / global flags */
-    void set_base_file(QString str); 
+    void set_base_file(QByteArray str); 
     void set_data_mod(bool b) { db_modified = b; }
-    void set_remote_host(QString str);
+    void set_remote_host(QByteArray str);
     void set_remote_port(int i);
     void set_local_port(int i);
     void set_conf_mod(bool b) { conf_mod = b; }
@@ -110,12 +151,12 @@ public:
     void set_texture_vis(int i);    
     void set_brief_mode(bool b);
     void set_desc_quote(int i);
-    void set_roomname_quote(int i);
+    void set_name_quote(int i);
     
     /*--*/
     bool get_data_mod() { return db_modified; } 
-    QString get_base_file() { return base_file; } 
-    QString get_remote_host() { return remote_host;}
+    QByteArray get_base_file() { return base_file; } 
+    QByteArray get_remote_host() { return remote_host;}
     int get_remote_port() {return remote_port;}
     int get_local_port() {return local_port;}
     bool get_conf_mod() { return conf_mod; }
@@ -135,6 +176,27 @@ public:
 };
 
 extern class Cconfigurator conf;
+
+
+class ConfigParser : public QXmlDefaultHandler {
+public:
+  ConfigParser();
+  bool characters(const QString& ch);
+    
+  bool startElement( const QString&, const QString&, const QString& ,
+		     const QXmlAttributes& );
+  bool endElement( const QString&, const QString&, const QString& );
+private:
+enum {ROOMCOLOUR, PROMPTCOLOUR, TEXTURE, PATTERN };
+  /* some flags */
+  int flag;
+  QString s;
+
+  struct room_sectors_data texture;
+  TPattern pattern;
+  
+  int i;
+};
 
 
 

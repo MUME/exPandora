@@ -4,7 +4,7 @@
 
 #define USERCMD(name)  int name(int cmd, int subcmd, char *line)
 #include <deque>
-#include <qmutex.h>
+#include <QMutex>
 using namespace std;
 
 

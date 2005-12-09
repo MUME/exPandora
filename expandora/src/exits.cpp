@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
-#include <qmutex.h>
+#include <QMutex>
 
 
 #include "rooms.h"
@@ -17,7 +17,7 @@
 #include "engine.h"
 
 
-void do_exits(char *exits_line)
+void do_exits(const char *exits_line)
 {
     int exits[6];
     unsigned int i;
@@ -133,7 +133,7 @@ int compare_exits(struct Troom *p, int exits[])
 }
 
 
-void parse_exits(char *p, int exits[])
+void parse_exits(const char *p, int exits[])
 {
     const char *exit_patterns[] = {
       "no",

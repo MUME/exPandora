@@ -35,7 +35,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
-#include <qmutex.h>
+#include <QMutex>
 
 
 #include "defines.h"
@@ -208,10 +208,10 @@ int proxy_init()
   his_net_name.sin_family=AF_INET;
   his_net_name.sin_port=htons(conf.get_remote_port());
 
-  if ((hent=gethostbyname( (const char *) conf.get_remote_host() ))==NULL)
+  if ((hent=gethostbyname( (const char*) conf.get_remote_host()  ))==NULL)
   {
     fprintf (stderr, "proxy: %s: Unknown host\n", 
-                                      (const char *) conf.get_remote_host());
+                (const char*) conf.get_remote_host() );
     exit(1);
   }
 

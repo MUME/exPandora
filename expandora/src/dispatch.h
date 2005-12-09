@@ -1,6 +1,6 @@
 
 #include <vector>
-#include <qstring.h>
+#include <QString>
 using namespace std;
 
 #define IS_PROMPT       1
@@ -42,7 +42,7 @@ class Cdispatcher
     char getting_desc;          /* desc shall be incoming - just got roomname */
 
     char getting_colour_scheme;
-    vector<QString> colour_data;      
+    vector<QByteArray> colour_data;      
     
     char last_leaders_movement;
     char leader[MAX_STR_LEN];

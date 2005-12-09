@@ -88,10 +88,10 @@ class Strings_Comparator {
     private:
         int D[ MAX_N ] [MAX_M ];
     public:
-        int compare(char *pattern, char *text);
-        int compare_with_quote(char *str, char *text, int quote);
-        int strcmp_roomname(char *name, char *text);
-        int strcmp_desc(char *name, char *text);
+        int compare(QByteArray pattern, QByteArray text);
+        int compare_with_quote(QByteArray str, QByteArray text, int quote);
+        int strcmp_roomname(QByteArray name, QByteArray text);
+        int strcmp_desc(QByteArray name, QByteArray text);
 
 };
 

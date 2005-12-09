@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctype.h>
-#include <qmutex.h>
+#include <QMutex>
 
 #include "renderer.h"
 #include "configurator.h"
@@ -42,6 +42,14 @@ struct engine_command_type {
   void (*function) ();
 };
 
+
+struct engine_program_entry {
+  char cause;
+  char result;
+  int len;                      /* code length */
+  int code[MAX_CODE_LENGTH];
+  struct engine_program_entry *next;
+};
 
 ECMD(engine_command_redraw);
 ECMD(engine_command_swap);
@@ -82,14 +90,6 @@ const struct engine_command_type engine_commands[] = {
   {NULL, NULL}
 };
 
-struct engine_program_entry {
-  char cause;
-  char result;
-  int len;                      /* code length */
-  int code[MAX_CODE_LENGTH];
-  struct engine_program_entry *next;
-};
-
 /* empty program by default */
 struct engine_program_entry *engine_program = NULL;
 
@@ -127,11 +127,11 @@ ECMD(engine_command_apply_roomname)
 
   /* set the environment flags and variables */
   engine_flags.redraw  = 1;
-  strcpy(engine_flags.last_roomname, r->data);
+  engine_flags.last_roomname = r->data;
 
   /* clear desc, exits and terrain info in engine state variables */
-  engine_flags.last_desc[0] = 0;
-  engine_flags.last_exits[0] = 0;
+  engine_flags.last_desc = "";
+  engine_flags.last_exits = "";
   engine_flags.last_terrain = 0;
   
   if (engine_flags.addingroom) {
@@ -173,10 +173,10 @@ ECMD(engine_command_apply_desc)
   r = Rtop->next;
 
 
-  strcpy(engine_flags.last_desc, r->data);
+  engine_flags.last_desc = r->data;
 
   if (engine_flags.addingroom) {
-    addedroom->desc = strdup(r->data);
+    addedroom->desc = qstrdup((const char *) r->data);
     
     stacker.put(addedroom->id);
     return;
@@ -218,9 +218,9 @@ ECMD(engine_command_apply_exits)
 {
   print_debug(DEBUG_ANALYZER, "in apply_exits");
 
-  strcpy(engine_flags.last_exits, Rtop->next->data);
+  engine_flags.last_exits = Rtop->next->data;
   
-  do_exits(Rtop->next->data);
+  do_exits((const char *)Rtop->next->data);
 }
 
 ECMD(engine_command_apply_prompt)
@@ -265,9 +265,8 @@ ECMD(engine_command_apply_prompt)
         continue;
       }
 
-      if (room->sector)
-        if (room->sector->pattern == terrain) 
-          stacker.put(room->id);
+      if (conf.get_pattern_by_room(room) == terrain) 
+        stacker.put(room->id);
   }
   
   

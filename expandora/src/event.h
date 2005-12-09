@@ -1,3 +1,6 @@
+#ifndef C_EVENT_H
+#define C_EVENT_H
+
 #define E_ROOT '0' /* zero/root element */
 
 #define E_NONE          0
@@ -26,7 +29,7 @@ extern struct event_types_type event_types[];
 
 struct Tevent {
   char type;
-  char data[MAX_DATA_LEN];		/* shall be enough for ANY roomdesc */	
+  QByteArray data;		/* shall be enough for ANY roomdesc */	
   struct Tevent *next, *prev;
 };
 
@@ -42,13 +45,13 @@ extern struct Tevent *pre_Rstack;
 extern QMutex stacks_mutex;
 
 
-void preRAdd(char type, const char *data);
-void preCAdd(char type, const char *data);
+void preRAdd(char type, QByteArray data);
+void preCAdd(char type, QByteArray data);
 
 
 void Rremove(); /* remove an items from Result stack */
 void Cremove(); /* remove an items from Result stack */
-void addtostack(struct Tevent *stack, char type, char *data);
+void addtostack(struct Tevent *stack, char type, QByteArray data);
 void printstacks();
 
 char get_cause_type_by_line(char *line);
@@ -56,6 +59,8 @@ char get_result_type_by_line(char *line);
 
 
 void clear_events_stacks();
+
+#endif
 
 #ifdef DMALLOC
 #include <dmalloc.h>

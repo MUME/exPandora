@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-#include <qdatetime.h>
+#include <QDateTime>
 #include <vector>
 //using namespace std;
 
@@ -18,9 +18,6 @@
 #include "renderer.h"
 
 class roommanager roomer;
-struct room_sectors_data *room_sectors = NULL;
-struct room_sectors_data *death_terrain = NULL;
-
 
 const struct room_flag_data room_flags[] = {
   {"undefined", "UNDEFINED", EXIT_UNDEFINED},
@@ -57,19 +54,7 @@ void reset_room(struct Troom *r)
 
 void roommanager::add_terrain(struct Troom *r, char terrain)
 {
-  struct room_sectors_data *p;
-
-  
-  p = room_sectors;
-  while (p) {
-    if (terrain == p->pattern) {
-      r->sector = p;
-      print_debug(DEBUG_ANALYZER, "Terrain %s matches", p->desc);
-      
-      return;
-    }
-    p = p->next;
-  }
+    r->sector = conf.get_sector_by_pattern(terrain);
 }
 
 
@@ -114,16 +99,16 @@ void roommanager::room_modified(struct Troom *r)
 }
 
 /* implementation of desc comparison - simple strcmp at this moment */
-void roommanager::refresh_desc(unsigned int id, char *newdesc)
+void roommanager::refresh_desc(unsigned int id, QByteArray newdesc)
 {
   struct Troom *r;
       
   r = roomer.getroom(id);
-  free(r->desc);
-  r->desc = strdup(newdesc);
+  delete r->desc;
+  r->desc = qstrdup(newdesc);
 }
 
-void roommanager::refresh_roomname(unsigned int id, char *newname)
+void roommanager::refresh_roomname(unsigned int id, QByteArray newname)
 {
   struct Troom *r;
 
@@ -131,8 +116,8 @@ void roommanager::refresh_roomname(unsigned int id, char *newname)
 
   namer.delete_item(r->name, id);
   free(r->name);
-  r->name = strdup(newname);
-  namer.addname(newname, id);
+  r->name = qstrdup(newname);
+  namer.addname((const char *) newname, id);
 }
 
 
@@ -149,12 +134,12 @@ void roommanager::refresh_terrain(unsigned int id, char terrain)
 }
 
 
-int roommanager::desc_cmp(struct Troom *r, char *desc)
+int roommanager::desc_cmp(struct Troom *r, QByteArray desc)
 { 
   return comparator.strcmp_desc(desc, r->desc);
 }
 
-int roommanager::roomname_cmp(struct Troom *r, char *name)
+int roommanager::roomname_cmp(struct Troom *r, QByteArray name)
 { 
   return comparator.strcmp_roomname(name, r->name);
 }
@@ -243,7 +228,7 @@ int roommanager::try_merge_rooms(struct Troom *r, struct Troom *copy, int j)
 
 
 /* ----------- findrooms ---------------------- */
-struct Ttree *roommanager::findrooms(char *name)
+struct Ttree *roommanager::findrooms(const char *name)
 {
     return namer.find_by_name(name);
 }
@@ -351,7 +336,7 @@ void roommanager::update_timestamp(struct Troom *r)
   s = t.toString(TIMESTAMP_FORMAT);
   
   
-  strncpy(r->timestamp, (const char *) s.ascii(), TIMESTAMP_LEN);
+  strncpy(r->timestamp, qPrintable(s), TIMESTAMP_LEN);
   r->timestamp[TIMESTAMP_LEN] = 0;
   
 }
@@ -573,11 +558,11 @@ void roommanager::send_room(struct Troom *r)
 {
     unsigned int i, pos;
     char line[MAX_STR_LEN];
-
+    
     send_to_user(" Id: %i, Flags: %s, Coord: %i,%i,%i, Last updated: %s\r\n", r->id,
-	    r->sector ? r->sector->desc : "NONE", r->x, r->y, r->z,
+	    (const char *) conf.sectors[r->sector].desc, r->x, r->y, r->z,
             r->timestamp[0] == 0 ? "No Info" : r->timestamp);
-    send_to_user(" %s%s%s\n", (const char *) conf.get_look_col(), r->name, 
+    send_to_user(" %s%s%s\n", (const char *) conf.get_look_col() , r->name, 
                               (const char *) conf.get_look_col() );
 
     line[0] = 0;

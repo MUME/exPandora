@@ -3,10 +3,11 @@
 #include <cstdlib>
 #include <vector>
 
-#include <qgl.h>
-#include <qimage.h>
-#include <qapplication.h>
-#include <qdatetime.h>
+#include <QGLWidget>
+#include <QImage>
+#include <QApplication>
+#include <QDateTime>
+#include <QKeyEvent>
 
 #include "renderer.h"
 #include "struct.h"
@@ -56,7 +57,7 @@ enum PlaneData
 };
 
 RendererWidget::RendererWidget( QWidget *parent, const char *name )
-     : QGLWidget( parent, name )
+     : QGLWidget( parent )
 {
   angley = 0;
   anglex = 0;
@@ -72,9 +73,8 @@ RendererWidget::RendererWidget( QWidget *parent, const char *name )
 
 void RendererWidget::initializeGL()
 {
-  QImage tex1, buf1;
-  struct room_sectors_data *p;
-
+  unsigned int i;
+  
   glShadeModel(GL_SMOOTH);
   glClearColor (0.0, 0.0, 0.0, 0.0);	/* This Will Clear The Background Color To Black */
   glPointSize (4.0);		/* Add point size, to make it clear */
@@ -113,58 +113,9 @@ void RendererWidget::initializeGL()
       glEndList();
     }
 
-    
-    p = room_sectors;
-    while (p) {
-      glGenTextures(1, &p->texture);
-      print_debug(DEBUG_RENDERER, "loading texture %s", p->filename);
-
-      if (strcmp( p->desc, "DEATH" ) == 0 ) 
-        death_terrain = p;
-
-      buf1.load( p->filename );
-      tex1 = QGLWidget::convertToGLFormat( buf1 ); // flipped 32bit RGBA
-
-      glGenTextures(1, &p->texture );
-      glBindTexture(GL_TEXTURE_2D, p->texture );
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex1.width(), tex1.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, tex1.bits() );
-        
-      
-      
-      p->gllist = glGenLists(1);
-      if (p->gllist != 0) {
-        glNewList(p->gllist, GL_COMPILE);
-
-        glEnable(GL_TEXTURE_2D);
-      
-        glBindTexture(GL_TEXTURE_2D, p->texture);
-        
-        glBegin(GL_QUADS);
-        glTexCoord2f(0.0, 1.0);
-        glVertex3f(-ROOM_SIZE,  ROOM_SIZE, 0.0f);
-        glTexCoord2f(0.0, 0.0);
-        glVertex3f(-ROOM_SIZE, -ROOM_SIZE, 0.0f);
-        glTexCoord2f(1.0, 0.0);
-        glVertex3f( ROOM_SIZE, -ROOM_SIZE, 0.0f);
-        glTexCoord2f(1.0, 1.0);
-        glVertex3f( ROOM_SIZE,  ROOM_SIZE, 0.0f);
-
-        glEnd();
-        glDisable(GL_TEXTURE_2D);
-        
-        
-        
-        glEndList();
-      }
-      p = p->next;
+    for (i = 0; i < conf.sectors.size(); i++) {
+        conf.load_texture(&conf.sectors[i]);
     }
-    
-
 }
 
 
@@ -207,7 +158,7 @@ int renderer_main()
 
   
   renderer_window = new MainWindow( 0, "MainWindow" );
-  a.setMainWidget( renderer_window );
+//  a.setMainWidget( renderer_window );
   
   QGLFormat f;
   f.setDoubleBuffer( TRUE );                 
@@ -328,11 +279,13 @@ void RendererWidget::glDrawRoom(struct Troom *p)
 
     
     glTranslatef(dx, dy, dz);
-    if (p->sector != NULL && texture) {
+    if (p->sector && texture) {
       glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, p->sector->texture);
+      glBindTexture(GL_TEXTURE_2D, conf.sectors[ p->sector].texture);
       glBegin(GL_QUADS);
       
+      /* why not use gllist here ? */
+        
       glTexCoord2f(0.0, 1.0);
       glVertex3f(-ROOM_SIZE,  ROOM_SIZE, 0.0f);
       glTexCoord2f(0.0, 0.0);
@@ -478,12 +431,12 @@ void RendererWidget::glDrawRoom(struct Troom *p)
             glVertex3f(dx2 + kx, dy2 + ky, dz2);
             glEnd();
             
-
+            GLuint death_terrain = conf.get_texture_by_desc("DEATH");
             if (death_terrain && p->exits[k] == EXIT_DEATH) {
               glTranslatef(dx2 + kx, dy2 + ky, dz2);
               
               glEnable(GL_TEXTURE_2D);
-              glBindTexture(GL_TEXTURE_2D, death_terrain->texture);
+              glBindTexture(GL_TEXTURE_2D, death_terrain);
         
               glBegin(GL_QUADS);
               
@@ -647,13 +600,13 @@ void RendererWidget::display(void)
 void toggle_renderer_reaction()
 {
     print_debug(DEBUG_RENDERER, "toggle_renderer_reaction called()");
-    QKeyEvent *k = new QKeyEvent(QEvent::KeyPress, 0, 'r', 0, NULL, FALSE, 0);
+    QKeyEvent *k = new QKeyEvent(QEvent::KeyPress, Qt::Key_R,0, "r", false , 1);
     QApplication::postEvent( renderer_window->renderer, k );
 }
 
 void notify_analyzer()
 {
-    QKeyEvent *k = new QKeyEvent(QEvent::KeyPress, 0, 'c', 0, NULL, FALSE, 0);
+    QKeyEvent *k = new QKeyEvent(QEvent::KeyPress, Qt::Key_C,0, "c", false , 1);
     QApplication::postEvent( renderer_window->renderer, k );
 }
 

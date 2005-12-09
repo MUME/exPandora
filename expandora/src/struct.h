@@ -7,9 +7,8 @@ struct Troom {
   char *name; 			/* POINTER to the room name */
   char *note; 			/* note, if needed, additional info etc */
   char *desc;			/* descrition */
-  struct room_sectors_data *sector; /* terrain sector */ 		
+  char sector;                 /* terrain marker */ 		
                                 /* _no need to free this one_ */
-  
   unsigned int exits[6];	/* 0 if no connection, id if there is any */ 
   char *doors[6];		/* if the door is secret */
 
@@ -42,11 +41,10 @@ struct engine_flags_type {
   
   char redraw;  
   
-  char last_roomname[MAX_STR_LEN];
-  char last_desc[MAX_DATA_LEN];
-  char last_exits[MAX_DATA_LEN];
+  QByteArray last_roomname;
+  QByteArray last_desc;
+  QByteArray last_exits;
   char last_terrain;
-  
 };
 
 extern struct engine_flags_type engine_flags;

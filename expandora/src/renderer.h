@@ -1,9 +1,15 @@
 #ifndef MAINWINDOW_H 
 #define MAINWINDOW_H 
 
-#include <qmainwindow.h> 
-#include <qstringlist.h> 
-#include <qgl.h>
+#include <QMainWindow> 
+#include <QStringList> 
+#include <QGLWidget>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QMenu>
+#include <QDockWidget>
+
+
 #include "defines.h"
 #include "rooms.h"
 
@@ -11,20 +17,6 @@ class QAction;
 class QLabel; 
 class FindDialog; 
 class Spreadsheet; 
-
-#define MAX_TEXTURES    100
-
-
-
-#ifndef NEW_ENGINE
-#define DIST_Z	2	/* the distance between 2 rooms */
-#define BASE_Z  -12	/* the distance to the "camera" */
-#define ROOM_SIZE 0.4f	/* the size of the rooms walls */
-#else
-#define DIST_Z	1	/* the distance between 2 rooms */
-#define BASE_Z  -6	/* the distance to the "camera" */
-#define ROOM_SIZE 0.2f	/* the size of the rooms walls */
-#endif
 
 int renderer_main();
 
@@ -36,45 +28,6 @@ class QLineEdit;
 class QLabel;
 class QWidget;
 class QPushButton;
-
-class RoomInfo : public QWidget
-{
-    Q_OBJECT
-
-public:
-    RoomInfo(QWidget *parent, const char *name = 0);
-
-    QLabel*     id_label;
-    QLabel*     terrain_label;
-    QLabel*     coord_label;
-
-    QLabel*     name_label;
-    QLineEdit*  name_edit;
-
-    QLabel*     desc_label;
-    QLineEdit*  desc_edit;
-
-    QLabel*     note_label;
-    QLineEdit*  note_edit;
-
-    QLabel*     exits_label;
-    QLabel*     doors_label;
-
-    QPushButton* apply_button;
-
-    void update_info();
-
-private:
-  QHBoxLayout   *topLayout;
-  QHBoxLayout   *noteLayout; 
-  QHBoxLayout   *nameLayout; 
-  QHBoxLayout   *descLayout; 
-  QVBoxLayout   *mainLayout; 
-
-
-
-};
-
 
 class RendererWidget : public QGLWidget
 {
@@ -88,6 +41,7 @@ public:
   float         userz;		/* additional shift added by user */
 
   int           current_plane_z;        /* to avoid arguments usage */
+  GLuint        basic_gllist;
 
 
     
@@ -101,6 +55,7 @@ public:
 
   void draw(void);
   void CalculateFrustum();
+  
 
 
 protected:
@@ -111,7 +66,6 @@ protected:
 private:
   GLfloat       colour[4];
   float         m_Frustum[6][4];
-  GLuint        basic_gllist;
   GLuint        global_list;
   int           curx;
   int           cury;
@@ -142,9 +96,9 @@ public:
 private slots:
   void hide_menu();
   void hide_status();
-  void hide_roominfo();
   void always_on_top();
-
+  void newFile() {  } ;
+  void open() { };
 
 private:
   void mousePressEvent( QMouseEvent *);
@@ -158,14 +112,15 @@ private:
   QLabel        *locationLabel; 
   QLabel        *formulaLabel; 
   QLabel        *modLabel; 
-  QPopupMenu    *optionsMenu;
-  QDockWindow   *dock;
-  RoomInfo      *roominfo;
+  QMenu         *optionsMenu;
 
-  int hide_status_id;
-  int hide_menu_id;
-  int hide_roominfo_id;
-  int always_on_top_id;
+  QAction       *hide_status_action;
+  QAction       *hide_menu_action;
+  QAction       *always_on_top_action;
+  QAction       *newAct;
+  QAction       *quitAct;
+  QAction       *openAct;
+
 
 
   bool          LeftButtonPressed;

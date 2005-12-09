@@ -1,28 +1,23 @@
 // Interface code 
-#include <qevent.h>
-#include <qapplication.h>
-#include <qwidget.h>
-#include <qnamespace.h>
-#include <qimage.h>
+#include <QEvent>
+#include <QApplication>
+#include <QImage>
 #include <cstdlib>
 
-#include <qaction.h> 
-#include <qcombobox.h> 
-#include <qfiledialog.h> 
-#include <qlabel.h> 
-#include <qlineedit.h> 
-#include <qmenubar.h> 
-#include <qmessagebox.h> 
-#include <qpopupmenu.h> 
-#include <qsettings.h> 
-#include <qstatusbar.h> 
-#include <qlayout.h>
-#include <qbutton.h>
-#include <qvariant.h>
-#include <qwidget.h>
-#include <qpushbutton.h>
-#include <qtextedit.h>
-
+#include <QAction> 
+#include <QComboBox> 
+#include <QFileDialog> 
+#include <QLabel> 
+#include <QLineEdit> 
+#include <QSettings> 
+#include <QLayout>
+#include <QVariant>
+#include <QWidget>
+#include <QPushButton>
+#include <QTextEdit>
+#include <QMenuBar>
+#include <QStatusBar>
+#include <QKeyEvent>
 
 
 #include "defines.h"
@@ -36,181 +31,38 @@
 
 #include "userfunc.h"
 
-RoomInfo::RoomInfo(QWidget* parent, const char* name)
- : QWidget(parent, name)
-{
-  /* ------- */
-  id_label = new QLabel("ID: Out of sync", this);
-  terrain_label = new QLabel("T: NONE", this);
-  coord_label = new QLabel("COORD:", this);
-  
-  topLayout = new QHBoxLayout; 
-  topLayout->addWidget(id_label); 
-  topLayout->addStretch(2);
-  topLayout->addWidget(terrain_label);
-  topLayout->addStretch(2);
-  topLayout->addWidget(coord_label);
-  /* ------- */  
-  
-  /* ------- */
-  name_label= new QLabel("RN ", this);
-  name_edit = new QLineEdit(this);
-
-  name_edit->setAlignment(Qt::AlignLeft);
-  
-  nameLayout = new QHBoxLayout; 
-  nameLayout->addWidget(name_label); 
-//  nameLayout->addStretch(1);
-  nameLayout->addWidget(name_edit);
-  /* ------- */
-  desc_label= new QLabel("D ", this);
-  
-  desc_edit = new QLineEdit(this);
-  
-  descLayout = new QHBoxLayout; 
-  descLayout->addWidget(desc_label); 
-//  descLayout->addStretch(1);
-  descLayout->addWidget(desc_edit);
-
-  /* --- */
-  note_label= new QLabel("Note ", this);
-  
-  note_edit = new QLineEdit(this);
-  
-  noteLayout = new QHBoxLayout; 
-  noteLayout->addWidget(note_label); 
-//  noteLayout->addStretch(1);
-  noteLayout->addWidget(note_edit);
-  /* --- */
-  
-  exits_label = new QLabel("Exits:", this);
-  doors_label = new QLabel("Doors:", this);
-  
-  
-  mainLayout = new QVBoxLayout(this); 
-  mainLayout->addLayout(topLayout); 
-  mainLayout->addLayout(nameLayout);
-  mainLayout->addLayout(descLayout);
-  mainLayout->addLayout(noteLayout);
-  mainLayout->addWidget(doors_label);
-  mainLayout->addWidget(exits_label);
-  
-
-  mainLayout->setMargin(11);
-  mainLayout->setSpacing(6); 
-
-  update_info();
-}
-
-void RoomInfo::update_info()
-{
-  char str[200];
-  
-  int i;
-  struct Troom *r;
-
-  
-  
-  if (stacker.amount == 0) {
-    
-    id_label->setText(tr("ID:  Out of sync"));
-    terrain_label->setText(tr("Terrain: NONE"));
-    
-    return;
-  }
-  
-  if (stacker.amount > 1) {
-    id_label->setText(tr("ID:  Multiple possibilities"));
-    return;
-  }
-
-  sprintf(str, "ID: ");
-  stacker.get_current( &str[ strlen(str) ] );
-  id_label->setText(tr(str));
-
-  r = roomer.getroom(stacker.get(1));
-  sprintf(str, "Coord: X: %i, Y %i, Z: %i", r->x, r->y, r->z);
-  coord_label->setText( str );
-  
-  if (r->sector) {
-    sprintf(str, " %s ", r->sector->desc);
-    
-    terrain_label->setText( str );
-  } else {
-    terrain_label->setText(" T: NONE ");
-  }
-  if (r->name) {
-    name_edit->setText( r->name );
-  } else {
-    name_edit->setText( "(NULL)" );
-  }
-
-  if (r->desc) {
-    desc_edit->setText( r->desc );
-  } else {
-    desc_edit->setText( "(NULL)" );
-  }
-  desc_edit->setAlignment(Qt::AlignLeft);
-  
-  if (r->note) {
-    note_edit->setText( r->note );
-  } else {
-    note_edit->setText( "(NULL)" );
-  }
-
-  sprintf(str, "Doors:");
-  for (i = 0; i <= 5; i++) {
-    if (r->doors[i]) {
-      sprintf(str+ strlen(str), " %c: %s", dirbynum(i), r->doors[i]);
-    }
-    
-  }
-  doors_label->setText( str );
-
-  
-  sprintf(str, "Exits:");
-
-  for (i = 0; i <= 5; i++)
-      if (r->exits[i] > 0) {
-          if (r->exits[i] == EXIT_UNDEFINED) {
-              sprintf(str + strlen(str), " #%s#", exitnames[i]);
-              continue;
-          }
-          if (r->exits[i] == EXIT_DEATH) {
-              sprintf(str + strlen(str), " !%s!", exitnames[i]);
-              continue;
-          }
-          if (r->doors[i] != NULL) {
-              if (strcmp("exit", r->doors[i]) == 0) {
-                  sprintf(str + strlen(str), " (%s)", exitnames[i]);
-              } else {
-                  sprintf(str + strlen(str), " +%s+", exitnames[i]);
-              }
-          } else {
-              sprintf(str + strlen(str), " %s", exitnames[i]);
-          }
-          sprintf(str + strlen(str), " -[to %i]-", r->exits[i]);
-      }
-      
-  exits_label->setText( str );
-  
-}
-
-  
-
-
 
 MainWindow::MainWindow(QWidget *parent, const char *name)
-    : QMainWindow( parent, name)
+    : QMainWindow( parent)
 {
-  renderer =  new RendererWidget( this, "Renderer");
+  renderer =  new RendererWidget( this, name);
   setCentralWidget( renderer );
 
-  QPopupMenu *fileMenu = new QPopupMenu( 0, "fileMenu" );
-  fileMenu->insertItem( tr("&Exit"), qApp, SLOT( quit() ), CTRL+Key_Q );
-  menuBar()->insertItem( tr("&File"), fileMenu );
-
+  /* creating actions and connecting them here */
+  newAct = new QAction(tr("&New"), this);
+  newAct->setShortcut(tr("Ctrl+N"));
+  newAct->setStatusTip(tr("Create a new map"));
+  connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));    
   
+  openAct = new QAction(tr("&Open..."), this);
+  openAct->setShortcut(tr("Ctrl+O"));
+  openAct->setStatusTip(tr("Open an existing map"));
+  connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+  
+  quitAct =  new QAction(tr("&Exit..."), this);
+  quitAct->setShortcut(tr("Ctrl+Q"));
+  openAct->setStatusTip(tr("Quit Pandora"));
+  connect(quitAct, SIGNAL(triggered()), this, SLOT(quit()));
+    
+  /* now building a menu and adding actions to menu */
+  QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+  fileMenu->addAction(newAct);
+  fileMenu->addAction(openAct);  
+  fileMenu->addAction(quitAct);  
+
+
+
+/*
   optionsMenu = new QPopupMenu( 0, "optionsMenu" );
   optionsMenu->insertItem( tr("Hide All"), this, SLOT( hide() ), CTRL+Key_H );
   optionsMenu->setCheckable(true);
@@ -225,71 +77,57 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   
   menuBar()->insertItem( tr("&Options"), optionsMenu);
   
-  locationLabel = new QLabel("NO_SYNC", this); 
-  locationLabel->setAlignment(AlignHCenter); 
-  locationLabel->setMinimumSize(locationLabel->sizeHint()); 
-  
-  formulaLabel = new QLabel(this); 
-  
-  modLabel = new QLabel(tr("     "), this); 
-  modLabel->setAlignment(AlignHCenter); 
-  modLabel->setMinimumSize(modLabel->sizeHint());      
-  modLabel->clear(); 
-  
-  statusBar()->addWidget(locationLabel); 
-  statusBar()->addWidget(formulaLabel, 1); 
-  statusBar()->addWidget(modLabel); 
-  
+
   
   optionsMenu->setItemChecked(hide_menu_id, false );
   optionsMenu->setItemChecked(hide_status_id, false );
   optionsMenu->setItemChecked(hide_roominfo_id, true );
  
   optionsMenu->setItemChecked(always_on_top_id, true );
+*/  
 //  this->setWFlags(Qt::WStyle_Customize | Qt::WStyle_StaysOnTop);
 
-  dock = new QDockWindow(this, "dock");
-  dock->setCaption("Room Info");
-  dock->setResizeEnabled( TRUE );
-//  dock->setVerticalStretchable( TRUE );
-//  dock->setHorizontalStretchable( TRUE );
-  addDockWindow(dock, DockTornOff, FALSE);
-  
-  roominfo = new RoomInfo(dock, "roominfo");
-  dock->setWidget(roominfo);
-
-
-   int flags = getWFlags();
+   Qt::WindowFlags flags = windowFlags();
 #ifndef Q_OS_MACX
-   if(testWFlags(Qt::WStyle_StaysOnTop)){
-      flags ^= Qt::WStyle_StaysOnTop;
+   if ( flags && Qt::WindowStaysOnTopHint) {
+      flags ^= Qt::WindowStaysOnTopHint;
    }
    else{
-      flags |= Qt::WStyle_StaysOnTop;
+      flags |= Qt::WindowStaysOnTopHint;
    }
 #else
-   if(testWFlags(Qt::WStyle_StaysOnTop)){
-      flags ^= Qt::WStyle_StaysOnTop;
+   if( flags && Qt::WindowStaysOnTopHint){
+      flags ^= Qt::WindowStaysOnTopHint;
    
 }
 #endif
+/*
    QPoint p(geometry().x(),geometry().y());
-   reparent(0,flags,p,true);
+   setParent(0,flags,p,true);
+*/
+  setWindowFlags(flags);
 
-//  this->reparent(NULL, this->getWFlags() | WStyle_StaysOnTop, QPoint(0,0),true);  
-    /* ---- */
-//  setDockEnabled(DockBottom, false);
-//  setDockEnabled(DockTop, false);
-//  setDockEnabled(DockLeft, false);
-//  setDockEnabled(DockRight, false);
+
+  /* status bar magicz */
+  locationLabel = new QLabel("NO_SYNC", this); 
+  locationLabel->setAlignment(Qt::AlignHCenter); 
+  locationLabel->setMinimumSize(locationLabel->sizeHint()); 
+
+  formulaLabel = new QLabel(this); 
   
+  modLabel = new QLabel(tr("     "), this); 
+  modLabel->setAlignment(Qt::AlignHCenter); 
+  modLabel->setMinimumSize(modLabel->sizeHint());      
+  modLabel->clear(); 
+  
+  statusBar()->addWidget(locationLabel); 
+  statusBar()->addWidget(formulaLabel, 1); 
+  statusBar()->addWidget(modLabel); 
 
-
+  
 
   LeftButtonPressed = false;
   RightButtonPressed = false;
-
-
 }
 
 void MainWindow::update_status_bar()
@@ -304,8 +142,6 @@ void MainWindow::update_status_bar()
 
   stacker.get_current(str);
   locationLabel->setText(tr(str));
-  
-  roominfo->update_info();
 }
 
 
@@ -315,12 +151,10 @@ void MainWindow::hide()
   
   menuBar()->hide();
   statusBar()->hide();
-  dock->hide();
 
   
-  optionsMenu->setItemChecked(hide_menu_id, true );
-  optionsMenu->setItemChecked(hide_status_id, true );
-  optionsMenu->setItemChecked(hide_roominfo_id, true );
+  hide_menu_action->setChecked(true);
+  hide_status_action->setChecked(true);
 }
 
 
@@ -328,32 +162,30 @@ void MainWindow::hide_menu()
 {
   print_debug(DEBUG_INTERFACE, "hide/show menu called");
   
-  if (optionsMenu->isItemChecked(hide_menu_id)) 
+  if (hide_menu_action->isChecked()) 
   {
     menuBar()->show();  
-    optionsMenu->setItemChecked(hide_menu_id, false);
+    hide_menu_action->setChecked(false);
   } else {
     menuBar()->hide();
-    optionsMenu->setItemChecked(hide_menu_id, true);
+    hide_menu_action->setChecked(true);
   }
 }
 
 void MainWindow::always_on_top()
 {
   print_debug(DEBUG_INTERFACE, "always_on_top called");
-  
-  WFlags flags = getWFlags();
-  if(testWFlags(Qt::WStyle_StaysOnTop))
-  {
-    flags ^= Qt::WStyle_StaysOnTop;
-    optionsMenu->setItemChecked(always_on_top_id, false);
-  } else {
-    flags |= Qt::WStyle_StaysOnTop;
-    optionsMenu->setItemChecked(always_on_top_id, true);
-  }
-  QPoint p(geometry().x(),geometry().y());
-  reparent(0,flags,p,true);
 
+  Qt::WindowFlags flags = windowFlags();
+  if( flags && Qt::WindowStaysOnTopHint )
+  {
+    flags ^= Qt::WindowStaysOnTopHint;
+    always_on_top_action->setChecked(false);
+  } else {
+    flags |= Qt::WindowStaysOnTopHint;
+    always_on_top_action->setChecked(true);
+  }
+  setWindowFlags(flags);
 }
 
 
@@ -361,37 +193,21 @@ void MainWindow::hide_status()
 {
   print_debug(DEBUG_INTERFACE, "hide/show status called");
 
-  if (optionsMenu->isItemChecked(hide_status_id)) 
+  if (hide_status_action->isChecked() ) 
   {
     statusBar()->show();  
-    optionsMenu->setItemChecked(hide_status_id, false);
+    hide_status_action->setChecked(false);
   } else {
     statusBar()->hide();
-    optionsMenu->setItemChecked(hide_status_id, true);
+    hide_status_action->setChecked(true);
   }
   
 }
 
-
-void MainWindow::hide_roominfo()
-{
-  print_debug(DEBUG_INTERFACE, "hide/show room info called");
-
-  if (optionsMenu->isItemChecked(hide_roominfo_id)) 
-  {
-    dock->show();
-    optionsMenu->setItemChecked(hide_roominfo_id, false);
-  } else {
-    dock->hide();
-    optionsMenu->setItemChecked(hide_roominfo_id, true);
-  }
-}
-
-
 void MainWindow::keyPressEvent( QKeyEvent *k )
 {
-    switch ( LOWER(k->ascii()) ) {
-        case 'c':
+    switch ( k->key() ) {
+        case Qt::Key_C :
           if (userland_parser.is_empty())
             engine();
           else 
@@ -399,70 +215,66 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
           
           break;
          
-        case 'x':
+        case Qt::Key_X :
             renderer->userz += 1;
             glredraw = 1;
             break;
     
-         case 'y':
+         case Qt::Key_Y:
             renderer->userz -= 1;
             glredraw = 1;
             break;
     
-         case 'q':
+         case Qt::Key_Q:
             renderer->userx -= 1;
             glredraw = 1;
             break;
          
-         case 'w':
+         case Qt::Key_W:
             renderer->userx += 1;
             glredraw = 1;
             break;
          
-         case 'a':
+         case Qt::Key_A:
             renderer->usery += 1;
             glredraw = 1;
             break;
     
-         case 's':
+         case Qt::Key_S:
             renderer->usery -= 1;
             glredraw = 1;
             break;
     
-         case 'r':
+         case Qt::Key_R:
            print_debug(DEBUG_RENDERER, "got R (redraw) keypress event");
            glredraw = 1;
            break;
-    
-    }        
-    
-    switch ( k->key() ) {
-        case Key_Up:
+        case Qt::Key_Up:
           renderer->anglex += 5;
           glredraw = 1;
           break;
-        case Key_Down:
+        case Qt::Key_Down:
           renderer->anglex -= 5;
           glredraw = 1;
           break;
-        case Key_Left:
+        case Qt::Key_Left:
           renderer->angley -= 5;
           glredraw = 1;
           break;
-        case Key_Right:
+        case Qt::Key_Right:
           renderer->angley += 5;
           glredraw = 1;
           break;
-        case Key_PageUp:
+        case Qt::Key_PageUp:
           renderer->anglez += 5;
           glredraw = 1;
           break;
-        case Key_PageDown:
+        case Qt::Key_PageDown:
           renderer->anglez -= 5;
           glredraw = 1;
           break;
         
-         case Key_Escape:           
+         case Qt::Key_Escape:           
             renderer->angley = 0;
             renderer->anglex = 0;
             renderer->anglez = 0;
@@ -472,18 +284,18 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
             glredraw = 1;
             break;				
 
-         case Key_F12:
-            hide_menu();
+         case Qt::Key_F12:
+            //hide_menu();
             break;
-         case Key_F11:
-            hide_status();
+         case Qt::Key_F11:
+            //hide_status();
             break;				
-         case Key_F10:
-            hide_roominfo();
+         case Qt::Key_F10:
+            //hide_roominfo();
             break;				
 
-         case CTRL+Key_H:
-            hide();
+         case Qt::CTRL+Qt::Key_H:
+            //hide();
             break;				
 
          

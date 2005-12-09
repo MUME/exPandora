@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <qmutex.h>
+#include <QMutex>
 
 #include "rooms.h"
 #include "defines.h"
@@ -134,7 +134,6 @@ USERCMD(usercmd_maddroom);
 USERCMD(usercmd_mevent);
 
 USERCMD(usercmd_mcalibrate);
-
 
 const struct user_command_type user_commands[] = {
   {"maddroom",     usercmd_maddroom,          0,                        USERCMD_FLAG_REDRAW,   
@@ -594,18 +593,18 @@ USERCMD(usercmd_maddroom)
   
   userfunc_print_debug;
 
-  if (engine_flags.last_roomname[0] == 0) {
+  if (engine_flags.last_roomname.isEmpty()) {
     send_to_user("--[ Missing room name.\r\n");
     
     send_to_user(last_prompt);
     return USER_PARSE_DONE;
   }
 
-  if (engine_flags.last_desc[0] == 0) {
+  if (engine_flags.last_desc.isEmpty() ) {
     send_to_user("--[ Missing description!\r\n");
   }
 
-  if (engine_flags.last_exits[0] == 0) {
+  if (engine_flags.last_exits.isEmpty() ) {
     send_to_user("--[ Missing exits.\r\n");
     
     send_to_user(last_prompt);
@@ -1470,7 +1469,7 @@ USERCMD(usercmd_mload)
   if (!*p) {
     /* no arguments */
     send_to_user(" * Loading the file %s from the disk...\r\n", 
-                  (const char *) conf.get_base_file() );
+                  (const char *) conf.get_base_file()  );
       
     xml_readbase( conf.get_base_file() );
   } else {

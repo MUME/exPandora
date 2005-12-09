@@ -379,13 +379,13 @@ void basic_mud_vlog(const char *format, va_list args)
 }
 
 
-int Strings_Comparator::compare(char *pattern, char *text)
+int Strings_Comparator::compare(QByteArray pattern, QByteArray text)
 {
   int n, m, i, j;
   int cost;
   
-  n = strlen(pattern);
-  m = strlen(text);
+  n = pattern.length();
+  m = text.length();
 
   /* initialization */
   for (i = 0; i <= n; i++)
@@ -412,13 +412,13 @@ int Strings_Comparator::compare(char *pattern, char *text)
 }
 
 
-int Strings_Comparator::compare_with_quote(char *str, char *text, int quote)
+int Strings_Comparator::compare_with_quote(QByteArray str, QByteArray text, int quote)
 {
     int n;
     int allowed_errors;
     int result;
     
-    n = strlen(str);
+    n = str.length();
     allowed_errors = (int) ( (double) quote / 100.0  * (double) n );
     
     result = compare(str, text);
@@ -434,13 +434,13 @@ int Strings_Comparator::compare_with_quote(char *str, char *text, int quote)
 
 
 
-int Strings_Comparator::strcmp_roomname(char *name, char *text)
+int Strings_Comparator::strcmp_roomname(QByteArray name, QByteArray text)
 {
     return compare_with_quote(name, text, conf.get_name_quote());
 }
 
 
-int Strings_Comparator::strcmp_desc(char *name, char *text)
+int Strings_Comparator::strcmp_desc(QByteArray name, QByteArray text)
 {
     return compare_with_quote(name, text, conf.get_desc_quote());
 }

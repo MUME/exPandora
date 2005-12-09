@@ -22,7 +22,7 @@ struct levels_data_type {
 
 class Ctree {
   int diving_delete(Ttree *p, char *part, unsigned int id);
-  void genhash(char *name, char *hash);
+  void genhash(const char *name, char *hash);
   void delete_all(Ttree *t);
     
   /* for gathering debug info only*/
@@ -36,10 +36,10 @@ public:
 
   Ctree();
 
-  void addname(char *name, unsigned int id);	
+  void addname(const char *name, unsigned int id);	
   void reset_ttree(Ttree *t);
-  Ttree * find_by_name(char *name);
-  void delete_item(char *name, unsigned int id);
+  Ttree * find_by_name(const char *name);
+  void delete_item(const char *name, unsigned int id);
   void reinit();
   void print_tree_stats();
   void remove_id(unsigned int id, Ttree *t);

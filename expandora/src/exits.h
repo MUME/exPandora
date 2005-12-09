@@ -8,8 +8,8 @@
 
 
 int compare_exits(struct Troom *p, int exits[]);
-void parse_exits(char *exits_line, int exits[]);
-void do_exits(char *exits_line);
+void parse_exits(const char *exits_line, int exits[]);
+void do_exits(const char *exits_line);
 
 #ifdef DMALLOC
 #include <dmalloc.h>

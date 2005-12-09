@@ -1,7 +1,6 @@
 #ifndef ROOMS_H 
 #define ROOMS_H 
 
-#include <qgl.h>
 #include <vector>
 #include "defines.h"
 using namespace std;
@@ -13,23 +12,11 @@ using namespace std;
 #define MAX_SQUARE_SIZE         40
 #define MAX_SQUARE_ROOMS        40
 
-struct room_sectors_data {
-  char   *desc;             /* name of this flag */
-  char   *filename;         /* appropriate texture's filename */
-  char   pattern;           /* appropriate pattern */
-  GLuint texture;          /* and texture handler for renderer */
-  GLuint gllist;            /* OpenGL display list */
-  struct room_sectors_data *next;
-};
 
-extern struct room_sectors_data *room_sectors;
-extern struct room_sectors_data *death_terrain;
   
 extern const struct room_flag_data room_flags[];
 
 void reset_room(struct Troom *r);	/* Only for new rooms */
-
-
 
 enum SquareTypes {
     Left_Upper = 0,             
@@ -131,7 +118,7 @@ public:
   void delete_room(struct Troom *r, int mode);  /* user interface function */
   void small_delete_room(struct Troom *r);  /* user interface function */
 
-  struct Ttree * findrooms(char *name);  
+  struct Ttree * findrooms(const char *name);  
 
   void setx(unsigned int id, int x);
   void sety(unsigned int id, int x);
@@ -143,10 +130,10 @@ public:
   int add_door(struct Troom *r, char *door, int dir);
   void add_terrain(struct Troom *r, char terrain);
 
-  int desc_cmp(struct Troom *r, char *desc);
-  int roomname_cmp(struct Troom *r, char *name);
-  void refresh_desc(unsigned int id, char *newdesc);
-  void refresh_roomname(unsigned int id, char *newname);
+  int desc_cmp(struct Troom *r, QByteArray desc);
+  int roomname_cmp(struct Troom *r, QByteArray name);
+  void refresh_desc(unsigned int id, QByteArray newdesc);
+  void refresh_roomname(unsigned int id, QByteArray newname);
   void refresh_terrain(unsigned int id, char terrain);
   
   /* general check for database integrity */
