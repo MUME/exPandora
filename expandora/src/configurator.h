@@ -22,6 +22,7 @@ typedef struct {
   QRegExp rexp;                   /* expression to match the pattern/WILDCAD */
   char    group;                 /* R or C*/
   char    type;                   /* R_TYPE, C_TYPE */
+  bool    is_regexp;            /* is it regexp or wildcard ? */
 } TPattern;
 
 struct room_sectors_data {
@@ -83,7 +84,7 @@ public:
     /* this patterns data should be public for easier read access, write access
         will be implemented via functions anyway */
     vector<TPattern> patterns;
-    void add_pattern(QByteArray pattern, QByteArray data, char marker, char type);
+    void add_pattern(QByteArray pattern, QByteArray data, char marker, char type, bool is_regexp);
 
 
 
@@ -116,6 +117,7 @@ public:
     QByteArray get_look_col() { return look_col; }
     QByteArray get_prompt_col() { return prompt_col; }
     QByteArray get_end_col() { return end_col; }
+    int get_prompt_col_len() { return prompt_col.length(); }
     
     /* patterns */
     QByteArray get_exits_pat() { return exits_pat; }
@@ -187,7 +189,7 @@ public:
 		     const QXmlAttributes& );
   bool endElement( const QString&, const QString&, const QString& );
 private:
-enum {ROOMCOLOUR, PROMPTCOLOUR, TEXTURE, PATTERN };
+  enum {ROOMCOLOUR = 1, PROMPTCOLOUR, TEXTURE, PATTERN };
   /* some flags */
   int flag;
   QString s;

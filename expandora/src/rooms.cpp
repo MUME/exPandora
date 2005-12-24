@@ -98,13 +98,35 @@ void roommanager::room_modified(struct Troom *r)
     update_timestamp(r);
 }
 
+void roommanager::refresh_note(unsigned int id, QByteArray note)
+{
+  struct Troom *r;
+      
+  r = roomer.getroom(id);
+  if (r->note)
+    delete r->desc;
+  r->note = qstrdup(note);
+}
+
+void roommanager::refresh_door(unsigned int id, char dir, QByteArray door)
+{
+  struct Troom *r;
+      
+  r = roomer.getroom(id);
+  if (r->doors[(int) dir])
+    delete r->doors[(int) dir];
+  r->doors[(int) dir] = qstrdup(door);
+}
+
+
 /* implementation of desc comparison - simple strcmp at this moment */
 void roommanager::refresh_desc(unsigned int id, QByteArray newdesc)
 {
   struct Troom *r;
       
   r = roomer.getroom(id);
-  delete r->desc;
+  if (r->desc)
+    delete r->desc;
   r->desc = qstrdup(newdesc);
 }
 
@@ -243,21 +265,6 @@ void roommanager::changenote(char *note, struct Troom *p)
   room_modified(p);
 }
 
-
-/* this is outdated and unused code - needs to be fixed according to */
-/* tree search engine, else usage will corrupt the code */
-void roommanager::changename(char *name, struct Troom *p)
-{
-  
-  printf ("ERROR - ATTEMPTED TO USE CHANGENAME()");
-  return;
-  
-  if (p->name != NULL)
-    free(p->name);
-  p->name = strdup(name);
-  
-  room_modified(p);
-}
 
 /* ------------ fixfree ------------- */
 void roommanager::fixfree()
@@ -563,7 +570,7 @@ void roommanager::send_room(struct Troom *r)
 	    (const char *) conf.sectors[r->sector].desc, r->x, r->y, r->z,
             r->timestamp[0] == 0 ? "No Info" : r->timestamp);
     send_to_user(" %s%s%s\n", (const char *) conf.get_look_col() , r->name, 
-                              (const char *) conf.get_look_col() );
+                              (const char *) conf.get_end_col() );
 
     line[0] = 0;
     pos = 0;

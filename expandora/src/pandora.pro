@@ -12,6 +12,8 @@ win32 {
 	CONFIG	+= console
 }
 
+FORMS +=        roomedit.ui
+
 HEADERS		+=configurator.h
 HEADERS		+=defines.h
 HEADERS		+=dispatch.h

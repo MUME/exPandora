@@ -49,7 +49,7 @@ int Cdispatcher::check_roomname(char *line) {
     
 
     rx = conf.get_roomname_exp();
-    
+
     if (rx.indexIn(line) >= 0) {
         /* so we got a roomname in this line */
         for (i = 0; i<strlen(line); i++) {
@@ -143,7 +143,7 @@ void Cdispatcher::dispatch_buffer()
           o_pos += 2;
 
           /* ODOA lines might contain prompt in them */
-          if (line[0] == '*' || line[0] == 'o' || line[0] == '!') {
+          if (line[0] == '*' || (line[0] == 'o' && line[1]!='r') || line[0] == '!') {
               unsigned int z;
               for (z = 1; z < (strlen(line) - 1); z++) 
                   if (line[z] == '>') {
@@ -277,9 +277,8 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
     for (i = 0; i< amount; i++) {
         if ( (buffer[i].type != IS_LFCR) && (strlen(roomdesc) != 0) && getting_desc) {
             /* some room ended */
-            preRAdd(R_DESC, roomdesc);                                                                                              
-            notify_analyzer();                                                                                                                     
-                    
+            preRAdd(R_DESC, roomdesc);
+            notify_analyzer();
             print_debug(DEBUG_DISPATCHER, "DESC: %s", roomdesc);
             roomdesc[0] = 0;
             getting_desc = 0;   /* no more descs incoming */
@@ -316,6 +315,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             print_debug(DEBUG_DISPATCHER, "line after fixing: %s", a_line);
             */
           
+		
             if (check_roomname(a_line) == 0) 
                 if (check_exits(a_line) == 0)
                     if (check_failure(a_line) == 0)
@@ -325,10 +325,10 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
         }            
 
         if (buffer[i].type == IS_PROMPT) {
+	  
             strcpy(last_prompt, buffer[i].line);
-            
-            preRAdd(R_PROMPT, last_prompt);                                                                                              
-            notify_analyzer();                                                                                                                     
+            preRAdd(R_PROMPT, last_prompt);
+            notify_analyzer();
         }
         
         /* recreating this line in buffer */
@@ -355,9 +355,99 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
 }
 
 
+QByteArray Cdispatcher::get_colour_name(QByteArray str)
+{
+    QByteArray s;
+    
+    s = str.simplified();
+    s.truncate(s.indexOf(" ", 0));
+    return s;
+}
+
+QByteArray Cdispatcher::get_colour(QByteArray str)
+{
+    QByteArray s;
+    int start, end;
+    
+    start = str.indexOf("[", 0);
+    end = str.indexOf("m", start);
+    s = str.mid(start, end-start+1);
+    return s;
+}
+
+
 int Cdispatcher::check_failure(char *nline)
 {
-  char tmp_leader_moves[MAX_STR_LEN];
+    char tmp_leader_moves[MAX_STR_LEN];
+    QRegExp rx;
+    vector<QByteArray>::iterator i;
+
+    if (getting_colour_scheme) {
+        rx.setPatternSyntax(QRegExp::Wildcard);
+	
+      	if (!collecting_colours) {
+            /* check if we shall start collecting colours */
+	    rx.setPattern("Use 'change colour <field> <attribute>' where <field> can be one of:");
+            if (rx.indexIn(nline) >= 0) {
+	        collecting_colours = true;
+	        return 1;
+	    }
+        } else {
+            rx.setPattern("or 'change colour <field> default|monochrome|none' where <field> can be one of:");
+            if (rx.indexIn(nline) >= 0) {
+                /* check for double colours */
+                
+                /* look's /roomname) colour */
+                for (i = colour_data.begin(); i != colour_data.end(); ++i)
+                    if (get_colour_name(*i) == "look") {
+                        conf.set_look_col( get_colour( *i) );
+                        printf("Look colour is now set to: %s Test. %s\r\n", (const char *) conf.get_look_col(), 
+                                                                             (const char *) conf.get_end_col() );
+                        i = colour_data.erase(i);
+                        break;
+                    }
+                    
+                    
+                if (conf.get_look_col() == "") {
+                    send_to_user("--[ WARNING. You do not have the look colour set! Mapper wont work properly!\r\n");    
+                } else {
+                    /* check if any other colour has the same ANSI seq */
+                    for (i = colour_data.begin(); i != colour_data.end(); ++i)
+                        if (get_colour(*i) == conf.get_look_col()) {
+                            send_to_user("--[ WARNING: You have look and %s colours set the same, this will most likely hurt movement analyzer.\r\n", (const char *)  get_colour_name(*i) );               
+                        }
+                }
+                
+                /* prompt colour */
+                for (i = colour_data.begin(); i != colour_data.end(); ++i)
+                    if (get_colour_name(*i) == "prompt") {
+                        conf.set_prompt_col( get_colour( *i) );
+                        printf("Prompt colour is now set to: %s Test. %s\r\n", (const char *) conf.get_prompt_col(), 
+                                                                             (const char *) conf.get_end_col() );
+                        i = colour_data.erase(i);
+                        break;
+                    }
+                    
+                    
+                if (conf.get_prompt_col() != "") {
+                    /* check if any other colour has the same ANSI seq */
+                    for (i = colour_data.begin(); i != colour_data.end(); ++i)
+                        if (get_colour(*i) == conf.get_prompt_col()) {
+                            send_to_user("--[ WARNING: You have prompt and %s colours set the same, this will most likely hurt movement analyzer.\r\n", (const char *)  get_colour_name(*i) ); 
+                        }
+                }
+
+                
+                /* free the colorus list and unset all the flags */
+                collecting_colours = false;
+                getting_colour_scheme = false;
+                colour_data.clear();
+            } else {
+                /* collect the colour and add the item */
+                colour_data.push_back(nline);
+            }
+	}
+    }
 
   for (unsigned int i = 0; i < conf.patterns.size(); i++) {
     if (conf.patterns[i].rexp.indexIn(nline) >= 0 ) {
@@ -431,32 +521,6 @@ int Cdispatcher::check_failure(char *nline)
 
   }
   
-/*
-  if (strcmp(nline, "It is pitch black...") == 0) {
-      print_debug(DEBUG_DISPATCHER, "Blinded movement detected!");
-      preRAdd(R_BLIND, NULL);
-      return 1;
-  }
-
-  if (strcmp(nline, "You just see a dense fog around you...") == 0) {
-      print_debug(DEBUG_DISPATCHER, "Blinded movement detected!");
-      preRAdd(R_BLIND, NULL);
-      return 1;
-  }
-
-  
-  if (strlen(nline) > 17) {
-    const char scout_template[] = "You quietly scout ";
-      
-    if (strncmp(nline, scout_template, strlen(scout_template) ) == 0) {
-      print_debug(DEBUG_DISPATCHER, "Scouting detected!");
-      preCAdd(C_SCOUT, NULL);
-      return 1;
-    }
-  }
-*/
-  
-
   return 0;
 }
 

@@ -8,15 +8,23 @@
 #include <QVBoxLayout>
 #include <QMenu>
 #include <QDockWidget>
-
+#include <QApplication>
+#include <QDialog>
+#include <QThread>
 
 #include "defines.h"
 #include "rooms.h"
+
+#include "ui_roomedit.h"
 
 class QAction; 
 class QLabel; 
 class FindDialog; 
 class Spreadsheet; 
+class QLineEdit;
+class QLabel;
+class QWidget;
+class QPushButton;
 
 int renderer_main();
 
@@ -24,10 +32,28 @@ int renderer_main();
 extern int texture_visibilit_range;
 extern int details_visibility_range;
 
-class QLineEdit;
-class QLabel;
-class QWidget;
-class QPushButton;
+class RoomEditDialog : public QDialog, public Ui::roomedit_dialog {
+Q_OBJECT
+
+public:
+    RoomEditDialog(QWidget *parent = 0);
+    QString parse_room_desc(char *);
+
+
+    void load_room_data(unsigned int id);
+public slots:
+    virtual void accept();
+    virtual void reject();
+};
+
+/*
+class RoomEditThread : public QThread {
+Q_OBJECT
+    RoomEditDialog  *dialog;
+public:
+    virtual void run();
+};
+*/
 
 class RendererWidget : public QGLWidget
 {
@@ -86,46 +112,60 @@ private:
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
-public:
-    MainWindow(QWidget *parent, const char *name = 0);
-
-    RendererWidget *renderer;
-
-    void update_status_bar();
-
-private slots:
-  void hide_menu();
-  void hide_status();
-  void always_on_top();
-  void newFile() {  } ;
-  void open() { };
-
-private:
-  void mousePressEvent( QMouseEvent *);
-  void mouseReleaseEvent( QMouseEvent *);
-  void mouseMoveEvent( QMouseEvent *);
-  void wheelEvent(QWheelEvent *);
-
-  void keyPressEvent( QKeyEvent * );
-  void hide();                              /* hide all extra widgets */
 
   QLabel        *locationLabel; 
   QLabel        *formulaLabel; 
   QLabel        *modLabel; 
-  QMenu         *optionsMenu;
 
-  QAction       *hide_status_action;
-  QAction       *hide_menu_action;
+    QMenu       *optionsMenu;
+    QMenu       *fileMenu;
+    QMenu       *actionsMenu;
+
   QAction       *always_on_top_action;
   QAction       *newAct;
   QAction       *quitAct;
   QAction       *openAct;
+  QAction       *reloadAct;
+  
+  QAction       *roomeditAct;
+  
+  
+  
+  RoomEditDialog edit_dialog;
 
 
 
   bool          LeftButtonPressed;
   bool          RightButtonPressed;
   QPoint        old_pos;
+
+public:
+    MainWindow(QWidget *parent, const char *name = 0);
+
+    RendererWidget *renderer;
+
+    void update_status_bar();
+    QAction       *hide_status_action;
+    QAction       *hide_menu_action;
+private slots:
+  void hide_menu();
+  void hide_status();
+  void always_on_top();
+  void newFile();
+  void open();
+  void reload();
+  void quit();
+  
+    void edit_room();
+
+  void mousePressEvent( QMouseEvent *);
+  void mouseReleaseEvent( QMouseEvent *);
+  void mouseMoveEvent( QMouseEvent *);
+  void wheelEvent(QWheelEvent *);
+
+
+  void keyPressEvent( QKeyEvent * );
+  void hide();                              /* hide all extra widgets */
 };
 
 

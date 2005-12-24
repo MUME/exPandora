@@ -18,7 +18,8 @@
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QKeyEvent>
-
+#include <QDialog>
+#include <QMessageBox>
 
 #include "defines.h"
 #include "struct.h"
@@ -32,11 +33,44 @@
 #include "userfunc.h"
 
 
+
+void MainWindow::newFile()
+{
+    
+}
+
+void MainWindow::open()
+{
+  QString s = QFileDialog::getOpenFileName(
+                    this,
+                    "Choose a database",
+                    "",
+                    "XML files (*.xml)");    
+  char data[MAX_STR_LEN];
+    
+  strcpy(data, qPrintable(s));
+    
+  if (!s.isEmpty()) { 
+    usercmd_mload(0, 0,  data);  
+  }  
+}
+
+void MainWindow::reload()
+{
+    usercmd_mload(0,0, "");    
+}
+
+void MainWindow::quit()
+{
+    QApplication::quit();
+}
+
 MainWindow::MainWindow(QWidget *parent, const char *name)
     : QMainWindow( parent)
 {
   renderer =  new RendererWidget( this, name);
   setCentralWidget( renderer );
+  resize(640, 480);
 
   /* creating actions and connecting them here */
   newAct = new QAction(tr("&New"), this);
@@ -44,48 +78,56 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   newAct->setStatusTip(tr("Create a new map"));
   connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));    
   
-  openAct = new QAction(tr("&Open..."), this);
-  openAct->setShortcut(tr("Ctrl+O"));
+  openAct = new QAction(tr("&Load..."), this);
+  openAct->setShortcut(tr("Ctrl+L"));
   openAct->setStatusTip(tr("Open an existing map"));
   connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
-  
+
+  reloadAct = new QAction(tr("&Reload..."), this);
+  reloadAct->setShortcut(tr("Ctrl+R"));
+  reloadAct->setStatusTip(tr("Reload current map"));
+  connect(reloadAct, SIGNAL(triggered()), this, SLOT(reload()));
+    
   quitAct =  new QAction(tr("&Exit..."), this);
   quitAct->setShortcut(tr("Ctrl+Q"));
-  openAct->setStatusTip(tr("Quit Pandora"));
+  quitAct->setStatusTip(tr("Quit Pandora"));
   connect(quitAct, SIGNAL(triggered()), this, SLOT(quit()));
     
   /* now building a menu and adding actions to menu */
-  QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+  fileMenu = menuBar()->addMenu(tr("&File"));
   fileMenu->addAction(newAct);
   fileMenu->addAction(openAct);  
   fileMenu->addAction(quitAct);  
 
 
-
-/*
-  optionsMenu = new QPopupMenu( 0, "optionsMenu" );
-  optionsMenu->insertItem( tr("Hide All"), this, SLOT( hide() ), CTRL+Key_H );
-  optionsMenu->setCheckable(true);
-  hide_menu_id = optionsMenu->insertItem( tr("Hide/Show Menu"), this, SLOT( hide_menu() ), Key_F12);
-  hide_status_id = optionsMenu->insertItem( tr("Hide/Show Status"), this, SLOT( hide_status()), Key_F11 );
-  hide_roominfo_id = optionsMenu->insertItem( tr("Hide/Show Room info"), this, SLOT( hide_roominfo()), Key_F10);
-
-  optionsMenu->insertSeparator();
-
-  always_on_top_id = optionsMenu->insertItem( tr("Always on top"), this, SLOT( always_on_top()), Key_F9);
-
+/* options menu bar */
   
-  menuBar()->insertItem( tr("&Options"), optionsMenu);
+  
+  hide_status_action = new QAction(tr("Hide Status Bar"), this);
+  hide_status_action->setShortcut(tr("F11"));
+  hide_status_action->setStatusTip(tr("Hides the Statusbar"));
+  hide_status_action->setCheckable(true);
+  hide_status_action->setChecked(false);
+  connect(hide_status_action, SIGNAL(triggered()), this, SLOT(hide_status()));    
+
+  hide_menu_action= new QAction(tr("Hide Menu Bar"), this);
+  hide_menu_action->setShortcut(tr("F12"));
+  hide_menu_action->setStatusTip(tr("Hides the Menubar"));
+  hide_menu_action->setCheckable(true);
+  hide_menu_action->setChecked(false);
+  connect(hide_menu_action, SIGNAL(triggered()), this, SLOT(hide_menu()));    
   
 
-  
-  optionsMenu->setItemChecked(hide_menu_id, false );
-  optionsMenu->setItemChecked(hide_status_id, false );
-  optionsMenu->setItemChecked(hide_roominfo_id, true );
- 
-  optionsMenu->setItemChecked(always_on_top_id, true );
-*/  
-//  this->setWFlags(Qt::WStyle_Customize | Qt::WStyle_StaysOnTop);
+  always_on_top_action= new QAction(tr("Always on Top"), this);
+  always_on_top_action->setStatusTip(tr("Always on Top"));
+  always_on_top_action->setCheckable(true);
+  always_on_top_action->setChecked(true);
+  connect(always_on_top_action, SIGNAL(triggered()), this, SLOT(always_on_top()));    
+
+  optionsMenu = menuBar()->addMenu(tr("&Options"));
+  optionsMenu->addAction(hide_status_action);
+  optionsMenu->addAction(hide_menu_action);  
+  optionsMenu->addAction(always_on_top_action);  
 
    Qt::WindowFlags flags = windowFlags();
 #ifndef Q_OS_MACX
@@ -124,6 +166,13 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   statusBar()->addWidget(formulaLabel, 1); 
   statusBar()->addWidget(modLabel); 
 
+  /* Actions menu */
+  roomeditAct= new QAction(tr("Room Info"), this);
+  roomeditAct->setStatusTip(tr("View/Edit current Room's info"));
+  connect(roomeditAct, SIGNAL(triggered()), this, SLOT(edit_room()));    
+
+  actionsMenu = menuBar()->addMenu(tr("&Actions"));
+  actionsMenu->addAction(roomeditAct);
   
 
   LeftButtonPressed = false;
@@ -160,15 +209,11 @@ void MainWindow::hide()
 
 void MainWindow::hide_menu()
 {
-  print_debug(DEBUG_INTERFACE, "hide/show menu called");
-  
   if (hide_menu_action->isChecked()) 
   {
-    menuBar()->show();  
-    hide_menu_action->setChecked(false);
+    menuBar()->hide();  
   } else {
-    menuBar()->hide();
-    hide_menu_action->setChecked(true);
+    menuBar()->show();
   }
 }
 
@@ -180,12 +225,12 @@ void MainWindow::always_on_top()
   if( flags && Qt::WindowStaysOnTopHint )
   {
     flags ^= Qt::WindowStaysOnTopHint;
-    always_on_top_action->setChecked(false);
   } else {
     flags |= Qt::WindowStaysOnTopHint;
-    always_on_top_action->setChecked(true);
   }
-  setWindowFlags(flags);
+  printf("Setting flag.\r\n");
+//  setWindowFlags(flags);
+  printf("The flag is set.\r\n");
 }
 
 
@@ -195,13 +240,10 @@ void MainWindow::hide_status()
 
   if (hide_status_action->isChecked() ) 
   {
-    statusBar()->show();  
-    hide_status_action->setChecked(false);
+    statusBar()->hide();  
   } else {
-    statusBar()->hide();
-    hide_status_action->setChecked(true);
+    statusBar()->show();
   }
-  
 }
 
 void MainWindow::keyPressEvent( QKeyEvent *k )
@@ -214,6 +256,12 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
             userland_parser.parse_command();
           
           break;
+
+
+         case Qt::CTRL+Qt::Key_Q:
+		QApplication::quit();
+//            renderer_window->hide();
+            break;	
          
         case Qt::Key_X :
             renderer->userz += 1;
@@ -285,23 +333,22 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
             break;				
 
          case Qt::Key_F12:
-            //hide_menu();
+	    hide_menu_action->setChecked(!hide_menu_action->isChecked());
+            hide_menu();
             break;
          case Qt::Key_F11:
-            //hide_status();
+	    hide_status_action->setChecked(!hide_status_action->isChecked());
+            hide_status();
             break;				
          case Qt::Key_F10:
             //hide_roominfo();
             break;				
 
          case Qt::CTRL+Qt::Key_H:
-            //hide();
-            break;				
-
-         
+//            renderer_window->hide();
+            break;	
     }
-    
-    renderer->display();
+    renderer_window->renderer->display();
 }
 
 void MainWindow::mousePressEvent( QMouseEvent *e)
@@ -370,3 +417,187 @@ void MainWindow::wheelEvent(QWheelEvent *e)
   glredraw = 1;
   renderer->display();
 }
+
+void MainWindow::edit_room()
+{
+    printf("Staring edit room action!\r\n");
+    if (stacker.amount != 1) {
+        QMessageBox::critical(0, "Room Info Edit",
+                              QString("You are not in sync!"));
+        
+            
+        return;
+    } 
+    
+    edit_dialog.load_room_data(stacker.get(1));
+    
+    edit_dialog.show();
+    edit_dialog.raise();
+    edit_dialog.activateWindow();
+}
+
+/* ROOM EDIT DIALOG */
+RoomEditDialog::RoomEditDialog(QWidget *parent) : 
+                                    QDialog(parent)
+{
+    setupUi(this);
+    
+//    setModal(true);
+
+    connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+}
+
+
+void RoomEditDialog::load_room_data(unsigned int id)
+{
+    Troom *r;
+    unsigned int i;
+    
+    /* stuff dialog with room data */    
+    r = roomer.getroom(id);
+    lineEdit_doornorth->setText(r->doors[NORTH]);        
+    lineEdit_doorsouth->setText(r->doors[SOUTH]);        
+    lineEdit_dooreast->setText(r->doors[EAST]);        
+    lineEdit_doorwest->setText(r->doors[WEST]);        
+    lineEdit_doorup->setText(r->doors[UP]);        
+    lineEdit_doordown->setText(r->doors[DOWN]);        
+    lineEdit_name->setText(r->name);
+    lineEdit_coordx->setText(QString("%1").arg(r->x));
+    lineEdit_coordy->setText(QString("%1").arg(r->y));
+    lineEdit_coordz->setText(QString("%1").arg(r->z));
+    
+    QString desc = r->desc;
+    desc.replace("|", "\n");
+    textEdit_desc->append( desc );
+    label_roomid->setText(QString("%1").arg(r->id) );
+    textEdit_note->append(r->note);
+        
+    for (i=0; i< conf.sectors.size(); i++)
+        comboBox_terrain->insertItem(i, conf.sectors[i].desc);    
+        
+    comboBox_terrain->setCurrentIndex(r->sector);
+}
+
+
+void RoomEditDialog::accept()
+{
+    Troom *r;
+    QString name, desc, note;
+    QString doorn, doore, doors, doorw, dooru, doord;
+    int x, y, z;
+    int id;
+    char terrain;
+
+    printf("Accepted!\r\n");
+    /* OK! Now check the data */
+    
+    id = label_roomid->text().toInt();
+    
+    r = roomer.getroom(stacker.get(id));
+    if (r == NULL) {
+        QMessageBox::critical(0, "Room Info Edit",
+                              QString("The room with this ID does not exist anymore."));
+        return;    
+    }
+    
+    name = lineEdit_name->text();
+    if (name.length() == 0 || name.length() > 80) {
+        QMessageBox::critical(0, "Room Info Edit",
+                              QString("Bad room name!"));
+        return;    
+    }
+    
+    doorn = lineEdit_doornorth->text();
+    if (doorn.length() > 40) {
+        QMessageBox::critical(0, "Room Info Edit",
+                              QString("Bad door to the north!"));
+        return;    
+    }
+    
+    doors = lineEdit_doorsouth->text();
+    if (doors.length() > 40) {
+        QMessageBox::critical(0, "Room Info Edit",
+                              QString("Bad door to the south!"));
+        return;    
+    }
+    doore = lineEdit_dooreast->text();
+    if (doore.length() > 40) {
+        QMessageBox::critical(0, "Room Info Edit",
+                              QString("Bad door to the east!"));
+        return;    
+    }
+    doorw = lineEdit_doorwest->text();
+    if (doorw.length() > 40) {
+        QMessageBox::critical(0, "Room Info Edit",
+                              QString("Bad door to the west!"));
+        return;    
+    }
+    
+    dooru = lineEdit_doorup->text();
+    if (dooru.length() > 40) {
+        QMessageBox::critical(0, "Room Info Edit",
+                              QString("Bad door to the up!"));
+        return;    
+    }
+    
+    doord = lineEdit_doordown->text();
+    if (doord.length() > 40) {
+        QMessageBox::critical(0, "Room Info Edit",
+                              QString("Bad door to the down!"));
+        return;    
+    }
+    
+    x = lineEdit_coordx->text().toInt();
+    y = lineEdit_coordy->text().toInt();
+    z = lineEdit_coordz->text().toInt();
+    
+    desc = textEdit_desc->toPlainText();
+    desc.replace("\n", "|");
+    terrain = comboBox_terrain->currentIndex();
+            
+    note = textEdit_note->toPlainText();
+            
+            
+    if (r->name != name) {
+        printf(" REfreshing roomname.\r\n");
+        printf(" Old: %s\r\n", r->name);
+        printf(" New: %s\r\n", qPrintable(name));
+        roomer.refresh_roomname(id, name.toAscii());            
+    }
+    if (r->desc != desc) {
+        printf(" REfreshing desc.\r\n");
+        printf(" Old: %s\r\n", r->desc);
+        printf(" New: %s\r\n", qPrintable(desc));
+        roomer.refresh_desc(id, desc.toAscii());            
+    }
+    if (r->note != note) {
+        printf(" Refreshing note.\r\n");
+        printf(" Old: %s\r\n", r->note);
+        printf(" New: %s\r\n", qPrintable(note));
+        roomer.refresh_note(id, note.toAscii());            
+    }
+
+    roomer.refresh_door(id, NORTH, doorn.toAscii());    
+    roomer.refresh_door(id, EAST, doore.toAscii());    
+    roomer.refresh_door(id, SOUTH, doors.toAscii());    
+    roomer.refresh_door(id, WEST, doorw.toAscii());    
+    roomer.refresh_door(id, UP, dooru.toAscii());    
+    roomer.refresh_door(id, DOWN, doord.toAscii());    
+            
+    done(Accepted);
+}
+
+void RoomEditDialog::reject()
+{
+    printf("Rejected!\r\n");
+    done(Rejected);
+}
+
+
+
+
+
+
+
+

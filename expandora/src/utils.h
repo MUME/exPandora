@@ -8,6 +8,7 @@
 #define UPPER(c)   (((c)>='a'  && (c) <= 'z') ? ((c)+('A'-'a')) : (c) )
 
 #define ON_OFF(flag) ( (flag) ? "ON" : "OFF" )
+#define YES_NO(flag) ( (flag) ? "YES" : "NO" )
 
 #define IS_SET(flag,bit)  ((flag) & (bit))
 #define SET_BIT(var,bit)  ((var) |= (bit))

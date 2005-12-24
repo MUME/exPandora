@@ -59,6 +59,7 @@ enum PlaneData
 RendererWidget::RendererWidget( QWidget *parent, const char *name )
      : QGLWidget( parent )
 {
+    
   angley = 0;
   anglex = 0;
   anglez = 0;
@@ -139,6 +140,7 @@ void RendererWidget::paintGL()
     print_debug(DEBUG_RENDERER, "in paintGL()");
     display();
 }
+
 
 int renderer_main()
 {

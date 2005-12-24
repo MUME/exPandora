@@ -237,7 +237,7 @@ ECMD(engine_command_apply_prompt)
   
   if (engine_flags.redraw) engine_flags.redraw++;
   
-  terrain= r->data[1];  /*second charecter is terrain*/
+  terrain= r->data[1 + conf.get_prompt_col_len()];  /*second charecter is terrain*/
   engine_flags.last_terrain = terrain;
 
   if (engine_flags.addingroom) {

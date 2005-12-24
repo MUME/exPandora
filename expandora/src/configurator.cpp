@@ -103,15 +103,19 @@ void Cconfigurator::set_exits_pat(QByteArray str)
 }
 
 
-void Cconfigurator::add_pattern(QByteArray pattern, QByteArray data, char marker, char type)
+void Cconfigurator::add_pattern(QByteArray pattern, QByteArray data, char marker, char type, bool is_regexp)
 {
     TPattern p;
     
+    p.is_regexp = is_regexp;
     p.pattern = pattern;
     p.data = data;
     p.group = marker;
     p.type = type;
-    p.rexp.setPatternSyntax(QRegExp::Wildcard);
+    if (is_regexp) 
+      p.rexp.setPatternSyntax(QRegExp::RegExp);
+    else 
+      p.rexp.setPatternSyntax(QRegExp::Wildcard);
     p.rexp.setPattern(pattern);
 
     patterns.push_back(p);
@@ -424,7 +428,8 @@ int Cconfigurator::save_config(QByteArray path, QByteArray filename)
   }
   
   for (i = 0; i < patterns.size(); i++) 
-      fprintf(f, "  <pattern type=\"%c\" data=\"%s\">%s</pattern>\r\n",
+      fprintf(f, "  <pattern regexp=\"%s\" type=\"%c\" data=\"%s\">%s</pattern>\r\n",
+                  YES_NO(patterns[i].is_regexp), 
                   patterns[i].group, patterns[i].type, 
                   (const char *) patterns[i].data, 
                   (const char *) patterns[i].pattern );
@@ -464,7 +469,7 @@ bool ConfigParser::endElement( const QString& , const QString& , const QString& 
   } else 
     */
     if (qName == "pattern" && flag == PATTERN) {
-    conf.add_pattern(pattern.pattern, pattern.data, pattern.group, pattern.type);          
+    conf.add_pattern(pattern.pattern, pattern.data, pattern.group, pattern.type, pattern.is_regexp);          
     printf("Added pattern: pattern %s, data %s, marker %c, type %c\r\n", 
           (const char *) pattern.pattern, (const char *) pattern.data, 
               pattern.group, pattern.type);
@@ -481,6 +486,8 @@ bool ConfigParser::characters( const QString& ch)
     
   if (flag == ROOMCOLOUR) {
       conf.set_look_col(s.toAscii());
+      printf("The room name colour : %s Test.%s\r\n", (const char *) conf.get_look_col(), (const char *)conf.get_end_col() );
+      printf("And the received str : %s str %s.\r\n", qPrintable(ch), (const char *)conf.get_end_col() );
   } else if (flag == PROMPTCOLOUR) {
       conf.set_prompt_col(s.toAscii());
   } else /*if (flag == TEXTURE) {
@@ -660,6 +667,13 @@ bool ConfigParser::startElement( const QString& , const QString& ,
             printf("(pattern token) Not enough attributes in XML file!");
             exit(1);
         }        
+
+        s = attributes.value("regexp");
+        s = s.toLower();
+        pattern.is_regexp = false;
+        if (s == "yes") 
+          pattern.is_regexp = true;
+        
         
         s = attributes.value("type");
         pattern.type = 0;
@@ -914,7 +928,7 @@ int Cconfigurator::load_engine_config(QByteArray path, QByteArray fn)
   buffered = new class buffered_file;
 
   QByteArray filename = path + fn;
-  printf("Loading config file %s\r\n", (const char*) filename);
+  printf("Loading the engine script file %s\r\n", (const char*) filename);
 
   current_buffered_reader = buffered;
   
@@ -958,6 +972,7 @@ void Cconfigurator::parse_line(char *line)
   if (!*arg)
     return;
   
-  if (strcmp(arg, "engine") == 0 ) 
+  if (strcmp(arg, "engine") == 0 ) {
       parse_engine(p);
+  }
 }

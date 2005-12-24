@@ -7,6 +7,43 @@
 #include <QMutex>
 using namespace std;
 
+#define USER_DEC_X      1
+#define USER_DEC_Y      2
+#define USER_DEC_Z      3
+#define USER_INC_X      4
+#define USER_INC_Y      5
+#define USER_INC_Z      6
+#define USER_DOOR_NORMAL        0
+#define USER_DOOR_EXIT          1
+
+
+USERCMD(usercmd_mhelp);
+USERCMD(usercmd_config);
+USERCMD(usercmd_msave);
+USERCMD(usercmd_mload);
+USERCMD(usercmd_mreset);
+USERCMD(usercmd_mstat);
+USERCMD(usercmd_minfo);
+USERCMD(usercmd_move);
+USERCMD(usercmd_mmerge);
+USERCMD(usercmd_mnewmap);
+USERCMD(usercmd_mdec);
+USERCMD(usercmd_mcoord);
+USERCMD(usercmd_mdoor);
+USERCMD(usercmd_mmark);
+USERCMD(usercmd_mlink);
+USERCMD(usercmd_mdetach);
+USERCMD(usercmd_mgoto);
+USERCMD(usercmd_maction);
+USERCMD(usercmd_mdebug);
+USERCMD(usercmd_mdelete);
+USERCMD(usercmd_mrefresh);
+USERCMD(usercmd_mtreestats);
+USERCMD(usercmd_mquit);
+USERCMD(usercmd_maddroom);
+USERCMD(usercmd_mevent);
+USERCMD(usercmd_mcalibrate);
+
 
 struct user_command_type {
   const char *name;

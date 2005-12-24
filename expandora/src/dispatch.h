@@ -41,8 +41,13 @@ class Cdispatcher
     char roomdesc[PROXY_BUFFER_SIZE];
     char getting_desc;          /* desc shall be incoming - just got roomname */
 
-    char getting_colour_scheme;
-    vector<QByteArray> colour_data;      
+
+    void analyze_colours();
+
+    bool collecting_colours;
+    vector<QByteArray> colour_data;
+    QByteArray get_colour(QByteArray str);      
+    QByteArray get_colour_name(QByteArray str);
     
     char last_leaders_movement;
     char leader[MAX_STR_LEN];
@@ -54,6 +59,7 @@ class Cdispatcher
     int check_failure(char *nline);
 	
 public:
+    bool getting_colour_scheme;
 
     
     void set_leaderpatter(char *line);

@@ -103,7 +103,6 @@ public:
   char *getname(unsigned int id);
   
   void changenote(char *note, struct Troom *p);
-  void changename(char *name, struct Troom *p);
     
   int try_merge_rooms(struct Troom *room, struct Troom *copy, int j);
     
@@ -135,6 +134,9 @@ public:
   void refresh_desc(unsigned int id, QByteArray newdesc);
   void refresh_roomname(unsigned int id, QByteArray newname);
   void refresh_terrain(unsigned int id, char terrain);
+  void refresh_note(unsigned int id, QByteArray note);
+  void refresh_door(unsigned int id, char dir, QByteArray door);
+  
   
   /* general check for database integrity */
   void database_integrity_check(char *entry_point);
