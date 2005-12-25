@@ -245,7 +245,10 @@ int main(int argc, char *argv[])
     }
     printf("Using target port : %i.\r\n", conf.get_remote_port());
 
+    conf.set_conf_mod( false );
+
     printf("-- Starting Pandora\n");
+  
   
     proxy_init();
 
@@ -257,14 +260,14 @@ int main(int argc, char *argv[])
 
     /* init */
     Ctop = new Tevent;
-    Ctop->type = E_ROOT;
+    Ctop->type = C_EMPTY;
     Ctop->next = NULL;
     Ctop->prev = NULL;
     Ctop->data[0] = 0;
     Cbottom = Ctop;
 
     Rtop = new Tevent;
-    Rtop->type = E_ROOT;
+    Rtop->type = R_EMPTY;
     Rtop->next = NULL;
     Rtop->prev = NULL;
     Rtop->data[0] = 0;

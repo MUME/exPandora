@@ -60,6 +60,8 @@ RendererWidget::RendererWidget( QWidget *parent, const char *name )
      : QGLWidget( parent )
 {
     
+  QString shutupthewarning = name;
+    
   angley = 0;
   anglex = 0;
   anglez = 0;

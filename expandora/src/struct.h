@@ -26,9 +26,9 @@ struct room_flag_data {
 
 
 struct event_types_type {
-  char  *name;
-  char  type;
-  char  group;
+  QByteArray    name;
+  char          type;
+  char          group;
 };
 
 struct engine_flags_type {

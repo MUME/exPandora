@@ -342,7 +342,7 @@ void Userland::parse_command()
   queue_mutex.unlock();
 }
 
-int parse_user_input_line(char *line)
+int Userland::parse_user_input_line(char *line)
 {
   char *p;
   char arg[MAX_STR_LEN];
@@ -410,7 +410,7 @@ USERCMD(usercmd_mevent)
 {
   char *p;
   char arg[MAX_STR_LEN];
-  int i;
+  unsigned int i;
   int event;
   
   userfunc_print_debug;
@@ -430,8 +430,8 @@ USERCMD(usercmd_mevent)
     send_to_user("--[ Possible events for mevent command: \r\n\r\n");
     
     
-    for (i = 0; event_types[i].name; i++) 
-      send_to_user("  Event %-10s Group/Type %-10s\r\n", event_types[i].name, 
+    for (i = 0; i < event_types.size(); i++) 
+      send_to_user("  Event %-10s Group/Type %-10s\r\n", (const char *) event_types[i].name, 
             event_types[i].group == E_CAUSE ? "CAUSE" : "RESULT" );
     
     send_to_user(last_prompt);
@@ -441,8 +441,8 @@ USERCMD(usercmd_mevent)
   
   
   event = -1;
-  for (i = 0; event_types[i].name; i++) 
-    if (strcmp(arg, event_types[i].name) == 0) 
+  for (i = 0; i < event_types.size(); i++) 
+    if (arg == event_types[i].name) 
     {
       event = event_types[i].type;
       break;
@@ -1357,6 +1357,7 @@ USERCMD(usercmd_msave)
   char *p;
   char arg[MAX_STR_LEN];
   
+  
   userfunc_print_debug;
   
   
@@ -1365,7 +1366,7 @@ USERCMD(usercmd_msave)
     /* no arguments */
     xml_writebase( conf.get_base_file() );
     send_to_user("--[Pandora: Saved...\r\n");
-    conf.set_data_mod(true);
+    conf.set_data_mod(false);
 
     
     send_to_user(last_prompt);
@@ -1376,7 +1377,7 @@ USERCMD(usercmd_msave)
     xml_writebase(arg);
     send_to_user("--[Pandora: Saved to %s...\r\n", arg);
     
-    conf.set_data_mod(true);
+    conf.set_data_mod(false);
 
     send_to_user(last_prompt);
     return USER_PARSE_DONE;

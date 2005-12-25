@@ -547,7 +547,7 @@ void Cdispatcher::analyze_user_stream(char *buf, int *n)
 
       if (buffer[i].type == IS_CRLF || buffer[i].type == IS_LFCR ||
           buffer[i].type == IS_LF) {
-        result = parse_user_input_line(buffer[i].line);
+        result = userland_parser.parse_user_input_line(buffer[i].line);
         if (result == USER_PARSE_DONE) 
           continue;
       }

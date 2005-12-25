@@ -39,12 +39,32 @@ void MainWindow::newFile()
     
 }
 
+
+void MainWindow::disable_online_actions()
+{
+  mappingAct->setEnabled(false);
+  automergeAct->setEnabled(false);
+  angryLinkerAct->setEnabled(false);
+  calibrateColoursAct->setEnabled(false);
+}
+
+
+void MainWindow::enable_online_actions()
+{
+  mappingAct->setEnabled(true);
+  automergeAct->setEnabled(true);
+  angryLinkerAct->setEnabled(true);
+  calibrateColoursAct->setEnabled(true);
+}
+
+
+
 void MainWindow::open()
 {
   QString s = QFileDialog::getOpenFileName(
                     this,
                     "Choose a database",
-                    "",
+                    "database/",
                     "XML files (*.xml)");    
   char data[MAX_STR_LEN];
     
@@ -53,17 +73,174 @@ void MainWindow::open()
   if (!s.isEmpty()) { 
     usercmd_mload(0, 0,  data);  
   }  
+  QMessageBox::information(this, "Pandora", "Loaded!\n", QMessageBox::Ok);
+
 }
 
 void MainWindow::reload()
 {
-    usercmd_mload(0,0, "");    
+    usercmd_mload(0, 0, "");    
 }
 
 void MainWindow::quit()
 {
+    if (conf.get_data_mod()) {
+        switch(QMessageBox::information(this, "Pandora",
+                                        "The map contains unsaved changes\n"
+                                        "Do you want to save the changes before exiting?",
+                                        "&Save", "&Discard", "Cancel",
+                                        0,      // Enter == button 0
+                                        2)) { // Escape == button 2
+        case 0: // Save clicked or Alt+S pressed or Enter pressed.
+            save();
+            break;
+        case 1: // Discard clicked or Alt+D pressed
+            // don't save but exit
+            break;
+        case 2: // Cancel clicked or Escape pressed
+            return;// don't exit
+            break;
+        }    
+    
+    } 
+    
+    if (conf.get_conf_mod()) {
+        switch(QMessageBox::information(this, "Pandora",
+                                        "The configuration was changed\n"
+                                        "Do you want to write it down on disc before exiting?",
+                                        "&Save", "&Discard", "Cancel",
+                                        0,      // Enter == button 0
+                                        2)) { // Escape == button 2
+        case 0: // Save clicked or Alt+S pressed or Enter pressed.
+            conf.save_config();
+            break;
+        case 1: // Discard clicked or Alt+D pressed
+            // don't save but exit
+            break;
+        case 2: // Cancel clicked or Escape pressed
+            return;// don't exit
+            break;
+        }    
+    
+    
+    }
     QApplication::quit();
 }
+
+void MainWindow::save()
+{
+    usercmd_msave(0, 0, "");
+    QMessageBox::information(this, "Saving...", "Saved!\n", QMessageBox::Ok);
+                                    
+}
+
+void MainWindow::saveAs()
+{
+  char data[MAX_STR_LEN];
+  
+  QString s = QFileDialog::getSaveFileName(
+                    this,
+                    "Choose a filename to save under",
+                    "database/",
+                    "XML database files (*.xml)");
+                    
+  strcpy(data, qPrintable(s));
+    
+  if (!s.isEmpty()) { 
+    usercmd_msave(0, 0,  data);  
+  }  
+  
+  QMessageBox::information(this, "Saving...", "Saved!\n", QMessageBox::Ok);
+
+}
+
+
+void MainWindow::mapping_mode()
+{
+  if (mappingAct->isChecked()) 
+  {
+    userland_parser.parse_user_input_line("mmap on");
+  } else {
+    userland_parser.parse_user_input_line("mmap off");
+  }
+}
+
+void MainWindow::automerge()
+{
+  if (automergeAct->isChecked()) 
+  {
+    userland_parser.parse_user_input_line("mautomerge on");
+  } else {
+    userland_parser.parse_user_input_line("mautomerge off");
+  }
+}
+
+void MainWindow::angrylinker()
+{
+  if (angryLinkerAct->isChecked()) 
+  {
+    userland_parser.parse_user_input_line("mangrylinker on");
+  } else {
+    userland_parser.parse_user_input_line("mangrylinker off");
+  }
+}
+
+void MainWindow::calibrateColours()
+{
+    userland_parser.parse_user_input_line("mcalibrate");
+}
+
+
+void MainWindow::saveConfig()
+{
+    conf.save_config();
+    QMessageBox::information(this, "Saving...", "Saved!\n", QMessageBox::Ok);
+}
+
+void MainWindow::delete_room()
+{
+    userland_parser.parse_user_input_line("mdelete");
+}
+
+void MainWindow::merge_room()
+{
+    userland_parser.parse_user_input_line("mmerge");
+}
+
+
+void MainWindow::saveAsConfig()
+{
+    QString s = QFileDialog::getSaveFileName(
+                    this,
+                    "Choose a filename to save under",
+                    "configs/",
+                    "XML config files (*.xml)");
+    if (s.isEmpty())
+        return;
+    conf.save_config_as("", s.toAscii());
+    QMessageBox::information(this, "Saving...", "Saved!\n", QMessageBox::Ok);
+}
+
+void MainWindow::loadConfig()
+{
+  QString s = QFileDialog::getOpenFileName(
+                    this,
+                    "Choose another configuration file to load",
+                    "configs/",
+                    "XML config files (*.xml)");    
+  if (s.isEmpty())
+        return;
+
+  conf.load_config("", s.toAscii());
+  QMessageBox::information(this, "Pandora", "Loaded!\n", QMessageBox::Ok);
+
+}    
+
+void MainWindow::generalSetting()
+{
+    analyser_dialog.run();
+}
+
 
 MainWindow::MainWindow(QWidget *parent, const char *name)
     : QMainWindow( parent)
@@ -87,6 +264,16 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   reloadAct->setShortcut(tr("Ctrl+R"));
   reloadAct->setStatusTip(tr("Reload current map"));
   connect(reloadAct, SIGNAL(triggered()), this, SLOT(reload()));
+
+  saveAct = new QAction(tr("&Save..."), this);
+  saveAct->setShortcut(tr("Ctrl+S"));
+  saveAct->setStatusTip(tr("Save currently opened map"));
+  connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
+
+  saveAsAct = new QAction(tr("Save As..."), this);
+  saveAsAct->setStatusTip(tr("Save the map As"));
+  connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
+
     
   quitAct =  new QAction(tr("&Exit..."), this);
   quitAct->setShortcut(tr("Ctrl+Q"));
@@ -96,11 +283,66 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   /* now building a menu and adding actions to menu */
   fileMenu = menuBar()->addMenu(tr("&File"));
   fileMenu->addAction(newAct);
+  fileMenu->addSeparator();
   fileMenu->addAction(openAct);  
+  fileMenu->addAction(reloadAct);  
+  fileMenu->addSeparator();
+  fileMenu->addAction(saveAct);  
+  fileMenu->addAction(saveAsAct);  
+  fileMenu->addSeparator();
   fileMenu->addAction(quitAct);  
 
 
-/* options menu bar */
+  /* Room menu */
+  roomeditAct= new QAction(tr("Edit Current Room"), this);
+  roomeditAct->setStatusTip(tr("View/Edit current Room's info"));
+  connect(roomeditAct, SIGNAL(triggered()), this, SLOT(edit_current_room()));    
+
+  deleteAct= new QAction(tr("Delete current room"), this);
+  deleteAct->setStatusTip(tr("Deletes this room"));
+  connect(deleteAct, SIGNAL(triggered()), this, SLOT(delete_room()));    
+
+  mergeAct= new QAction(tr("Merge"), this);
+  mergeAct->setStatusTip(tr("Tries to find twin room and merge them"));
+  connect(mergeAct, SIGNAL(triggered()), this, SLOT(merge_room()));    
+
+
+  actionsMenu = menuBar()->addMenu(tr("&Room"));
+  actionsMenu->addAction(roomeditAct);
+  actionsMenu->addAction(deleteAct);
+  actionsMenu->addAction(mergeAct);
+
+
+
+  /* Mapping menu */
+  
+  
+  mappingAct= new QAction(tr("Mapping"), this);
+  mappingAct->setCheckable(true);
+  mappingAct->setChecked(false);
+  mappingAct->setStatusTip(tr("Switch mapping mode on/off"));
+  connect(mappingAct, SIGNAL(triggered()), this, SLOT(mapping_mode()));    
+  
+  automergeAct= new QAction(tr("AutoMerge"), this);
+  automergeAct->setCheckable(true);
+  conf.get_automerge() ? automergeAct->setChecked(true) : automergeAct->setChecked(false);
+  automergeAct->setStatusTip(tr("Automatically merge twin (same name/desc) rooms"));
+  connect(automergeAct, SIGNAL(triggered()), this, SLOT(automerge()));    
+
+  angryLinkerAct= new QAction(tr("AngryLinker"), this);
+  angryLinkerAct->setCheckable(true);
+  conf.get_angrylinker() ? angryLinkerAct->setChecked(false) : angryLinkerAct->setChecked(false);
+  angryLinkerAct->setStatusTip(tr("Auto-link neightbour rooms"));
+  connect(angryLinkerAct, SIGNAL(triggered()), this, SLOT(angrylinker()));    
+
+  
+  mappingMenu = menuBar()->addMenu(tr("&Mapping"));
+  mappingMenu->addAction(mappingAct);
+  mappingMenu->addAction(automergeAct);
+  mappingMenu->addAction(angryLinkerAct);
+
+
+/* Configuration menu bar */
   
   
   hide_status_action = new QAction(tr("Hide Status Bar"), this);
@@ -117,6 +359,10 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   hide_menu_action->setChecked(false);
   connect(hide_menu_action, SIGNAL(triggered()), this, SLOT(hide_menu()));    
   
+  
+  calibrateColoursAct= new QAction(tr("Calibrate Colours"), this);
+  calibrateColoursAct->setStatusTip(tr("Sends change colour command and parses the output"));
+  connect(calibrateColoursAct, SIGNAL(triggered()), this, SLOT(calibrateColours()));    
 
   always_on_top_action= new QAction(tr("Always on Top"), this);
   always_on_top_action->setStatusTip(tr("Always on Top"));
@@ -124,10 +370,41 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   always_on_top_action->setChecked(true);
   connect(always_on_top_action, SIGNAL(triggered()), this, SLOT(always_on_top()));    
 
-  optionsMenu = menuBar()->addMenu(tr("&Options"));
+
+  setupGeneralAct= new QAction(tr("General Settings ..."), this);
+  setupGeneralAct->setStatusTip(tr("Edit general settings"));
+  connect(setupGeneralAct, SIGNAL(triggered()), this, SLOT(generalSetting()) );    
+  
+
+  saveConfigAct= new QAction(tr("Save Configuration ..."), this);
+  saveConfigAct->setStatusTip(tr("Save current configuration"));
+  connect(saveConfigAct, SIGNAL(triggered()), this, SLOT(saveConfig()));    
+
+  saveConfigAsAct= new QAction(tr("Save Configuration As ..."), this);
+  saveConfigAsAct->setStatusTip(tr("Save current configuration to a different file"));
+  connect(saveConfigAsAct, SIGNAL(triggered()), this, SLOT(saveConfigAs()));    
+
+  loadConfigAct= new QAction(tr("Load Configuration"), this);
+  loadConfigAct->setStatusTip(tr("Save current configuration to a different file"));
+  connect(loadConfigAct, SIGNAL(triggered()), this, SLOT(loadConfig()));    
+
+
+
+  optionsMenu = menuBar()->addMenu(tr("&Configuration"));
   optionsMenu->addAction(hide_status_action);
-  optionsMenu->addAction(hide_menu_action);  
   optionsMenu->addAction(always_on_top_action);  
+  optionsMenu->addSeparator();
+  optionsMenu->addAction(calibrateColoursAct);  
+  optionsMenu->addSeparator();
+  optionsMenu->addAction(setupGeneralAct);  
+  optionsMenu->addSeparator();
+  optionsMenu->addAction(saveConfigAct);
+  optionsMenu->addAction(saveConfigAsAct);
+  optionsMenu->addAction(loadConfigAct);
+  optionsMenu->addAction(saveConfigAsAct);
+    
+  
+
 
    Qt::WindowFlags flags = windowFlags();
 #ifndef Q_OS_MACX
@@ -166,17 +443,14 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   statusBar()->addWidget(formulaLabel, 1); 
   statusBar()->addWidget(modLabel); 
 
-  /* Actions menu */
-  roomeditAct= new QAction(tr("Room Info"), this);
-  roomeditAct->setStatusTip(tr("View/Edit current Room's info"));
-  connect(roomeditAct, SIGNAL(triggered()), this, SLOT(edit_room()));    
-
-  actionsMenu = menuBar()->addMenu(tr("&Actions"));
-  actionsMenu->addAction(roomeditAct);
   
+
 
   LeftButtonPressed = false;
   RightButtonPressed = false;
+  
+  
+  disable_online_actions();
 }
 
 void MainWindow::update_status_bar()
@@ -418,19 +692,24 @@ void MainWindow::wheelEvent(QWheelEvent *e)
   renderer->display();
 }
 
-void MainWindow::edit_room()
+void MainWindow::edit_current_room()
 {
     printf("Staring edit room action!\r\n");
     if (stacker.amount != 1) {
-        QMessageBox::critical(0, "Room Info Edit",
+        QMessageBox::critical(this, "Room Info Edit",
                               QString("You are not in sync!"));
-        
-            
         return;
     } 
     
-    edit_dialog.load_room_data(stacker.get(1));
-    
+    edit_room(stacker.get(1));
+}
+
+
+void MainWindow::edit_room(unsigned int id)
+{
+    edit_dialog.clear_data();
+    edit_dialog.load_room_data(id);
+        
     edit_dialog.show();
     edit_dialog.raise();
     edit_dialog.activateWindow();
@@ -442,12 +721,207 @@ RoomEditDialog::RoomEditDialog(QWidget *parent) :
 {
     setupUi(this);
     
-//    setModal(true);
+    comboBox_N->insertItem(ROOMFLAG_UNDEFINED, "Undefined Exit");    
+    comboBox_E->insertItem(ROOMFLAG_UNDEFINED, "Undefined Exit");    
+    comboBox_S->insertItem(ROOMFLAG_UNDEFINED, "Undefined Exit");    
+    comboBox_W->insertItem(ROOMFLAG_UNDEFINED, "Undefined Exit");    
+    comboBox_U->insertItem(ROOMFLAG_UNDEFINED, "Undefined Exit");    
+    comboBox_D->insertItem(ROOMFLAG_UNDEFINED, "Undefined Exit");    
 
+    comboBox_N->insertItem(ROOMFLAG_DEATH, "DEATH");    
+    comboBox_E->insertItem(ROOMFLAG_DEATH, "DEATH");    
+    comboBox_S->insertItem(ROOMFLAG_DEATH, "DEATH");    
+    comboBox_W->insertItem(ROOMFLAG_DEATH, "DEATH");    
+    comboBox_U->insertItem(ROOMFLAG_DEATH, "DEATH");    
+    comboBox_D->insertItem(ROOMFLAG_DEATH, "DEATH");    
+
+    comboBox_N->insertItem(ROOMFLAG_NONE, "NONE");
+    comboBox_E->insertItem(ROOMFLAG_NONE, "NONE");
+    comboBox_S->insertItem(ROOMFLAG_NONE, "NONE");
+    comboBox_W->insertItem(ROOMFLAG_NONE, "NONE");
+    comboBox_U->insertItem(ROOMFLAG_NONE, "NONE");
+    comboBox_D->insertItem(ROOMFLAG_NONE, "NONE");
+    
+    
+    connect(comboBox_N, SIGNAL(activated(int)), this, SLOT(changedExitsFlagN(int)) );
+    connect(comboBox_S, SIGNAL(activated(int)), this, SLOT(changedExitsFlagS(int)) );
+    connect(comboBox_E, SIGNAL(activated(int)), this, SLOT(changedExitsFlagE(int)) );
+    connect(comboBox_W, SIGNAL(activated(int)), this, SLOT(changedExitsFlagW(int)) );
+    connect(comboBox_U, SIGNAL(activated(int)), this, SLOT(changedExitsFlagU(int)) );
+    connect(comboBox_D, SIGNAL(activated(int)), this, SLOT(changedExitsFlagD(int)) );
+    
+    connect(checkBox_N, SIGNAL(toggled(bool)), this, SLOT(changedExitsStateN(bool)) );
+    connect(checkBox_S, SIGNAL(toggled(bool)), this, SLOT(changedExitsStateS(bool)) );
+    connect(checkBox_E, SIGNAL(toggled(bool)), this, SLOT(changedExitsStateE(bool)) );
+    connect(checkBox_W, SIGNAL(toggled(bool)), this, SLOT(changedExitsStateW(bool)) );
+    connect(checkBox_U, SIGNAL(toggled(bool)), this, SLOT(changedExitsStateU(bool)) );
+    connect(checkBox_D, SIGNAL(toggled(bool)), this, SLOT(changedExitsStateD(bool)) );
+
+/*    
     connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
     connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+*/
 }
 
+int RoomEditDialog::updateExitsInfo(int dir, Troom *r)
+{
+    QString dname;
+    unsigned int lead;
+    int flag;
+    
+    set_door_context(dir);
+    if (box->isChecked()) {
+        flag = flags->currentIndex();
+        if (flag == ROOMFLAG_UNDEFINED) {
+            lead = EXIT_UNDEFINED;
+        } else if (flag == ROOMFLAG_DEATH) {
+            lead = EXIT_DEATH;
+        } else  {        
+            lead = leads->text().toInt();
+            if (roomer.getroom(lead) == NULL) {
+                QMessageBox::critical(this, "Room Info Edit",
+                              QString("Bad door to the north!"));
+                return -1;
+            }
+        }
+        r->exits[dir] = lead;
+    
+        dname = door->text();
+        if (dname.length() > 40) {
+            QMessageBox::critical(this, "Room Info Edit",
+                              QString("Bad door to the north!"));
+            return -1;    
+        }
+        roomer.refresh_door(r->id, dir, dname.toAscii());    
+    } else {
+        if (r->doors[dir])
+            free(r->doors[dir]);
+        r->exits[dir] = 0;
+        return 0;        
+    }
+    
+    return 0;
+}
+
+void RoomEditDialog::clear_data()
+{
+    textEdit_note->clear();
+    textEdit_desc->clear();
+}
+
+
+void    RoomEditDialog::set_door_context(int dir)
+{
+    switch (dir) {
+        case NORTH: door = lineEdit_doornorth;
+                    leads = lineEdit_leadN;
+                    flags = comboBox_N;
+                    box = checkBox_N;
+                    break;
+    
+        case SOUTH: door = lineEdit_doorsouth;
+                    leads = lineEdit_leadS;
+                    flags = comboBox_S;
+                    box = checkBox_S;
+                    break;
+    
+        case EAST : door = lineEdit_dooreast; 
+                    leads = lineEdit_leadE;
+                    flags = comboBox_E;
+                    box = checkBox_E;
+                    break;
+    
+        case WEST : door = lineEdit_doorwest;
+                    leads = lineEdit_leadW;
+                    flags = comboBox_W;
+                    box = checkBox_W;
+                    break;
+    
+        case UP   : door = lineEdit_doorup;   
+                    leads = lineEdit_leadU;
+                    flags = comboBox_U;
+                    box = checkBox_U;
+                    break;
+    
+        case DOWN : door = lineEdit_doordown; 
+                    leads = lineEdit_leadD;
+                    flags = comboBox_D;
+                    box = checkBox_D;
+                    break;
+    
+        default:
+            return;    
+    }
+}
+
+void  RoomEditDialog::changedExitsFlag(int dir, int index)
+{
+    set_door_context(dir);  
+      
+    if (index == ROOMFLAG_NONE) {
+        leads->setEnabled(true);
+        leads->setText("??ID??");
+        flags->setCurrentIndex(ROOMFLAG_NONE);
+    } else if (index == ROOMFLAG_UNDEFINED) {
+        leads->setText("UNDEF");
+        leads->setEnabled(false);
+        flags->setCurrentIndex(ROOMFLAG_UNDEFINED);
+    } else if (index == ROOMFLAG_DEATH) {
+        leads->setText("DEATH");
+        leads->setEnabled(false);
+        flags->setCurrentIndex(ROOMFLAG_DEATH);
+    } 
+    
+}
+
+
+void RoomEditDialog::setup_exit_widgets(int dir, Troom *r)
+{
+    set_door_context(dir);
+    
+    
+    /* Exit North */
+    door->setText(r->doors[dir]);        
+    flags->setCurrentIndex(ROOMFLAG_NONE);
+    
+    if (r->exits[dir] == 0) {
+        box->setChecked(false);
+        changedExitsState(dir, false);
+    } else {
+        box->setChecked(true);
+        changedExitsState(dir, true);
+                
+        if (r->exits[dir] == EXIT_UNDEFINED) {
+            changedExitsFlag(dir, ROOMFLAG_UNDEFINED);
+        } else if (r->exits[dir] == EXIT_DEATH) {
+            changedExitsFlag(dir, ROOMFLAG_UNDEFINED);
+        } else {
+            changedExitsFlag(dir, ROOMFLAG_NONE);
+            leads->setText(QString("%1").arg(r->exits[dir]) );
+            leads->setEnabled(true);
+        }
+        
+                
+    }
+}
+
+
+void  RoomEditDialog::changedExitsState(int dir, bool state)
+{
+    set_door_context(dir);
+    if (state) {
+        door->setEnabled(true);
+        leads->setEnabled(false);
+        flags->setEnabled(true);
+        flags->setCurrentIndex(ROOMFLAG_UNDEFINED);
+        leads->setText("UNDEF");
+    } else {
+        door->setEnabled(false);
+        leads->setEnabled(false);
+        flags->setEnabled(false);
+        flags->setCurrentIndex(ROOMFLAG_NONE);
+    }
+}
 
 void RoomEditDialog::load_room_data(unsigned int id)
 {
@@ -456,12 +930,13 @@ void RoomEditDialog::load_room_data(unsigned int id)
     
     /* stuff dialog with room data */    
     r = roomer.getroom(id);
-    lineEdit_doornorth->setText(r->doors[NORTH]);        
-    lineEdit_doorsouth->setText(r->doors[SOUTH]);        
-    lineEdit_dooreast->setText(r->doors[EAST]);        
-    lineEdit_doorwest->setText(r->doors[WEST]);        
-    lineEdit_doorup->setText(r->doors[UP]);        
-    lineEdit_doordown->setText(r->doors[DOWN]);        
+    setup_exit_widgets(NORTH, r);
+    setup_exit_widgets(EAST, r);
+    setup_exit_widgets(SOUTH, r);
+    setup_exit_widgets(WEST, r);
+    setup_exit_widgets(UP, r);
+    setup_exit_widgets(DOWN, r);
+    
     lineEdit_name->setText(r->name);
     lineEdit_coordx->setText(QString("%1").arg(r->x));
     lineEdit_coordy->setText(QString("%1").arg(r->y));
@@ -472,6 +947,8 @@ void RoomEditDialog::load_room_data(unsigned int id)
     textEdit_desc->append( desc );
     label_roomid->setText(QString("%1").arg(r->id) );
     textEdit_note->append(r->note);
+        
+    
         
     for (i=0; i< conf.sectors.size(); i++)
         comboBox_terrain->insertItem(i, conf.sectors[i].desc);    
@@ -484,7 +961,6 @@ void RoomEditDialog::accept()
 {
     Troom *r;
     QString name, desc, note;
-    QString doorn, doore, doors, doorw, dooru, doord;
     int x, y, z;
     int id;
     char terrain;
@@ -493,60 +969,22 @@ void RoomEditDialog::accept()
     /* OK! Now check the data */
     
     id = label_roomid->text().toInt();
+    printf("Room id : %i\r\n", id);
     
-    r = roomer.getroom(stacker.get(id));
+    r = roomer.getroom(id);
     if (r == NULL) {
-        QMessageBox::critical(0, "Room Info Edit",
+        QMessageBox::critical(this, "Room Info Edit",
                               QString("The room with this ID does not exist anymore."));
         return;    
     }
     
     name = lineEdit_name->text();
     if (name.length() == 0 || name.length() > 80) {
-        QMessageBox::critical(0, "Room Info Edit",
+        QMessageBox::critical(this, "Room Info Edit",
                               QString("Bad room name!"));
         return;    
     }
     
-    doorn = lineEdit_doornorth->text();
-    if (doorn.length() > 40) {
-        QMessageBox::critical(0, "Room Info Edit",
-                              QString("Bad door to the north!"));
-        return;    
-    }
-    
-    doors = lineEdit_doorsouth->text();
-    if (doors.length() > 40) {
-        QMessageBox::critical(0, "Room Info Edit",
-                              QString("Bad door to the south!"));
-        return;    
-    }
-    doore = lineEdit_dooreast->text();
-    if (doore.length() > 40) {
-        QMessageBox::critical(0, "Room Info Edit",
-                              QString("Bad door to the east!"));
-        return;    
-    }
-    doorw = lineEdit_doorwest->text();
-    if (doorw.length() > 40) {
-        QMessageBox::critical(0, "Room Info Edit",
-                              QString("Bad door to the west!"));
-        return;    
-    }
-    
-    dooru = lineEdit_doorup->text();
-    if (dooru.length() > 40) {
-        QMessageBox::critical(0, "Room Info Edit",
-                              QString("Bad door to the up!"));
-        return;    
-    }
-    
-    doord = lineEdit_doordown->text();
-    if (doord.length() > 40) {
-        QMessageBox::critical(0, "Room Info Edit",
-                              QString("Bad door to the down!"));
-        return;    
-    }
     
     x = lineEdit_coordx->text().toInt();
     y = lineEdit_coordy->text().toInt();
@@ -559,32 +997,21 @@ void RoomEditDialog::accept()
     note = textEdit_note->toPlainText();
             
             
-    if (r->name != name) {
-        printf(" REfreshing roomname.\r\n");
-        printf(" Old: %s\r\n", r->name);
-        printf(" New: %s\r\n", qPrintable(name));
+    if (r->name != name) 
         roomer.refresh_roomname(id, name.toAscii());            
-    }
-    if (r->desc != desc) {
-        printf(" REfreshing desc.\r\n");
-        printf(" Old: %s\r\n", r->desc);
-        printf(" New: %s\r\n", qPrintable(desc));
+    if (r->desc != desc) 
         roomer.refresh_desc(id, desc.toAscii());            
-    }
-    if (r->note != note) {
-        printf(" Refreshing note.\r\n");
-        printf(" Old: %s\r\n", r->note);
-        printf(" New: %s\r\n", qPrintable(note));
+    if (r->note != note) 
         roomer.refresh_note(id, note.toAscii());            
-    }
 
-    roomer.refresh_door(id, NORTH, doorn.toAscii());    
-    roomer.refresh_door(id, EAST, doore.toAscii());    
-    roomer.refresh_door(id, SOUTH, doors.toAscii());    
-    roomer.refresh_door(id, WEST, doorw.toAscii());    
-    roomer.refresh_door(id, UP, dooru.toAscii());    
-    roomer.refresh_door(id, DOWN, doord.toAscii());    
+    if (updateExitsInfo(NORTH, r) == -1) return;
+    if (updateExitsInfo(EAST, r) == -1) return;
+    if (updateExitsInfo(SOUTH, r) == -1) return;
+    if (updateExitsInfo(WEST, r) == -1) return;
+    if (updateExitsInfo(UP, r) == -1) return;
+    if (updateExitsInfo(DOWN, r) == -1) return;
             
+    toggle_renderer_reaction();
     done(Accepted);
 }
 
@@ -596,7 +1023,158 @@ void RoomEditDialog::reject()
 
 
 
+/* ----------------------- AnalyserConfigWidget -----------------------------*/
+ 
+ConfigWidget::ConfigWidget (QWidget *parent) : QDialog(parent)
+{
+    setupUi(this);                        
+    
+    connect(checkBox_autorefresh, SIGNAL(toggled(bool)), this, SLOT(autorefreshUpdated(bool)) );
 
+}
+
+void ConfigWidget::autorefreshUpdated(bool state)
+{
+    if (state) {
+        spinBox_namequote->setEnabled(true);
+        spinBox_descquote->setEnabled(true);
+    } else {
+        spinBox_namequote->setEnabled(false);
+        spinBox_descquote->setEnabled(false);
+    }
+}
+
+
+void ConfigWidget::run()
+{
+    if (conf.get_brief_mode()) 
+        checkBox_brief->setChecked(true);
+    else 
+        checkBox_brief->setChecked(false);
+              
+       
+    lineEdit_remoteport->setText(QString("%1").arg(conf.get_remote_port()) );
+    lineEdit_remotehost->setText(conf.get_remote_host());
+    
+    lineEdit_localport->setText(QString("%1").arg(conf.get_local_port()) );
+
+    spinBox_namequote->setValue(conf.get_name_quote());
+    spinBox_descquote->setValue(conf.get_desc_quote());
+    if (conf.get_autorefresh()) {
+        checkBox_autorefresh->setChecked(true);
+        spinBox_namequote->setEnabled(true);
+        spinBox_descquote->setEnabled(true);
+    } else {
+        checkBox_autorefresh->setChecked(false);
+        spinBox_namequote->setEnabled(false);
+        spinBox_descquote->setEnabled(false);
+    }
+    
+    if (conf.get_automerge()) 
+        checkBox_automerge->setChecked(true);
+    else
+        checkBox_automerge->setChecked(false);
+    
+    if (conf.get_angrylinker()) 
+        checkBox_angrylinker->setChecked(true);
+    else
+        checkBox_angrylinker->setChecked(false);
+
+    if (conf.get_exits_check()) 
+        checkBox_exits->setChecked(true);
+    else
+        checkBox_exits->setChecked(false);
+
+    if (conf.get_terrain_check()) 
+        checkBox_terrain->setChecked(true);
+    else
+        checkBox_terrain->setChecked(false);
+
+    
+    
+        
+    lineEdit_visrange->setText(QString("%1").arg(conf.get_texture_vis()) );
+    lineEdit_detrange->setText(QString("%1").arg(conf.get_details_vis()) );
+    
+    show();
+    raise();
+    activateWindow();
+}
+
+void ConfigWidget::accept()
+{
+    int i;
+    
+    if (conf.get_brief_mode() !=  checkBox_brief->isChecked() ) 
+        conf.set_brief_mode( checkBox_brief->isChecked() );
+       
+    if (conf.get_remote_host() != lineEdit_remotehost->text().toAscii() ) 
+        conf.set_remote_host(lineEdit_remotehost->text().toAscii());
+    
+    i = lineEdit_remoteport->text().toInt();
+    if (i == 0) {
+            QMessageBox::critical(this, "Cofiguration",
+                              QString("Bad remote port!"));
+            return;    
+    }
+    if (conf.get_remote_port() != i)
+        conf.set_remote_port(i);
+        
+    
+    i = lineEdit_localport->text().toInt();
+    if (i == 0) {
+            QMessageBox::critical(this, "Cofiguration",
+                              QString("Bad local port!"));
+            return;    
+    }
+    if (conf.get_local_port() != i)
+        conf.set_local_port(i);
+
+
+    if (conf.get_name_quote() != spinBox_namequote->value())
+        conf.set_name_quote( spinBox_namequote->value() ); 
+    if (conf.get_desc_quote() != spinBox_descquote->value() )        
+        conf.set_desc_quote( spinBox_descquote->value() ); 
+    
+    if (conf.get_autorefresh() != checkBox_autorefresh->isChecked())
+        conf.set_autorefresh( checkBox_autorefresh->isChecked() );
+    
+    
+    if (conf.get_automerge() != checkBox_automerge->isChecked()) 
+        conf.set_automerge(checkBox_automerge->isChecked());
+    
+    if (conf.get_angrylinker() != checkBox_angrylinker->isChecked() )
+        conf.set_angrylinker(checkBox_angrylinker->isChecked() );
+ 
+    if (conf.get_exits_check() != checkBox_exits->isChecked() ) 
+        conf.set_exits_check(checkBox_exits->isChecked() );
+        
+    if (conf.get_terrain_check() != checkBox_terrain->isChecked() )
+        conf.set_terrain_check( checkBox_terrain->isChecked() );
+    
+        
+    
+    i = lineEdit_visrange->text().toInt();
+    if (i == 0) {
+            QMessageBox::critical(this, "Cofiguration",
+                              QString("Bad textures visibility range port!"));
+            return;    
+    }
+    if (conf.get_texture_vis() != i)
+        conf.set_texture_vis(i);
+
+
+    i = lineEdit_detrange->text().toInt();
+    if (i == 0) {
+            QMessageBox::critical(this, "Cofiguration",
+                              QString("Bad details visibility range!"));
+            return;    
+    }
+    if (conf.get_details_vis() != i)
+        conf.set_details_vis(i);
+
+    done(Accepted);
+}
 
 
 

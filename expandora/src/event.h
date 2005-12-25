@@ -1,35 +1,18 @@
 #ifndef C_EVENT_H
 #define C_EVENT_H
 
-#define E_ROOT '0' /* zero/root element */
-
 #define E_NONE          0
 #define E_CAUSE         1
 #define E_RESULT        2
 
+enum results_and_causes { C_EMPTY, R_EMPTY, C_MOVE, C_LOOK, C_SCOUT, R_ROOM, R_EXITS, R_BLIND, R_PROMPT, R_FAIL, R_DESC};
 
-#define E_EMPTY         0
-
-/* cause stacks */
-#define C_MOVE 'M'
-#define C_LOOK 'L'
-#define C_SCOUT 'S'
-
-/* result stacks */
-#define R_ROOM 'R'
-#define R_EXITS 'E'
-#define R_BLIND 'B'	/* Entered in room while blinded, or in fog, or without light in dark  */
-#define R_PROMPT 'P'
-#define R_FAIL 'f'
-#define R_DESC 'D'	/* room description */
-
-
-extern struct event_types_type event_types[];
+extern vector<struct event_types_type> event_types;
 
 
 struct Tevent {
   char type;
-  QByteArray data;		/* shall be enough for ANY roomdesc */	
+  QByteArray data;			
   struct Tevent *next, *prev;
 };
 
@@ -54,9 +37,8 @@ void Cremove(); /* remove an items from Result stack */
 void addtostack(struct Tevent *stack, char type, QByteArray data);
 void printstacks();
 
-char get_cause_type_by_line(char *line);
-char get_result_type_by_line(char *line);
-
+char get_cause_type_by_line(QByteArray line);
+char get_result_type_by_line(QByteArray line);
 
 void clear_events_stacks();
 

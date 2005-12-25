@@ -36,7 +36,8 @@ struct room_sectors_data {
 class Cconfigurator {
     /* general */
     bool        conf_mod;       /* if the config was modified */
-    QByteArray  path;
+    QByteArray  config_file;
+    QByteArray  config_path;
     
     /* colours */
     QByteArray     look_col;
@@ -54,6 +55,7 @@ class Cconfigurator {
     QRegExp     prompt_exp;
     
     /* data */
+    QByteArray  database_path;
     QByteArray  base_file;
     int         local_port;
     QByteArray  remote_host;
@@ -78,6 +80,8 @@ class Cconfigurator {
     
     void parse_engine(char *line);
     void parse_line(char *line);
+    
+    void reset_current_config();
 
 public:
 
@@ -106,8 +110,8 @@ public:
 
 
     int load_config(QByteArray path, QByteArray filename);
-    int save_config(QByteArray path, QByteArray filename);
-    
+    int save_config_as(QByteArray path, QByteArray filename);
+    int save_config() { return save_config_as(config_path, config_file); }
     
 
     void set_look_col(QByteArray str);
@@ -143,6 +147,8 @@ public:
     void set_remote_port(int i);
     void set_local_port(int i);
     void set_conf_mod(bool b) { conf_mod = b; }
+
+    void set_config_file(QByteArray p, QByteArray f) { config_file = f; config_path = p; }
 
     void set_autorefresh(bool b); 
     void set_automerge(bool b);

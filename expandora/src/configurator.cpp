@@ -92,6 +92,19 @@ Cconfigurator::Cconfigurator()
 }
 
 
+void Cconfigurator::reset_current_config()
+{
+    patterns.clear();
+    sectors.clear();
+    
+    struct room_sectors_data first;
+        
+    first.pattern = 0;
+    first.desc = "NONE";
+    first.texture = 1;
+    first.gllist = 1;
+    sectors.push_back(first);
+}
 
 /* ---------------- PATTERNS and REGEXPS GENERATION --------------- */
 void Cconfigurator::set_exits_pat(QByteArray str) 
@@ -201,7 +214,7 @@ void Cconfigurator::add_texture(QByteArray desc, QByteArray filename, char patte
     s.pattern = pattern;
 
     sectors.push_back(s);
-    printf("added texture with pattern %c.\r\n", pattern);
+//    printf("added texture with pattern %c.\r\n", pattern);
 }
 
 int Cconfigurator::get_sector_by_pattern(char pattern)
@@ -363,52 +376,61 @@ int Cconfigurator::load_config(QByteArray path, QByteArray filename)
   ConfigParser * handler = new ConfigParser();
   reader.setContentHandler( handler );
     
+  reset_current_config();
 	
     
   printf("Reading the config file %s\r\n", (const char *) (path+filename));
   fflush(stdout);
   reader.parse( source );
   printf("done.\r\n");
+  set_conf_mod(false);
 
+
+  config_path = path;
+  config_file = filename;
   return 1;
 }
 
-int Cconfigurator::save_config(QByteArray path, QByteArray filename)
+int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
 {
   FILE *f;
   unsigned int i;
+
+  config_file = filename;
+  config_path = path;
 
   f = fopen((const char *) path + filename, "w");
   if (f == NULL) {
     printf("XML: Error - can not open the file: %s.\r\n", (const char *) filename);
     return -1;
   }    
+  
   fprintf(f, "<config>\r\n");
   fprintf(f, "  <localport port=\"%i\">\r\n", get_local_port());
   fprintf(f, "  <remotehost hostname=\"%s\" port=\"%i\">\r\n", 
                   (const char *) get_remote_host(), 
-                  (const char *) get_local_port() );
+                  (const char *) get_remote_port() );
   fprintf(f, "  <basefile filename=\"%s\">\r\n", 
                   (const char *) get_base_file() );
   fprintf(f, "  <roomnamecolour>%s</roomnamecolour>\r\n", 
-                  (const char *) get_prompt_col() );
+                  (const char *) get_look_col() );
   fprintf(f, "  <promptcolour>%s</promptcolour>\r\n", 
                   (const char *) get_prompt_col() );
   fprintf(f, "  <GLvisibility textures=\"%i\" details=\"%i\">\r\n", 
                   get_texture_vis(),  get_details_vis() );
-                  
+  
   fprintf(f, "  <analyzers desc=\"%s\" exits=\"%s\"  terrain=\"%s\">\r\n", 
-                  "YES", ON_OFF(get_exits_check() ), ON_OFF(get_terrain_check() ) );
+                  "ON", ON_OFF(get_exits_check() ), ON_OFF(get_terrain_check() ) );
 
   fprintf(f, "  <engineflags briefmode=\"%s\" automerge=\"%s\"  angrylinker=\"%s\">\r\n", 
                   ON_OFF(get_brief_mode()), 
                   ON_OFF(get_automerge() ), ON_OFF( get_angrylinker()) );
 
-  fprintf(f, "  <refresh  auto=\"%s\" roomnamequote=\"%i\" descquote=\"%i\">\r\n",
+  fprintf(f, "  <refresh auto=\"%s\" roomnamequote=\"%i\" descquote=\"%i\">\r\n",
                   ON_OFF( get_autorefresh() ), get_name_quote(), get_desc_quote() );
   
   QString ch;
-  for (i = 0; i < sectors.size(); i++) {
+  for (i = 1; i < sectors.size(); i++) {
       if (sectors[i].pattern == '<')
           ch = "&lt;";
       else if (sectors[i].pattern == '>')
@@ -422,28 +444,27 @@ int Cconfigurator::save_config(QByteArray path, QByteArray filename)
       else
           ch = sectors[i].pattern;
       
-      fprintf(f, "  <texture handle=\"%s\" file=\"%s\" pattern=\"%c\">\r\n",
+      fprintf(f, "  <texture handle=\"%s\" file=\"%s\" pattern=\"%s\">\r\n",
                   (const char *) sectors[i].desc, 
                   (const char *) sectors[i].filename, qPrintable(ch));
   }
   
-  for (i = 0; i < patterns.size(); i++) 
-      fprintf(f, "  <pattern regexp=\"%s\" type=\"%c\" data=\"%s\">%s</pattern>\r\n",
+  for (i = 0; i < patterns.size(); i++) {
+        fprintf(f, "  <pattern regexp=\"%s\" type=\"%s\" data=\"%s\">%s</pattern>\r\n",
                   YES_NO(patterns[i].is_regexp), 
-                  patterns[i].group, patterns[i].type, 
+                  (const char *) event_types[patterns[i].type].name, 
                   (const char *) patterns[i].data, 
                   (const char *) patterns[i].pattern );
-  
-  
+  }
   i = 0;
   while (debug_data[i].name) {
-      fprintf(f, "  <debug %s=\"%s\">\r\n", debug_data[i].name, ON_OFF(debug_data[i].state));
+      fprintf(f, "  <debug name=\"%s\"  state=\"%s\">\r\n", debug_data[i].name, ON_OFF(debug_data[i].state));
       i++;
   }
 
   /* PUT ENGINE CONFIG SAVING THERE ! */
   
-  
+  set_conf_mod(false);
   fprintf(f, "</config>\r\n");
   fflush(f);
   fclose(f);
@@ -468,11 +489,11 @@ bool ConfigParser::endElement( const QString& , const QString& , const QString& 
               (const char *) texture.desc, (const char *) texture.filename, texture.pattern);
   } else 
     */
-    if (qName == "pattern" && flag == PATTERN) {
+  if (qName == "pattern" && flag == PATTERN) {
     conf.add_pattern(pattern.pattern, pattern.data, pattern.group, pattern.type, pattern.is_regexp);          
-    printf("Added pattern: pattern %s, data %s, marker %c, type %c\r\n", 
-          (const char *) pattern.pattern, (const char *) pattern.data, 
-              pattern.group, pattern.type);
+//    printf("Added pattern: pattern %s, data %s, marker %c, type %c\r\n", 
+//          (const char *) pattern.pattern, (const char *) pattern.data, 
+//              pattern.group, pattern.type);
   }
   flag = 0;    
   return TRUE;
@@ -507,6 +528,8 @@ bool ConfigParser::startElement( const QString& , const QString& ,
                                     const QString& qName, 
                                     const QXmlAttributes& attributes)
 {
+    unsigned int i;
+
 
     if (qName == "localport") {
         if (attributes.length() < 1) {
@@ -573,12 +596,14 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         }        
         
         s = attributes.value("exits");
+        s = s.toLower();
         if (s == "on") 
             conf.set_exits_check(true);
         else 
             conf.set_exits_check(false);
         
         s = attributes.value("terrain");
+        s = s.toLower();
         if (s == "on") 
             conf.set_terrain_check(true);
         else 
@@ -596,18 +621,22 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         }        
         
         s = attributes.value("briefmode");
+        s = s.toLower();
+        printf("The brief mode setting : %s\r\n", qPrintable(s) );
         if (s == "on") 
             conf.set_brief_mode(true);
         else 
             conf.set_brief_mode(false);
         
         s = attributes.value("automerge");
+        s = s.toLower();
         if (s == "on") 
             conf.set_automerge(true);
         else 
             conf.set_automerge(false);
 
         s = attributes.value("angrylinker");
+        s = s.toLower();
         if (s == "on") 
             conf.set_angrylinker(true);
         else 
@@ -625,6 +654,7 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         }        
         
         s = attributes.value("auto");
+        s = s.toLower();
         if (s == "on") 
             conf.set_autorefresh(true);
         else 
@@ -656,8 +686,8 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         texture.pattern = s[0].toAscii();
 
         conf.add_texture(texture.desc, texture.filename, texture.pattern);
-        printf("Added texture: desc %s, file %s, pattern %c.\r\n", 
-              (const char *) texture.desc, (const char *) texture.filename, texture.pattern);
+//        printf("Added texture: desc %s, file %s, pattern %c.\r\n", 
+//              (const char *) texture.desc, (const char *) texture.filename, texture.pattern);
 
         
 //        flag = TEXTURE;         /* get the inner data ! */
@@ -677,7 +707,7 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         
         s = attributes.value("type");
         pattern.type = 0;
-        for (i = 0; event_types[i].name; i++) 
+        for (i = 0; i < event_types.size(); i++) 
             if ( s == event_types[i].name) {
                 pattern.type = event_types[i].type;
                 pattern.group = event_types[i].group;
@@ -713,12 +743,13 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         }
         
         s = attributes.value("state");
+        s = s.toLower();
         if (s == "on") 
             debug_data[i].state = 1;
         else 
             debug_data[i].state = 0;
         
-        printf("Debug option %s is now %s.\r\n", debug_data[i].name, ON_OFF(debug_data[i].state) );
+//        printf("Debug option %s is now %s.\r\n", debug_data[i].name, ON_OFF(debug_data[i].state) );
         return TRUE;
     } 
     
@@ -859,7 +890,7 @@ void Cconfigurator::parse_engine(char *line)
 {
   char *p;
   char arg[MAX_STR_LEN];
-  int i;
+  unsigned int i;
   char cause_type, result_type;
   
   
@@ -873,7 +904,7 @@ void Cconfigurator::parse_engine(char *line)
 
   
   cause_type = -1;
-  for (i = 0; event_types[i].name; i++) 
+  for (i = 0; i < event_types.size(); i++) 
     if ( (event_types[i].group == E_CAUSE) &&               
          (strcmp(arg, event_types[i].name) == 0) ) 
     {
@@ -896,7 +927,7 @@ void Cconfigurator::parse_engine(char *line)
   p = one_argument(p, arg, 2);  /* to upper case */          
   
   result_type = -1;
-  for (i = 0; event_types[i].name; i++) 
+  for (i = 0; i < event_types.size(); i++) 
     if ( (event_types[i].group == E_RESULT) &&               
          (strcmp(arg, event_types[i].name) == 0) ) 
     {

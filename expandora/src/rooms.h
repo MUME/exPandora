@@ -13,7 +13,7 @@ using namespace std;
 #define MAX_SQUARE_ROOMS        40
 
 
-  
+enum ROOMFLAG_INDEX { ROOMFLAG_UNDEFINED = 0, ROOMFLAG_DEATH, ROOMFLAG_NONE};  
 extern const struct room_flag_data room_flags[];
 
 void reset_room(struct Troom *r);	/* Only for new rooms */

@@ -69,6 +69,8 @@ public:
   void parse_command();
   void add_command(int id, char *arg);
   int is_empty() { return commands_queue.empty(); }
+  int parse_user_input_line(char *line); 
+ 
 
 };
 

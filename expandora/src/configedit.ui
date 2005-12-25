@@ -1,0 +1,679 @@
+<ui version="4.0" >
+ <author></author>
+ <comment></comment>
+ <exportmacro></exportmacro>
+ <class>ConfigDialog</class>
+ <widget class="QDialog" name="ConfigDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>406</width>
+    <height>267</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <widget class="QWidget" name="layoutWidget_2" >
+   <property name="geometry" >
+    <rect>
+     <x>50</x>
+     <y>230</y>
+     <width>351</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" >
+    <property name="margin" >
+     <number>0</number>
+    </property>
+    <property name="spacing" >
+     <number>6</number>
+    </property>
+    <item>
+     <spacer>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" >
+       <size>
+        <width>131</width>
+        <height>31</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="okButton" >
+      <property name="text" >
+       <string>OK</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="cancelButton" >
+      <property name="text" >
+       <string>Cancel</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QTabWidget" name="tabWidget" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>401</width>
+     <height>221</height>
+    </rect>
+   </property>
+   <widget class="QWidget" name="tab" >
+    <attribute name="title" >
+     <string>Networking</string>
+    </attribute>
+    <widget class="QWidget" name="" >
+     <property name="geometry" >
+      <rect>
+       <x>30</x>
+       <y>30</y>
+       <width>301</width>
+       <height>151</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QWidget" name="" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>251</width>
+       <height>95</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" >
+      <property name="margin" >
+       <number>0</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" >
+        <property name="margin" >
+         <number>0</number>
+        </property>
+        <property name="spacing" >
+         <number>6</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label" >
+          <property name="text" >
+           <string>Local port</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEdit_localport" >
+          <property name="sizePolicy" >
+           <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>2</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" >
+        <property name="margin" >
+         <number>0</number>
+        </property>
+        <property name="spacing" >
+         <number>6</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_2" >
+          <property name="text" >
+           <string>Remote host</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEdit_remotehost" />
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" >
+        <property name="margin" >
+         <number>0</number>
+        </property>
+        <property name="spacing" >
+         <number>6</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_3" >
+          <property name="text" >
+           <string>Remote port</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEdit_remoteport" />
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QLabel" name="label_5" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>335</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="palette" >
+      <palette>
+       <active>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>255</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>127</red>
+         <green>255</green>
+         <blue>127</blue>
+        </color>
+        <color>
+         <red>63</red>
+         <green>255</green>
+         <blue>63</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>127</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>170</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>63</red>
+         <green>255</green>
+         <blue>63</blue>
+        </color>
+       </active>
+       <inactive>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>255</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>127</red>
+         <green>255</green>
+         <blue>127</blue>
+        </color>
+        <color>
+         <red>38</red>
+         <green>255</green>
+         <blue>38</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>127</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>170</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>63</red>
+         <green>255</green>
+         <blue>63</blue>
+        </color>
+       </inactive>
+       <disabled>
+        <color>
+         <red>128</red>
+         <green>128</green>
+         <blue>128</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>255</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>127</red>
+         <green>255</green>
+         <blue>127</blue>
+        </color>
+        <color>
+         <red>38</red>
+         <green>255</green>
+         <blue>38</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>127</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>170</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>128</red>
+         <green>128</green>
+         <blue>128</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>128</red>
+         <green>128</green>
+         <blue>128</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+        <color>
+         <red>121</red>
+         <green>125</green>
+         <blue>121</blue>
+        </color>
+        <color>
+         <red>207</red>
+         <green>207</green>
+         <blue>207</blue>
+        </color>
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>255</red>
+         <green>0</green>
+         <blue>255</blue>
+        </color>
+        <color>
+         <red>63</red>
+         <green>255</green>
+         <blue>63</blue>
+        </color>
+       </disabled>
+      </palette>
+     </property>
+     <property name="text" >
+      <string>NOTE: Changes to local port take place after restart!</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab" >
+    <attribute name="title" >
+     <string>Engine</string>
+    </attribute>
+    <widget class="QWidget" name="layoutWidget" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>348</width>
+       <height>87</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>0</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label_descquote" >
+        <property name="text" >
+         <string>Description quote</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QSpinBox" name="spinBox_descquote" />
+      </item>
+      <item row="1" column="1" >
+       <widget class="QSpinBox" name="spinBox_namequote" />
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label_4" >
+        <property name="text" >
+         <string>Room name quote</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QCheckBox" name="checkBox_autorefresh" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>1</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text" >
+         <string>Enable automatic refresh of data</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab" >
+    <attribute name="title" >
+     <string>Analysers</string>
+    </attribute>
+    <widget class="QWidget" name="layoutWidget_3" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>131</width>
+       <height>141</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" >
+      <property name="margin" >
+       <number>0</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item>
+       <widget class="QCheckBox" name="checkBox_brief" >
+        <property name="text" >
+         <string>Brief Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkBox_desc" >
+        <property name="text" >
+         <string>Desc Check</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkBox_exits" >
+        <property name="text" >
+         <string>Exits Check</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkBox_terrain" >
+        <property name="text" >
+         <string>Terrain Check</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab" >
+    <attribute name="title" >
+     <string>Mapping</string>
+    </attribute>
+    <widget class="QWidget" name="" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>100</width>
+       <height>54</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" >
+      <property name="margin" >
+       <number>0</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item>
+       <widget class="QCheckBox" name="checkBox_automerge" >
+        <property name="text" >
+         <string>Automerge</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkBox_angrylinker" >
+        <property name="text" >
+         <string>AngryLinker</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab" >
+    <attribute name="title" >
+     <string>OpenGL</string>
+    </attribute>
+    <widget class="QWidget" name="layoutWidget_5" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>224</width>
+       <height>58</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>0</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="1" column="1" >
+       <widget class="QLineEdit" name="lineEdit_detrange" />
+      </item>
+      <item row="0" column="1" >
+       <widget class="QLineEdit" name="lineEdit_visrange" />
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label_8" >
+        <property name="text" >
+         <string>Details Visibility Range</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label_7" >
+        <property name="text" >
+         <string>Textures Visibility Range</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <pixmapfunction></pixmapfunction>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>okButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ConfigDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>278</x>
+     <y>253</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>96</x>
+     <y>254</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ConfigDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>369</x>
+     <y>253</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>179</x>
+     <y>282</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

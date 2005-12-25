@@ -468,11 +468,17 @@ void engine_run()
   int i;
   char result, cause;
 
-  result = Rtop->next ? Rtop->next->type : E_EMPTY;
-  cause =  Ctop->next ? Ctop->next->type : E_EMPTY;
+    if (Rtop->next == NULL)
+        result = R_EMPTY;
+    else 
+        result = Rtop->next->type;
+        
+    if (Ctop->next == NULL)
+        cause = C_EMPTY;
+    else 
+        cause = Ctop->next->type;
 
-
-  if (cause == E_EMPTY && result == E_EMPTY) {
+  if (cause == C_EMPTY && result == R_EMPTY) {
     engine_flags.done = 1;
     return;
   }
@@ -537,6 +543,53 @@ void copy_stacks()
 /* load config and init engine */
 void engine_init()
 {
+
+/*
+struct event_types_type event_types[] = {
+  {"EMPTY",           E_EMPTY,        E_CAUSE},         
+  {"EMPTY",           E_EMPTY,        E_RESULT},        
+  {"C_MOVE",          C_MOVE,         E_CAUSE},         
+  {"C_LOOK",          C_LOOK,         E_CAUSE},         
+  {"C_SCOUT",         C_SCOUT,        E_CAUSE},         
+  {"R_ROOM",          R_ROOM,         E_RESULT},        
+  {"R_EXITS",         R_EXITS,        E_RESULT},        
+  {"R_BLIND",         R_BLIND,        E_RESULT},        
+  {"R_PROMPT",        R_PROMPT,       E_RESULT},        
+  {"R_FAIL",          R_FAIL,         E_RESULT},        
+  {"R_DESC",          R_DESC,         E_RESULT},        
+  {"R_BLIND",         R_BLIND,        E_RESULT},        
+  
+  {NULL,              E_EMPTY,         E_NONE}
+};
+*/
+  struct event_types_type event;
+  
+  event.name = "EMPTY";           event.type = C_EMPTY;         event.group = E_CAUSE;
+  event_types.push_back(event);  
+  event.name = "EMPTY";           event.type = R_EMPTY;         event.group = E_RESULT;
+  event_types.push_back(event);  
+  event.name = "C_MOVE";          event.type = C_MOVE;         event.group = E_CAUSE;        
+  event_types.push_back(event);  
+  event.name = "C_LOOK";          event.type = C_LOOK;         event.group = E_CAUSE;        
+  event_types.push_back(event);  
+  event.name = "C_SCOUT";         event.type = C_SCOUT;        event.group = E_CAUSE;        
+  event_types.push_back(event);  
+  event.name = "R_ROOM";          event.type = R_ROOM;         event.group = E_RESULT;        
+  event_types.push_back(event);  
+  event.name = "R_EXITS";         event.type = R_EXITS;        event.group = E_RESULT;        
+  event_types.push_back(event);  
+  event.name = "R_BLIND";         event.type = R_BLIND;        event.group = E_RESULT;        
+  event_types.push_back(event);  
+  event.name = "R_PROMPT";        event.type = R_PROMPT;       event.group = E_RESULT;        
+  event_types.push_back(event);  
+  event.name = "R_FAIL";          event.type = R_FAIL;         event.group = E_RESULT;        
+  event_types.push_back(event);  
+  event.name = "R_DESC";          event.type = R_DESC;         event.group = E_RESULT;        
+  event_types.push_back(event);  
+  event.name = "R_BLIND";         event.type = R_BLIND;        event.group = E_RESULT;        
+  event_types.push_back(event);  
+
+  
   /* setting defaults */
   engine_flags.done =                   1;            
   engine_flags.addingroom =             0;

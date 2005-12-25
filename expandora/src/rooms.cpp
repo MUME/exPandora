@@ -115,7 +115,11 @@ void roommanager::refresh_door(unsigned int id, char dir, QByteArray door)
   r = roomer.getroom(id);
   if (r->doors[(int) dir])
     delete r->doors[(int) dir];
-  r->doors[(int) dir] = qstrdup(door);
+  if (door.isEmpty()) 
+    r->doors[ (int) dir ] = NULL;
+  else  
+    r->doors[(int) dir] = qstrdup(door);
+  room_modified(r);
 }
 
 
@@ -128,6 +132,7 @@ void roommanager::refresh_desc(unsigned int id, QByteArray newdesc)
   if (r->desc)
     delete r->desc;
   r->desc = qstrdup(newdesc);
+  room_modified(r);
 }
 
 void roommanager::refresh_roomname(unsigned int id, QByteArray newname)
@@ -140,6 +145,7 @@ void roommanager::refresh_roomname(unsigned int id, QByteArray newname)
   free(r->name);
   r->name = qstrdup(newname);
   namer.addname((const char *) newname, id);
+  room_modified(r);
 }
 
 
@@ -152,7 +158,7 @@ void roommanager::refresh_terrain(unsigned int id, char terrain)
   
   print_debug(DEBUG_ROOMS, "terrain refresh. new terrain %c", terrain);
   /* hrmm */
-      
+  room_modified(r);      
 }
 
 

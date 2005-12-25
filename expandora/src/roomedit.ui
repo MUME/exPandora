@@ -8,8 +8,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>840</width>
-    <height>559</height>
+    <width>917</width>
+    <height>579</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -38,8 +38,8 @@
   <widget class="QWidget" name="layoutWidget" >
    <property name="geometry" >
     <rect>
-     <x>480</x>
-     <y>520</y>
+     <x>560</x>
+     <y>540</y>
      <width>351</width>
      <height>33</height>
     </rect>
@@ -80,23 +80,23 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget_2" >
-   <property name="geometry" >
-    <rect>
-     <x>480</x>
-     <y>380</y>
-     <width>139</width>
-     <height>115</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget_5" >
+  <widget class="QWidget" name="layoutWidget_3" >
    <property name="geometry" >
     <rect>
      <x>10</x>
-     <y>20</y>
-     <width>821</width>
-     <height>53</height>
+     <y>10</y>
+     <width>901</width>
+     <height>521</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>60</y>
+     <width>899</width>
+     <height>229</height>
     </rect>
    </property>
   </widget>
@@ -104,20 +104,10 @@
   <widget class="QWidget" name="" >
    <property name="geometry" >
     <rect>
-     <x>10</x>
-     <y>290</y>
-     <width>821</width>
-     <height>220</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget_3_4" >
-   <property name="geometry" >
-    <rect>
-     <x>11</x>
-     <y>291</y>
-     <width>258</width>
-     <height>218</height>
+     <x>195</x>
+     <y>300</y>
+     <width>711</width>
+     <height>241</height>
     </rect>
    </property>
   </widget>
@@ -125,12 +115,12 @@
    <property name="geometry" >
     <rect>
      <x>10</x>
-     <y>10</y>
-     <width>821</width>
-     <height>503</height>
+     <y>300</y>
+     <width>901</width>
+     <height>231</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" >
+   <layout class="QHBoxLayout" >
     <property name="margin" >
      <number>0</number>
     </property>
@@ -138,282 +128,505 @@
      <number>6</number>
     </property>
     <item>
-     <layout class="QVBoxLayout" >
-      <property name="margin" >
-       <number>0</number>
+     <widget class="QGroupBox" name="groupBox" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>5</vsizetype>
+        <horstretch>12</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <property name="spacing" >
-       <number>6</number>
+      <property name="title" >
+       <string>Note</string>
       </property>
-      <item>
-       <widget class="QLabel" name="label_name" >
-        <property name="text" >
-         <string>Name</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" >
+      <widget class="QTextEdit" name="textEdit_note" >
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>411</width>
+         <height>201</height>
+        </rect>
+       </property>
+       <property name="sizePolicy" >
+        <sizepolicy>
+         <hsizetype>7</hsizetype>
+         <vsizetype>7</vsizetype>
+         <horstretch>2</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_3_2" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>5</vsizetype>
+        <horstretch>13</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title" >
+       <string>Exits</string>
+      </property>
+      <widget class="QWidget" name="layoutWidget_4_2_2_2_2_2" >
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>167</width>
+         <height>182</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QWidget" name="" >
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>441</width>
+         <height>202</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" >
         <property name="margin" >
          <number>0</number>
         </property>
         <property name="spacing" >
          <number>6</number>
         </property>
-        <item>
-         <widget class="QLineEdit" name="lineEdit_name" />
+        <item row="6" column="2" >
+         <widget class="QLineEdit" name="lineEdit_leadD" />
         </item>
-        <item>
-         <spacer>
-          <property name="orientation" >
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" >
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
+        <item row="3" column="3" >
+         <widget class="QComboBox" name="comboBox_S" />
         </item>
-        <item>
-         <widget class="QLabel" name="label_roomid" >
+        <item row="4" column="0" >
+         <widget class="QCheckBox" name="checkBox_W" >
           <property name="text" >
-           <string>TextLabel</string>
+           <string>W</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" >
+         <widget class="QLineEdit" name="lineEdit_dooreast" >
+          <property name="sizePolicy" >
+           <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>2</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="3" >
+         <widget class="QComboBox" name="comboBox_U" />
+        </item>
+        <item row="3" column="0" >
+         <widget class="QCheckBox" name="checkBox_S" >
+          <property name="text" >
+           <string>S</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" >
+         <widget class="QLabel" name="label" >
+          <property name="text" >
+           <string>Door</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="3" >
+         <widget class="QComboBox" name="comboBox_D" />
+        </item>
+        <item row="2" column="3" >
+         <widget class="QComboBox" name="comboBox_E" />
+        </item>
+        <item row="0" column="2" >
+         <widget class="QLabel" name="label_3" >
+          <property name="text" >
+           <string>Leads to</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" >
+         <widget class="QLineEdit" name="lineEdit_doornorth" >
+          <property name="enabled" >
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy" >
+           <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>3</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" >
+         <widget class="QCheckBox" name="checkBox_N" >
+          <property name="text" >
+           <string>N</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1" >
+         <widget class="QLineEdit" name="lineEdit_doordown" >
+          <property name="sizePolicy" >
+           <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>2</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" >
+         <widget class="QCheckBox" name="checkBox_U" >
+          <property name="text" >
+           <string>U</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1" >
+         <widget class="QLineEdit" name="lineEdit_doorup" >
+          <property name="sizePolicy" >
+           <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>2</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" >
+         <widget class="QCheckBox" name="checkBox_E" >
+          <property name="text" >
+           <string>E</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2" >
+         <widget class="QLineEdit" name="lineEdit_leadE" />
+        </item>
+        <item row="1" column="3" >
+         <widget class="QComboBox" name="comboBox_N" />
+        </item>
+        <item row="6" column="0" >
+         <widget class="QCheckBox" name="checkBox_D" >
+          <property name="text" >
+           <string>D</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2" >
+         <widget class="QLineEdit" name="lineEdit_leadN" >
+          <property name="sizePolicy" >
+           <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2" >
+         <widget class="QLineEdit" name="lineEdit_leadS" />
+        </item>
+        <item row="4" column="2" >
+         <widget class="QLineEdit" name="lineEdit_leadW" />
+        </item>
+        <item row="3" column="1" >
+         <widget class="QLineEdit" name="lineEdit_doorsouth" >
+          <property name="sizePolicy" >
+           <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>2</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="3" >
+         <widget class="QComboBox" name="comboBox_W" />
+        </item>
+        <item row="5" column="2" >
+         <widget class="QLineEdit" name="lineEdit_leadU" />
+        </item>
+        <item row="4" column="1" >
+         <widget class="QLineEdit" name="lineEdit_doorwest" >
+          <property name="sizePolicy" >
+           <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>2</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3" >
+         <widget class="QLabel" name="label_4" >
+          <property name="text" >
+           <string>Flag</string>
           </property>
          </widget>
         </item>
        </layout>
-      </item>
-     </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>899</width>
+     <height>50</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>30</y>
+     <width>897</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>60</y>
+     <width>901</width>
+     <height>231</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" >
+    <property name="margin" >
+     <number>0</number>
+    </property>
+    <property name="spacing" >
+     <number>6</number>
+    </property>
+    <item>
+     <widget class="QGroupBox" name="groupBox_2" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>5</vsizetype>
+        <horstretch>41</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title" >
+       <string>Description</string>
+      </property>
+      <widget class="QTextEdit" name="textEdit_desc" >
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>701</width>
+         <height>201</height>
+        </rect>
+       </property>
+       <property name="sizePolicy" >
+        <sizepolicy>
+         <hsizetype>7</hsizetype>
+         <vsizetype>7</vsizetype>
+         <horstretch>10</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </widget>
     </item>
     <item>
-     <layout class="QVBoxLayout" >
-      <property name="margin" >
-       <number>0</number>
+     <widget class="QGroupBox" name="groupBox_4" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>5</vsizetype>
+        <horstretch>10</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <property name="spacing" >
-       <number>6</number>
+      <property name="title" >
+       <string>Preferences</string>
       </property>
-      <item>
-       <widget class="QLabel" name="label_desc" >
-        <property name="text" >
-         <string>Description</string>
+      <widget class="QWidget" name="layoutWidget_4_2" >
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>156</width>
+         <height>187</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" >
+        <property name="margin" >
+         <number>0</number>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QTextEdit" name="textEdit_desc" />
-      </item>
-     </layout>
+        <property name="spacing" >
+         <number>6</number>
+        </property>
+        <item row="1" column="0" colspan="2" >
+         <widget class="QComboBox" name="comboBox_terrain" />
+        </item>
+        <item row="5" column="0" >
+         <widget class="QLabel" name="label_16_2" >
+          <property name="text" >
+           <string>Z</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1" >
+         <widget class="QLineEdit" name="lineEdit_coordx" />
+        </item>
+        <item row="4" column="0" >
+         <widget class="QLabel" name="label_17_2" >
+          <property name="text" >
+           <string>Y</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" >
+         <widget class="QLabel" name="label_2_2" >
+          <property name="text" >
+           <string>Terrain</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1" >
+         <widget class="QLineEdit" name="lineEdit_coordy" />
+        </item>
+        <item row="3" column="0" >
+         <widget class="QLabel" name="label_15_2" >
+          <property name="text" >
+           <string>X</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1" >
+         <widget class="QLineEdit" name="lineEdit_coordz" />
+        </item>
+        <item row="2" column="0" >
+         <spacer>
+          <property name="orientation" >
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" >
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>0</y>
+     <width>901</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" >
+    <property name="margin" >
+     <number>0</number>
+    </property>
+    <property name="spacing" >
+     <number>6</number>
+    </property>
+    <item>
+     <widget class="QGroupBox" name="groupBox_3" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>5</vsizetype>
+        <horstretch>20</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title" >
+       <string>Room Name</string>
+      </property>
+      <widget class="QLineEdit" name="lineEdit_name" >
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>751</width>
+         <height>24</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
     </item>
     <item>
-     <layout class="QGridLayout" >
-      <property name="margin" >
-       <number>0</number>
+     <widget class="QGroupBox" name="groupBox_5" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>5</vsizetype>
+        <horstretch>3</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <property name="spacing" >
-       <number>6</number>
+      <property name="title" >
+       <string>Room ID</string>
       </property>
-      <item rowspan="2" row="0" column="2" >
-       <widget class="QGroupBox" name="groupBox_3_2" >
-        <property name="sizePolicy" >
-         <sizepolicy>
-          <hsizetype>5</hsizetype>
-          <vsizetype>5</vsizetype>
-          <horstretch>1</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title" >
-         <string>Doors</string>
-        </property>
-        <widget class="QWidget" name="layoutWidget_4_2_2_2_2_2" >
-         <property name="geometry" >
-          <rect>
-           <x>10</x>
-           <y>20</y>
-           <width>167</width>
-           <height>182</height>
-          </rect>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>0</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="2" column="1" >
-           <widget class="QLineEdit" name="lineEdit_doorsouth" />
-          </item>
-          <item row="5" column="1" >
-           <widget class="QLineEdit" name="lineEdit_doordown" />
-          </item>
-          <item row="5" column="0" >
-           <widget class="QLabel" name="label_down" >
-            <property name="text" >
-             <string>Down</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1" >
-           <widget class="QLineEdit" name="lineEdit_doorup" />
-          </item>
-          <item row="3" column="1" >
-           <widget class="QLineEdit" name="lineEdit_doorwest" />
-          </item>
-          <item row="2" column="0" >
-           <widget class="QLabel" name="label_south" >
-            <property name="text" >
-             <string>South</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" >
-           <widget class="QLineEdit" name="lineEdit_dooreast" />
-          </item>
-          <item row="0" column="0" >
-           <widget class="QLabel" name="label_north" >
-            <property name="text" >
-             <string>North</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" >
-           <widget class="QLabel" name="label_east" >
-            <property name="text" >
-             <string>East</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1" >
-           <widget class="QLineEdit" name="lineEdit_doornorth" />
-          </item>
-          <item row="4" column="0" >
-           <widget class="QLabel" name="label_up" >
-            <property name="text" >
-             <string>Up</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" >
-           <widget class="QLabel" name="label_west" >
-            <property name="text" >
-             <string>West</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
-      <item rowspan="2" row="0" column="1" >
-       <widget class="QGroupBox" name="groupBox_4" >
-        <property name="sizePolicy" >
-         <sizepolicy>
-          <hsizetype>5</hsizetype>
-          <vsizetype>5</vsizetype>
-          <horstretch>1</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title" >
-         <string>Preferences</string>
-        </property>
-        <widget class="QWidget" name="" >
-         <property name="geometry" >
-          <rect>
-           <x>10</x>
-           <y>20</y>
-           <width>171</width>
-           <height>181</height>
-          </rect>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>0</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="1" column="0" colspan="2" >
-           <widget class="QComboBox" name="comboBox_terrain" />
-          </item>
-          <item row="5" column="0" >
-           <widget class="QLabel" name="label_16" >
-            <property name="text" >
-             <string>Z</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1" >
-           <widget class="QLineEdit" name="lineEdit_coordx" />
-          </item>
-          <item row="4" column="0" >
-           <widget class="QLabel" name="label_17" >
-            <property name="text" >
-             <string>Y</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" >
-           <widget class="QLabel" name="label_2" >
-            <property name="text" >
-             <string>Terrain</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1" >
-           <widget class="QLineEdit" name="lineEdit_coordy" />
-          </item>
-          <item row="3" column="0" >
-           <widget class="QLabel" name="label_15" >
-            <property name="text" >
-             <string>X</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1" >
-           <widget class="QLineEdit" name="lineEdit_coordz" />
-          </item>
-          <item row="2" column="0" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" >
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
-      <item row="1" column="0" >
-       <widget class="QTextEdit" name="textEdit_note" >
-        <property name="sizePolicy" >
-         <sizepolicy>
-          <hsizetype>7</hsizetype>
-          <vsizetype>7</vsizetype>
-          <horstretch>2</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" >
-       <widget class="QLabel" name="label_note" >
-        <property name="text" >
-         <string>Note</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+      <widget class="QLabel" name="label_roomid" >
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font" >
+        <font>
+         <family>Sans Serif</family>
+         <pointsize>14</pointsize>
+         <weight>50</weight>
+         <italic>false</italic>
+         <bold>false</bold>
+         <underline>false</underline>
+         <strikeout>false</strikeout>
+        </font>
+       </property>
+       <property name="text" >
+        <string>ID</string>
+       </property>
+       <property name="alignment" >
+        <set>Qt::AlignHCenter</set>
+       </property>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>

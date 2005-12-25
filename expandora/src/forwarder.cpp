@@ -41,6 +41,7 @@
 #include "defines.h"
 #include "configurator.h"
 #include "dispatch.h"
+#include "renderer.h"
 
 QMutex tcp_mutex;
 
@@ -152,6 +153,7 @@ void userdel(int sock)
           shutdown (juzer[i].sout, 2);
           closesocket (juzer[i].sout);
         }
+        renderer_window->disable_online_actions();
         juzer[i].sock = 0;
       }
 }
@@ -327,7 +329,7 @@ int proxy_loop(void)
           }
         }
       
-        
+        renderer_window->enable_online_actions();
       }
     }
     
