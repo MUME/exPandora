@@ -16,8 +16,6 @@
 #define TOGGLE_BIT(var,bit) ((var) = (var) ^ (bit))
 
 #define MAX_INPUT_LENGTH	1024	/* Max length per *line* of input */
-#define TIMER_START(ken) {timer_now = m_timestamp(); strcpy(timer_ken, ken);}
-#define TIMER_STOP(ms) if ((m_timestamp() - timer_now) * 1000 > (ms)) printf("[timer] %s: %.3fms\r\n", timer_ken, (m_timestamp() - timer_now) * 1000);
 
 struct boolean_struct {
   char *name;
@@ -41,6 +39,9 @@ struct boolean_struct {
 
 /* special flag */
 #define DEBUG_TOUSER            (1 << 13)       /* send the message to user also */
+
+
+extern const char * exitnames[];
 
 struct debug_data_struct {
   char          *name;          
@@ -73,30 +74,9 @@ void send_to_user(const char *messg, ...);
 void send_to_mud(const char *messg, ...);
 int get_input_boolean(char *input);
 int parse_dir(char *dir);
-#ifdef NEW_ENGINE
-long m_timestamp();
-#else
-double m_timestamp(); /* ms */
-#endif
 void basic_mud_log(const char *format, ...);
 int MIN(int a, int b);
 
-#define MAX_N   ( MAX_LINES_DESC * 80 )
-#define MAX_M   ( MAX_LINES_DESC * 80 )
-
-
-class Strings_Comparator {
-    private:
-        int D[ MAX_N ] [MAX_M ];
-    public:
-        int compare(QByteArray pattern, QByteArray text);
-        int compare_with_quote(QByteArray str, QByteArray text, int quote);
-        int strcmp_roomname(QByteArray name, QByteArray text);
-        int strcmp_desc(QByteArray name, QByteArray text);
-
-};
-
-extern Strings_Comparator comparator;
 
 #endif
 

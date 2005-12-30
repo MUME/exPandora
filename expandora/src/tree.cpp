@@ -6,7 +6,7 @@
 #include "utils.h"
 #include "tree.h"
 
-class Ctree namer;
+class Ctree NameMap;
 
 
 void Ctree::remove_id(unsigned int id, Ttree *p)

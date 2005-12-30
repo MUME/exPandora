@@ -21,16 +21,18 @@
 #include <QDialog>
 #include <QMessageBox>
 
+
 #include "defines.h"
-#include "struct.h"
 #include "configurator.h"
 
-#include "renderer.h"
 #include "stacks.h"
 #include "utils.h"
 #include "rooms.h"
-
+#include "renderer.h"
 #include "userfunc.h"
+#include "event.h"
+#include "dispatch.h"
+#include "engine.h"
 
 
 
@@ -241,6 +243,104 @@ void MainWindow::generalSetting()
     analyser_dialog.run();
 }
 
+void MainWindow::emulation_mode()
+{
+    if (emulationAct->isChecked()) {
+        /* cannot turn it on if we have anyone connected to us already */
+        /* tricky check - if online_actions are on, then we have connections */
+        if (mappingAct->isChecked()) {
+            emulationAct->setChecked(false); 
+            QMessageBox::critical(this, "Pandora",
+                              QString("You have to disconnect from the game first!"));
+            return;        
+        }
+        mud_emulation = true;
+        strcpy(last_prompt, "-->");
+        stacker.put(1);
+        stacker.swap();
+
+        
+    } else {
+        mud_emulation = false;
+    
+    }
+
+}
+
+
+void MainWindow::editPatterns()
+{
+    pattern_dialog.run();
+}
+
+
+void MainWindow::publish_map()
+{
+    bool mark[MAX_ROOMS];
+    Croom *r;
+    unsigned int i;
+    unsigned int z;
+    
+    if (mappingAct->isChecked()) {
+        emulationAct->setChecked(false); 
+        QMessageBox::critical(this, "Pandora",
+                          QString("You have to disconnect first!"));
+        return;        
+    }
+        
+    memset(mark, 0, MAX_ROOMS);
+    stacker.reset();
+    stacker.put(1);
+    stacker.swap();
+    while (stacker.amount() != 0) {
+        for (i = 0; i < stacker.amount(); i++) {
+            r = stacker.get(i);
+            mark[r->id] = true;
+            for (z = 0; z <= 5; z++) {
+                if (r->is_connected(z) && mark[r->exits[z]] != true ) {
+                    if ( (r->doors[z] == NULL) || (r->doors[z] && (strcmp(r->doors[z], "exit") == 0)) ) {
+                        stacker.put(r->exits[z]);
+                    }
+                }
+            }
+        }
+        stacker.swap();
+    }
+    
+    
+    for (i = 0; i < Map.size(); i++) {
+        r = Map.rooms[i];
+        if (r) {
+            if (!mark[r->id]) {
+                Map.delete_room(r, 0);
+                continue;        
+            }
+        }
+        
+    }
+    
+    for (i = 0; i < Map.size(); i++) {
+        r = Map.rooms[i];
+        if (r) {
+            for (z = 0; z <= 5; z++) {
+                if (r->doors[z] && (strcmp(r->doors[z], "exit") != 0)) {
+                    printf("Secret door was still in database...\r\n");
+                    r->remove_door(z);
+                }
+            }
+        }
+        
+    }
+
+    
+    
+    
+    
+    
+    printf("Done!\r\n");
+    //    QMessageBox::information(this, "Removing secrets...", "Done!\n", QMessageBox::Ok);
+}
+
 
 MainWindow::MainWindow(QWidget *parent, const char *name)
     : QMainWindow( parent)
@@ -274,6 +374,10 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   saveAsAct->setStatusTip(tr("Save the map As"));
   connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
+  publishAct= new QAction(tr("Clear secrets"), this);
+  publishAct->setStatusTip(tr("Removes all secret exits and rooms behind them"));
+  connect(publishAct, SIGNAL(triggered()), this, SLOT(publish_map()));    
+
     
   quitAct =  new QAction(tr("&Exit..."), this);
   quitAct->setShortcut(tr("Ctrl+Q"));
@@ -283,6 +387,7 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   /* now building a menu and adding actions to menu */
   fileMenu = menuBar()->addMenu(tr("&File"));
   fileMenu->addAction(newAct);
+  fileMenu->addAction(publishAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openAct);  
   fileMenu->addAction(reloadAct);  
@@ -305,6 +410,7 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   mergeAct= new QAction(tr("Merge"), this);
   mergeAct->setStatusTip(tr("Tries to find twin room and merge them"));
   connect(mergeAct, SIGNAL(triggered()), this, SLOT(merge_room()));    
+
 
 
   actionsMenu = menuBar()->addMenu(tr("&Room"));
@@ -370,11 +476,21 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   always_on_top_action->setChecked(true);
   connect(always_on_top_action, SIGNAL(triggered()), this, SLOT(always_on_top()));    
 
+  emulationAct= new QAction(tr("Emulation Mode"), this);
+  emulationAct->setStatusTip(tr("Offline MUME Emulation"));
+  emulationAct->setCheckable(true);
+  emulationAct->setChecked(false);
+  connect(emulationAct, SIGNAL(triggered()), this, SLOT(emulation_mode()));    
+
 
   setupGeneralAct= new QAction(tr("General Settings ..."), this);
   setupGeneralAct->setStatusTip(tr("Edit general settings"));
   connect(setupGeneralAct, SIGNAL(triggered()), this, SLOT(generalSetting()) );    
   
+  
+  patternEditAct= new QAction(tr("Edit Patterns"), this);
+  patternEditAct->setStatusTip(tr("Edit Patterns"));
+  connect(patternEditAct, SIGNAL(triggered()), this, SLOT(editPatterns()) );    
 
   saveConfigAct= new QAction(tr("Save Configuration ..."), this);
   saveConfigAct->setStatusTip(tr("Save current configuration"));
@@ -393,15 +509,16 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   optionsMenu = menuBar()->addMenu(tr("&Configuration"));
   optionsMenu->addAction(hide_status_action);
   optionsMenu->addAction(always_on_top_action);  
+  optionsMenu->addAction(emulationAct);  
   optionsMenu->addSeparator();
   optionsMenu->addAction(calibrateColoursAct);  
   optionsMenu->addSeparator();
   optionsMenu->addAction(setupGeneralAct);  
+  optionsMenu->addAction(patternEditAct);  
   optionsMenu->addSeparator();
   optionsMenu->addAction(saveConfigAct);
   optionsMenu->addAction(saveConfigAsAct);
   optionsMenu->addAction(loadConfigAct);
-  optionsMenu->addAction(saveConfigAsAct);
     
   
 
@@ -695,13 +812,13 @@ void MainWindow::wheelEvent(QWheelEvent *e)
 void MainWindow::edit_current_room()
 {
     printf("Staring edit room action!\r\n");
-    if (stacker.amount != 1) {
+    if (stacker.amount() != 1) {
         QMessageBox::critical(this, "Room Info Edit",
                               QString("You are not in sync!"));
         return;
     } 
     
-    edit_room(stacker.get(1));
+    edit_room(stacker.first()->id);
 }
 
 
@@ -763,7 +880,7 @@ RoomEditDialog::RoomEditDialog(QWidget *parent) :
 */
 }
 
-int RoomEditDialog::updateExitsInfo(int dir, Troom *r)
+int RoomEditDialog::updateExitsInfo(int dir, Croom *r)
 {
     QString dname;
     unsigned int lead;
@@ -778,7 +895,7 @@ int RoomEditDialog::updateExitsInfo(int dir, Troom *r)
             lead = EXIT_DEATH;
         } else  {        
             lead = leads->text().toInt();
-            if (roomer.getroom(lead) == NULL) {
+            if (Map.getroom(lead) == NULL) {
                 QMessageBox::critical(this, "Room Info Edit",
                               QString("Bad door to the north!"));
                 return -1;
@@ -792,7 +909,7 @@ int RoomEditDialog::updateExitsInfo(int dir, Troom *r)
                               QString("Bad door to the north!"));
             return -1;    
         }
-        roomer.refresh_door(r->id, dir, dname.toAscii());    
+        r->refresh_door(dir, dname.toAscii());    
     } else {
         if (r->doors[dir])
             free(r->doors[dir]);
@@ -875,7 +992,7 @@ void  RoomEditDialog::changedExitsFlag(int dir, int index)
 }
 
 
-void RoomEditDialog::setup_exit_widgets(int dir, Troom *r)
+void RoomEditDialog::setup_exit_widgets(int dir, Croom *r)
 {
     set_door_context(dir);
     
@@ -925,11 +1042,11 @@ void  RoomEditDialog::changedExitsState(int dir, bool state)
 
 void RoomEditDialog::load_room_data(unsigned int id)
 {
-    Troom *r;
+    Croom *r;
     unsigned int i;
     
     /* stuff dialog with room data */    
-    r = roomer.getroom(id);
+    r = Map.getroom(id);
     setup_exit_widgets(NORTH, r);
     setup_exit_widgets(EAST, r);
     setup_exit_widgets(SOUTH, r);
@@ -959,7 +1076,7 @@ void RoomEditDialog::load_room_data(unsigned int id)
 
 void RoomEditDialog::accept()
 {
-    Troom *r;
+    Croom *r;
     QString name, desc, note;
     int x, y, z;
     int id;
@@ -971,7 +1088,7 @@ void RoomEditDialog::accept()
     id = label_roomid->text().toInt();
     printf("Room id : %i\r\n", id);
     
-    r = roomer.getroom(id);
+    r = Map.getroom(id);
     if (r == NULL) {
         QMessageBox::critical(this, "Room Info Edit",
                               QString("The room with this ID does not exist anymore."));
@@ -998,11 +1115,11 @@ void RoomEditDialog::accept()
             
             
     if (r->name != name) 
-        roomer.refresh_roomname(id, name.toAscii());            
+        r->refresh_roomname(name.toAscii());            
     if (r->desc != desc) 
-        roomer.refresh_desc(id, desc.toAscii());            
+        r->refresh_desc(desc.toAscii());            
     if (r->note != note) 
-        roomer.refresh_note(id, note.toAscii());            
+        r->refresh_note(note.toAscii());            
 
     if (updateExitsInfo(NORTH, r) == -1) return;
     if (updateExitsInfo(EAST, r) == -1) return;
@@ -1047,6 +1164,9 @@ void ConfigWidget::autorefreshUpdated(bool state)
 
 void ConfigWidget::run()
 {
+
+    if (isVisible())
+        return;
     if (conf.get_brief_mode()) 
         checkBox_brief->setChecked(true);
     else 
@@ -1175,6 +1295,130 @@ void ConfigWidget::accept()
 
     done(Accepted);
 }
+
+
+/* --------------------------- PatternEditDialog ------------------------------ */
+
+PatternEditDialog::PatternEditDialog(QWidget *parent) : QDialog(parent)
+{
+    setupUi(this);
+
+    connect(pushButton_add, SIGNAL(clicked()), this, SLOT(add_clicked()) );
+    connect(pushButton_save, SIGNAL(clicked()), this, SLOT(save_clicked()) );
+    connect(pushButton_remove, SIGNAL(clicked()), this, SLOT(remove_clicked()) );
+    connect(pushButton_edit, SIGNAL(clicked()), this, SLOT(edit_clicked()) );
+}
+
+void PatternEditDialog::run()
+{
+    unsigned int    i;
+    QString s;
+
+    if (isVisible())
+        return;
+
+    patterns.clear();
+    frame->setEnabled(false);
+    editing_index = 0;
+    
+    for (i = 0; i < conf.patterns.size(); i++) 
+        patterns.push_back( conf.patterns[i] ); 
+    
+    for (i = 0; i < event_types.size(); i++)
+        comboBox_type->addItem(event_types[i].name);
+
+    redraw();
+    show();
+    raise();
+    activateWindow();
+}
+
+
+void PatternEditDialog::edit_clicked()
+{
+    editing_index = listWidget->currentRow();
+    frame->setEnabled(true);
+
+    checkBox_regexp->setChecked(patterns[editing_index].is_regexp);
+    lineEdit_expr->setText(patterns[editing_index].pattern);
+    comboBox_type->setCurrentIndex(patterns[editing_index].type);
+    lineEdit_data->setText(patterns[editing_index].data);
+}
+
+void PatternEditDialog::redraw()
+{
+    unsigned int i;
+    QString s;
+    QString tmp, tmp2;
+    
+    listWidget->clear();
+    for (i = 0; i < patterns.size(); i++) {
+        tmp = event_types[patterns[i].type].name;
+        tmp2 = patterns[i].pattern;
+        s = QString("%1 %2 %3")
+            .arg( patterns[i].is_regexp ? "REGEXP" : "WILDCARD", -10)
+            .arg( tmp, -15)
+            .arg( tmp2, -90 );
+        listWidget->addItem(s);   
+    }
+    repaint();
+}
+
+
+void PatternEditDialog::save_clicked()
+{
+    frame->setEnabled(false);
+    TPattern p;
+    
+    if (editing_index == -1) {
+        editing_index = patterns.size();
+        patterns.push_back(p);
+    }
+    
+    patterns[editing_index].is_regexp = checkBox_regexp->isChecked();
+    patterns[editing_index].pattern = lineEdit_expr->text().toAscii();
+    patterns[editing_index].type = comboBox_type->currentIndex();
+    patterns[editing_index].data = lineEdit_data->text().toAscii();
+    redraw();
+}
+
+void PatternEditDialog::add_clicked()
+{
+    frame->setEnabled(true);
+    editing_index = -1;
+}
+
+void PatternEditDialog::remove_clicked()
+{
+    vector<TPattern>::iterator p;
+    int i;
+    
+    i = 0;
+    for (p=patterns.begin(); p != patterns.end(); ++p) {
+        if (i == listWidget->currentRow()) {
+            p = patterns.erase(p);
+            break;
+        }
+        i++;
+    }
+    redraw();
+}
+
+
+void PatternEditDialog::accept()
+{
+    unsigned int i;
+    
+    conf.patterns.clear();
+    for (i = 0; i < patterns.size(); i++) {
+        conf.add_pattern(patterns[i].pattern, patterns[i].data, event_types[patterns[i].type].group, 
+                            patterns[i].type, patterns[i].is_regexp);                        
+    }
+    patterns.clear();        
+    done(Accepted);
+}
+
+
 
 
 

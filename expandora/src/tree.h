@@ -45,7 +45,7 @@ public:
   void remove_id(unsigned int id, Ttree *t);
 };
 
-extern class Ctree namer;
+extern class Ctree NameMap;
 
 #endif
 

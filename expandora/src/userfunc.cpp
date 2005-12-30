@@ -6,7 +6,6 @@
 #include "rooms.h"
 #include "defines.h"
 #include "configurator.h"
-#include "struct.h"
 #include "dispatch.h"
 #include "stacks.h"
 #include "forwarder.h"
@@ -69,7 +68,7 @@ class Userland userland_parser;
     }                                             
 
 #define CHECK_SYNC \
-        if (stacker.amount != 1) {      \
+        if (stacker.amount() != 1) {      \
           send_to_user("--[Pandora: Current position is undefined(out of sync).\n");       \
           send_to_user(last_prompt);    \
           return USER_PARSE_DONE;       \
@@ -524,7 +523,7 @@ USERCMD(usercmd_mdebug)
 
 USERCMD(usercmd_maddroom)
 {
-  struct Troom *r;
+  Croom *r;
 
   if (mud_emulation) {
     send_to_user("Disabled in MUD emulation.\r\n");
@@ -559,15 +558,15 @@ USERCMD(usercmd_maddroom)
   
 
   
-  roomer.fixfree();	/* making this call just for more safety - might remove */
+  Map.fixfree();	/* making this call just for more safety - might remove */
 
-  r = new Troom;
-  reset_room(r);
+  r = new Croom;
+  
 
-  r->id = roomer.next_free;
+  r->id = Map.next_free;
   r->name = strdup(engine_flags.last_roomname);
   r->desc = strdup(engine_flags.last_desc);
-  roomer.add_terrain(r, engine_flags.last_terrain);
+  r->refresh_terrain(engine_flags.last_terrain);
   
   
   addedroom = r;
@@ -580,12 +579,11 @@ USERCMD(usercmd_maddroom)
   r->y = 100;
   r->z = 100;
   
-  roomer.addroom(r);
+  Map.addroom(r);
   
-  stacker.put(r->id);
+  stacker.put(r);
   stacker.swap();
 
-  
   send_to_user(last_prompt);
   return USER_PARSE_DONE;
 }
@@ -595,7 +593,7 @@ USERCMD(usercmd_maction)
 {
   char *p;
   char arg[MAX_STR_LEN];
-  struct Troom *r;
+  Croom *r;
   int dir;
   int local;
   unsigned int i;
@@ -641,7 +639,7 @@ USERCMD(usercmd_maction)
   /* some safety checks */
   strncpy(arg, p, MAX_STR_LEN/2);
 
-  if (stacker.amount == 0) {
+  if (stacker.amount() == 0) {
     if (dir == -1) {
       send_to_user("--[ undefined position. can not operate with secrets.\r\n");     
       send_to_user(last_prompt); 
@@ -662,8 +660,8 @@ USERCMD(usercmd_maction)
   exit = 0;             /* this flag is for 'action exit' when there are several rooms */
   
   /* get the door names */
-  for (i = 1; i <= stacker.amount; i++) {
-    r = roomer.getroom(stacker.get(i));
+  for (i = 0; i < stacker.amount(); i++) {
+    r = stacker.get(i);
 
     if (dir == -1) {
       int z;
@@ -709,7 +707,7 @@ USERCMD(usercmd_mdelete)
 {
   char *p;
   char arg[MAX_STR_LEN];
-  struct Troom *r;
+  Croom *r;
   int remove;
 
   userfunc_print_debug;
@@ -723,12 +721,12 @@ USERCMD(usercmd_mdelete)
     
   } 
   
-  r = roomer.getroom(stacker.get(1));
+  r = stacker.first();
 
   if (remove) 
-    roomer.delete_room(r, 0);
+    Map.delete_room(r, 0);
   else 
-    roomer.delete_room(r, 1);
+    Map.delete_room(r, 1);
   
   stacker.swap();
   
@@ -746,7 +744,7 @@ USERCMD(usercmd_mtreestats)
   skip_spaces(line);
 
 
-  namer.print_tree_stats();
+  NameMap.print_tree_stats();
   
   send_to_user(last_prompt);
   return USER_PARSE_DONE;
@@ -758,12 +756,10 @@ USERCMD(usercmd_mrefresh)
   userfunc_print_debug;
   skip_spaces(line);
 
-  roomer.refresh_roomname(stacker.get(1), engine_flags.last_roomname);
-  roomer.refresh_desc(stacker.get(1), engine_flags.last_desc);
-  roomer.refresh_terrain(stacker.get(1), engine_flags.last_terrain); 
+  stacker.first()->refresh_roomname(engine_flags.last_roomname);
+  stacker.first()->refresh_desc(engine_flags.last_desc);
+  stacker.first()->refresh_terrain(engine_flags.last_terrain); 
 
-  roomer.room_modified( roomer.getroom( stacker.get(1) ) );
-  
   send_to_user("--[ Refreshed.\r\n");
   send_to_user(last_prompt);
   return USER_PARSE_DONE;
@@ -775,7 +771,7 @@ USERCMD(usercmd_mgoto)
   char *p;
   char arg[MAX_STR_LEN];
   unsigned int id;
-  struct Troom *r;
+  Croom *r;
   int dir;
   
   userfunc_print_debug;
@@ -786,22 +782,22 @@ USERCMD(usercmd_mgoto)
   p = one_argument(p, arg, 0);
   if (is_integer(arg)) {
     id = atoi(arg);
-    if (roomer.getroom(id) == NULL) {
+    if (Map.getroom(id) == NULL) {
       send_to_user("--[ There is no room with id %s.\r\n", arg);
       send_to_user(last_prompt);
       return USER_PARSE_DONE;
     }
       
-    stacker.put(id);
+    stacker.put(Map.getroom(id));
     stacker.swap();
   } else {
     
     CHECK_SYNC;
-    r = roomer.getroom(stacker.get(1));
+    r = stacker.first();
     
     PARSE_DIR_ARGUMENT(dir, arg);
 
-    if ( !roomer.is_connected(r, dir) ) {
+    if ( !r->is_connected(dir) ) {
       send_to_user("--[ Bad direction - there is no connection.\r\n", arg);
       send_to_user(last_prompt);
       return USER_PARSE_DONE;
@@ -821,7 +817,7 @@ USERCMD(usercmd_mdetach)
 {
   char *p;
   char arg[MAX_STR_LEN];
-  struct Troom *r, *s;
+  Croom *r, *s;
   int del = 0, oneway = 0;
   int dir;
   unsigned int i;
@@ -846,12 +842,12 @@ USERCMD(usercmd_mdetach)
     }
   }
   
-  r = roomer.getroom(stacker.get(1));
+  r = stacker.first();
   if (r->exits[dir] != 0) {
-    s = roomer.getroom(r->exits[dir]);
+    s = Map.getroom(r->exits[dir]);
     if (del) {
       if (r->doors[dir] != NULL)
-        roomer.remove_door(r, dir);
+        r->remove_door(dir);
       r->exits[dir] = 0;
     } else {
       r->exits[dir] = EXIT_UNDEFINED;
@@ -862,15 +858,13 @@ USERCMD(usercmd_mdetach)
     return USER_PARSE_DONE;
   }
 
-  roomer.room_modified(r);
-  
   if (!oneway && s!=NULL) {
     for (i = 0; i<= 5; i++) 
       if (s->exits[i] == r->id) {
         if (del) {
           s->exits[i] = 0;
           if (r->doors[i] != NULL)
-            roomer.remove_door(s, i);
+            s->remove_door(i);
         } else {
           s->exits[i] = EXIT_UNDEFINED;
         }
@@ -888,12 +882,12 @@ USERCMD(usercmd_mlink)
   int force = 0, oneway = 0, backdir = -1, id, dir;
   char *p;
   char arg[MAX_STR_LEN];
-  struct Troom *r, *second;
+  Croom *r, *second;
   int i;
 
   userfunc_print_debug;
 
-  r = roomer.getroom(stacker.get(1));
+  r = stacker.first();
   
   
   /* get essential arguments - id and direction */
@@ -911,7 +905,7 @@ USERCMD(usercmd_mlink)
 
   GET_INT_ARGUMENT(arg, id);
 
-  second = roomer.getroom(id);
+  second = Map.getroom(id);
   
   if (second == NULL) {
     send_to_user("--[ There is no room with id %i.\r\n", id);
@@ -938,7 +932,7 @@ USERCMD(usercmd_mlink)
   } while (*p);
   
   /* first room */
-  if (roomer.is_connected(r, dir) && !force) {
+  if (r->is_connected(dir) && !force) {
     send_to_user("--[ There is an existing connection to the %s.\r\n", exits[dir]);
     send_to_user(last_prompt);
     return USER_PARSE_DONE;
@@ -947,7 +941,7 @@ USERCMD(usercmd_mlink)
   r->exits[dir] = id;
   send_to_user("--[ Linked exit %s with %s [%i].\r\n", exits[dir], second->name, id);
 
-  roomer.room_modified(r);
+  r->modified();
   
   /* if oneway option was given - we are done here */
   if (!oneway) {
@@ -955,7 +949,7 @@ USERCMD(usercmd_mlink)
     if (backdir == -1) 
       backdir = reversenum(dir);
     
-    if (roomer.is_connected(second, backdir) && !force) {
+    if (second->is_connected(backdir) && !force) {
       send_to_user("--[ There is an existing connection to the %s in second room.\r\n", exits[backdir]);
       send_to_user(last_prompt);
       return USER_PARSE_DONE;
@@ -976,7 +970,7 @@ USERCMD(usercmd_mmark)
 {
   char *p;
   char arg[MAX_STR_LEN];
-  struct Troom *r;
+  Croom *r;
   int i, dir;
 
   userfunc_print_debug;
@@ -993,7 +987,7 @@ USERCMD(usercmd_mmark)
 
   p = one_argument(p, arg, 0);    /* flag */
   
-  r = roomer.getroom(stacker.get(1));
+  r = stacker.first();
 
   
   i = 0;
@@ -1002,7 +996,7 @@ USERCMD(usercmd_mmark)
       r->exits[dir] = room_flags[i].flag;
       send_to_user("--[Pandora: Marked %s as %s\r\n", exits[dir],  room_flags[i].xml_name);
       
-      roomer.room_modified(r);
+      r->modified();
       
       send_to_user(last_prompt);
       return USER_PARSE_DONE;
@@ -1019,7 +1013,7 @@ USERCMD(usercmd_mdoor)
   char *p;
   char arg[MAX_STR_LEN];
   char arg2[MAX_STR_LEN];
-  struct Troom *r;
+  Croom *r;
   int i;
 
   userfunc_print_debug;
@@ -1044,7 +1038,7 @@ USERCMD(usercmd_mdoor)
   
   p = one_argument(p, arg2, 0);    /* direction */
   
-  r = roomer.getroom(stacker.get(1));
+  r = stacker.first();
   
   PARSE_DIR_ARGUMENT(i, arg2);
   
@@ -1052,11 +1046,11 @@ USERCMD(usercmd_mdoor)
     if (r->doors[i] == NULL) {
       send_to_user("--[ There is no door to the %s.\r\n", exits[i]);
     } else {
-      roomer.remove_door(r, i);
+      r->remove_door(i);
       send_to_user("--[Pandora: Removed the door to the %s\n", exits[i]);
     }
   } else {
-    roomer.add_door(r, arg, i);
+    r->add_door(i, arg);
     send_to_user("--[Pandora: Added the door %s to the %s\n", arg, exits[i]);
   }
   send_to_user(last_prompt);
@@ -1070,11 +1064,11 @@ USERCMD(usercmd_mcoord)
   char *p;
   char arg[MAX_STR_LEN];
   int value;
-  struct Troom *r;
+  Croom *r;
   
   userfunc_print_debug;
 
-  r = roomer.getroom(stacker.get(1));
+  r = stacker.first();
     
   p = skip_spaces(line);
   if (!*p) {
@@ -1086,7 +1080,7 @@ USERCMD(usercmd_mcoord)
   p = one_argument(p, arg, 0);
   
   GET_INT_ARGUMENT(arg, value);
-  r->x = value;
+  r->setx(value);
   send_to_user("--[ X set to %i.\r\n", r->x);
   
   p = skip_spaces(p);
@@ -1098,7 +1092,7 @@ USERCMD(usercmd_mcoord)
   p = one_argument(p, arg, 0);
   
   GET_INT_ARGUMENT(arg, value);
-  r->y = value;
+  r->sety(value);
   send_to_user("--[ Y set to %i.\r\n", r->y);
   
   p = skip_spaces(p);
@@ -1109,7 +1103,7 @@ USERCMD(usercmd_mcoord)
   
   p = one_argument(p, arg, 0);
   GET_INT_ARGUMENT(arg, value);
-  r->z = value;
+  r->setz(value);
   send_to_user("--[ Z set to %i.\r\n", r->z);
 
   send_to_user(last_prompt);
@@ -1123,7 +1117,7 @@ USERCMD(usercmd_mdec)
   char *p;
   char arg[MAX_STR_LEN];
   int value;
-  struct Troom *r;
+  Croom *r;
   
   userfunc_print_debug;
 
@@ -1135,27 +1129,27 @@ USERCMD(usercmd_mdec)
     GET_INT_ARGUMENT(arg, value);
   }
 
-  r = roomer.getroom(stacker.get(1));
+  r = stacker.first();
   
   switch (subcmd)
   {
 	case  USER_DEC_X:
-                roomer.setx(stacker.get(1), r->x - value);
+                r->setx(r->x - value);
 		break;
 	case  USER_INC_X:
-                roomer.setx(stacker.get(1), r->x + value);
+                r->setx(r->x + value);
 		break;
 	case  USER_DEC_Y:
-                roomer.sety(stacker.get(1), r->y - value);
+                r->sety(r->y - value);
 		break;
 	case  USER_INC_Y:
-                roomer.sety(stacker.get(1), r->y + value);
+                r->sety(r->y + value);
 		break;
 	case  USER_DEC_Z:
-                roomer.setz(stacker.get(1), r->z - value);
+                r->setz(r->z - value);
 		break;
 	case  USER_INC_Z:
-                roomer.setz(stacker.get(1), r->z + value);
+                r->setz(r->z + value);
 		break;
   }
 
@@ -1183,7 +1177,7 @@ USERCMD(usercmd_mnewmap)
   }
   
   
-  if (roomer.amount == 0) {
+  if (Map.size() == 0) {
     engine_flags.gettingfirstroom = 1;
     
     send_to_mud("examine\n");
@@ -1397,7 +1391,7 @@ USERCMD(usercmd_mload)
   analyzer_mutex.lock();
 
   send_to_user(" * Re-initing roomer and namer classes...\r\n");
-  roomer.reinit();  /* this one reinits Ctree structure also */
+  Map.reinit();  /* this one reinits Ctree structure also */
   
   send_to_user(" * Resetting possibility stacks...\r\n");
   stacker.reset();  /* resetting stacks */
@@ -1463,8 +1457,9 @@ USERCMD(usercmd_mmerge)
   char *p;
   char arg[MAX_STR_LEN];
   int force = 0;
-  struct Troom *t;
-  int j = -1, i;
+  Croom *t;
+  int j = -1;
+  unsigned int i;
   unsigned int id;
   
   userfunc_print_debug;
@@ -1489,35 +1484,20 @@ USERCMD(usercmd_mmerge)
 
     id = EXIT_UNDEFINED;
     
-    t = roomer.getroom(0);
-    t = t->next;
-    while (t != NULL) {
-        if (addedroom->id == t->id) {
-            t = t->next;
-            print_debug(DEBUG_ANALYZER, "Attempted to merge the same rooms, skipped.");
-            continue;
-        }
-        if (t->desc == NULL) {
-          t = t->next;
-          continue;
-        }
-        if (t->name == NULL) {
-          printf("Analyzer: room %i has no roomname!\r\n", t->id);
-          t = t->next;
+    for (i = 0; i < Map.size(); i++) {
+        t = Map.rooms[i];
+        if (addedroom->id == t->id || t->desc == NULL || t->name == NULL) {
           continue;
         }
         
         /* in this case we do an exact match for both roomname and description */
-        if (strcmp(addedroom->desc, t->desc) == 0) {
-          if (strcmp(addedroom->name, t->name) == 0) {
-            id = t->id;
-            break;
-          }	
-        }
-        t = t->next;
+        if (strcmp(addedroom->desc, t->desc) == 0) 
+            if (strcmp(addedroom->name, t->name) == 0) {
+                id = t->id;
+                break;
+            }	
     }
 
-    
     if (id == EXIT_UNDEFINED) {
       send_to_user("--[ No matching room found.\r\n");
       send_to_user(last_prompt);
@@ -1535,7 +1515,7 @@ USERCMD(usercmd_mmerge)
       return USER_PARSE_DONE;
     }
 
-    t = roomer.getroom(id);
+    t = Map.getroom(id);
     if (t == NULL) {
       send_to_user("--[ There is no room with this id %i.\r\n", id);
       send_to_user(last_prompt);
@@ -1563,11 +1543,11 @@ USERCMD(usercmd_mmerge)
 
   analyzer_mutex.lock();
     
-  if (roomer.try_merge_rooms(t, addedroom, j)) {
+  if (Map.try_merge_rooms(t, addedroom, j)) {
     send_to_user("--[ merged.\r\n");
   } else {
     send_to_user("--[ failed.\r\n");
-    stacker.put(addedroom->id);
+    stacker.put(addedroom);
   }
 
   analyzer_mutex.unlock();
@@ -1612,7 +1592,7 @@ USERCMD(usercmd_minfo)
   char *p;
   char arg[MAX_STR_LEN];
   int id;
-  struct Troom *t;
+  Croom *t;
   unsigned int i;
   
   userfunc_print_debug;
@@ -1631,23 +1611,23 @@ USERCMD(usercmd_minfo)
       return USER_PARSE_DONE;
     }
       
-    t = roomer.getroom(id);
+    t = Map.getroom(id);
     if (t == NULL) {
       send_to_user("--[ There is no room with this id %i.\r\n", id);
       send_to_user(last_prompt);
       return USER_PARSE_DONE;
     }      
     
-    roomer.send_room(t);
+    t->send_room();
     send_to_user(last_prompt);
     return USER_PARSE_DONE;
   }  
 
   
 
-   for (i = 1; i <= stacker.amount; i++) {
-     t = roomer.getroom(stacker.get(i));
-     roomer.send_room(t);
+   for (i = 0; i < stacker.amount(); i++) {
+     t = stacker.get(i);
+     t->send_room();
    }
    
    send_to_user(last_prompt);
@@ -1658,7 +1638,7 @@ USERCMD(usercmd_minfo)
 USERCMD(usercmd_move)
 {
   char *p;
-  struct Troom *r;
+  Croom *r;
   int dir;
 
   userfunc_print_debug;
@@ -1705,7 +1685,7 @@ USERCMD(usercmd_move)
                   break;
     }      
   } else {
-    r = roomer.getroom(stacker.get(1));
+    r = stacker.first();
 
     dir = -1;
     
@@ -1731,7 +1711,7 @@ USERCMD(usercmd_move)
                   dir = DOWN;
                   break;
           case USER_MOVE_LOOK:
-                  roomer.send_room(r);
+                  r->send_room();
                   send_to_user(last_prompt);
                   return USER_PARSE_DONE;
 
@@ -1740,16 +1720,16 @@ USERCMD(usercmd_move)
     
     if (dir == -1) 
       return USER_PARSE_NONE;
-    if ( !roomer.is_connected(r, dir) ) {
+    if ( !r->is_connected(dir) ) {
       send_to_user("Alas, you cannot go this way.\r\n\r\n");
     } else {
       stacker.put(r->exits[dir]);
       stacker.swap();
     
-      r = roomer.getroom(stacker.get(1));
+      r = stacker.first();
       toggle_renderer_reaction();
     
-      roomer.send_room(r);
+      r->send_room();
     }
             
     

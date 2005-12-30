@@ -4,11 +4,10 @@
 #include <cstring>
 #include <ctype.h>
 #include <QMutex>
+#include <QTime>
 
-#include "renderer.h"
 #include "configurator.h"
 #include "defines.h"
-#include "struct.h"
 #include "event.h"
 #include "stacks.h"
 #include "dispatch.h"
@@ -18,6 +17,7 @@
 #include "engine.h"
 #include "rooms.h"
 #include "tree.h"
+#include "renderer.h"
 
 
 /* ------------------------------- defines --------------------------------- */
@@ -31,7 +31,7 @@
 /* general mutex that blocks analyzer */
 QMutex analyzer_mutex;
 
-struct Troom *addedroom;	/* new room, contains new data is addinrroom==1 */
+Croom *addedroom;	/* new room, contains new data is addinrroom==1 */
 
 /* inner flags and variables */
 struct engine_flags_type engine_flags;
@@ -117,11 +117,11 @@ ECMD(engine_command_mappingoff)
 ECMD(engine_command_apply_roomname)
 {
   struct Tevent *r;
-  struct Troom *room;
+  Croom *room;
   unsigned int i;
   int match;
   
-  print_debug(DEBUG_ANALYZER, "in apply_roomname");
+//  print_debug(DEBUG_ANALYZER, "in apply_roomname");
     
   r = Rtop->next;
 
@@ -136,26 +136,26 @@ ECMD(engine_command_apply_roomname)
   
   if (engine_flags.addingroom) {
     // addedroom->name = strdup(r->data); /* doing this in try_dir */
-    stacker.put(addedroom->id);
+    stacker.put(addedroom);
     return;
   }
 
-  if (stacker.amount == 0) 
+  if (stacker.amount() == 0) 
     return;
   
   match = 0;
   
-  for (i = 1; i <= stacker.amount; i++) {
-    room = roomer.getroom(stacker.get(i));
+  for (i = 0; i < stacker.amount(); i++) {
+    room = stacker.get(i);
     if (room->name == NULL) {
       printf("ERROR - room without a roomname!\r\n");
     }
-    if ( (match = roomer.roomname_cmp(room, r->data)) >= 0) {
-      stacker.put(room->id);
+    if ( (match = room->roomname_cmp(r->data)) >= 0) {
+      stacker.put(room);
     }
   }
   
-  if (stacker.next == 1 && match > 0) {
+  if (stacker.next() == 1 && match > 0) {
     send_to_user("--[ not exact room name match: %i errors.\r\n", match);
   }
   
@@ -164,11 +164,11 @@ ECMD(engine_command_apply_roomname)
 ECMD(engine_command_apply_desc)
 {
   struct Tevent *r;
-  struct Troom *room;
+  Croom *room;
   unsigned int i;
   int match;
   
-  print_debug(DEBUG_ANALYZER, "in apply_desc");
+//  print_debug(DEBUG_ANALYZER, "in apply_desc");
 
   r = Rtop->next;
 
@@ -178,33 +178,33 @@ ECMD(engine_command_apply_desc)
   if (engine_flags.addingroom) {
     addedroom->desc = qstrdup((const char *) r->data);
     
-    stacker.put(addedroom->id);
+    stacker.put(addedroom);
     return;
   }
 
   match = 0;
   
-  if (stacker.amount == 0) {
+  if (stacker.amount() == 0) {
       return;
   } else {
-      for (i = 1; i <= stacker.amount; i++) {
-          room = roomer.getroom(stacker.get(i));
+      for (i = 0; i < stacker.amount(); i++) {
+          room = stacker.get(i);
 	  if (room->desc == NULL) {
 	    /* this room has no roomdesc, so we just skip it. */
 	    continue;
 	  }
-          if ( (match = roomer.desc_cmp(room, r->data)) >= 0) {
-              print_debug(DEBUG_ANALYZER, "found matching room");
-              stacker.put(room->id);
+          if ( (match = room->desc_cmp(r->data)) >= 0) {
+//              print_debug(DEBUG_ANALYZER, "found matching room");
+              stacker.put(room);
           }
       }
   }
   
-  if (stacker.next == 1 && match > 0) {
+  if (stacker.next() == 1 && match > 0) {
     /* this means we have exactly one match */
     if (conf.get_autorefresh()) {
       send_to_user("--[ (AutoRefreshed) not exact room desc match: %i errors.\r\n", match);
-      roomer.refresh_desc(stacker.get_next(1), r->data);  
+      stacker.next_first()->refresh_desc(r->data);  
     } else {
       send_to_user("--[ not exact room desc match: %i errors.\r\n", match);
     }
@@ -228,10 +228,10 @@ ECMD(engine_command_apply_prompt)
   char terrain;
   unsigned int i;
   struct Tevent *r;
-  struct Troom *room;
+  Croom *room;
 
   
-  print_debug(DEBUG_ANALYZER, "in apply_prompt");
+//  print_debug(DEBUG_ANALYZER, "in apply_prompt");
 
   r = Rtop->next;
   
@@ -243,9 +243,9 @@ ECMD(engine_command_apply_prompt)
   if (engine_flags.addingroom) {
     engine_flags.addingroom = 0;
       
-    print_debug(DEBUG_ANALYZER, "ADDINGROOM = 0");
+//    print_debug(DEBUG_ANALYZER, "ADDINGROOM = 0");
       
-    roomer.add_terrain(addedroom, terrain);
+    addedroom->refresh_terrain(terrain);
     
     if ( check_roomdesc() != 1) 
       angrylinker(addedroom);
@@ -254,19 +254,19 @@ ECMD(engine_command_apply_prompt)
   }
 
   
-  if (stacker.amount == 0) {
+  if (stacker.amount() == 0) {
     return;
   }
   
-  for (i = 1; i <= stacker.amount; i++) {
-      room = roomer.getroom(stacker.get(i));
+  for (i = 0; i < stacker.amount(); i++) {
+      room = stacker.get(i);
       if (!conf.get_terrain_check()) {
-        stacker.put(room->id);
+        stacker.put(room);
         continue;
       }
 
       if (conf.get_pattern_by_room(room) == terrain) 
-        stacker.put(room->id);
+        stacker.put(room);
   }
   
   
@@ -274,26 +274,26 @@ ECMD(engine_command_apply_prompt)
 
 ECMD(engine_command_redraw)
 {
-  print_debug(DEBUG_ANALYZER, "[ in FORCED REDRAW ]");
+//  print_debug(DEBUG_ANALYZER, "[ in FORCED REDRAW ]");
   toggle_renderer_reaction();
   engine_flags.redraw  = 0;
 }
 
 ECMD(engine_command_swap)
 {
-  print_debug(DEBUG_ANALYZER, "in swap");
+//  print_debug(DEBUG_ANALYZER, "in swap");
 
   stacker.swap();
 
-  if (stacker.amount == 0 && engine_flags.resync) 
+  if (stacker.amount() == 0 && engine_flags.resync) 
     engine_command_resync();
   
-  if (engine_flags.mapping && stacker.amount != 1)
+  if (engine_flags.mapping && stacker.amount() != 1)
     engine_command_mappingoff();
   
   
   if (engine_flags.redraw >= 2) { 
-    print_debug(DEBUG_ANALYZER, "[ in REDRAW ]");
+//    print_debug(DEBUG_ANALYZER, "[ in REDRAW ]");
     toggle_renderer_reaction();
     engine_flags.redraw  = 0;
   }
@@ -301,7 +301,7 @@ ECMD(engine_command_swap)
 
 ECMD(engine_command_done)
 {
-  print_debug(DEBUG_ANALYZER, "in done");
+//  print_debug(DEBUG_ANALYZER, "in done");
 
   engine_flags.done = 1;
 }
@@ -314,11 +314,11 @@ ECMD(engine_command_resync)
   engine_command_mappingoff();
   
   print_debug(DEBUG_ANALYZER, "FULL RESYNC");
-  n = roomer.findrooms(engine_flags.last_roomname);
+  n = NameMap.find_by_name(engine_flags.last_roomname);
   if (n != NULL)
     for (j = 0; j < n->ids.size(); j++) {
-      if (strcmp(engine_flags.last_roomname, roomer.getname( n->ids[j] )) == 0) {
-        print_debug(DEBUG_ANALYZER, "Adding matches");
+      if (strcmp(engine_flags.last_roomname, Map.getname( n->ids[j] )) == 0) {
+//        print_debug(DEBUG_ANALYZER, "Adding matches");
         stacker.put( n->ids[j] );
       } 
     }
@@ -328,14 +328,14 @@ ECMD(engine_command_resync)
 
 ECMD(engine_command_rremove)
 {
-  print_debug(DEBUG_ANALYZER, "in rremove");
+//  print_debug(DEBUG_ANALYZER, "in rremove");
 
   Rremove();
 }
 
 ECMD(engine_command_cremove)
 {
-  print_debug(DEBUG_ANALYZER, "in cremove");
+//  print_debug(DEBUG_ANALYZER, "in cremove");
 
   Cremove();
 }
@@ -345,44 +345,42 @@ ECMD(engine_command_try_dir)
   int dir;
   unsigned int i;
   struct Tevent *r, *c;
-  struct Troom *room;
+  Croom *room;
   
-  print_debug(DEBUG_ANALYZER, "in try_dir");
+//  print_debug(DEBUG_ANALYZER, "in try_dir");
 
   r = Rtop->next;
   c = Ctop->next;
   
   dir = numbydir(c->data[0]);
   
-  if (stacker.amount == 0) {
+  if (stacker.amount() == 0) {
     return;
   }
   
-  for (i = 1; i <= stacker.amount; i++) {
-      room = roomer.getroom(stacker.get(i));
-      if (roomer.is_connected(room, dir) ) {
+  for (i = 0; i < stacker.amount(); i++) {
+      room = stacker.get(i);
+      if (room->is_connected(dir)) {
           stacker.put(room->exits[dir]);
-          print_debug(DEBUG_ANALYZER, "adding match");
+//          print_debug(DEBUG_ANALYZER, "adding match");
       } else {
-        print_debug(DEBUG_ANALYZER, "failed");
+//        print_debug(DEBUG_ANALYZER, "failed");
         
-        if (stacker.amount == 1 && engine_flags.mapping && r->type == R_ROOM) {
+        if (stacker.amount() == 1 && engine_flags.mapping && r->type == R_ROOM) {
           /* if we got there we have only one element in possibility */
           /* stack - check the if statement above */
 
           send_to_user("--[ Adding new room!\n");
-          print_debug(DEBUG_ANALYZER, "adding new room!");
+//          print_debug(DEBUG_ANALYZER, "adding new room!");
           
     
           
-          roomer.fixfree();	/* making this call just for more safety - might remove */
+          Map.fixfree();	/* making this call just for more safety - might remove */
 
-          addedroom = new Troom;
-          reset_room(addedroom);
+          addedroom = new Croom;
 
-          addedroom->id = roomer.next_free;
+          addedroom->id = Map.next_free;
           addedroom->name = strdup(r->data);
-          
           room->exits[dir] = addedroom->id;
           addedroom->exits[reversenum(dir)] = room->id;
 
@@ -398,9 +396,9 @@ ECMD(engine_command_try_dir)
 
 
           engine_flags.addingroom = 1;	/* for exits, decription and prompt, ends in prompt check */
-          roomer.addroom(addedroom);
+          Map.addroom(addedroom);
           
-          stacker.put(addedroom->id);
+          stacker.put(addedroom);
 
           return;
         }	
@@ -416,20 +414,20 @@ ECMD(engine_command_try_dir)
 
 ECMD(engine_command_try_all_dirs)
 {
-  struct Troom *room;
+  Croom *room;
   unsigned int i, j;
 
-  print_debug(DEBUG_ANALYZER, "in try_all_dirs");
+//  print_debug(DEBUG_ANALYZER, "in try_all_dirs");
   engine_command_mappingoff();
 
-  if (stacker.amount == 0) {
+  if (stacker.amount() == 0) {
     return;
   }
   
-  for (i = 1; i <= stacker.amount; i++) {
-      room = roomer.getroom(stacker.get(i));
+  for (i = 0; i < stacker.amount(); i++) {
+      room = stacker.get(i);
       for (j = 0; j <=5; j++) 
-        if (roomer.is_connected(room, j) ) 
+        if (room->is_connected(j) ) 
           stacker.put(room->exits[j]);
   }
   
@@ -441,13 +439,14 @@ ECMD(engine_command_try_all_dirs)
 void engine()
 {
   print_debug(DEBUG_ANALYZER, "in main cycle");
+  QTime t;
   
   if (mud_emulation)
     return;
 
   analyzer_mutex.lock();
 
-  TIMER_START("analyzer");
+  t.start();
   
   copy_stacks();
 
@@ -455,10 +454,8 @@ void engine()
   while (!engine_flags.done) 
     engine_run();
   
-  print_debug(DEBUG_ANALYZER, "done");
-
-  TIMER_STOP(10);
-
+  print_debug(DEBUG_ANALYZER, "done. Time elapsed %d ms", t.elapsed());
+  
   analyzer_mutex.unlock();
 }
 
@@ -483,10 +480,11 @@ void engine_run()
     return;
   }
 
+/*
   print_debug(DEBUG_ANALYZER, "current state cause : %c result %c", 
-                              cause ? cause : 'E' , 
-                              result ? result : 'E');
-  
+                              (const char *) event_types[cause].name  , 
+                              (const char *) event_types[result].name);
+*/  
   /* find passing scriplet and execute it one by one */
   
   p = engine_program;
@@ -612,7 +610,9 @@ int engine_parse_command_line(char cause, char result, char *line)
   int len, i;
   char command[MAX_STR_LEN];
   
-  print_debug(DEBUG_ANALYZER, "Engine. Parsing command: %c, %c, %s.", cause ? cause : 'E', result ? result : 'E', line);
+  print_debug(DEBUG_ANALYZER, "Engine. Parsing command: %s, %s, %s.", 
+                    (const char *) event_types[cause].name , 
+                    (const char *) event_types[result].name, line);
   
   /* check if scriplet for this combo of cause-result already exists */
   p = engine_program;
@@ -682,8 +682,9 @@ int engine_parse_command_line(char cause, char result, char *line)
 
 int check_roomdesc()
 {
-    struct Troom *r;
-    int i, j;
+    Croom *r;
+    unsigned int i;
+    int j;
 
     print_debug(DEBUG_ANALYZER, "Room-desc check for new room");
     
@@ -696,7 +697,7 @@ int check_roomdesc()
 
     if (conf.get_automerge() == false) {
         printf("Analyzer: autodesc check if OFF - quiting this routine.\n");
-        stacker.put(addedroom->id);
+        stacker.put(addedroom);
       
         return 0;
     }
@@ -707,7 +708,7 @@ int check_roomdesc()
 
     if (addedroom->name == NULL) {
         /* now thats sounds bad ... */
-        roomer.delete_room(addedroom, 0);
+        Map.delete_room(addedroom, 0);
         printf("ERROR: in check_description() - empty roomname in new room.\r\n");
         return 0;
     }
@@ -720,35 +721,23 @@ int check_roomdesc()
 
     /* find the only defined exit in new room - the one we came from */
     for (i = 0; i <= 5; i++)
-      if ( roomer.is_connected(addedroom, i) ) {
+      if ( addedroom->is_connected(i) ) {
           j = i;
           break;
       }
     
-        
-    r = roomer.getroom(0);
-    r = r->next;
-    while (r != NULL) {
-        if (addedroom->id == r->id) {
-            r = r->next;
-            print_debug(DEBUG_ANALYZER, "Attempted to merge the same rooms, skipped.");
-            continue;
-        }
-        if (r->desc == NULL) {
-          r= r->next;
-          continue;
-        }
-        if (r->name == NULL) {
-          printf("Analyzer: room %i has no roomname!\r\n", r->id);
-          r= r->next;
+    
+    for (i = 0; i < Map.size(); i++) {
+        r = Map.rooms[i];
+        if (addedroom->id == r->id || r->desc == NULL || r->name == NULL) {
           continue;
         }
         
         /* in this case we do an exact match for both roomname and description */
         if (strcmp(addedroom->desc, r->desc) == 0) {
             if (strcmp(addedroom->name, r->name) == 0) {
-              if (roomer.try_merge_rooms(r, addedroom, j)) {
-                send_to_user("--[Pandora: Twin rooms merged, because of similar discription!\n");
+              if (Map.try_merge_rooms(r, addedroom, j)) {
+                send_to_user("--[Pandora: Twin rooms merged!\n");
                 send_to_user(last_prompt);
                 print_debug(DEBUG_ANALYZER, "Twins merged");
                 addedroom = NULL;
@@ -756,25 +745,22 @@ int check_roomdesc()
               }
             }	
         }
-        r = r->next;
     }
-    
+        
     /* if we are still here, then we didnt manage to merge the room */
     /* so put addedroom->id in stack */
-    stacker.put(addedroom->id);
+    stacker.put(addedroom);
     return 0;
 }
 
 
-void angrylinker(struct Troom *r)
+void angrylinker(Croom *r)
 {
-  struct Troom *p;
+  Croom *p;
   unsigned int i;
-  struct Troom *candidates[6];
+  Croom *candidates[6];
   int distances[6];
   int z;
-
-  
     
   if (!conf.get_angrylinker()) 
     return; 
@@ -786,9 +772,7 @@ void angrylinker(struct Troom *r)
     print_debug(DEBUG_ROOMS, "given room is NULL");
     return;
   }
-
   
-  p = roomer.getroom(0);	/* get the pointer to the base of array */
   
   
   /* check if we have any undefined exits in thos room at all */
@@ -811,11 +795,9 @@ void angrylinker(struct Troom *r)
   
   
   /* find the closest neighbours by coordinate */
+  for (i = 0; i < Map.size(); i++) {
+      p = Map.rooms[i];  
   
-  while (p->next != NULL) {
-    p = p->next;
-
-    
     /* z-axis: up and down exits */
     if (p->z != r->z) {
       
@@ -901,9 +883,9 @@ void angrylinker(struct Troom *r)
       
     }
 
-    
-    
-  } /* done with the while ! */
+  
+  }
+  
     
   /* ok, now we have candidates for linking - lets check directions and connections*/
   for (i=0; i <= 5; i++) {

@@ -41,6 +41,7 @@
 #include "defines.h"
 #include "configurator.h"
 #include "dispatch.h"
+#include "rooms.h"
 #include "renderer.h"
 
 QMutex tcp_mutex;

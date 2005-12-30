@@ -7,7 +7,6 @@
 //using namespace std;
 
 #include "defines.h"
-#include "struct.h"
 #include "configurator.h"
 
 #include "rooms.h"
@@ -17,267 +16,55 @@
 #include "dispatch.h"
 #include "renderer.h"
 
-class roommanager roomer;
+#define MAX_SQUARE_SIZE         40
+#define MAX_SQUARE_ROOMS        40
 
-const struct room_flag_data room_flags[] = {
-  {"undefined", "UNDEFINED", EXIT_UNDEFINED},
-  {"death", "DEATH", EXIT_DEATH},
-    
-  {NULL, NULL, EXIT_UNDEFINED}
-};
+class roommanager Map;
 
-
-void reset_room(struct Troom *r)
-{				/* Only for new rooms */
-    int i;
-
-    r->id = 0;
-    r->name = NULL;
-    r->note = NULL;
-    r->desc = NULL;
-    r->x = 0;
-    r->y = 0;
-    r->z = 0;
-    r->sector = 0;
-  
-    memset(r->timestamp, 0, TIMESTAMP_LEN);
-  
-  
-    r->next = NULL;
-    r->prev = NULL;
-    for (i = 0; i <= 5; i++) {
-	r->exits[i] = 0;
-	r->doors[i] = NULL;
-    }
-
-}
-
-void roommanager::add_terrain(struct Troom *r, char terrain)
-{
-    r->sector = conf.get_sector_by_pattern(terrain);
-}
-
-
-/* database integrity check */
-void roommanager::database_integrity_check(char *entry_point)
-{
-  struct Troom *r;
- 
-  printf("%s: Database integrity check ...", entry_point);
-  
-  r = roomer.getroom(0);
-  r = r->next;
-  while (r != NULL) {
-    if (getroom(r->id) == NULL) {
-      printf("\r\nDATABASE CHECK: ID %i, is no identified.\r\n", r->id);
-      exit(1);
-    }
-    
-    if (r->name == NULL) {
-      printf("\r\nDATABASE CHECK: Room %i has no room name.\r\n", r->id);
-      exit(1);
-    }
-
-    if (r->desc == NULL) {
-      printf("\r\nDATABASE CHECK: Room %i has no room description.\r\n", r->id);
-    }
-    
-    
-    r = r->next;
-  }
-  
-  printf("Ok.\r\n");
-  
-}
-
-
-void roommanager::room_modified(struct Troom *r)
-{
-  conf.set_data_mod(true);
-  if (r != NULL)
-    update_timestamp(r);
-}
-
-void roommanager::refresh_note(unsigned int id, QByteArray note)
-{
-  struct Troom *r;
-      
-  r = roomer.getroom(id);
-  if (r->note)
-    delete r->desc;
-  r->note = qstrdup(note);
-}
-
-void roommanager::refresh_door(unsigned int id, char dir, QByteArray door)
-{
-  struct Troom *r;
-      
-  r = roomer.getroom(id);
-  if (r->doors[(int) dir])
-    delete r->doors[(int) dir];
-  if (door.isEmpty()) 
-    r->doors[ (int) dir ] = NULL;
-  else  
-    r->doors[(int) dir] = qstrdup(door);
-  room_modified(r);
-}
-
-
-/* implementation of desc comparison - simple strcmp at this moment */
-void roommanager::refresh_desc(unsigned int id, QByteArray newdesc)
-{
-  struct Troom *r;
-      
-  r = roomer.getroom(id);
-  if (r->desc)
-    delete r->desc;
-  r->desc = qstrdup(newdesc);
-  room_modified(r);
-}
-
-void roommanager::refresh_roomname(unsigned int id, QByteArray newname)
-{
-  struct Troom *r;
-
-  r = roomer.getroom(id);
-
-  namer.delete_item(r->name, id);
-  free(r->name);
-  r->name = qstrdup(newname);
-  namer.addname((const char *) newname, id);
-  room_modified(r);
-}
-
-
-void roommanager::refresh_terrain(unsigned int id, char terrain)
-{
-  struct Troom *r;
-      
-  r = roomer.getroom(id);
-  add_terrain(r, terrain);
-  
-  print_debug(DEBUG_ROOMS, "terrain refresh. new terrain %c", terrain);
-  /* hrmm */
-  room_modified(r);      
-}
-
-
-int roommanager::desc_cmp(struct Troom *r, QByteArray desc)
-{ 
-  return comparator.strcmp_desc(desc, r->desc);
-}
-
-int roommanager::roomname_cmp(struct Troom *r, QByteArray name)
-{ 
-  return comparator.strcmp_roomname(name, r->name);
-}
-
-
-
-
-/* --------------- check if exit in room is connected --------------- */
-int roommanager::is_connected(struct Troom *r, int dir)
-{
-  if ((r->exits[dir] == EXIT_UNDEFINED) || (r->exits[dir] == EXIT_DEATH))
-    return 0;
-  if (r->exits[dir] > 0)
-    return 1;
-
-  return 0;
-}
-
-/* ------------------------ add_door() ------------------------*/
-int roommanager::add_door(struct Troom *r, char *door, int dir)
-{
-
-  if (r->exits[dir] == 0) {
-    r->exits[dir] = EXIT_UNDEFINED;
-  }
-    
-  if (r->doors[dir] != NULL) 
-    free(r->doors[dir]);
-
-  r->doors[dir] = strdup(door);
-  
-  room_modified(r);
-  
-  return 1;
-}
-
-/* ------------------------ remove_door() ------------------------*/
-void roommanager::remove_door(struct Troom *r, int dir)
-{
-
-  if (r->doors[dir] != NULL) {
-    free(r->doors[dir]);
-    r->doors[dir] = NULL;
-  }
-  
-  room_modified(r);
-}
 
 
 /*------------ merge_rooms ------------------------- */
-int roommanager::try_merge_rooms(struct Troom *r, struct Troom *copy, int j)
+int roommanager::try_merge_rooms(Croom *r, Croom *copy, int j)
 {
   int i;
-  struct Troom *p;
+  Croom *p;
 
   if (j == -1) {
     /* oneway ?! */
     print_debug(DEBUG_ROOMS, "fixing one way in previous room, repointing at merged room");
     
-    p = roomer.getroom(roomer.oneway_room_id);
+    p = getroom(oneway_room_id);
     for (i = 0; i <= 5; i++)
         if (p->exits[i] == copy->id) 
             p->exits[i] = r->id;
     
-    roomer.small_delete_room(copy);
+    small_delete_room(copy);
 
 
-    stacker.put(r->id);
+    stacker.put(r);
     return 1;
   }
   if (r->exits[j] == EXIT_UNDEFINED) {
     r->exits[j] = copy->exits[j];
                       
-    p = roomer.getroom(copy->exits[j]);
+    p = getroom(copy->exits[j]);
     if (p->exits[reversenum(j)] == copy->id)
         p->exits[reversenum(j)] = r->id;
         
-    roomer.small_delete_room(copy);
+    small_delete_room(copy);
 
-    stacker.put(r->id);
+    stacker.put(r);
     return 1;
   }
   return 0;
 }
-
-
-
-/* ----------- findrooms ---------------------- */
-struct Ttree *roommanager::findrooms(const char *name)
-{
-    return namer.find_by_name(name);
-}
-
-
-void roommanager::changenote(char *note, struct Troom *p)
-{
-  if (p->note != NULL)
-    free(p->note);
-  p->note = strdup(note);
-  
-  room_modified(p);
-}
-
 
 /* ------------ fixfree ------------- */
 void roommanager::fixfree()
 {
     unsigned int i;
 
-    for (i = 0; i < MAX_ROOMS; i++)
+    for (i = 1; i < MAX_ROOMS; i++)
 	if (ids[i] == NULL) {
 	    next_free = i;
 	    return;
@@ -292,17 +79,23 @@ void roommanager::fixfree()
 
 
 /* ------------ getroom ------------- */
-struct Troom *roommanager::getroom(unsigned int id)
+Croom *roommanager::getroom(unsigned int id)
 {
   return ids[id];
 }
 
 /* ----------- getroom ENDS --------- */
 
+char *roommanager::getname(unsigned int id) 
+{     
+    if (ids[id])
+        return (*(ids[id])).name;
+    return NULL;
+}
+
 /* ------------ addroom --------------*/
-void roommanager::addroom_nonsorted(struct Troom *room)
+void roommanager::addroom_nonsorted(Croom *room)
 {
-  
   if (ids[room->id] != NULL) {
       printf
           ("Error while adding new element to database! This id already exists!\n");
@@ -310,49 +103,19 @@ void roommanager::addroom_nonsorted(struct Troom *room)
   }
 
 
-  room->prev = rooms;		/* add to list of rooms */
-  room->next = rooms->next;
-  if (rooms->next != NULL)
-    rooms->next->prev = room;
-  rooms->next = room;
-
+  rooms.push_back(room);
   ids[room->id] = room;	/* add to the first array */
+  NameMap.addname(room->name, room->id);	/* update name-searhing engine */
 
-  namer.addname(room->name, room->id);	/* update name-searhing engine */
-
-  if (room->timestamp[0] == 0) 
-    update_timestamp(room);
-  
-  
-  amount++;
   fixfree();
   add_to_plane(room);
 }
 
-void roommanager::addroom(struct Troom *room)
+void roommanager::addroom(Croom *room)
 {
   addroom_nonsorted(room);
 }
 /* ------------ addroom ENDS ---------- */
-
-
-
-void roommanager::update_timestamp(struct Troom *r)
-{
-  QDateTime t;
-  QString s;
-
-  if (r == NULL)
-    return;
-  
-  t = t.currentDateTime();
-  s = t.toString(TIMESTAMP_FORMAT);
-  
-  
-  strncpy(r->timestamp, qPrintable(s), TIMESTAMP_LEN);
-  r->timestamp[TIMESTAMP_LEN] = 0;
-  
-}
 
 /*------------- Constructor of the room manager ---------------*/
 roommanager::roommanager()
@@ -363,19 +126,15 @@ roommanager::roommanager()
 
 void roommanager::init()
 {
-
-    amount = 0;
     next_free = 1;
 
     print_debug(DEBUG_ROOMS, "In roomer.init()");
   
     /* adding first (empty) root elements to the lists */
-    rooms = new Troom;
-    reset_room(rooms);
-
-    ids[0] = rooms;
-    planes = NULL;
+    rooms.clear();
     
+    ids[0] = NULL;
+    planes = NULL;
 }
 
 /*------------- Constructor of the room manager ENDS  ---------------*/
@@ -383,12 +142,7 @@ void roommanager::init()
 /* -------------- reinit ---------------*/
 void roommanager::reinit()
 {
-    struct Troom *p, *p2;
-    unsigned int i;
-    
-    amount = 0;
     next_free = 1;
-
     {
         CPlane *p, *next;
         
@@ -402,34 +156,15 @@ void roommanager::reinit()
         planes = NULL;
     }
 
-        
+    memset(ids, 0, MAX_ROOMS * sizeof (Croom *) );        
+/*
     for (i = 0; i < MAX_ROOMS; i++)
       ids[i] = NULL;
     ids[0] = rooms;
-
+*/
     
-    p = rooms->next;
-    while (p != NULL) {
-	p2 = p->next;
-      
-	if (p->note != NULL) 
-          free(p->note);
-	if (p->name != NULL)
-	    free(p->name);
-	if (p->desc != NULL)
-	    free(p->desc);
-	for (i = 0; i <= 5; i++)
-	    if (p->doors[i] != NULL)
-		free(p->doors[i]);
-            
-	delete p;
-
-            
-	p = p2;
-    }
-    rooms->next = NULL;
- 
-    namer.reinit();
+    rooms.clear();     
+    NameMap.reinit();
 }
 
 /* -------------- reinit ENDS --------- */
@@ -437,39 +172,31 @@ void roommanager::reinit()
 /* ------------ delete_room --------- */
 /* mode 0 - remove all links in other rooms together with exits and doors */
 /* mode 1 - keeps the doors and exits in other rooms, but mark them as undefined */
-void roommanager::delete_room(struct Troom *r, int mode)
+void roommanager::delete_room(Croom *r, int mode)
 {
     int k;
-    struct Troom *p;
-
+    unsigned int i;
+    
+    
     if (r->id == 1) {
 	printf("Cant delete base room!\n");
 	return;
     }
 
-    /* have to do it this way because of one-ways */
-    p = getroom(0);		/* get base room */
-    p = p->next;
-
-    while (p != NULL) {
+    /* have to do this because of possible oneways leading in */
+    for (i = 0; i < rooms.size(); i++) 
 	for (k = 0; k <= 5; k++)
-	    if (p->exits[k] == r->id) {
-              if (mode == 0) {
-		p->exits[k] = 0;
-                if (p->doors[k] != NULL) {
-                  free(p->doors[k]);
-                  p->doors[k] = NULL;
+	    if (rooms[i]->exits[k] == r->id) {
+                if (mode == 0) {
+		    rooms[i]->exits[k] = 0;
+                    if (rooms[i]->doors[k] != NULL) {
+                        delete rooms[i]->doors[k];
+                        rooms[i]->doors[k] = NULL;
+                    }
+                } else if (mode == 1) {
+                    rooms[i]->exits[k] = EXIT_UNDEFINED;
                 }
-              }
-              
-              if (mode == 1) {
-                p->exits[k] = EXIT_UNDEFINED;
-              }
-              
-              
 	    }
-	p = p->next;
-    }
 
     small_delete_room(r);
 }
@@ -477,190 +204,29 @@ void roommanager::delete_room(struct Troom *r, int mode)
 /* --------- _delete_room ENDS --------- */
 
 /* ------------ small_delete_room --------- */
-void roommanager::small_delete_room(struct Troom *r)
+void roommanager::small_delete_room(Croom *r)
 {
-    int k;
-
     if (r->id == 1) {
 	printf("ERROR (!!): Attempted to delete the base room!\n");
 	return;
     }
-    namer.delete_item(r->name, r->id);
     remove_from_plane(r);
     stacker.remove_room(r->id);
     
-    free(r->name);
-    r->name = NULL;
-
-
-    ids[r->id] = NULL;		/* THIS virtualy means the room is deleted in base */
-
-    if (r->desc != NULL)
-	free(r->desc);
-    if (r->note != NULL)
-	free(r->note);
-    for (k = 0; k <= 5; k++)
-	if (r->doors != NULL)
-	    free(r->doors[k]);
-
-    r->prev->next = r->next;	/* fix links */
-    if (r->next != NULL)
-	r->next->prev = r->prev;
-    free(r);			/* now its gone */
-    r = NULL;
+    vector<Croom *>::iterator i;
+    ids[r->id] = NULL;
     
-    amount--;
+    for (i = rooms.begin(); i != rooms.end(); i++)
+        if ((*i)->id == r->id) {
+            printf("Deleting the room from rooms vector.\r\n");
+            i = rooms.erase(i);
+            break;
+        }
+    
+    delete r;    
     fixfree();
-    room_modified(NULL);
-    
-    printf("Done 2.\r\n");
-
 }
-
 /* --------- small_delete_room ENDS --------- */
-
-
-/* --------- getname --------------*/
-char *roommanager::getname(unsigned int id)
-{
-    Troom *r;
-
-    r = getroom(id);
-    if (r != NULL)
-	return r->name;
-
-    return NULL;
-}
-
-/* --------- getname --------------*/
-
-
-void roommanager::setx(unsigned int id, int x)
-{
-  struct Troom *p;
-    
-  p = getroom(id);
-  p->x = x;
-
-  conf.set_data_mod(true);
-}
-
-void roommanager::sety(unsigned int id, int y)
-{
-  struct Troom *p;
-    
-  p = getroom(id);
-  p->y = y;
-  conf.set_data_mod(true);
-  
-}
-
-
-void roommanager::setz(unsigned int id, int z)
-{
-  struct Troom *p;
-    
-  p = getroom(id);
-  p->z = z;
-  
-  conf.set_data_mod(true);
-}
-
-/* ------------------------------ prints the given room --------------------*/
-void roommanager::send_room(struct Troom *r)
-{
-    unsigned int i, pos;
-    char line[MAX_STR_LEN];
-    
-    send_to_user(" Id: %i, Flags: %s, Coord: %i,%i,%i, Last updated: %s\r\n", r->id,
-	    (const char *) conf.sectors[r->sector].desc, r->x, r->y, r->z,
-            r->timestamp[0] == 0 ? "No Info" : r->timestamp);
-    send_to_user(" %s%s%s\n", (const char *) conf.get_look_col() , r->name, 
-                              (const char *) conf.get_end_col() );
-
-    line[0] = 0;
-    pos = 0;
-    if (!(mud_emulation && conf.get_brief_mode() ) ) {
-      for (i = 0; i <= strlen(r->desc); i++)
-	if (r->desc[i] == '|') {
-	    line[pos] = 0;
-	    send_to_user("%s\r\n", line);
-	    line[0] = 0;
-	    pos = 0;
-	} else {
-	    line[pos++] = r->desc[i];
-	}
-    }
-    send_to_user(" note: %s\n", r->note);
-
-    
-    sprintf(line, "Doors:");
-    for (i = 0; i <= 5; i++) {
-      if (r->doors[i]) {
-        sprintf(line + strlen(line), " %c: %s", dirbynum(i), r->doors[i]);
-      }
-    
-    }
-    send_to_user("%s\r\n", line);
-
-    
-    if (conf.get_brief_mode() && mud_emulation) {
-      sprintf(line, "Exits: ");
-      for (i = 0; i <= 5; i++)
-          if (r->exits[i] > 0) {
-              if (r->exits[i] == EXIT_UNDEFINED) {
-                  sprintf(line + strlen(line), " #%s#", exitnames[i]);
-                  continue;
-              }
-              if (r->exits[i] == EXIT_DEATH) {
-                  sprintf(line + strlen(line), " !%s!", exitnames[i]);
-                  continue;
-              }
-              if (r->doors[i] != NULL) {
-                  if (strcmp("exit", r->doors[i]) == 0) {
-                      sprintf(line + strlen(line), " (%s)", exitnames[i]);
-                  } else {
-                      sprintf(line + strlen(line), " +%s+", exitnames[i]);
-                  }
-              } else {
-                  sprintf(line + strlen(line), " %s", exitnames[i]);
-              }
-          }
-    
-      
-      
-    } else {
-      
-      line[0] = 0;
-      sprintf(line, " exits:");
-  
-      for (i = 0; i <= 5; i++)
-          if (r->exits[i] > 0) {
-              if (r->exits[i] == EXIT_UNDEFINED) {
-                  sprintf(line + strlen(line), " #%s#", exitnames[i]);
-                  continue;
-              }
-              if (r->exits[i] == EXIT_DEATH) {
-                  sprintf(line + strlen(line), " !%s!", exitnames[i]);
-                  continue;
-              }
-              if (r->doors[i] != NULL) {
-                  if (strcmp("exit", r->doors[i]) == 0) {
-                      sprintf(line + strlen(line), " (%s)", exitnames[i]);
-                  } else {
-                      sprintf(line + strlen(line), " +%s+", exitnames[i]);
-                  }
-              } else {
-                  sprintf(line + strlen(line), " %s", exitnames[i]);
-              }
-              sprintf(line + strlen(line), " -[to %i]-", r->exits[i]);
-          }
-      
-      
-    }
-
-    send_to_user("%s\r\n", line);
-}
 
 
 /* -------------------------------------------------------------------------*/
@@ -735,13 +301,13 @@ void CSquare::add_subsquare_by_mode(int mode)
 }
 
 
-void CSquare::add_room_by_mode(struct Troom *room, int mode)
+void CSquare::add_room_by_mode(Croom *room, int mode)
 {
     mode = get_mode(room);
     if (subsquares[mode] == NULL) 
         this->add_subsquare_by_mode(mode);
         
-    subsquares[ mode ]->addroom(room);
+    subsquares[ mode ]->add(room);
 }
 
 
@@ -757,9 +323,9 @@ bool CSquare::to_be_passed()
     return false;
 }
 
-void CSquare::addroom(struct Troom *room)
+void CSquare::add(Croom *room)
 {
-    struct Troom *r;
+    Croom *r;
     unsigned int i;
     
     if (to_be_passed() ) 
@@ -775,7 +341,7 @@ void CSquare::addroom(struct Troom *room)
     } else {
         
         for (i=0; i < ids.size(); i++) {
-            r = roomer.getroom( ids[i] );
+            r = Map.getroom( ids[i] );
             add_room_by_mode(r, get_mode(r) );
         }
         ids.clear();
@@ -784,7 +350,7 @@ void CSquare::addroom(struct Troom *room)
     }
 }
 
-void roommanager::remove_from_plane(struct Troom *room)
+void roommanager::remove_from_plane(Croom *room)
 {
     CPlane *p;
     
@@ -797,11 +363,11 @@ void roommanager::remove_from_plane(struct Troom *room)
         p = p->next;
     }
 
-    p->squares->removeroom(room);
+    p->squares->remove(room);
 }
 
 
-void CSquare::removeroom(struct Troom *room)
+void CSquare::remove(Croom *room)
 {
     CSquare *p;
     vector<unsigned int>::iterator i;
@@ -821,7 +387,7 @@ void CSquare::removeroom(struct Troom *room)
     }
 }
 
-int CSquare::get_mode(struct Troom *room)
+int CSquare::get_mode(Croom *room)
 {
     return get_mode(room->x, room->y);
 }
@@ -843,7 +409,7 @@ int CSquare::get_mode(int x, int y)
     }
 }
 
-bool CSquare::is_inside(struct Troom *room)
+bool CSquare::is_inside(Croom *room)
 {
     /* note : right and lower borders are inclusive */
     
@@ -868,7 +434,7 @@ CPlane::~CPlane()
     delete squares;
 }
 
-CPlane::CPlane(struct Troom *room)
+CPlane::CPlane(Croom *room)
 {
     next = NULL;
 
@@ -888,7 +454,7 @@ CPlane::CPlane(struct Troom *room)
     squares->ids.push_back(room->id);
 }
 
-void  roommanager::add_to_plane(struct Troom *room)
+void  roommanager::add_to_plane(Croom *room)
 {
     CPlane *p, *prev, *tmp;
 
@@ -926,7 +492,7 @@ void  roommanager::add_to_plane(struct Troom *room)
 }
 
 
-void roommanager::expand_plane(CPlane *plane, struct Troom *room)
+void roommanager::expand_plane(CPlane *plane, Croom *room)
 {
     CSquare *p, *new_root = NULL;
     int size;
@@ -966,6 +532,6 @@ void roommanager::expand_plane(CPlane *plane, struct Troom *room)
 
 /*    printf("Ok, it fits. Adding!\r\n");
 */    
-    p->addroom(room);
+    p->add(room);
     plane->squares = p;
 }

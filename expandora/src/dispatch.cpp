@@ -10,7 +10,6 @@
 #include <QMutex>
 
 
-#include "struct.h"
 #include "configurator.h"
 
 #include "utils.h"
@@ -93,7 +92,7 @@ int Cdispatcher::check_exits(char *line)
         preRAdd(R_EXITS, &line[ strlen( (const char*) conf.get_exits_pat() ) ]);
         print_debug(DEBUG_DISPATCHER, "EXITS: %s [%i]", &line[6], strlen(&line[6]) );
         getting_desc = 0;   /* do not react on desc alike strings anymore */
-        notify_analyzer();
+//        notify_analyzer();
         return 1;
     }
     
@@ -143,7 +142,7 @@ void Cdispatcher::dispatch_buffer()
           o_pos += 2;
 
           /* ODOA lines might contain prompt in them */
-          if (line[0] == '*' || (line[0] == 'o' && line[1]!='r') || line[0] == '!') {
+          if (line[0] == '*' || (line[0] == 'o' && line[1]!='r') || line[0] == '!' || line[0] == ')') {
               unsigned int z;
               for (z = 1; z < (strlen(line) - 1); z++) 
                   if (line[z] == '>') {
@@ -278,7 +277,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
         if ( (buffer[i].type != IS_LFCR) && (strlen(roomdesc) != 0) && getting_desc) {
             /* some room ended */
             preRAdd(R_DESC, roomdesc);
-            notify_analyzer();
+//            notify_analyzer();
             print_debug(DEBUG_DISPATCHER, "DESC: %s", roomdesc);
             roomdesc[0] = 0;
             getting_desc = 0;   /* no more descs incoming */
@@ -451,14 +450,12 @@ int Cdispatcher::check_failure(char *nline)
 
   for (unsigned int i = 0; i < conf.patterns.size(); i++) {
     if (conf.patterns[i].rexp.indexIn(nline) >= 0 ) {
-      print_debug(DEBUG_DISPATCHER, "Got pattern match type %c, %s!", 
-            conf.patterns[i].type, (const char*) conf.patterns[i].data);
       if (  conf.patterns[i].group == E_RESULT)
         preRAdd(conf.patterns[i].type, (const char*) conf.patterns[i].data);
       else if (conf.patterns[i].group == E_CAUSE)
         preCAdd(conf.patterns[i].type, (const char*) conf.patterns[i].data);
           
-      notify_analyzer();
+//      ;
       return 1;
     }         
   }

@@ -7,7 +7,6 @@
 #include "defines.h"
 #include "configurator.h"
 
-#include "struct.h"
 
 #include "event.h"
 #include "dispatch.h"

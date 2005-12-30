@@ -12,18 +12,17 @@ class stackmanager stacker;
 
 void stackmanager::get_current(char *str)
 {
-  if (amount == 0) {
+  if (sa->size() == 0) {
     sprintf(str, "NO_SYNC");
     return;
   }
   
-  if (amount > 1) {
+  if (sa->size() > 1) {
     sprintf(str, " MULT ");
     return;
   }
   
-  sprintf(str, "%i", sa[1]);
-  
+  sprintf(str, "%i", ((*sa)[0])->id);
 }
 
 
@@ -32,10 +31,10 @@ void stackmanager::printstacks()
     unsigned int i;
 
     send_to_user(" Possible positions : \n");
-    if (amount == 0)
+    if (sa->size() == 0)
 	send_to_user(" Current position is unknown!\n");
-    for (i = 1; i <= amount; i++) {
-	send_to_user(" %i\n", sa[i]);
+    for (i = 0; i < sa->size(); i++) {
+	send_to_user(" %i\n", (*sa)[i]->id);
     }
 }
 
@@ -43,29 +42,35 @@ void stackmanager::remove_room(unsigned int id)
 {
   unsigned int i;
 
-  for (i = 1; i <= stacker.amount; i++) 
-    if (stacker.get(i) != id) 
+  for (i = 0; i < sa->size(); i++) 
+    if (stacker.get(i)->id != id) 
       stacker.put( stacker.get(i) );
   stacker.swap();
 }
 
+void stackmanager::put(Croom *r)
+{
+    if (mark[r->id] == turn)
+	return;
+    sb->push_back(r);
+    mark[r->id] = turn;
+}
+
+
 void stackmanager::put(unsigned int id)
 {
-
-    if (mark[id] == 1)
-	return;
-    sb[++next] = id;
-    mark[id] = 1;
+    put(Map.getroom(id));
 }
 
-unsigned int stackmanager::get(unsigned int i)
+
+Croom *stackmanager::get(unsigned int i)
 {
-    return sa[i];
+    return (*sa)[i];
 }
 
-unsigned int stackmanager::get_next(unsigned int i)
+Croom *stackmanager::get_next(unsigned int i)
 {
-    return sb[i];
+    return (*sb)[i];
 }
 
 
@@ -76,26 +81,29 @@ stackmanager::stackmanager()
 
 void stackmanager::reset()
 {
-    amount = 0;
-    next = 0;
-    stacka[0] = 0;
-    stackb[0] = 0;
-    sa = stacka;
-    sb = stackb;
+    sa = &stacka;
+    sb = &stackb;
+    sa->clear();
+    sb->clear();
     memset(mark, 0, MAX_ROOMS);
+    turn = 1;
     swap();
 }
 
 void stackmanager::swap()
 {
-    unsigned int *t;
+    vector<Croom *> *t;
 
-    memset(mark, 0, MAX_ROOMS);
+    turn++;
+    if (turn == 0) {
+        memset(mark, 0, MAX_ROOMS);
+        turn = 1;
+    }
+    
     t = sa;
     sa = sb;
     sb = t;
-    amount = next;
-    next = 0;
+    sb->clear();
   
     if (renderer_window)
       renderer_window->update_status_bar();

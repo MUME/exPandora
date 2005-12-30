@@ -3,20 +3,11 @@
 
 #include <vector>
 #include "defines.h"
+#include "croom.h"
 using namespace std;
 
 
 #define MAX_ROOMS       30000		/* maximal amount of rooms */
-#define EXIT_UNDEFINED  (MAX_ROOMS+1)
-#define EXIT_DEATH      (MAX_ROOMS+2)
-#define MAX_SQUARE_SIZE         40
-#define MAX_SQUARE_ROOMS        40
-
-
-enum ROOMFLAG_INDEX { ROOMFLAG_UNDEFINED = 0, ROOMFLAG_DEATH, ROOMFLAG_NONE};  
-extern const struct room_flag_data room_flags[];
-
-void reset_room(struct Troom *r);	/* Only for new rooms */
 
 enum SquareTypes {
     Left_Upper = 0,             
@@ -44,16 +35,16 @@ public:
     ~CSquare();
 
     /* mode == SquareType */
-    int         get_mode(struct Troom *room);
+    int         get_mode(Croom *room);
     int         get_mode(int x, int y);
     bool        to_be_passed();
-    bool        is_inside(struct Troom *room);  
+    bool        is_inside(Croom *room);  
     
     void        add_subsquare_by_mode(int mode);
-    void        add_room_by_mode(struct Troom *room, int mode);
+    void        add_room_by_mode(Croom *room, int mode);
         
-    void        addroom(struct Troom *room);
-    void        removeroom(struct Troom *room);
+    void        add(Croom *room);
+    void        remove(Croom *room);
 };
 
 class CPlane {
@@ -66,83 +57,51 @@ public:
 
     CPlane();
     ~CPlane();
-    CPlane(struct Troom *room);
+    CPlane(Croom *room);
 };
 
 class roommanager {
-  /* structures */
-  Troom *rooms;   		/* rooms */
-  Troom *ids[MAX_ROOMS];	/* array of pointers */
-
-  /* additional structures */
-  int mark[EXIT_UNDEFINED+1];
-    
-  
-
 public:
-  unsigned int amount;		/* the amount of rooms in the base */
+  vector<Croom *> rooms;   		/* rooms */
+  Croom *ids[MAX_ROOMS];	/* array of pointers */
+
+  
+  unsigned int size()  { return rooms.size(); }
   unsigned int next_free; 	/* next free id */
 
   unsigned int oneway_room_id;
 
   /* plane support */  
   CPlane        *planes;        /* planes/levels of the map, sorted by the Z coordinate, lower at first */
-  void          add_to_plane(struct Troom *room);
-  void          remove_from_plane(struct Troom *room);
-  void          expand_plane(CPlane *plane, struct Troom *room);
+  void          add_to_plane(Croom *room);
+  void          remove_from_plane(Croom *room);
+  void          expand_plane(CPlane *plane, Croom *room);
 
   roommanager();
   void init();
   void reinit();			/* reinitializer/utilizer */
   
-  void addroom_nonsorted(struct Troom *room);   /* use only at loading */
-  void addroom(struct Troom *room);
-  void remove_door(struct Troom *room, int dir);
+  void addroom_nonsorted(Croom *room);   /* use only at loading */
+  void addroom(Croom *room);
   
-  struct Troom * getroom(unsigned int id); /* get room by id */
+  
+  Croom * getroom(unsigned int id); /* get room by id */
   char *getname(unsigned int id);
   
-  void changenote(char *note, struct Troom *p);
+  
     
-  int try_merge_rooms(struct Troom *room, struct Troom *copy, int j);
+  int try_merge_rooms(Croom *room, Croom *copy, int j);
     
-  void update_timestamp(struct Troom *r);
-    
-  void room_modified(struct Troom *r);
 
 
   void fixfree();
   
   
-  void delete_room(struct Troom *r, int mode);  /* user interface function */
-  void small_delete_room(struct Troom *r);  /* user interface function */
-
-  struct Ttree * findrooms(const char *name);  
-
-  void setx(unsigned int id, int x);
-  void sety(unsigned int id, int x);
-  void setz(unsigned int id, int x);
-  
-  int is_connected(struct Troom *r, int dir);
-  void send_room(struct Troom *r);
-  
-  int add_door(struct Troom *r, char *door, int dir);
-  void add_terrain(struct Troom *r, char terrain);
-
-  int desc_cmp(struct Troom *r, QByteArray desc);
-  int roomname_cmp(struct Troom *r, QByteArray name);
-  void refresh_desc(unsigned int id, QByteArray newdesc);
-  void refresh_roomname(unsigned int id, QByteArray newname);
-  void refresh_terrain(unsigned int id, char terrain);
-  void refresh_note(unsigned int id, QByteArray note);
-  void refresh_door(unsigned int id, char dir, QByteArray door);
-  
-  
-  /* general check for database integrity */
-  void database_integrity_check(char *entry_point);
+  void delete_room(Croom *r, int mode);  /* user interface function */
+  void small_delete_room(Croom *r);  /* user interface function */
 };
 
-extern class roommanager roomer;/* room manager */
+extern class roommanager Map;/* room manager */
 
 #endif
 

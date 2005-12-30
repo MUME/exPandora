@@ -15,26 +15,37 @@
 #include <QComboBox>
 #include <QCheckBox>
 
+#include <vector>
+
 #include "defines.h"
+#include "croom.h"
 #include "rooms.h"
+#include "configurator.h"
 
 #include "ui_roomedit.h"
 #include "ui_configedit.h"
+#include "ui_patterndialog.h"
 
-class QAction; 
-class QLabel; 
-class FindDialog; 
-class Spreadsheet; 
-class QLineEdit;
-class QLabel;
-class QWidget;
-class QPushButton;
 
 int renderer_main();
 
+class PatternEditDialog : public QDialog, public Ui::PatternDialog {
+Q_OBJECT
 
-//extern int texture_visibilit_range;
-//extern int details_visibility_range;
+    int editing_index;
+    
+    vector<TPattern> patterns;
+public:
+    PatternEditDialog(QWidget *parent = 0);
+    void run();
+    void redraw();
+public slots:
+    void edit_clicked();
+    void save_clicked();
+    void add_clicked();
+    void remove_clicked();
+    virtual void accept();
+};
 
 class RoomEditDialog : public QDialog, public Ui::roomedit_dialog {
 Q_OBJECT
@@ -46,8 +57,8 @@ Q_OBJECT
     QCheckBox *box;
     
     void set_door_context(int dir);
-    void setup_exit_widgets(int dir, Troom *r);
-    int updateExitsInfo(int dir, Troom *r);
+    void setup_exit_widgets(int dir, Croom *r);
+    int updateExitsInfo(int dir, Croom *r);
 public:
     RoomEditDialog(QWidget *parent = 0);
     QString parse_room_desc(char *);
@@ -132,7 +143,7 @@ private:
 
 
   void glDrawMarkers();
-  void glDrawRoom(struct Troom *p);
+  void glDrawRoom(Croom *p);
   
   void glDrawCSquare(CSquare *p);
   bool PointInFrustum(float x, float y, float z);
@@ -158,6 +169,7 @@ class MainWindow : public QMainWindow
   QAction       *saveAct;
   QAction       *saveAsAct;
   QAction       *quitAct;
+  QAction       *publishAct;
   
     QMenu       *mappingMenu;
   QAction       *mappingAct;
@@ -176,13 +188,13 @@ class MainWindow : public QMainWindow
   QAction       *saveConfigAct;
   QAction       *saveConfigAsAct;
   QAction       *loadConfigAct;
-  
-  QAction       *setupNetAct;
-  QAction       *setupOpenGLAct;
+  QAction       *patternEditAct;  
   QAction       *setupGeneralAct;
+  QAction       *emulationAct;
   
   RoomEditDialog    edit_dialog;
   ConfigWidget      analyser_dialog;
+  PatternEditDialog pattern_dialog;
 
 
   bool          LeftButtonPressed;
@@ -224,8 +236,10 @@ private slots:
   void delete_room(); 
   void merge_room(); 
   void generalSetting();
-  
+  void editPatterns();
+  void emulation_mode();  
   void edit_current_room();
+  void publish_map();
 
   void mousePressEvent( QMouseEvent *);
   void mouseReleaseEvent( QMouseEvent *);

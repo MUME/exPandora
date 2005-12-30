@@ -8,7 +8,8 @@
 #include <QMutex>
 
 #include "defines.h"
-#include "struct.h"
+#include "croom.h"
+#include "rooms.h"
 
 #include "configurator.h"
 #include "utils.h"
@@ -132,6 +133,7 @@ void Cconfigurator::add_pattern(QByteArray pattern, QByteArray data, char marker
     p.rexp.setPattern(pattern);
 
     patterns.push_back(p);
+    set_conf_mod(true);
 }
 
 
@@ -180,7 +182,7 @@ void Cconfigurator::set_end_col(QByteArray str)
 }
 
 /* ------------------- DATA ------------------- */
-char Cconfigurator::get_pattern_by_room(Troom *r)
+char Cconfigurator::get_pattern_by_room(Croom *r)
 {
     return sectors.at(r->sector).pattern;
 }

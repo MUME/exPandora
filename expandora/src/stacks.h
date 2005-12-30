@@ -1,30 +1,34 @@
 
-#define STACKSIZE 1024
 
 
 class stackmanager {
 private:
 
-  unsigned int stacka[STACKSIZE];
-  unsigned int stackb[STACKSIZE];
-  char mark[MAX_ROOMS];
+  vector<Croom *> stacka;
+  vector<Croom *> stackb;
   
-  unsigned int *sa;
-  unsigned int *sb;
+  vector<Croom *> *sa;
+  vector<Croom *> *sb;
   
+  unsigned int  mark[MAX_ROOMS];
+  unsigned int  turn;
 public:
-  unsigned int amount;
-  int next;
+  unsigned int amount() { return sa->size(); }
+  unsigned int next()    { return sb->size(); }
+  
+  Croom * first()  { return (*sa)[0]; }
+  Croom * next_first()  { return (*sb)[0]; }
   
   void swap();
   stackmanager();
   void reset();
   
-  unsigned int get(unsigned int i);
+  Croom * get(unsigned int i);
 
-  unsigned int get_next(unsigned int i);
+  Croom * get_next(unsigned int i);
   
   void put(unsigned int id);
+  void put(Croom *r);
   void remove_room(unsigned int id);    /* swaps */
 
 

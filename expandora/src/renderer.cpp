@@ -10,7 +10,6 @@
 #include <QKeyEvent>
 
 #include "renderer.h"
-#include "struct.h"
 #include "configurator.h"
 
 
@@ -139,7 +138,7 @@ void RendererWidget::resizeGL( int width, int height )
 
 void RendererWidget::paintGL()
 {
-    print_debug(DEBUG_RENDERER, "in paintGL()");
+//    print_debug(DEBUG_RENDERER, "in paintGL()");
     display();
 }
 
@@ -186,16 +185,16 @@ int renderer_main()
 
 void RendererWidget::glDrawMarkers()
 {
-    struct Troom *p;
+    Croom *p;
     unsigned int k;
     
     int dx, dy, dz;
 
     
     glColor4f(marker_colour[0],marker_colour[1],marker_colour[2],marker_colour[3]);
-    for (k = 1; k <= stacker.amount; k++) {
+    for (k = 0; k < stacker.amount(); k++) {
       
-      p = roomer.getroom(stacker.get(k));
+      p = stacker.get(k);
 
       if (p == NULL) {
         printf("RENDERER ERROR: Stuck upon corrupted room while drawing red pointers.\r\n");
@@ -204,7 +203,7 @@ void RendererWidget::glDrawMarkers()
 
       dx = p->x - curx;
       dy = p->y - cury;
-      dz = (p->z - curz) * DIST_Z;
+      dz = (p->z - curz) /* * DIST_Z */;
 
 /*      glTranslatef(dx, dy, dz);
       print_debug(DEBUG_RENDERER, "marker dx: %i, dy: %i, dz: %i, curx %i, cury %i, curz %i", 
@@ -248,10 +247,10 @@ void RendererWidget::glDrawMarkers()
 
 
 
-void RendererWidget::glDrawRoom(struct Troom *p)
+void RendererWidget::glDrawRoom(Croom *p)
 {
     GLfloat dx, dx2, dy, dy2, dz, dz2;
-    struct Troom *r;
+    Croom *r;
     int k;
     char lines, texture;
     float distance;
@@ -260,7 +259,7 @@ void RendererWidget::glDrawRoom(struct Troom *p)
     
     dx = p->x - curx;
     dy = p->y - cury;
-    dz = (p->z - curz) * DIST_Z;
+    dz = (p->z - curz) /* * DIST_Z */;
     dx2 = 0;
     dy2 = 0;
     dz2 = 0;
@@ -317,11 +316,11 @@ void RendererWidget::glDrawRoom(struct Troom *p)
             GLfloat kx, ky, kz;
             GLfloat sx, sy;
 
-            r = roomer.getroom(p->exits[k]);
+            r = Map.rooms[p->exits[k]];
 
             dx2 = r->x - curx;
             dy2 = r->y - cury;
-            dz2 = (r->z - curz) * DIST_Z;
+            dz2 = (r->z - curz) /* * DIST_Z */;
 
             dx2 = (dx + dx2) / 2;
             dy2 = (dy + dy2) / 2;
@@ -472,7 +471,7 @@ void RendererWidget::glDrawRoom(struct Troom *p)
 
 void RendererWidget::glDrawCSquare(CSquare *p)
 {
-    struct Troom *room;
+    Croom *room;
     unsigned int k;
     
     if (!SquareInFrustum(p)) {
@@ -491,7 +490,7 @@ void RendererWidget::glDrawCSquare(CSquare *p)
             glDrawCSquare( p->subsquares[ Right_Lower ]);
     } else {
         for (k = 0; k < p->ids.size(); k++) {
-            room = roomer.getroom( p->ids[k] );
+            room = Map.getroom( p->ids[k] );
             glDrawRoom(room);
         } 
     }
@@ -501,7 +500,7 @@ void RendererWidget::glDrawCSquare(CSquare *p)
 
 void RendererWidget::draw(void)
 {
-    struct Troom *p;
+    Croom *p;
     CPlane *plane;  
 
     rooms_drawn_csquare=0;
@@ -525,12 +524,12 @@ void RendererWidget::draw(void)
     glRotatef(anglex, 1.0f, 0.0f, 0.0f);
     glRotatef(angley, 0.0f, 1.0f, 0.0f);
     glRotatef(anglez, 0.0f, 0.0f, 1.0f);
-
     glTranslatef(userx, usery, 0);
+
  
-    print_debug(DEBUG_RENDERER, "taking base coordinates");
-    if (stacker.amount >= 1) {
-	p = roomer.getroom(stacker.get(1));
+//    print_debug(DEBUG_RENDERER, "taking base coordinates");
+    if (stacker.amount() >= 1) {
+	p = stacker.first();
         if (p != NULL) {
             curx = p->x;
             cury = p->y;
@@ -544,12 +543,12 @@ void RendererWidget::draw(void)
     CalculateFrustum();
     
     
-    print_debug(DEBUG_RENDERER, "drawing %i rooms", roomer.amount);
+//    print_debug(DEBUG_RENDERER, "drawing %i rooms", Map.size());
 
     glColor4f(0.1, 0.8, 0.8, 0.4);
     colour[0] = 0.1; colour[1] = 0.8; colour[2] = 0.8; colour[3] = 0.4; 
 
-    plane = roomer.planes;
+    plane = Map.planes;
     while (plane) {
         
         z = plane->z - curz;
@@ -584,11 +583,11 @@ void RendererWidget::draw(void)
     
     print_debug(DEBUG_RENDERER, "Drawn %i rooms, after dot elimination %i, %i square frustum checks done", 
             rooms_drawn_csquare, rooms_drawn_total, square_frustum_checks);
-    print_debug(DEBUG_RENDERER, "Drawing markers");
+//    print_debug(DEBUG_RENDERER, "Drawing markers");
 
     glDrawMarkers();
     
-    print_debug(DEBUG_RENDERER, "draw() done");
+//    print_debug(DEBUG_RENDERER, "draw() done");
   
     this->swapBuffers();
     glredraw = 0;
@@ -603,7 +602,7 @@ void RendererWidget::display(void)
 
 void toggle_renderer_reaction()
 {
-    print_debug(DEBUG_RENDERER, "toggle_renderer_reaction called()");
+//    print_debug(DEBUG_RENDERER, "toggle_renderer_reaction called()");
     QKeyEvent *k = new QKeyEvent(QEvent::KeyPress, Qt::Key_R,0, "r", false , 1);
     QApplication::postEvent( renderer_window->renderer, k );
 }
@@ -739,8 +738,8 @@ bool RendererWidget::SquareInFrustum(CSquare *p)
     /* see glDrawRoom for similar functions */
     x = p->centerx -curx;
     y = p->centery - cury;
-    z = (current_plane_z - curz) * DIST_Z;
-    size = ( (p->rightx - p->leftx) / 2 - curz ) * DIST_Z;
+    z = (current_plane_z - curz) /* * DIST_Z */;
+    size = ( (p->rightx - p->leftx) / 2 /*- curz */) /* * DIST_Z */;
 
     for(int i = 0; i < 6; i++ )
     {

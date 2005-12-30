@@ -7,6 +7,13 @@
 
 enum results_and_causes { C_EMPTY, R_EMPTY, C_MOVE, C_LOOK, C_SCOUT, R_ROOM, R_EXITS, R_BLIND, R_PROMPT, R_FAIL, R_DESC};
 
+struct event_types_type {
+  QByteArray    name;
+  char          type;
+  char          group;
+};
+
+
 extern vector<struct event_types_type> event_types;
 
 

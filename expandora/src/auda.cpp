@@ -11,10 +11,9 @@
 
 
 #include "defines.h"
+#include "croom.h"
 #include "configurator.h"
 
-
-#include "struct.h"
 
 #include "rooms.h"
 #include "xml2.h"
@@ -67,13 +66,6 @@ void ProxyThread::run()
 }
 /* PROX THREAD ENDS */
 
-
-const char *exitnames[] = { "north", "east", "south", "west", "up", "down" };
-
-/* global base settings */
-int     auda_argc;
-char    **auda_argv;
-    
 void print_usage()
 {
   printf("Usage: pandora <options>\r\n");
@@ -256,7 +248,7 @@ int main(int argc, char *argv[])
     xml_readbase( conf.get_base_file() );
 //    roomer.database_integrity_check("After xml reading");
     
-    printf("Successfuly loaded %i rooms!\n", roomer.amount);
+    printf("Successfuly loaded %i rooms!\n", Map.size());
 
     /* init */
     Ctop = new Tevent;

@@ -12,6 +12,18 @@
     <height>267</height>
    </rect>
   </property>
+  <property name="minimumSize" >
+   <size>
+    <width>406</width>
+    <height>267</height>
+   </size>
+  </property>
+  <property name="maximumSize" >
+   <size>
+    <width>406</width>
+    <height>267</height>
+   </size>
+  </property>
   <property name="windowTitle" >
    <string>Dialog</string>
   </property>
@@ -73,17 +85,7 @@
     <attribute name="title" >
      <string>Networking</string>
     </attribute>
-    <widget class="QWidget" name="" >
-     <property name="geometry" >
-      <rect>
-       <x>30</x>
-       <y>30</y>
-       <width>301</width>
-       <height>151</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QWidget" name="" >
+    <widget class="QWidget" name="widget_2" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -178,271 +180,6 @@
        <width>335</width>
        <height>18</height>
       </rect>
-     </property>
-     <property name="palette" >
-      <palette>
-       <active>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>255</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>127</red>
-         <green>255</green>
-         <blue>127</blue>
-        </color>
-        <color>
-         <red>63</red>
-         <green>255</green>
-         <blue>63</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>127</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>170</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>255</red>
-         <green>255</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>255</red>
-         <green>255</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>207</red>
-         <green>207</green>
-         <blue>207</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>255</red>
-         <green>255</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>255</red>
-         <green>0</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>63</red>
-         <green>255</green>
-         <blue>63</blue>
-        </color>
-       </active>
-       <inactive>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>255</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>127</red>
-         <green>255</green>
-         <blue>127</blue>
-        </color>
-        <color>
-         <red>38</red>
-         <green>255</green>
-         <blue>38</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>127</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>170</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>255</red>
-         <green>255</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>255</red>
-         <green>255</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>207</red>
-         <green>207</green>
-         <blue>207</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>255</red>
-         <green>255</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>255</red>
-         <green>0</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>63</red>
-         <green>255</green>
-         <blue>63</blue>
-        </color>
-       </inactive>
-       <disabled>
-        <color>
-         <red>128</red>
-         <green>128</green>
-         <blue>128</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>255</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>127</red>
-         <green>255</green>
-         <blue>127</blue>
-        </color>
-        <color>
-         <red>38</red>
-         <green>255</green>
-         <blue>38</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>127</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>170</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>128</red>
-         <green>128</green>
-         <blue>128</blue>
-        </color>
-        <color>
-         <red>255</red>
-         <green>255</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>128</red>
-         <green>128</green>
-         <blue>128</blue>
-        </color>
-        <color>
-         <red>255</red>
-         <green>255</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>207</red>
-         <green>207</green>
-         <blue>207</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-        <color>
-         <red>121</red>
-         <green>125</green>
-         <blue>121</blue>
-        </color>
-        <color>
-         <red>207</red>
-         <green>207</green>
-         <blue>207</blue>
-        </color>
-        <color>
-         <red>0</red>
-         <green>0</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>255</red>
-         <green>0</green>
-         <blue>255</blue>
-        </color>
-        <color>
-         <red>63</red>
-         <green>255</green>
-         <blue>63</blue>
-        </color>
-       </disabled>
-      </palette>
      </property>
      <property name="text" >
       <string>NOTE: Changes to local port take place after restart!</string>
@@ -562,7 +299,7 @@
     <attribute name="title" >
      <string>Mapping</string>
     </attribute>
-    <widget class="QWidget" name="" >
+    <widget class="QWidget" name="widget_3" >
      <property name="geometry" >
       <rect>
        <x>10</x>

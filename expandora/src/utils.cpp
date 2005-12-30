@@ -25,8 +25,11 @@
 #include "forwarder.h"
 
 FILE *logfile;
-Strings_Comparator comparator;
+const char *exitnames[] = { "north", "east", "south", "west", "up", "down" };
 
+/* global base settings */
+int     auda_argc;
+char    **auda_argv;
 /* default debug settings */
 
 
@@ -328,27 +331,6 @@ size_t write_to_channel(int mode, const char *format, va_list args)
   return size;
 }
 
-#ifdef NEW_ENGINE
-long m_timestamp()
-#else
-double m_timestamp(void) /* ms */
-#endif
-{
-#if defined Q_OS_LINUX || defined Q_OS_MACX
-  struct timeval tv;
-  struct timezone tz;
-
-  gettimeofday(&tv, &tz);
-#ifdef NEW_ENGINE
-  return (tv.tv_sec*1000000 + tv.tv_usec);
-#else
-  return (tv.tv_sec*1.+tv.tv_usec/1000000.);
-#endif
-#else
-  return 0;
-#endif
-}
-
 void basic_mud_log(const char *format, ...)
 {
   va_list args;
@@ -378,69 +360,3 @@ void basic_mud_vlog(const char *format, va_list args)
   fflush(logfile);
 }
 
-
-int Strings_Comparator::compare(QByteArray pattern, QByteArray text)
-{
-  int n, m, i, j;
-  int cost;
-  
-  n = pattern.length();
-  m = text.length();
-
-  /* initialization */
-  for (i = 0; i <= n; i++)
-    D[i][0] = i;
-
-  for (i = 0; i <= m; i++)
-    D[0][i] = i;
-
-  /* recurence */
-  for (i = 1; i <= n; i++) 
-    for (j = 1; j <= m; j++) 
-    {
-      cost = D[i - 1][j - 1];
-      if (pattern[i] != text[j])
-        cost += 1;
-    
-      D[ i ][ j ] = MIN( cost, MIN( D[i - 1][j ] + 1 , D[i][j - 1] + 1) );
-    }
-  
-    
-//  print_debug(DEBUG_ROOMS, "result of comparison : %i", D[n][m]);
-
-  return D[n][m];
-}
-
-
-int Strings_Comparator::compare_with_quote(QByteArray str, QByteArray text, int quote)
-{
-    int n;
-    int allowed_errors;
-    int result;
-    
-    n = str.length();
-    allowed_errors = (int) ( (double) quote / 100.0  * (double) n );
-    
-    result = compare(str, text);
-    
-    if (result == 0) 
-        return 0;       /* they match ! */
-    
-    if (result <= allowed_errors)
-        return result;  /* we are a little bit different from the strcmp function */
-    
-    return -1;  /* else the strings do not match */
-}
-
-
-
-int Strings_Comparator::strcmp_roomname(QByteArray name, QByteArray text)
-{
-    return compare_with_quote(name, text, conf.get_name_quote());
-}
-
-
-int Strings_Comparator::strcmp_desc(QByteArray name, QByteArray text)
-{
-    return compare_with_quote(name, text, conf.get_desc_quote());
-}

@@ -7,7 +7,6 @@
 #include "rooms.h"
 #include "configurator.h"
 #include "defines.h"
-#include "struct.h"
 #include "exits.h"
 #include "dispatch.h"
 #include "stacks.h"
@@ -21,7 +20,7 @@ void do_exits(const char *exits_line)
 {
     int exits[6];
     unsigned int i;
-    struct Troom *r;
+    Croom *r;
 
     parse_exits(exits_line, exits);
 
@@ -35,7 +34,7 @@ void do_exits(const char *exits_line)
 	for (i = 0; i <= 5; i++) {
             if (r->exits[i] > 0) {
                 if (exits[i] == 0) {	/* oneway case */
-                    roomer.oneway_room_id = r->exits[i];
+                    Map.oneway_room_id = r->exits[i];
                     r->exits[i] = 0;
                 }
                 
@@ -57,7 +56,7 @@ void do_exits(const char *exits_line)
                 r->exits[i] = EXIT_UNDEFINED;
             }
 
-        stacker.put(addedroom->id);
+        stacker.put(addedroom);
             
         return;
     }
@@ -65,22 +64,22 @@ void do_exits(const char *exits_line)
     if (conf.get_exits_check() ) 
       print_debug(DEBUG_ANALYZER, "Autochecking exits");
       
-    for (i = 1; i <= stacker.amount; i++) {
-      r = roomer.getroom(stacker.get(i));
+    for (i = 0; i < stacker.amount(); i++) {
+      r = stacker.get(i);
       if (conf.get_exits_check() ) {
         if (compare_exits(r, exits)) {
-          stacker.put(r->id);
+          stacker.put(r);
           print_debug(DEBUG_ANALYZER, "adding match");
         }
       } else {
         print_debug(DEBUG_ANALYZER, "adding all matches without check. its off");
-        stacker.put(r->id);
+        stacker.put(r);
       }
     }
     
 }
 
-int compare_exits(struct Troom *p, int exits[])
+int compare_exits(Croom *p, int exits[])
 {
     int counter;
     int i;

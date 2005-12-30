@@ -9,6 +9,8 @@
 #include <QGLWidget>
 #include <map>
 
+#include "croom.h"
+
 #define ACMD(name)  void Cconfigurator::name(char *line)
 #define DEF_ACMD(name) void name(char *line)
 
@@ -88,7 +90,7 @@ public:
     /* this patterns data should be public for easier read access, write access
         will be implemented via functions anyway */
     vector<TPattern> patterns;
-    void add_pattern(QByteArray pattern, QByteArray data, char marker, char type, bool is_regexp);
+    void add_pattern(QByteArray pattern, QByteArray data, char grp, char type, bool is_regexp);
 
 
 
@@ -98,7 +100,7 @@ public:
     int get_sector_by_pattern(char pattern);
 
     int load_texture(struct room_sectors_data *p);
-    char get_pattern_by_room(Troom *r);
+    char get_pattern_by_room(Croom *r);
     GLuint get_texture_by_desc(QByteArray desc);
     void add_texture(QByteArray desc, QByteArray filename, char pattern);
     
