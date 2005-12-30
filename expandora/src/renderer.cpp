@@ -139,7 +139,13 @@ void RendererWidget::resizeGL( int width, int height )
 void RendererWidget::paintGL()
 {
 //    print_debug(DEBUG_RENDERER, "in paintGL()");
-    display();
+  QTime t;
+  t.start();
+
+  display();
+
+    
+  printf("Rendering's done. Time elapsed %d ms\r\n", t.elapsed());
 }
 
 
@@ -285,10 +291,9 @@ void RendererWidget::glDrawRoom(Croom *p)
     if (p->sector && texture) {
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, conf.sectors[ p->sector].texture);
-      glBegin(GL_QUADS);
+      glCallList(conf.sectors[ p->sector].gllist);  
+/*      glBegin(GL_QUADS);
       
-      /* why not use gllist here ? */
-        
       glTexCoord2f(0.0, 1.0);
       glVertex3f(-ROOM_SIZE,  ROOM_SIZE, 0.0f);
       glTexCoord2f(0.0, 0.0);
@@ -299,8 +304,8 @@ void RendererWidget::glDrawRoom(Croom *p)
       glVertex3f( ROOM_SIZE,  ROOM_SIZE, 0.0f);
       
       glEnd();
+*/
       glDisable(GL_TEXTURE_2D);
-
     } else {
       glCallList(basic_gllist);
     }              
@@ -316,7 +321,7 @@ void RendererWidget::glDrawRoom(Croom *p)
             GLfloat kx, ky, kz;
             GLfloat sx, sy;
 
-            r = Map.rooms[p->exits[k]];
+            r = Map.ids[p->exits[k]];
 
             dx2 = r->x - curx;
             dy2 = r->y - cury;
@@ -326,31 +331,42 @@ void RendererWidget::glDrawRoom(Croom *p)
             dy2 = (dy + dy2) / 2;
             dz2 = (dz + dz2) / 2;
 
-
-            kx = 0;
-            ky = 0;
-            kz = 0;
-
-            sx = 0;
-            sy = 0;
-
-
             if (k == NORTH) {
+                kx = 0;
                 ky = +(ROOM_SIZE + 0.2);
+                kz = 0;
+                sx = 0;
                 sy = +ROOM_SIZE;
             } else if (k == EAST) {
                 kx = +(ROOM_SIZE + 0.2);
+                ky = 0;
+                kz = 0;
                 sx = +ROOM_SIZE;
+                sy = 0;
             } else if (k == SOUTH) {
+                kx = 0;
                 ky = -(ROOM_SIZE + 0.2);
+                kz = 0;
+                sx = 0;
                 sy = -ROOM_SIZE;
             } else if (k == WEST) {
                 kx = -(ROOM_SIZE + 0.2);
+                ky = 0;
+                kz = 0;
                 sx = -ROOM_SIZE;
+                sy = 0;
             } else if (k == UP) {
+                kx = 0;
+                ky = 0;
                 kz = +(ROOM_SIZE + 0.2);
-            } else if (k == DOWN) {
+                sx = 0;
+                sy = 0;
+            } else /*if (k == DOWN) */{
+                kx = 0;
+                ky = 0;
                 kz = -(ROOM_SIZE + 0.2);
+                sx = 0;
+                sy = 0;
             } 
             if (p->doors[k] != NULL) {
                 if (strcmp(p->doors[k], "exit") == 0) {
@@ -469,17 +485,17 @@ void RendererWidget::glDrawRoom(Croom *p)
 }
 
 
+
 void RendererWidget::glDrawCSquare(CSquare *p)
 {
-    Croom *room;
     unsigned int k;
     
     if (!SquareInFrustum(p)) {
-        return; /* this square is not in view */
+        return; // this square is not in view 
     }
         
     if (p->to_be_passed()) {
-        /* go deeper */
+//         go deeper 
         if (p->subsquares[ Left_Upper ])
             glDrawCSquare( p->subsquares[ Left_Upper ]);
         if (p->subsquares[ Right_Upper ])
@@ -489,9 +505,8 @@ void RendererWidget::glDrawCSquare(CSquare *p)
         if (p->subsquares[ Right_Lower ])
             glDrawCSquare( p->subsquares[ Right_Lower ]);
     } else {
-        for (k = 0; k < p->ids.size(); k++) {
-            room = Map.getroom( p->ids[k] );
-            glDrawRoom(room);
+        for (k = 0; k < p->rooms.size(); k++) {
+            glDrawRoom(p->rooms[k]);
         } 
     }
 }
@@ -502,6 +517,7 @@ void RendererWidget::draw(void)
 {
     Croom *p;
     CPlane *plane;  
+
 
     rooms_drawn_csquare=0;
     rooms_drawn_total=0;
@@ -576,6 +592,47 @@ void RendererWidget::draw(void)
         current_plane_z = plane->z;
         
         glDrawCSquare(plane->squares);
+/*        {                             // hrm, 2ms vs 6 ms 
+            unsigned int k, j;
+            CSquare *p = plane->squares;
+            vector<CSquare *>   storage_a;
+            vector<CSquare *>   storage_b;
+            vector<CSquare *>   *vec_a, *vec_b, *tmp_v;
+            
+            
+            if (!SquareInFrustum(p)) {
+                plane = plane->next;
+                continue;
+            }
+                
+            vec_a = &storage_a;
+            vec_b = &storage_b;
+            vec_a->clear();
+            vec_b->clear();
+                
+            vec_a->push_back(p);
+            while (vec_a->size()) {
+                vec_b->clear();
+                for (k = 0; k < vec_a->size(); k++) {
+                    p = (*vec_a)[k];
+                    if (p->to_be_passed()) {
+                        if (p->subsquares[ Left_Upper ])    vec_b->push_back(p->subsquares[ Left_Upper ]);
+                        if (p->subsquares[ Right_Upper ])   vec_b->push_back(p->subsquares[ Right_Upper ]);
+                        if (p->subsquares[ Left_Lower ])    vec_b->push_back(p->subsquares[ Left_Lower ]);
+                        if (p->subsquares[ Right_Lower ])   vec_b->push_back(p->subsquares[ Right_Lower ]);
+                    } else {
+                        for (j = 0; j < p->rooms.size(); j++) 
+                            glDrawRoom(p->rooms[j]);
+                    }
+                }
+                tmp_v = vec_b;
+                vec_b = vec_a;
+                vec_a = tmp_v;
+            }
+                
+        }
+*/        
+        
         
         plane = plane->next;
     }
@@ -595,8 +652,15 @@ void RendererWidget::draw(void)
 
 void RendererWidget::display(void)
 {
+  QTime t;
+  t.start();
+
+
   if (glredraw)
     draw();
+    
+  printf("Rendering's done. Time elapsed %d ms\r\n", t.elapsed());
+  
 }
 
 

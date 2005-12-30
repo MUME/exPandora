@@ -772,10 +772,10 @@ void MainWindow::mouseMoveEvent( QMouseEvent *e)
   pos = e->pos();
   dist_x = pos.x() - old_pos.x();
   dist_y = pos.y() - old_pos.y();
-  
+/*  
   print_debug(DEBUG_INTERFACE, "mouseEvent. LeftMouse %s, RightMouse %s. Dist_x %i, dist_y %i.",
       ON_OFF(LeftButtonPressed), ON_OFF(RightButtonPressed), dist_x, dist_y);
-  
+*/  
   if (LeftButtonPressed) {
       renderer->userx += (float) dist_x / 10.0;
       renderer->usery -= (float) dist_y / 10.0;
@@ -811,7 +811,6 @@ void MainWindow::wheelEvent(QWheelEvent *e)
 
 void MainWindow::edit_current_room()
 {
-    printf("Staring edit room action!\r\n");
     if (stacker.amount() != 1) {
         QMessageBox::critical(this, "Room Info Edit",
                               QString("You are not in sync!"));

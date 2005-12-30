@@ -313,7 +313,7 @@ void CSquare::add_room_by_mode(Croom *room, int mode)
 
 bool CSquare::to_be_passed()
 {
-    if (!ids.empty())
+    if (!rooms.empty())
         return false;
     
     /* if we have ANY children, the node has to be passed */
@@ -334,18 +334,18 @@ void CSquare::add(Croom *room)
         return;
     }
     
-    if (( ids.size() < MAX_SQUARE_ROOMS) && ( (rightx - leftx) < MAX_SQUARE_SIZE) ) 
+    if (( rooms.size() < MAX_SQUARE_ROOMS) && ( (rightx - leftx) < MAX_SQUARE_SIZE) ) 
     {
-        ids.push_back(room->id);
+        rooms.push_back(room);
         return;
     } else {
         
-        for (i=0; i < ids.size(); i++) {
-            r = Map.getroom( ids[i] );
+        for (i=0; i < rooms.size(); i++) {
+            r = rooms[i] ;
             add_room_by_mode(r, get_mode(r) );
         }
-        ids.clear();
-        ids.resize(0);
+        rooms.clear();
+        rooms.resize(0);
         add_room_by_mode(room, get_mode(room) );
     }
 }
@@ -370,15 +370,15 @@ void roommanager::remove_from_plane(Croom *room)
 void CSquare::remove(Croom *room)
 {
     CSquare *p;
-    vector<unsigned int>::iterator i;
+    vector<Croom *>::iterator i;
     
     p = this;
     while (p) {
         if (!p->to_be_passed()) {       
             /* just for check */
-            for (i=p->ids.begin(); i != p->ids.end(); ++i) {
-                if (room->id == *i) {
-                    i = p->ids.erase(i);
+            for (i=p->rooms.begin(); i != p->rooms.end(); ++i) {
+                if (room->id == ((*i)->id)) {
+                    i = p->rooms.erase(i);
                     return;
                 }
             }
@@ -451,7 +451,7 @@ CPlane::CPlane(Croom *room)
             squares->centerx, squares->centery, room->x, room->y);
 */
     
-    squares->ids.push_back(room->id);
+    squares->rooms.push_back(room);
 }
 
 void  roommanager::add_to_plane(Croom *room)
