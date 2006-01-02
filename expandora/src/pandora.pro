@@ -4,13 +4,24 @@ TEMPLATE	= app
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
-CONFIG		+= qt opengl warn_on thread
+CONFIG		+= qt opengl warn_on thread release
 
 QT += xml opengl gui
 
 win32 {
 	CONFIG	+= console
+	LIBS	+= -lwsock32
 }
+
+macx {
+	LIBS += /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+}
+
+unix:LIBS		+= -lm 
+!debug {
+	unix:QMAKE_POST_LINK=strip $(TARGET)
+}
+
 
 FORMS +=	configedit.ui
 FORMS +=	patterndialog.ui
@@ -51,15 +62,6 @@ SOURCES		+=xml2.cpp
 
 TARGET		= ../pandora
 
-macx {
-	LIBS += /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
-}
-
-win:LIBS	+= -lwsock32
-unix:LIBS		+= -lm 
-!debug {
-	unix:QMAKE_POST_LINK=strip $(TARGET)
-}
 
 #CFLAGS_VAR	= $$system(pkg-config --cflags OGRE)
 #CLIBS_VAR	= $$system(pkg-config --libs OGRE)
