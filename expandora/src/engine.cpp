@@ -189,7 +189,7 @@ void CEngine::command_applyprompt()
   CRoom *room;
 
   
-//  print_debug(DEBUG_ANALYZER, "in apply_prompt");
+  print_debug(DEBUG_ANALYZER, "in apply_prompt");
   if (redraw) redraw++;
   
   terrain = r_event.data[1 + conf.get_prompt_col_len()];  /*second charecter is terrain*/
@@ -235,7 +235,7 @@ void CEngine::command_applyprompt()
 /*---------------- * SWAP  ------------------------- */
 void CEngine::command_swap()
 {
-//  print_debug(DEBUG_ANALYZER, "in swap");
+  print_debug(DEBUG_ANALYZER, "in swap");
   stacker.swap();
 
   if (stacker.amount() == 0 && resync) 
@@ -246,7 +246,7 @@ void CEngine::command_swap()
   
   
   if (redraw >= 2) { 
-//    print_debug(DEBUG_ANALYZER, "[ in REDRAW ]");
+    print_debug(DEBUG_ANALYZER, "[ in REDRAW ]");
     toggle_renderer_reaction();
     redraw  = 0;
   }

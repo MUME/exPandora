@@ -253,6 +253,7 @@ void RoomEditDialog::accept()
     int x, y, z;
     int id;
     char terrain;
+    unsigned int i;
 
     printf("Accepted!\r\n");
     /* OK! Now check the data */
@@ -282,7 +283,11 @@ void RoomEditDialog::accept()
     desc = textEdit_desc->toPlainText();
     desc.replace("\n", "|");
     terrain = comboBox_terrain->currentIndex();
-            
+    for (i=0; i< conf.sectors.size(); i++)
+        if (comboBox_terrain->currentText() == conf.sectors[i].desc) {
+            r->sector = i;
+        }
+    
     note = textEdit_note->toPlainText();
             
             
