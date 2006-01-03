@@ -54,6 +54,12 @@ void xml_readbase( QString filename)
 
   QXmlSimpleReader reader;
 
+  if (xmlFile.exists() == false) {
+      printf("ERROR: The database file %s does NOT exist!\r\n", qPrintable(filename) );
+      return;
+  }
+
+
   StructureParser * handler = new StructureParser();
   reader.setContentHandler( handler );
     

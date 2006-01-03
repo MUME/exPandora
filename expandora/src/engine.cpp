@@ -22,7 +22,7 @@
 class CEngine Engine;
 
 /*   --- wrapper for engine functions ---- */
-void command_redraw()  {    Engine.command_redraw(); }
+void command_redraw()     { Engine.command_redraw(); }
 void command_mappingoff() { Engine.command_mappingoff(); }
 void command_resync()     { Engine.command_resync(); }
 void command_swap()       { Engine.command_swap(); }
@@ -53,55 +53,6 @@ const struct TCode program_codes[] = {
 
   {NULL, NULL}    
 };
-
-/*
-           switch (code) {
-             case REDRAW :
-                             command_redraw();
-                             break;                  
-             case SWAP :
-                             command_redraw();
-                             break;                  
-             case RESYNC :
-                             command_redraw();
-                             
-                             break;                  
-             case CREMOVE :
-                             command_redraw();
-                             
-                             break;                  
-             case RREMOVE :
-                             command_redraw();
-                             
-                             break;                  
-             case TRY_DIR :
-                             command_redraw();
-                             break;                  
-             case TRY_ALL_DIRS :
-                             command_tryalldirs();
-                             break;                  
-             case DONE :
-                             command_done();
-                             break;                  
-             case APPLY_ROOMNAME :
-                             command_applyroomname();
-                             break;                  
-             case APPLY_DESC :
-                             command_applydesc();
-                             break;                  
-             case APPLY_EXITS :
-                             command_applyexits();
-                             break;                  
-             case APPLY_PROMPT :
-                             command_applyprompt();
-                             break;                  
-             case MAPPINGOFF :
-                             command_mappingoff();
-                             break;                  
-           };
-
-*/
-
 
 
 /*---------------- * REDRAW ---------------------------- */
@@ -469,26 +420,36 @@ void CEngine::exec()
 
 void CEngine::run()
 {
-   TScript script;
-   int code;
-   unsigned int i;
+    TScript script;
+    int code;
+    unsigned int i;
 
-   if (RPipe.empty() && CPipe.empty()) {
-     done = 1;
-     return;
-   }
 
+    printf("In Engune run().\r\n");
+    if (RPipe.empty() && CPipe.empty()) {
+        done = true;
+        return;
+    }
+
+    
     r_event = RPipe.get();
     c_event = CPipe.get();
 
+    printf("Got events : R: type %s, data %s, C: type %s, data %s.\r\n", 
+            (const char *) Events[r_event.type].data, (const char *) r_event.data,
+            (const char *) Events[c_event.type].data, (const char *) c_event.data );
 
     if (code_field[(int)c_event.type][(int)r_event.type] != -1) {
-       
        script = programs[ code_field[(int)c_event.type][(int)r_event.type] ];
+       printf("Code field is not empty! Script index %i. \r\n", code_field[(int)c_event.type][(int)r_event.type] );
+
        for (i = 0; i < script.size(); i++) {
            code = script[i];
            program_codes[code].func();
        }   
+    } else {
+        done = true;
+        return;        
     }
 }
 
@@ -571,6 +532,9 @@ int CEngine::parse_command_line(char cause, char result, char *line)
   }
  
   /* else link the new command */
+  printf("Adding the script for event type : %s, %s, %i\r\n", 
+        (const char *) Events[(int)cause].data, (const char *) Events[(int)result].data,  programs.size() );
+  code_field[(int)cause][(int)result] = programs.size();
   programs.push_back(script);
   return 0;  
 }
@@ -848,9 +812,12 @@ void CEngine::add_event(char type, QByteArray data)
     e.type = type;
     e.data = data;
 
+/*    print_debug(DEBUG_ANALYZER, "sending event: type %s, data %s.\r\n", 
+            (const char *) Events[type].data, (const char *) data);
+*/
     if (Events[type].group == E_CAUSE) 
         CPipe.push(e); 
-    else if (Events[type].group == E_CAUSE) 
+    else if (Events[type].group == E_RESULT) 
         RPipe.push(e); 
 }
 

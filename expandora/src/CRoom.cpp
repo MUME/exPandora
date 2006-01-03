@@ -1,5 +1,5 @@
 //
-// C++ Implementation: croom
+// C++ Implementation: CRoom
 //
 // Description: 
 //
@@ -12,8 +12,8 @@
 #include <QByteArray>
 #include <QString>
 
-#include "croom.h"
-#include "rooms.h"
+#include "CRoom.h"
+#include "Map.h"
 #include "configurator.h"
 #include "tree.h"
 #include "utils.h"
@@ -29,7 +29,7 @@ const struct room_flag_data room_flags[] = {
 };
 
 
-Croom::Croom()
+CRoom::CRoom()
 {
     int i;
     
@@ -49,7 +49,7 @@ Croom::Croom()
 }
 
 
-Croom::~Croom()
+CRoom::~CRoom()
 {
     int i;
     
@@ -70,19 +70,19 @@ Croom::~Croom()
 }
 
 
-void Croom::modified()
+void CRoom::modified()
 {
   conf.set_data_mod(true);
 }
 
-void Croom::refresh_note(QByteArray n)
+void CRoom::refresh_note(QByteArray n)
 {
   if (note)
     delete note;
   note = qstrdup(n);
 }
 
-void Croom::refresh_door(char dir, QByteArray d)
+void CRoom::refresh_door(char dir, QByteArray d)
 {
   if (doors[(int) dir])
     delete doors[(int) dir];
@@ -95,7 +95,7 @@ void Croom::refresh_door(char dir, QByteArray d)
 
 
 /* implementation of desc comparison - simple strcmp at this moment */
-void Croom::refresh_desc(QByteArray newdesc)
+void CRoom::refresh_desc(QByteArray newdesc)
 {
   if (desc)
     delete desc;
@@ -103,7 +103,7 @@ void Croom::refresh_desc(QByteArray newdesc)
   modified();
 }
 
-void Croom::refresh_roomname(QByteArray newname)
+void CRoom::refresh_roomname(QByteArray newname)
 {
   NameMap.delete_item(name, id);
   delete name;
@@ -113,25 +113,25 @@ void Croom::refresh_roomname(QByteArray newname)
 }
 
 
-void Croom::refresh_terrain(char terrain)
+void CRoom::refresh_terrain(char terrain)
 {
   sector = conf.get_sector_by_pattern(terrain);
   modified();      
 }
 
 
-int Croom::desc_cmp(QByteArray d)
+int CRoom::desc_cmp(QByteArray d)
 { 
   return comparator.strcmp_desc(d, desc);
 }
 
-int Croom::roomname_cmp(QByteArray n)
+int CRoom::roomname_cmp(QByteArray n)
 { 
   return comparator.strcmp_roomname(n, name);
 }
 
 /* --------------- check if exit in room is connected --------------- */
-int Croom::is_connected(int dir)
+int CRoom::is_connected(int dir)
 {
   if ((exits[dir] == EXIT_UNDEFINED) || (exits[dir] == EXIT_DEATH))
     return 0;
@@ -142,7 +142,7 @@ int Croom::is_connected(int dir)
 }
 
 /* ------------------------ add_door() ------------------------*/
-int Croom::add_door(int dir, char *d)
+int CRoom::add_door(int dir, char *d)
 {
 
   if (exits[dir] == 0) {
@@ -159,7 +159,7 @@ int Croom::add_door(int dir, char *d)
 }
 
 /* ------------------------ remove_door() ------------------------*/
-void Croom::remove_door(int dir)
+void CRoom::remove_door(int dir)
 {
   if (doors[dir] != NULL) {
       delete doors[dir];
@@ -169,27 +169,27 @@ void Croom::remove_door(int dir)
   modified();
 }
 
-void Croom::setx(int nx)
+void CRoom::setx(int nx)
 {
   x = nx;
   modified();
 }
 
-void Croom::sety(int ny)
+void CRoom::sety(int ny)
 {
   y = ny;
   modified();
 }
 
 
-void Croom::setz(int nz)
+void CRoom::setz(int nz)
 {
   z = nz;
   modified();
 }
 
 /* ------------------------------ prints the given room --------------------*/
-void Croom::send_room()
+void CRoom::send_room()
 {
     unsigned int i, pos;
     char line[MAX_STR_LEN];

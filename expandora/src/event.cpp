@@ -10,12 +10,15 @@ CEventPipe::CEventPipe()
 
 CEventPipe::~CEventPipe()
 {
-    CEventPipe();
+    pipe.clear();
 }
 
 void CEventPipe::push(TEvent event)
 {
     pipe.push_back(event);    
+/*    printf("Pushing the event: %s %s, queue length is now %i.\r\n", 
+                (const char *) Events[event.type].data ,(const char *) event.data, pipe.size() );
+*/
 }
 
 bool CEventPipe::empty()
@@ -57,6 +60,7 @@ QByteArray CEventPipe::print()
     s = " Elements: ";
     if (pipe.empty()) {
        s += "(null)";
+       pipe_lock.unlock();    
        return s;               
     }
     for (i = 0; i < pipe.size(); i++) {
@@ -68,6 +72,7 @@ QByteArray CEventPipe::print()
         if (s.length() > MAX_STR_LEN/2) {
             if (i < pipe.size() - 1)
                 s += "...";
+            pipe_lock.unlock();    
             return s;
         }
     }

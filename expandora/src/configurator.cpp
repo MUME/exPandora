@@ -373,6 +373,11 @@ int Cconfigurator::load_config(QByteArray path, QByteArray filename)
   QFile xmlFile(path+filename);
   QXmlInputSource source( &xmlFile );
 
+  if (xmlFile.exists() == false) {
+      printf("ERROR: The config file %s does NOT exist!\r\n", (const char*) (path+filename) );
+      return 0;
+  }
+
   QXmlSimpleReader reader;
 
   ConfigParser * handler = new ConfigParser();
@@ -542,7 +547,7 @@ bool ConfigParser::startElement( const QString& , const QString& ,
             exit(1);
         }        
         
-        s = attributes.value("host");
+        s = attributes.value("hostname");
         conf.set_remote_host(s.toAscii() );
         
         s = attributes.value("port");

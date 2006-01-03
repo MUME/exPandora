@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H 
 #define MAINWINDOW_H 
 
-#include <QLAbel>
+#include <QLabel>
 #include <QAction>
 #include <QMenu>
 #include <QMainWindow>

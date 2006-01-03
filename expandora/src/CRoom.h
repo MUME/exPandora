@@ -45,7 +45,7 @@ class Strings_Comparator {
 extern Strings_Comparator comparator;
 
 
-class Croom{
+class CRoom {
 public:
     unsigned int id; 		/* identifier */
     char *name; 			/* POINTER to the room name */ 
@@ -59,8 +59,8 @@ public:
   
     int x, y, z;		/* coordinates on our map */
   
-    Croom();
-    ~Croom();
+    CRoom();
+    ~CRoom();
     void modified();
     int is_connected(int dir);
     void send_room();

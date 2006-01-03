@@ -69,10 +69,10 @@ void do_exits(const char *exits_line)
       if (conf.get_exits_check() ) {
         if (compare_exits(r, exits)) {
           stacker.put(r);
-          print_debug(DEBUG_ANALYZER, "adding match");
+//          print_debug(DEBUG_ANALYZER, "adding match");
         }
       } else {
-        print_debug(DEBUG_ANALYZER, "adding all matches without check. its off");
+//        print_debug(DEBUG_ANALYZER, "adding all matches without check. its off");
         stacker.put(r);
       }
     }

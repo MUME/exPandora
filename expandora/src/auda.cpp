@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     int     override_local_port = 0;
     char    override_remote_host[MAX_STR_LEN] = "";
     int     override_remote_port = 0;
-    char    configfile[MAX_STR_LEN] = "configs/default.conf"; 
+    char    configfile[MAX_STR_LEN] = "configs/mume.xml"; 
     int     default_local_port = 3000;
     int     default_remote_port = 4242;
 
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 
 #else
     resPath = "";
-    char    default_base_file[MAX_STR_LEN] = "mume.xml";   
+    char    default_base_file[MAX_STR_LEN] = "database/mume.xml";   
     char    default_remote_host[MAX_STR_LEN] = "129.241.210.221";
 #endif
 
@@ -208,9 +208,12 @@ int main(int argc, char *argv[])
     }
     printf("Using database file : %s.\r\n", (const char*) conf.get_base_file() );
     
+    printf("Before %s.\r\n. ", (const char*) conf.get_remote_host() );
+
     if (override_remote_host[0] != 0) {
       conf.set_remote_host(override_remote_host);
     } else if ( conf.get_remote_host().isEmpty() ) {
+      printf("There...");
       conf.set_remote_host(default_remote_host);
     }
     printf("Using target hostname : %s.\r\n", (const char*) conf.get_remote_host() );
