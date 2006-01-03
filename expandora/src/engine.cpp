@@ -425,7 +425,7 @@ void CEngine::run()
     unsigned int i;
 
 
-    printf("In Engune run().\r\n");
+//    printf("In Engune run().\r\n");
     if (RPipe.empty() && CPipe.empty()) {
         done = true;
         return;
@@ -434,15 +434,15 @@ void CEngine::run()
     
     r_event = RPipe.get();
     c_event = CPipe.get();
-
+/*
     printf("Got events : R: type %s, data %s, C: type %s, data %s.\r\n", 
             (const char *) Events[r_event.type].data, (const char *) r_event.data,
             (const char *) Events[c_event.type].data, (const char *) c_event.data );
-
+*/
     if (code_field[(int)c_event.type][(int)r_event.type] != -1) {
        script = programs[ code_field[(int)c_event.type][(int)r_event.type] ];
-       printf("Code field is not empty! Script index %i. \r\n", code_field[(int)c_event.type][(int)r_event.type] );
-
+/*       printf("Code field is not empty! Script index %i. \r\n", code_field[(int)c_event.type][(int)r_event.type] );
+*/
        for (i = 0; i < script.size(); i++) {
            code = script[i];
            program_codes[code].func();
