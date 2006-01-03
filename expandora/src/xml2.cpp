@@ -7,14 +7,13 @@
 #include <QApplication>
 #include <QFile>
 #include <QXmlDefaultHandler>
-//#include <qwindowdefs.h>
 #include <QString>
 
 #include "defines.h"
 
 
 #include "configurator.h"
-#include "rooms.h"
+#include "Map.h"
 #include "utils.h"
 #include "dispatch.h"
 
@@ -41,7 +40,7 @@ private:
 
 
   int i;
-  Croom *r;
+  CRoom *r;
     
 };
 
@@ -183,7 +182,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
     flag = XML_NOTE;
     return TRUE;
   } else if (qName == "room") {
-      r = new Croom;
+      r = new CRoom;
 
       s = attributes.value("id");
       r->id = s.toInt();
@@ -208,7 +207,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
 void xml_writebase(QString filename)
 {
   FILE *f;
-  Croom *p;
+  CRoom *p;
   int i;
   char tmp[4028];
   unsigned int z;

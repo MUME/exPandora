@@ -9,14 +9,6 @@
 #include "defines.h"
 #include "configurator.h"
 
-
-
-#if defined Q_OS_LINUX || defined Q_OS_MACX
-#include <sys/time.h>
-#endif 
-
-#include <sys/timeb.h>
-
 #if defined Q_OS_WIN32
   #define vsnprintf _vsnprintf
 #endif
@@ -26,12 +18,6 @@
 
 FILE *logfile;
 const char *exitnames[] = { "north", "east", "south", "west", "up", "down" };
-
-/* global base settings */
-int     auda_argc;
-char    **auda_argv;
-/* default debug settings */
-
 
 struct debug_data_struct debug_data[] = {
   {"general",  "Debug", "general switch for debug",  DEBUG_GENERAL, 1},

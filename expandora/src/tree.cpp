@@ -6,10 +6,10 @@
 #include "utils.h"
 #include "tree.h"
 
-class Ctree NameMap;
+class CTree NameMap;
 
 
-void Ctree::remove_id(unsigned int id, Ttree *p)
+void CTree::remove_id(unsigned int id, TTree *p)
 {
   vector<unsigned int>::iterator i;
 
@@ -22,7 +22,7 @@ void Ctree::remove_id(unsigned int id, Ttree *p)
 }
 
 
-void Ctree::calculate_info(Ttree *t, int level, int single)
+void CTree::calculate_info(TTree *t, int level, int single)
 {
   unsigned int i;
   int l;
@@ -51,7 +51,7 @@ void Ctree::calculate_info(Ttree *t, int level, int single)
   
 }
 
-void Ctree::print_tree_stats()
+void CTree::print_tree_stats()
 {
   unsigned int i;
 
@@ -67,17 +67,17 @@ void Ctree::print_tree_stats()
           i, levels_data[i].nodes, levels_data[i].leads, levels_data[i].items);
 }
 
-void Ctree::reinit()
+void CTree::reinit()
 {
     print_debug(DEBUG_TREE, "clearing the whole tree");
     delete_all(root);
 
-    root = new Ttree;
-    reset_ttree(root);
+    root = new TTree;
+    reset_TTree(root);
 }
 
 /* recursive deletion of this element and all elements below */
-void Ctree::delete_all(Ttree *t) 
+void CTree::delete_all(TTree *t) 
 {
     int i;
   
@@ -92,7 +92,7 @@ void Ctree::delete_all(Ttree *t)
     delete t;
 }
 
-int Ctree::diving_delete(Ttree * p, char *part, unsigned int id)
+int CTree::diving_delete(TTree * p, char *part, unsigned int id)
 {
     int i;
 
@@ -136,9 +136,9 @@ int Ctree::diving_delete(Ttree * p, char *part, unsigned int id)
     return 1;			/* deleted ! so ... */
 }
 
-void Ctree::delete_item(const char *name, unsigned int id)
+void CTree::delete_item(const char *name, unsigned int id)
 {
-    Ttree *p;
+    TTree *p;
     unsigned int i;
     char hash[MAX_HASH_LEN];	
 	
@@ -153,13 +153,13 @@ void Ctree::delete_item(const char *name, unsigned int id)
         if (p->ids[i] == id) {
             if (diving_delete(root, hash, id) == 1) {
                 /* meaning - occasioanly freed our ROOT element */
-                Ctree();	/* reinit */
+                CTree();	/* reinit */
                 return;
             }
         }
 }
 
-void Ctree::reset_ttree(Ttree * t)
+void CTree::reset_TTree(TTree * t)
 {
     int i;
 
@@ -167,15 +167,15 @@ void Ctree::reset_ttree(Ttree * t)
 	t->leads[i] = NULL;
 }
 
-Ctree::Ctree()
+CTree::CTree()
 {
-    root = new Ttree;
-    reset_ttree(root);
+    root = new TTree;
+    reset_TTree(root);
 }
 
-void Ctree::addname(const char *name, unsigned int id)
+void CTree::addname(const char *name, unsigned int id)
 {
-  Ttree *p, *n;
+  TTree *p, *n;
   unsigned int i;
   char hash[MAX_HASH_LEN];
       
@@ -189,8 +189,8 @@ void Ctree::addname(const char *name, unsigned int id)
     
     } else {
       /* there is no line like this in tree yet - we have to create new lead */
-      n = new Ttree;
-      reset_ttree(n);
+      n = new TTree;
+      reset_TTree(n);
     
       p->leads[(int) hash[i]] = n;
       p = n;
@@ -201,10 +201,10 @@ void Ctree::addname(const char *name, unsigned int id)
   p->ids.push_back(id);
 }
 
-Ttree *Ctree::find_by_name(const char *name)
+TTree *CTree::find_by_name(const char *name)
 {
   unsigned int i;
-  Ttree *p;
+  TTree *p;
   char hash[MAX_HASH_LEN];
     
   genhash(name, hash);
@@ -221,7 +221,7 @@ Ttree *Ctree::find_by_name(const char *name)
   return p;
 }
 
-void Ctree::genhash(const char *name, char *hash)
+void CTree::genhash(const char *name, char *hash)
 {
   unsigned int i;
   unsigned int z;
@@ -244,36 +244,3 @@ void Ctree::genhash(const char *name, char *hash)
     hash[i]=hash[i]-'a'+1;
 }
 
-/*
-void Ctree::print_element(Ttree *t)
-{
-	int i, k;
-	unsigned int z;
-	
-	printf("-----------------\n");
-	printf("Element address: %i, ids amount : %i, ids array size : %i\n", 
-            (int) t, t->ids.size(), t->ids.capacity());
-		
-	printf("Ids: ");
-	for (i = 0; (k = t->ids.find(i)) >= 0; ++i) 
-	  printf("%i, ", t->ids.get(k));
-
-	printf("\n");
-	
-	k=0;
-	for (z=0; z<A_SIZE; z++)
-		if (t->leads[z]!=NULL)
-			k++;
-		
-	printf("Amount of non-empty leads : %i\n", k);
-	printf("Namely (hash-items) : ");
-		
-	k=0;
-	for (z=0; z<A_SIZE; z++)
-		if (t->leads[z]!=NULL)
-			printf("%c, ", z+'a'-1);
-	printf("\n");
-	printf("-----------------\n");
-		
-}
-*/

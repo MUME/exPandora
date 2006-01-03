@@ -8,14 +8,14 @@
 #include <QMutex>
 
 #include "defines.h"
-#include "croom.h"
-#include "rooms.h"
+#include "CRoom.h"
+#include "Map.h"
 
 #include "configurator.h"
 #include "utils.h"
 #include "engine.h"
 #include "event.h"
-#include "renderer.h"
+//#include "renderer.h"
 
 class Cconfigurator conf;
 
@@ -123,9 +123,9 @@ void Cconfigurator::add_pattern(QByteArray pattern, QByteArray data, char marker
     
     p.is_regexp = is_regexp;
     p.pattern = pattern;
-    p.data = data;
-    p.group = marker;
-    p.type = type;
+    p.event.data = data;
+    p.event.group = marker;
+    p.event.type = type;
     if (is_regexp) 
       p.rexp.setPatternSyntax(QRegExp::RegExp);
     else 
@@ -182,7 +182,7 @@ void Cconfigurator::set_end_col(QByteArray str)
 }
 
 /* ------------------- DATA ------------------- */
-char Cconfigurator::get_pattern_by_room(Croom *r)
+char Cconfigurator::get_pattern_by_room(CRoom *r)
 {
     return sectors.at(r->sector).pattern;
 }
@@ -454,8 +454,8 @@ int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
   for (i = 0; i < patterns.size(); i++) {
         fprintf(f, "  <pattern regexp=\"%s\" type=\"%s\" data=\"%s\">%s</pattern>\r\n",
                   YES_NO(patterns[i].is_regexp), 
-                  (const char *) event_types[patterns[i].type].name, 
-                  (const char *) patterns[i].data, 
+                  (const char *) Events[patterns[i].event.type].data, 
+                  (const char *) patterns[i].event.data, 
                   (const char *) patterns[i].pattern );
   }
   i = 0;
@@ -485,17 +485,9 @@ ConfigParser::ConfigParser()
 
 bool ConfigParser::endElement( const QString& , const QString& , const QString& qName)
 {
-/*  if (qName == "texture" && flag == TEXTURE) {
-    conf.add_texture(texture.desc, texture.filename, texture.pattern);
-    printf("Added texture: desc %s, file %s, pattern %c.\r\n", 
-              (const char *) texture.desc, (const char *) texture.filename, texture.pattern);
-  } else 
-    */
   if (qName == "pattern" && flag == PATTERN) {
-    conf.add_pattern(pattern.pattern, pattern.data, pattern.group, pattern.type, pattern.is_regexp);          
-//    printf("Added pattern: pattern %s, data %s, marker %c, type %c\r\n", 
-//          (const char *) pattern.pattern, (const char *) pattern.data, 
-//              pattern.group, pattern.type);
+    conf.add_pattern(pattern.pattern, pattern.event.data, pattern.event.group, 
+                                      pattern.event.type, pattern.is_regexp);          
   }
   flag = 0;    
   return TRUE;
@@ -708,21 +700,21 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         
         
         s = attributes.value("type");
-        pattern.type = 0;
-        for (i = 0; i < event_types.size(); i++) 
-            if ( s == event_types[i].name) {
-                pattern.type = event_types[i].type;
-                pattern.group = event_types[i].group;
+        pattern.event.type = 0;
+        for (i = 0; i < Events.size(); i++) 
+            if ( s == Events[i].data) {
+                pattern.event.type = Events[i].type;
+                pattern.event.group = Events[i].group;
                 break;
             }
         
-        if (pattern.type == -1) {
+        if (pattern.event.type == -1) {
             printf("Bad type descriptor.\r\n");
             return TRUE;                                     
         } 
 
         s = attributes.value("data");
-        pattern.data = s.toAscii();
+        pattern.event.data = s.toAscii();
         
         flag = PATTERN;         /* get the inner data ! */
         return TRUE;
@@ -906,11 +898,11 @@ void Cconfigurator::parse_engine(char *line)
 
   
   cause_type = -1;
-  for (i = 0; i < event_types.size(); i++) 
-    if ( (event_types[i].group == E_CAUSE) &&               
-         (strcmp(arg, event_types[i].name) == 0) ) 
+  for (i = 0; i < Events.size(); i++) 
+    if ( (Events[i].group == E_CAUSE) &&               
+         (Events[i].data == arg) ) 
     {
-      cause_type = event_types[i].type;
+      cause_type = Events[i].type;
       break;
     }
     
@@ -929,11 +921,11 @@ void Cconfigurator::parse_engine(char *line)
   p = one_argument(p, arg, 2);  /* to upper case */          
   
   result_type = -1;
-  for (i = 0; i < event_types.size(); i++) 
-    if ( (event_types[i].group == E_RESULT) &&               
-         (strcmp(arg, event_types[i].name) == 0) ) 
+  for (i = 0; i < Events.size(); i++) 
+    if ( (Events[i].group == E_RESULT) &&               
+         (Events[i].data == arg) ) 
     {
-      result_type = event_types[i].type;
+      result_type = Events[i].type;
       break;
     }
 
@@ -948,7 +940,7 @@ void Cconfigurator::parse_engine(char *line)
     return;                                     
   }                       
 
-  if (engine_parse_command_line(cause_type, result_type, p) != 0) 
+  if (Engine.parse_command_line(cause_type, result_type, p) != 0) 
     CONFIG_ERROR("cant parse command");
 }
 

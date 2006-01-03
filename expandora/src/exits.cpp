@@ -4,7 +4,7 @@
 #include <QMutex>
 
 
-#include "rooms.h"
+#include "Map.h"
 #include "configurator.h"
 #include "defines.h"
 #include "exits.h"
@@ -20,18 +20,18 @@ void do_exits(const char *exits_line)
 {
     int exits[6];
     unsigned int i;
-    Croom *r;
+    CRoom *r;
 
     parse_exits(exits_line, exits);
 
-    if (engine_flags.addingroom) {
-	r = addedroom;
+    if (Engine.isAddingroom()) {
+	   r = Engine.addedroom;
 
         
-        print_debug(DEBUG_ANALYZER /*& DEBUG_TOUSER*/, 
+       print_debug(DEBUG_ANALYZER /*& DEBUG_TOUSER*/, 
                     "Exits: Adding exits information to the new room.");
 
-	for (i = 0; i <= 5; i++) {
+       for (i = 0; i <= 5; i++) {
             if (r->exits[i] > 0) {
                 if (exits[i] == 0) {	/* oneway case */
                     Map.oneway_room_id = r->exits[i];
@@ -56,7 +56,7 @@ void do_exits(const char *exits_line)
                 r->exits[i] = EXIT_UNDEFINED;
             }
 
-        stacker.put(addedroom);
+        stacker.put(Engine.addedroom);
             
         return;
     }
@@ -79,7 +79,7 @@ void do_exits(const char *exits_line)
     
 }
 
-int compare_exits(Croom *p, int exits[])
+int compare_exits(CRoom *p, int exits[])
 {
     int counter;
     int i;

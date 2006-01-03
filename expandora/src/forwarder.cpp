@@ -41,8 +41,9 @@
 #include "defines.h"
 #include "configurator.h"
 #include "dispatch.h"
-#include "rooms.h"
-#include "renderer.h"
+#include "Map.h"
+#include "mainwindow.h"
+#include "engine.h"
 
 QMutex tcp_mutex;
 
@@ -296,7 +297,7 @@ int proxy_loop(void)
         
         send(newsock, emulation_welcome_message, strlen(emulation_welcome_message), 0); 
         
-        send_line_to_user(last_prompt);
+        send_line_to_user( "-->" );
 
       }
       

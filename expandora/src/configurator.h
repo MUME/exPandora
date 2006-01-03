@@ -9,7 +9,8 @@
 #include <QGLWidget>
 #include <map>
 
-#include "croom.h"
+#include "CRoom.h"
+#include "event.h"
 
 #define ACMD(name)  void Cconfigurator::name(char *line)
 #define DEF_ACMD(name) void name(char *line)
@@ -20,11 +21,9 @@ using namespace std;
 
 typedef struct {
   QByteArray pattern;                /* pattern */
-  QByteArray data;                   /* data for event structure */
   QRegExp rexp;                   /* expression to match the pattern/WILDCAD */
-  char    group;                 /* R or C*/
-  char    type;                   /* R_TYPE, C_TYPE */
   bool    is_regexp;            /* is it regexp or wildcard ? */
+  TEvent  event;
 } TPattern;
 
 struct room_sectors_data {
@@ -100,7 +99,7 @@ public:
     int get_sector_by_pattern(char pattern);
 
     int load_texture(struct room_sectors_data *p);
-    char get_pattern_by_room(Croom *r);
+    char get_pattern_by_room(CRoom *r);
     GLuint get_texture_by_desc(QByteArray desc);
     void add_texture(QByteArray desc, QByteArray filename, char pattern);
     

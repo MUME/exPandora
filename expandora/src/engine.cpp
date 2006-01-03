@@ -15,126 +15,134 @@
 #include "forwarder.h"
 #include "utils.h"
 #include "engine.h"
-#include "rooms.h"
+#include "Map.h"
 #include "tree.h"
-#include "renderer.h"
 
 
-/* ------------------------------- defines --------------------------------- */
+class CEngine Engine;
 
-#define MAX_CODE_LENGTH     20
+/*   --- wrapper for engine functions ---- */
+void command_redraw()  {    Engine.command_redraw(); }
+void command_mappingoff() { Engine.command_mappingoff(); }
+void command_resync()     { Engine.command_resync(); }
+void command_swap()       { Engine.command_swap(); }
+void command_rremove()    { Engine.command_rremove();    }
+void command_cremove()    { Engine.command_cremove(); }
+void command_trydir()     { Engine.command_trydir(); }
+void command_tryalldirs() { Engine.command_tryalldirs(); }
+void command_applyroomname(){ Engine.command_applyroomname(); }
+void command_applydesc()   { Engine.command_applydesc(); }
+void command_applyexits()  { Engine.command_applyexits(); }
+void command_applyprompt() { Engine.command_applyprompt(); }
+void command_done()        { Engine.command_done(); }
 
-#define ECMD(name)  void name()
+const struct TCode program_codes[] = {
+  {"redraw", command_redraw},
+  {"mappingoff", command_mappingoff   },
+  {"resync", command_resync           },
+  {"swap", command_swap               },
+  {"rremove", command_rremove         },
+  {"cremove", command_cremove         },
+  {"try_dir", command_trydir          },
+  {"try_all_dirs", command_tryalldirs },
+  {"apply_roomname", command_applyroomname },
+  {"apply_desc", command_applydesc             },
+  {"apply_exits", command_applyexits            },
+  {"apply_prompt", command_applyprompt           },
+  {"done", command_done                   },
 
-/* ---------------------- structures and variables ------------------------- */
-
-/* general mutex that blocks analyzer */
-QMutex analyzer_mutex;
-
-Croom *addedroom;	/* new room, contains new data is addinrroom==1 */
-
-/* inner flags and variables */
-struct engine_flags_type engine_flags;
-
-
-struct engine_command_type {
-  char *name;
-  void (*function) ();
+  {NULL, NULL}    
 };
 
+/*
+           switch (code) {
+             case REDRAW :
+                             command_redraw();
+                             break;                  
+             case SWAP :
+                             command_redraw();
+                             break;                  
+             case RESYNC :
+                             command_redraw();
+                             
+                             break;                  
+             case CREMOVE :
+                             command_redraw();
+                             
+                             break;                  
+             case RREMOVE :
+                             command_redraw();
+                             
+                             break;                  
+             case TRY_DIR :
+                             command_redraw();
+                             break;                  
+             case TRY_ALL_DIRS :
+                             command_tryalldirs();
+                             break;                  
+             case DONE :
+                             command_done();
+                             break;                  
+             case APPLY_ROOMNAME :
+                             command_applyroomname();
+                             break;                  
+             case APPLY_DESC :
+                             command_applydesc();
+                             break;                  
+             case APPLY_EXITS :
+                             command_applyexits();
+                             break;                  
+             case APPLY_PROMPT :
+                             command_applyprompt();
+                             break;                  
+             case MAPPINGOFF :
+                             command_mappingoff();
+                             break;                  
+           };
 
-struct engine_program_entry {
-  char cause;
-  char result;
-  int len;                      /* code length */
-  int code[MAX_CODE_LENGTH];
-  struct engine_program_entry *next;
-};
-
-ECMD(engine_command_redraw);
-ECMD(engine_command_swap);
-ECMD(engine_command_resync);
-ECMD(engine_command_rremove);
-ECMD(engine_command_cremove);
-ECMD(engine_command_try_dir);
-ECMD(engine_command_try_all_dirs);
-ECMD(engine_command_done);
-ECMD(engine_command_apply_roomname);
-ECMD(engine_command_apply_desc);
-ECMD(engine_command_apply_exits);
-ECMD(engine_command_apply_prompt);
-ECMD(engine_command_mappingoff);
-
-
-const struct engine_command_type engine_commands[] = {
-  {"redraw",            engine_command_redraw},
-  {"swap",              engine_command_swap},
-  {"resync",            engine_command_resync},
-
-  {"cremove",           engine_command_cremove},
-  {"rremove",           engine_command_rremove},
-
-  {"try_dir",           engine_command_try_dir},
-  {"try_all_dirs",      engine_command_try_all_dirs},
-
-  {"done",              engine_command_done},
-
-  {"apply_roomname",    engine_command_apply_roomname},
-  {"apply_desc",        engine_command_apply_desc},
-  {"apply_exits",       engine_command_apply_exits},
-  {"apply_prompt",      engine_command_apply_prompt},
-  
-
-  {"mappingoff",        engine_command_mappingoff},
-  
-  {NULL, NULL}
-};
-
-/* empty program by default */
-struct engine_program_entry *engine_program = NULL;
-
-
-/* ----------------------------- Functions --------------------------------- */
-
-void copy_stacks();
-void engine_run();
-
-/* -------------------------- implementations ------------------------------ */ 
+*/
 
 
 
-ECMD(engine_command_mappingoff)
+/*---------------- * REDRAW ---------------------------- */
+void CEngine::command_redraw()
 {
-  if (engine_flags.mapping) {
+    toggle_renderer_reaction();
+    redraw = 0;
+}
+/*---------------- * REDRAW ---------------------------- */
+
+/*---------------- * MAPPING OFF ---------------------------- */
+void CEngine::command_mappingoff()
+{
+  if (mapping) {
     print_debug(DEBUG_ANALYZER, "in mappingoff");
     send_to_user("--[ Mapping is now OFF!\r\n");
-    engine_flags.mapping = 0;
-    engine_flags.addingroom = 0;
+    mapping = 0;
+    addingroom = 0;
   }    
 }
+/*---------------- * MAPPING OFF ---------------------------- */
 
-
-ECMD(engine_command_apply_roomname)
+/*---------------- * APPLY_ROOMNAME ---------------------------- */
+void CEngine::command_applyroomname()
 {
-  struct Tevent *r;
-  Croom *room;
+  CRoom *room;
   unsigned int i;
   int match;
   
 //  print_debug(DEBUG_ANALYZER, "in apply_roomname");
-    
-  r = Rtop->next;
 
   /* set the environment flags and variables */
-  engine_flags.redraw  = 1;
-  engine_flags.last_roomname = r->data;
+  redraw  = 1;
+  set_roomname(r_event.data);
 
   /* clear desc, exits and terrain info in engine state variables */
-  engine_flags.last_desc = "";
-  engine_flags.last_exits = "";
-  engine_flags.last_terrain = 0;
+  set_desc("");
+  set_exits("");
+  set_terrain(0);
   
-  if (engine_flags.addingroom) {
+  if (addingroom) {
     // addedroom->name = strdup(r->data); /* doing this in try_dir */
     stacker.put(addedroom);
     return;
@@ -150,33 +158,31 @@ ECMD(engine_command_apply_roomname)
     if (room->name == NULL) {
       printf("ERROR - room without a roomname!\r\n");
     }
-    if ( (match = room->roomname_cmp(r->data)) >= 0) {
+    if ( (match = room->roomname_cmp(r_event.data)) >= 0) {
       stacker.put(room);
     }
   }
   
   if (stacker.next() == 1 && match > 0) {
-    send_to_user("--[ not exact room name match: %i errors.\r\n", match);
+    send_to_user("--[ not exact room match: %i errors.\r\n", match);
   }
-  
 }
+/*---------------- * APPLY_ROOMNAME ---------------------------- */
 
-ECMD(engine_command_apply_desc)
+
+/*---------------- * APPLY_DESC ---------------------------- */
+void CEngine::command_applydesc()
 {
-  struct Tevent *r;
-  Croom *room;
+  CRoom *room;
   unsigned int i;
   int match;
   
 //  print_debug(DEBUG_ANALYZER, "in apply_desc");
 
-  r = Rtop->next;
+  set_desc(r_event.data);
 
-
-  engine_flags.last_desc = r->data;
-
-  if (engine_flags.addingroom) {
-    addedroom->desc = qstrdup((const char *) r->data);
+  if (addingroom) {
+    addedroom->desc = qstrdup((const char *) r_event.data);
     
     stacker.put(addedroom);
     return;
@@ -193,7 +199,7 @@ ECMD(engine_command_apply_desc)
 	    /* this room has no roomdesc, so we just skip it. */
 	    continue;
 	  }
-          if ( (match = room->desc_cmp(r->data)) >= 0) {
+          if ( (match = room->desc_cmp(r_event.data)) >= 0) {
 //              print_debug(DEBUG_ANALYZER, "found matching room");
               stacker.put(room);
           }
@@ -204,52 +210,50 @@ ECMD(engine_command_apply_desc)
     /* this means we have exactly one match */
     if (conf.get_autorefresh()) {
       send_to_user("--[ (AutoRefreshed) not exact room desc match: %i errors.\r\n", match);
-      stacker.next_first()->refresh_desc(r->data);  
+      stacker.next_first()->refresh_desc(r_event.data);  
     } else {
       send_to_user("--[ not exact room desc match: %i errors.\r\n", match);
     }
     
   }
-  
-
 }
+/*---------------- * APPLY_DESC ---------------------------- */
 
-ECMD(engine_command_apply_exits)
+/*---------------- * APPLY_EXITS ------------------------ */
+void CEngine::command_applyexits()
 {
   print_debug(DEBUG_ANALYZER, "in apply_exits");
 
-  engine_flags.last_exits = Rtop->next->data;
+  set_exits(r_event.data);
   
-  do_exits((const char *)Rtop->next->data);
+  do_exits((const char *)r_event.data);
 }
+/*---------------- * APPLY_EXITS --------------------------- */
 
-ECMD(engine_command_apply_prompt)
+/*---------------- * APPLY_PROMPT  ------------------------- */
+void CEngine::command_applyprompt()
 {
   char terrain;
   unsigned int i;
-  struct Tevent *r;
-  Croom *room;
+  CRoom *room;
 
   
 //  print_debug(DEBUG_ANALYZER, "in apply_prompt");
-
-  r = Rtop->next;
+  if (redraw) redraw++;
   
-  if (engine_flags.redraw) engine_flags.redraw++;
-  
-  terrain= r->data[1 + conf.get_prompt_col_len()];  /*second charecter is terrain*/
-  engine_flags.last_terrain = terrain;
+  terrain = r_event.data[1 + conf.get_prompt_col_len()];  /*second charecter is terrain*/
+  if (conf.get_sector_by_pattern(terrain) == 0) 
+     terrain = 0;
 
-  if (engine_flags.addingroom) {
-    engine_flags.addingroom = 0;
-      
-//    print_debug(DEBUG_ANALYZER, "ADDINGROOM = 0");
+  set_terrain(terrain);
+  if (addingroom) {
+    addingroom = 0;
       
     addedroom->refresh_terrain(terrain);
     
     if ( check_roomdesc() != 1) 
       angrylinker(addedroom);
-    /*stacker.put(addedroom->id);*/  /*check_roomdesc handles putting in stack */
+
     return;
   }
 
@@ -272,130 +276,121 @@ ECMD(engine_command_apply_prompt)
   
 }
 
-ECMD(engine_command_redraw)
-{
-//  print_debug(DEBUG_ANALYZER, "[ in FORCED REDRAW ]");
-  toggle_renderer_reaction();
-  engine_flags.redraw  = 0;
-}
 
-ECMD(engine_command_swap)
+
+/*---------------- * APPLY_PROMPT  ------------------------- */
+
+
+/*---------------- * SWAP  ------------------------- */
+void CEngine::command_swap()
 {
 //  print_debug(DEBUG_ANALYZER, "in swap");
-
   stacker.swap();
 
-  if (stacker.amount() == 0 && engine_flags.resync) 
-    engine_command_resync();
+  if (stacker.amount() == 0 && resync) 
+    command_resync();
   
-  if (engine_flags.mapping && stacker.amount() != 1)
-    engine_command_mappingoff();
+  if (mapping && stacker.amount() != 1)
+    command_mappingoff();
   
   
-  if (engine_flags.redraw >= 2) { 
+  if (redraw >= 2) { 
 //    print_debug(DEBUG_ANALYZER, "[ in REDRAW ]");
     toggle_renderer_reaction();
-    engine_flags.redraw  = 0;
+    redraw  = 0;
   }
 }
+/*---------------- * SWAP  ------------------------- */
 
-ECMD(engine_command_done)
+
+/*---------------- * DONE  * ------------------------- */
+void CEngine::command_done()
 {
-//  print_debug(DEBUG_ANALYZER, "in done");
-
-  engine_flags.done = 1;
+    done = true;     
 }
 
-ECMD(engine_command_resync)
+/*---------------- * DONE * ------------------------- */
+
+
+/*---------------- * RESYNC * ------------------------- */
+void CEngine::command_resync()
 {
   unsigned int j;
-  Ttree *n;
+  TTree *n;
   
-  engine_command_mappingoff();
+  command_mappingoff();
   
   print_debug(DEBUG_ANALYZER, "FULL RESYNC");
-  n = NameMap.find_by_name(engine_flags.last_roomname);
+  n = NameMap.find_by_name(last_roomname);
   if (n != NULL)
     for (j = 0; j < n->ids.size(); j++) {
-      if (strcmp(engine_flags.last_roomname, Map.getname( n->ids[j] )) == 0) {
+      if (last_roomname == Map.getname( n->ids[j] )) {
 //        print_debug(DEBUG_ANALYZER, "Adding matches");
         stacker.put( n->ids[j] );
       } 
     }
 
   stacker.swap();
+
 }
 
-ECMD(engine_command_rremove)
+/*---------------- * RESYNC * ------------------------- */
+void CEngine::command_rremove()
 {
-//  print_debug(DEBUG_ANALYZER, "in rremove");
-
-  Rremove();
+     RPipe.pop();
 }
 
-ECMD(engine_command_cremove)
+void CEngine::command_cremove()
 {
-//  print_debug(DEBUG_ANALYZER, "in cremove");
-
-  Cremove();
+     CPipe.pop();
 }
 
-ECMD(engine_command_try_dir)
+/* ------------------------------------ */
+
+void CEngine::command_trydir()
 {
   int dir;
   unsigned int i;
-  struct Tevent *r, *c;
-  Croom *room;
+  CRoom *room;
   
 //  print_debug(DEBUG_ANALYZER, "in try_dir");
-
-  r = Rtop->next;
-  c = Ctop->next;
+  dir = numbydir(c_event.data[0]);
   
-  dir = numbydir(c->data[0]);
-  
-  if (stacker.amount() == 0) {
+  if (stacker.amount() == 0) 
     return;
-  }
   
   for (i = 0; i < stacker.amount(); i++) {
       room = stacker.get(i);
       if (room->is_connected(dir)) {
           stacker.put(room->exits[dir]);
-//          print_debug(DEBUG_ANALYZER, "adding match");
       } else {
-//        print_debug(DEBUG_ANALYZER, "failed");
-        
-        if (stacker.amount() == 1 && engine_flags.mapping && r->type == R_ROOM) {
+        if (stacker.amount() == 1 && mapping && r_event.type == R_ROOM) {
           /* if we got there we have only one element in possibility */
           /* stack - check the if statement above */
 
           send_to_user("--[ Adding new room!\n");
-//          print_debug(DEBUG_ANALYZER, "adding new room!");
-          
-    
           
           Map.fixfree();	/* making this call just for more safety - might remove */
 
-          addedroom = new Croom;
+          addedroom = new CRoom;
 
           addedroom->id = Map.next_free;
-          addedroom->name = strdup(r->data);
+          addedroom->name = strdup(r_event.data);
           room->exits[dir] = addedroom->id;
           addedroom->exits[reversenum(dir)] = room->id;
 
           addedroom->x = room->x;
           addedroom->y = room->y;
           addedroom->z = room->z;
-          if (dir == NORTH)	addedroom->y += 2;
+          if (dir == NORTH)	    addedroom->y += 2;
           if (dir == SOUTH)     addedroom->y -= 2;
           if (dir == EAST)      addedroom->x += 2;
           if (dir == WEST)      addedroom->x -= 2;
-          if (dir == UP)	addedroom->z += 2;
+          if (dir == UP)	    addedroom->z += 2;
           if (dir == DOWN)      addedroom->z -= 2;
 
 
-          engine_flags.addingroom = 1;	/* for exits, decription and prompt, ends in prompt check */
+          addingroom = 1;	/* for exits, decription and prompt, ends in prompt check */
           Map.addroom(addedroom);
           
           stacker.put(addedroom);
@@ -411,14 +406,13 @@ ECMD(engine_command_try_dir)
   
 }
 
-
-ECMD(engine_command_try_all_dirs)
+void CEngine::command_tryalldirs()
 {
-  Croom *room;
+  CRoom *room;
   unsigned int i, j;
 
 //  print_debug(DEBUG_ANALYZER, "in try_all_dirs");
-  engine_command_mappingoff();
+  command_mappingoff();
 
   if (stacker.amount() == 0) {
     return;
@@ -435,8 +429,28 @@ ECMD(engine_command_try_all_dirs)
 
 
 
+CEngine::CEngine()
+{
+    unsigned int i, j;
 
-void engine()
+    engine_init();
+    populate_events();    
+
+    for (i = 0; i < EVENTS_NUM; i++)
+        for (j = 0; j < EVENTS_NUM; j++)
+            code_field[i][j] = -1;
+            
+    printf("Done.\r\n");        
+}
+
+CEngine::~CEngine()
+{
+ /* DESTRUCTOR */                   
+}
+
+
+
+void CEngine::exec()
 {
   print_debug(DEBUG_ANALYZER, "in main cycle");
   QTime t;
@@ -444,192 +458,76 @@ void engine()
   if (mud_emulation)
     return;
 
-  analyzer_mutex.lock();
-
   t.start();
   
-  copy_stacks();
-
-  engine_flags.done = 0;
-  while (!engine_flags.done) 
-    engine_run();
+  done = false;
+  while (!done) 
+    run();
   
   print_debug(DEBUG_ANALYZER, "done. Time elapsed %d ms", t.elapsed());
-  
-  analyzer_mutex.unlock();
 }
 
-
-
-void engine_run()
+void CEngine::run()
 {
-  struct engine_program_entry *p;
-  int i;
-  char result, cause;
+   TScript script;
+   int code;
+   unsigned int i;
 
-    if (Rtop->next == NULL)
-        result = R_EMPTY;
-    else 
-        result = Rtop->next->type;
-        
-    if (Ctop->next == NULL)
-        cause = C_EMPTY;
-    else 
-        cause = Ctop->next->type;
+   if (RPipe.empty() && CPipe.empty()) {
+     done = 1;
+     return;
+   }
 
-  if (cause == C_EMPTY && result == R_EMPTY) {
-    engine_flags.done = 1;
-    return;
-  }
+    r_event = RPipe.get();
+    c_event = CPipe.get();
 
-/*
-  print_debug(DEBUG_ANALYZER, "current state cause : %c result %c", 
-                              (const char *) event_types[cause].name  , 
-                              (const char *) event_types[result].name);
-*/  
-  /* find passing scriplet and execute it one by one */
-  
-  p = engine_program;
-  while (p) {
-  
-    if ( (p->cause == cause) && (p->result == result)) {
-    for (i=0; i< p->len; i++) 
-        ( (*engine_commands[ p->code[i] ].function) () );
 
-      return;
+    if (code_field[(int)c_event.type][(int)r_event.type] != -1) {
+       
+       script = programs[ code_field[(int)c_event.type][(int)r_event.type] ];
+       for (i = 0; i < script.size(); i++) {
+           code = script[i];
+           program_codes[code].func();
+       }   
     }
-    p = p->next;
-  }
-  
-  printf("No fitting scriplet found.\r\n");
-  if (p == NULL) 
-    engine_flags.done = 1;
-  
-  return;
-}
-
-
-void copy_stacks()
-{
-    struct Tevent *p, *n;
-    
-    stacks_mutex.lock();
-    
-    p = pre_Cstack;
-    while (p) {
-        n = p;
-        addtostack(Cbottom, n->type, n->data);
-        Cbottom = Cbottom->next;
-        p = p->next;
-        free(n);
-    }
-    pre_Cstack = NULL;
-
-
-
-    p = pre_Rstack;
-    while (p) {
-        n = p;
-        addtostack(Rbottom, n->type, n->data);
-        Rbottom = Rbottom->next;
-        p = p->next;
-        free(n);
-    }
-    pre_Rstack = NULL;
-    
-    stacks_mutex.unlock();
 }
 
 /* load config and init engine */
-void engine_init()
+void CEngine::engine_init()
 {
-
-/*
-struct event_types_type event_types[] = {
-  {"EMPTY",           E_EMPTY,        E_CAUSE},         
-  {"EMPTY",           E_EMPTY,        E_RESULT},        
-  {"C_MOVE",          C_MOVE,         E_CAUSE},         
-  {"C_LOOK",          C_LOOK,         E_CAUSE},         
-  {"C_SCOUT",         C_SCOUT,        E_CAUSE},         
-  {"R_ROOM",          R_ROOM,         E_RESULT},        
-  {"R_EXITS",         R_EXITS,        E_RESULT},        
-  {"R_BLIND",         R_BLIND,        E_RESULT},        
-  {"R_PROMPT",        R_PROMPT,       E_RESULT},        
-  {"R_FAIL",          R_FAIL,         E_RESULT},        
-  {"R_DESC",          R_DESC,         E_RESULT},        
-  {"R_BLIND",         R_BLIND,        E_RESULT},        
-  
-  {NULL,              E_EMPTY,         E_NONE}
-};
-*/
-  struct event_types_type event;
-  
-  event.name = "EMPTY";           event.type = C_EMPTY;         event.group = E_CAUSE;
-  event_types.push_back(event);  
-  event.name = "EMPTY";           event.type = R_EMPTY;         event.group = E_RESULT;
-  event_types.push_back(event);  
-  event.name = "C_MOVE";          event.type = C_MOVE;         event.group = E_CAUSE;        
-  event_types.push_back(event);  
-  event.name = "C_LOOK";          event.type = C_LOOK;         event.group = E_CAUSE;        
-  event_types.push_back(event);  
-  event.name = "C_SCOUT";         event.type = C_SCOUT;        event.group = E_CAUSE;        
-  event_types.push_back(event);  
-  event.name = "R_ROOM";          event.type = R_ROOM;         event.group = E_RESULT;        
-  event_types.push_back(event);  
-  event.name = "R_EXITS";         event.type = R_EXITS;        event.group = E_RESULT;        
-  event_types.push_back(event);  
-  event.name = "R_BLIND";         event.type = R_BLIND;        event.group = E_RESULT;        
-  event_types.push_back(event);  
-  event.name = "R_PROMPT";        event.type = R_PROMPT;       event.group = E_RESULT;        
-  event_types.push_back(event);  
-  event.name = "R_FAIL";          event.type = R_FAIL;         event.group = E_RESULT;        
-  event_types.push_back(event);  
-  event.name = "R_DESC";          event.type = R_DESC;         event.group = E_RESULT;        
-  event_types.push_back(event);  
-  event.name = "R_BLIND";         event.type = R_BLIND;        event.group = E_RESULT;        
-  event_types.push_back(event);  
-
-  
+     
   /* setting defaults */
-  engine_flags.done =                   1;            
-  engine_flags.addingroom =             0;
-  engine_flags.resync =                 1;
-  engine_flags.mapping =                0;
-  engine_flags.gettingfirstroom =       0;
+  done =                   1;            
+  addingroom =             0;
+  resync =                 1;
+  mapping =                0;
+  gettingfirstroom =       0;
 
-  engine_flags.redraw = 0;
+  redraw = 0;
   
-  engine_flags.last_roomname[0] = 0;
-  engine_flags.last_desc[0] = 0;
-  engine_flags.last_terrain = 0;
+  last_roomname.clear();
+  last_desc.clear();
+  last_terrain = 0;
+  last_prompt.clear();
 }
 
-int engine_parse_command_line(char cause, char result, char *line)
+int CEngine::parse_command_line(char cause, char result, char *line)
 {
-  struct engine_program_entry *p;
   char *k;
   int j;
-  int len, i;
+  unsigned int len, i;
   char command[MAX_STR_LEN];
+  TScript script;
   
   print_debug(DEBUG_ANALYZER, "Engine. Parsing command: %s, %s, %s.", 
-                    (const char *) event_types[cause].name , 
-                    (const char *) event_types[result].name, line);
+                    (const char *) Events[(int) cause].data , 
+                    (const char *) Events[(int)result].data, line);
   
   /* check if scriplet for this combo of cause-result already exists */
-  p = engine_program;
-  while (p) {
-    if ( (p->cause == cause) && (p->result == result)) {
+  if (code_field[(int)cause][(int)result] != -1 ) {
       printf("Combo already exits. %s command line is not used.", line);
       return 1;
-    }
-    p = p->next;
   }
-  
-  p = new engine_program_entry;
-  p->cause = cause;
-  p->result = result;
-  
   
   /* start commands parsing cycle */
   k = line;
@@ -652,16 +550,16 @@ int engine_parse_command_line(char cause, char result, char *line)
       continue;
     
     /* now find fitting command and translate it in interpreter code */
-    for (i = 0; engine_commands[i].name; i++) 
-      if (strcmp(command, engine_commands[i].name) == 0) {
-        p->code[len++] = i;
-        break;
+    for (i = 0; program_codes[i].func; i++) 
+        if (program_codes[i].name == command) {
+           script.push_back( i );
+           len++;
+           break;
       }
     
     /* we've found the match, right ? else ...*/
-    if (engine_commands[i].name == NULL) {
+    if (program_codes[i].func == NULL) {
       printf("%s is not a command!\r\n", command);
-      free(p);
       return 1;
     }
     
@@ -669,22 +567,17 @@ int engine_parse_command_line(char cause, char result, char *line)
 
   if (len == 0) {
     printf("No commands in line!\r\n");
-    free(p);
     return 1;
   }
  
   /* else link the new command */
-  p->next = engine_program;
-  engine_program = p;
-
-  p->len = len;
-  
+  programs.push_back(script);
   return 0;  
 }
 
-int check_roomdesc()
+int CEngine::check_roomdesc()
 {
-    Croom *r;
+    CRoom *r;
     unsigned int i;
     int j;
 
@@ -756,11 +649,11 @@ int check_roomdesc()
 }
 
 
-void angrylinker(Croom *r)
+void CEngine::angrylinker(CRoom *r)
 {
-  Croom *p;
+  CRoom *p;
   unsigned int i;
-  Croom *candidates[6];
+  CRoom *candidates[6];
   int distances[6];
   int z;
     
@@ -913,4 +806,103 @@ void angrylinker(Croom *r)
       }
   }
   
+}
+
+
+void CEngine::printstacks()
+{
+    char line[MAX_DATA_LEN];
+    QByteArray s;
+
+    send_to_user(" -----------------------------\n");
+
+    sprintf(line,
+	    "Conf: Mapping %s, AutoChecks [Desc %s, Exits %s, Terrain %s],\r\n"
+            "      AutoRefresh settings %s (RName/Desc quotes %i/%i), \r\n"
+            "      AngryLinker %s\r\n"
+            " Current leader: %s\r\n", 
+            ON_OFF(mapping), ON_OFF(conf.get_automerge()), 
+            ON_OFF(conf.get_exits_check() ), ON_OFF(conf.get_terrain_check() ),
+            ON_OFF(conf.get_autorefresh() ), conf.get_name_quote(), conf.get_desc_quote(),
+            ON_OFF(conf.get_angrylinker() ), dispatcher.get_leader()
+            );
+    
+    send_to_user(line);
+    send_to_user(" Cause events queue:\n");
+    s = CPipe.print();
+    send_to_user((const char *)s);
+    send_to_user("\n");
+
+    send_to_user(" Result/Effect events queue:\n");
+    s = RPipe.print();
+    send_to_user((const char *) s);
+    send_to_user("\n");
+
+    stacker.printstacks();
+}
+
+void CEngine::add_event(char type, QByteArray data)
+{
+    TEvent e; 
+    e.group = Events[type].group;
+    e.type = type;
+    e.data = data;
+
+    if (Events[type].group == E_CAUSE) 
+        CPipe.push(e); 
+    else if (Events[type].group == E_CAUSE) 
+        RPipe.push(e); 
+}
+
+bool CEngine::empty()                      /* are pipes empty? */
+{
+    return RPipe.empty() && CPipe.empty();
+}
+
+void CEngine::clear()
+{
+    RPipe.clear();
+    CPipe.clear();     
+}
+
+void CEngine::populate_events()
+{
+  TEvent event;
+  
+  event.data = "EMPTY";           event.type = C_EMPTY;         
+  event.group = E_CAUSE;
+  Events.push_back(event);  
+  event.data = "EMPTY";           event.type = R_EMPTY;         
+  event.group = E_RESULT;
+  Events.push_back(event);  
+  event.data = "C_MOVE";          event.type = C_MOVE;         
+  event.group = E_CAUSE;        
+  Events.push_back(event);  
+  event.data = "C_LOOK";          event.type = C_LOOK;         
+  event.group = E_CAUSE;        
+  Events.push_back(event);  
+  event.data = "C_SCOUT";         event.type = C_SCOUT;        
+  event.group = E_CAUSE;        
+  Events.push_back(event);  
+  event.data = "R_ROOM";          event.type = R_ROOM;         
+  event.group = E_RESULT;        
+  Events.push_back(event);  
+  event.data = "R_EXITS";         event.type = R_EXITS;        
+  event.group = E_RESULT;        
+  Events.push_back(event);  
+  event.data = "R_BLIND";         event.type = R_BLIND;        
+  event.group = E_RESULT;        
+  Events.push_back(event);  
+  event.data = "R_PROMPT";        event.type = R_PROMPT;       
+  event.group = E_RESULT;        
+  Events.push_back(event);  
+  event.data = "R_FAIL";          event.type = R_FAIL;         
+  event.group = E_RESULT;        
+  Events.push_back(event);  
+  event.data = "R_DESC";          event.type = R_DESC;         
+  event.group = E_RESULT;        
+  Events.push_back(event);  
+  event.data = "R_BLIND";         event.type = R_BLIND;        
+  event.group = E_RESULT;        
+  Events.push_back(event);  
 }

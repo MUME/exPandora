@@ -1,4 +1,3 @@
-#include <cstring>
 
 #include "renderer.h"
 #include "defines.h"
@@ -6,6 +5,7 @@
 #include "forwarder.h"
 #include "utils.h"
 #include "stacks.h"
+#include "mainwindow.h"
 
 class stackmanager stacker;
 
@@ -48,7 +48,7 @@ void stackmanager::remove_room(unsigned int id)
   stacker.swap();
 }
 
-void stackmanager::put(Croom *r)
+void stackmanager::put(CRoom *r)
 {
     if (mark[r->id] == turn)
 	return;
@@ -63,12 +63,12 @@ void stackmanager::put(unsigned int id)
 }
 
 
-Croom *stackmanager::get(unsigned int i)
+CRoom *stackmanager::get(unsigned int i)
 {
     return (*sa)[i];
 }
 
-Croom *stackmanager::get_next(unsigned int i)
+CRoom *stackmanager::get_next(unsigned int i)
 {
     return (*sb)[i];
 }
@@ -92,7 +92,7 @@ void stackmanager::reset()
 
 void stackmanager::swap()
 {
-    vector<Croom *> *t;
+    vector<CRoom *> *t;
 
     turn++;
     if (turn == 0) {

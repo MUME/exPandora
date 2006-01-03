@@ -9,8 +9,8 @@ using namespace std;
 #define MAX_HASH_LEN	150	/* this caps top length of the tree thread */
 
 
-struct Ttree {
-    Ttree *leads[A_SIZE];	/* pointers to the next part letter */
+struct TTree {
+    TTree *leads[A_SIZE];	/* pointers to the next part letter */
     vector<unsigned int>        ids;
 };
 
@@ -20,32 +20,32 @@ struct levels_data_type {
   unsigned long items;
 };
 
-class Ctree {
-  int diving_delete(Ttree *p, char *part, unsigned int id);
+class CTree {
+  int diving_delete(TTree *p, char *part, unsigned int id);
   void genhash(const char *name, char *hash);
-  void delete_all(Ttree *t);
+  void delete_all(TTree *t);
     
   /* for gathering debug info only*/
   struct levels_data_type levels_data[MAX_HASH_LEN];
-  void calculate_info(Ttree *t, int level, int single);
+  void calculate_info(TTree *t, int level, int single);
   long debug_singles;
 
 public:
-  Ttree *root;
+  TTree *root;
 
 
-  Ctree();
+  CTree();
 
   void addname(const char *name, unsigned int id);	
-  void reset_ttree(Ttree *t);
-  Ttree * find_by_name(const char *name);
+  void reset_TTree(TTree *t);
+  TTree * find_by_name(const char *name);
   void delete_item(const char *name, unsigned int id);
   void reinit();
   void print_tree_stats();
-  void remove_id(unsigned int id, Ttree *t);
+  void remove_id(unsigned int id, TTree *t);
 };
 
-extern class Ctree NameMap;
+extern class CTree NameMap;
 
 #endif
 

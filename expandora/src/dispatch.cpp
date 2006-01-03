@@ -24,7 +24,6 @@
 #include "forwarder.h"
 
 class Cdispatcher dispatcher;
-char    last_prompt[MAX_STR_LEN];
 
 Cdispatcher::Cdispatcher() {
   amount = 0;
@@ -69,7 +68,7 @@ int Cdispatcher::check_roomname(char *line) {
                 (const char*) conf.get_look_col(),
                 roomname, (const char*) conf.get_end_col() );
             
-            preRAdd(R_ROOM, roomname);
+            Engine.add_event(R_ROOM, roomname);
             notify_analyzer();
         
             getting_desc = 1;   /* get desc if it will be there */
@@ -89,7 +88,8 @@ int Cdispatcher::check_exits(char *line)
 
     rx = conf.get_exits_exp();
     if (rx.indexIn(line) >= 0) {
-        preRAdd(R_EXITS, &line[ strlen( (const char*) conf.get_exits_pat() ) ]);
+        Engine.add_event(R_EXITS, 
+                         &line[ strlen( (const char*) conf.get_exits_pat() ) ]);
         print_debug(DEBUG_DISPATCHER, "EXITS: %s [%i]", &line[6], strlen(&line[6]) );
         getting_desc = 0;   /* do not react on desc alike strings anymore */
 //        notify_analyzer();
@@ -276,7 +276,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
     for (i = 0; i< amount; i++) {
         if ( (buffer[i].type != IS_LFCR) && (strlen(roomdesc) != 0) && getting_desc) {
             /* some room ended */
-            preRAdd(R_DESC, roomdesc);
+            Engine.add_event(R_DESC, roomdesc);
 //            notify_analyzer();
             print_debug(DEBUG_DISPATCHER, "DESC: %s", roomdesc);
             roomdesc[0] = 0;
@@ -324,9 +324,8 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
         }            
 
         if (buffer[i].type == IS_PROMPT) {
-	  
-            strcpy(last_prompt, buffer[i].line);
-            preRAdd(R_PROMPT, last_prompt);
+            Engine.set_prompt(buffer[i].line);
+            Engine.add_event(R_PROMPT, buffer[i].line);
             notify_analyzer();
         }
         
@@ -450,12 +449,7 @@ int Cdispatcher::check_failure(char *nline)
 
   for (unsigned int i = 0; i < conf.patterns.size(); i++) {
     if (conf.patterns[i].rexp.indexIn(nline) >= 0 ) {
-      if (  conf.patterns[i].group == E_RESULT)
-        preRAdd(conf.patterns[i].type, (const char*) conf.patterns[i].data);
-      else if (conf.patterns[i].group == E_CAUSE)
-        preCAdd(conf.patterns[i].type, (const char*) conf.patterns[i].data);
-          
-//      ;
+        Engine.add_event(conf.patterns[i].event.type, (const char*) conf.patterns[i].event.data);
       return 1;
     }         
   }
@@ -482,29 +476,29 @@ int Cdispatcher::check_failure(char *nline)
     sprintf(tmp_leader_moves, "You follow %s.", leader);
     if (strcmp(nline, tmp_leader_moves) == 0) {
 
-      if (engine_flags.mapping) {
-        engine_flags.mapping = 0;
-        send_to_user("--[Pandora: Mapping is now OFF!\r\n");
+      if ( Engine.isMapping() ) {
+          Engine.setMapping(false);
+          send_to_user("--[Pandora: Mapping is now OFF!\r\n");
       }
       
       switch (last_leaders_movement) {
         case 'n' : 
-		preCAdd(C_MOVE, "north");
+		         Engine.add_event(C_MOVE, "north");
                 break;
         case 'e' :
-		preCAdd(C_MOVE, "east");
+		         Engine.add_event(C_MOVE, "east");
                 break;
         case 's' :
-		preCAdd(C_MOVE, "south");
+		         Engine.add_event(C_MOVE, "south");
                 break;
         case 'w' :
-		preCAdd(C_MOVE, "west");
+		         Engine.add_event(C_MOVE, "west");
                 break;
         case 'u' :
-		preCAdd(C_MOVE, "up");
+		         Engine.add_event(C_MOVE, "up");
                 break;
         case 'd' :
-		preCAdd(C_MOVE, "down");
+		         Engine.add_event(C_MOVE, "down");
                 break;
         
         default:

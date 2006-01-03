@@ -17,8 +17,6 @@ extern char    base_file[];
 extern int     local_port;
 extern char    remote_host[];
 extern int     remote_port;
-extern char    last_prompt[MAX_STR_LEN];
-
 
 struct Tincoming_lines {
     char line[MAX_DATA_LEN];

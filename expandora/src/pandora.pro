@@ -10,25 +10,14 @@ QT += xml opengl gui
 
 win32 {
 	CONFIG	+= console
-	LIBS	+= -lwsock32
 }
-
-macx {
-	LIBS += /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
-}
-
-unix:LIBS		+= -lm 
-!debug {
-	unix:QMAKE_POST_LINK=strip $(TARGET)
-}
-
 
 FORMS +=	configedit.ui
 FORMS +=	patterndialog.ui
 FORMS +=        roomedit.ui
 
 HEADERS		+=configurator.h
-HEADERS		+=croom.h
+HEADERS		+=CRoom.h
 HEADERS		+=defines.h
 HEADERS		+=dispatch.h
 HEADERS		+=engine.h
@@ -36,32 +25,50 @@ HEADERS		+=event.h
 HEADERS		+=exits.h
 HEADERS		+=forwarder.h
 HEADERS		+=renderer.h
-HEADERS		+=rooms.h
+HEADERS		+=Map.h
 HEADERS		+=stacks.h
 HEADERS		+=tree.h
 HEADERS		+=userfunc.h
 HEADERS		+=utils.h
 HEADERS		+=xml2.h
+HEADERS		+=RoomEditDialog.h
+HEADERS		+=ConfigWidget.h
+HEADERS		+=PatternEditDialog.h
+HEADERS		+=mainwindow.h
+
 
 SOURCES		+=auda.cpp
-SOURCES		+=croom.cpp
+SOURCES		+=CRoom.cpp
 SOURCES		+=configurator.cpp
 SOURCES		+=dispatch.cpp
 SOURCES		+=engine.cpp
 SOURCES		+=event.cpp
 SOURCES		+=exits.cpp
 SOURCES		+=forwarder.cpp
-SOURCES		+=interface.cpp
 SOURCES		+=renderer.cpp
-SOURCES		+=rooms.cpp
+SOURCES		+=Map.cpp
 SOURCES		+=stacks.cpp
 SOURCES		+=tree.cpp
 SOURCES		+=userfunc.cpp
 SOURCES		+=utils.cpp
 SOURCES		+=xml2.cpp
+SOURCES		+=mainwindow.cpp
+SOURCES		+=RoomEditDialog.cpp
+SOURCES		+=ConfigWidget.cpp
+SOURCES		+=PatternEditDialog.cpp
+
 
 TARGET		= ../pandora
 
+macx {
+	LIBS += /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+}
+
+win32:LIBS	+= -lwsock32
+unix:LIBS		+= -lm 
+!debug {
+	unix:QMAKE_POST_LINK=strip $(TARGET)
+}
 
 #CFLAGS_VAR	= $$system(pkg-config --cflags OGRE)
 #CLIBS_VAR	= $$system(pkg-config --libs OGRE)

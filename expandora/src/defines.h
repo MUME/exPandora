@@ -33,16 +33,9 @@ extern int glredraw;		/* redraw is needed */
 extern int glquit;			/* quiting ... */
 extern int mud_emulation;          /* we are in emulation mode */
 
-extern int     auda_argc;
-extern char    **auda_argv;
-
 void toggle_renderer_reaction();
 void notify_analyzer();
 
 
 #endif
 
-
-#ifdef DMALLOC
-#include <dmalloc.h>
-#endif

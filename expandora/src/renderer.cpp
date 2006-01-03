@@ -15,7 +15,7 @@
 
 #include "stacks.h"
 #include "utils.h"
-#include "rooms.h"
+#include "Map.h"
 
 #include "userfunc.h"
 
@@ -149,49 +149,10 @@ void RendererWidget::paintGL()
 }
 
 
-int renderer_main()
-{
-  printf("Starting renderer ...\n");
-
-
-  
-  
-  QApplication::setColorSpec( QApplication::CustomColor );
-  QApplication a( auda_argc, auda_argv );
-
-  if ( !QGLFormat::hasOpenGL() ) {
-    qWarning( "This system has no OpenGL support. Exiting." );
-    return -1;
-  }
-
-
-  
-  renderer_window = new MainWindow( 0, "MainWindow" );
-//  a.setMainWidget( renderer_window );
-  
-  QGLFormat f;
-  f.setDoubleBuffer( TRUE );                 
-  f.setDirectRendering( TRUE );              
-  f.setRgba( TRUE );
-  f.setDepth( TRUE );
-
-  QGLFormat::setDefaultFormat( f );
-
-
-  renderer_window->show();
-
-  printf("Renderer: ready and awaiting for events...\r\n");
-  
-  a.exec();
-  
-  exit(1);
-  
-  return 0;
-}
 
 void RendererWidget::glDrawMarkers()
 {
-    Croom *p;
+    CRoom *p;
     unsigned int k;
     
     int dx, dy, dz;
@@ -253,10 +214,10 @@ void RendererWidget::glDrawMarkers()
 
 
 
-void RendererWidget::glDrawRoom(Croom *p)
+void RendererWidget::glDrawRoom(CRoom *p)
 {
     GLfloat dx, dx2, dy, dy2, dz, dz2;
-    Croom *r;
+    CRoom *r;
     int k;
     char lines, texture;
     float distance;
@@ -515,7 +476,7 @@ void RendererWidget::glDrawCSquare(CSquare *p)
 
 void RendererWidget::draw(void)
 {
-    Croom *p;
+    CRoom *p;
     CPlane *plane;  
 
 
@@ -662,22 +623,6 @@ void RendererWidget::display(void)
   printf("Rendering's done. Time elapsed %d ms\r\n", t.elapsed());
   
 }
-
-
-void toggle_renderer_reaction()
-{
-//    print_debug(DEBUG_RENDERER, "toggle_renderer_reaction called()");
-    QKeyEvent *k = new QKeyEvent(QEvent::KeyPress, Qt::Key_R,0, "r", false , 1);
-    QApplication::postEvent( renderer_window->renderer, k );
-}
-
-void notify_analyzer()
-{
-    QKeyEvent *k = new QKeyEvent(QEvent::KeyPress, Qt::Key_C,0, "c", false , 1);
-    QApplication::postEvent( renderer_window->renderer, k );
-}
-
-
 
 void NormalizePlane(float frustum[6][4], int side)
 {

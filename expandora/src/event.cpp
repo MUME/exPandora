@@ -1,257 +1,102 @@
-#include <cstdlib>
-#include <cstring>
-#include <cstdio>
-
-#include <QMutex>
-
 #include "defines.h"
-#include "configurator.h"
-
-
 #include "event.h"
-#include "dispatch.h"
-#include "stacks.h"
-#include "forwarder.h"
-#include "utils.h"
-#include "engine.h"
-#include <vector>
 
-vector<event_types_type> event_types;
+std::vector<TEvent> Events;
 
-struct Tevent *Ctop, *Cbottom;
-struct Tevent *Rtop, *Rbottom;
-
-struct Tevent *pre_Cstack;
-struct Tevent *pre_Rstack;
-
-QMutex stacks_mutex; 
-
-void clear_events_stacks()
+CEventPipe::CEventPipe()
 {
-    struct Tevent *p;
-    
-    while (Ctop != Cbottom) 
-        Cremove();
-    
-    while (Rtop != Rbottom) 
-        Rremove();
-    
-    while (pre_Cstack!=NULL) {
-        p = pre_Cstack->next;
-        free(pre_Cstack);
-        pre_Cstack = p;
-    }
-
-    while (pre_Rstack!=NULL) {
-        p = pre_Rstack->next;
-        free(pre_Rstack);
-        pre_Rstack = p;
-    }
+    pipe.clear();
 }
 
-
-void Cremove()
-{				
-    struct Tevent *p;
-
-    p = Ctop->next;
-    if (p == NULL)
-	return;
-
-    if (Cbottom == Ctop->next)
-	Cbottom = Ctop;
-    Ctop->next = p->next;
-    if (p->next != NULL)
-	p->next->prev = Ctop;
-    free(p);
-}
-
-void Rremove()
-{				/* remove an items from Result stack */
-    struct Tevent *p;
-
-    p = Rtop->next;
-    if (p == NULL)
-	return;
-
-    if (Rbottom == Rtop->next)
-	Rbottom = Rtop;
-
-    Rtop->next = p->next;
-    if (p->next != NULL)
-	p->next->prev = Rtop;
-    free(p);
-}
-
-
-void addtostack(struct Tevent *stack, char type, QByteArray data)
+CEventPipe::~CEventPipe()
 {
-    struct Tevent *n;
-
-    n = new Tevent;
-    n->next = NULL;
-    n->prev = stack;
-
-    stack->next = n;
-
-    n->type = type;
-    n->data = data;
+    CEventPipe();
 }
 
-void preRAdd(char type, QByteArray data)
+void CEventPipe::push(TEvent event)
 {
-    struct Tevent *n, *p;
-
-    stacks_mutex.lock();
-    
-    /* create and put data */
-    n = new Tevent;
-    n->next = NULL;
-    n->prev = NULL;
-    
-    n->type = type;
-    n->data = data;
-
-    
-    /* link */
-    if (pre_Rstack == NULL) {
-        pre_Rstack = n;
-
-        stacks_mutex.unlock();
-        return;
-    }
-    
-    p = pre_Rstack;
-    while (p->next != NULL) 
-        p = p->next;
-        
-    if (p->next == NULL) {
-        n ->prev = p;
-        p->next = n;
-    }
-
-    stacks_mutex.unlock();
+    pipe.push_back(event);    
 }
 
-void preCAdd(char type, QByteArray data)
+bool CEventPipe::empty()
 {
-    struct Tevent *n, *p;
+    return pipe.empty();
+}
 
-    stacks_mutex.lock();
+TEvent CEventPipe::pop()
+{
+    TEvent e;
     
-    /* create and put data */
-    n = new Tevent;
-    n->next = NULL;
-    n->prev = NULL;
-    
-    n->type = type;
-    n->data = data;
-
-    
-    /* link */
-    if (pre_Cstack == NULL) {
-        pre_Cstack = n;
-
-        stacks_mutex.unlock();
-        return;
-    }
-    
-    p = pre_Cstack;
-    while (p->next != NULL) 
-        p = p->next;
-        
-    if (p->next == NULL) {
-        n ->prev = p;
-        p->next = n;
-    }
-
-    stacks_mutex.unlock();
+    e = get();
+    pipe.erase(pipe.begin());
+    return e;
 }
 
 
-
-
-void printstacks()
+TEvent CEventPipe::get()
 {
-    char line[MAX_DATA_LEN];
+    TEvent e;
+    
+    if (pipe.empty()) {
+       e.type = 0;
+       e.data = "";
+       return e;
+    }
+    e = pipe[0];
+    return e;
+}
+
+QByteArray CEventPipe::print()
+{
     QByteArray s;
+    unsigned int i;
 
-    struct Tevent *p;
-    send_to_user(" -----------------------------\n");
+    pipe_lock.lock();    
 
-    sprintf(line,
-	    "Conf: Mapping %s, AutoChecks [Desc %s, Exits %s, Terrain %s],\r\n"
-            "      AutoRefresh settings %s (RName/Desc quotes %i/%i), \r\n"
-            "      AngryLinker %s\r\n"
-            " Current leader: %s\r\n", 
-            ON_OFF(engine_flags.mapping), ON_OFF(conf.get_automerge()), 
-            ON_OFF(conf.get_exits_check() ), ON_OFF(conf.get_terrain_check() ),
-            ON_OFF(conf.get_autorefresh() ), conf.get_name_quote(), conf.get_desc_quote(),
-            ON_OFF(conf.get_angrylinker() ), dispatcher.get_leader()
-            );
     
-    send_to_user(line);
-    send_to_user(" Cause events stack:\n");
     s = " Elements: ";
-    p = Ctop->next;
-    if (p == NULL)
-	s += "(null)";
-    while (p != NULL) {
-        s += "[type ";
-	s += event_types[p->type].name;
-	s += ", data ";
-	s += p->data;
-	s += "] ";
-      
-        if (s.length() > MAX_STR_LEN/2) 
-          break;
-	p = p->next;
+    if (pipe.empty()) {
+       s += "(null)";
+       return s;               
     }
-    send_to_user((const char *)s);
-    send_to_user("\n");
-
-    send_to_user(" Effect events stack:\n");
-    s = " Elements: ";
-    p = Rtop->next;
-    if (p == NULL)
-	s += "(null)";
-    while (p != NULL) {
+    for (i = 0; i < pipe.size(); i++) {
         s += "[type ";
-	s += event_types[p->type].name;
-	s += ", data ";
-	s += p->data;
-	s += "] ";
-      
-        if (s.length() > MAX_STR_LEN/2) 
-          break;
-	
-	p = p->next;
+        s += Events[pipe[i].type].data;
+	    s += ", data ";
+	    s += pipe[i].data;
+	    s += "] ";
+        if (s.length() > MAX_STR_LEN/2) {
+            if (i < pipe.size() - 1)
+                s += "...";
+            return s;
+        }
     }
-    send_to_user((const char *) s);
-    send_to_user("\n");
-
-    stacker.printstacks();
+    pipe_lock.unlock();    
+    
+    return s;
 }
 
-char get_cause_type_by_line(QByteArray line)
+char get_event_type(QByteArray name)
 {
-  unsigned int i;
-    
-  for (i = 0; i < event_types.size(); i++) 
-    if ( (event_types[i].group == E_CAUSE) && line == event_types[i].name ) 
-      return event_types[i].type;
-    
-  return -1;     
+    unsigned int i;
+       
+    for (i = 0; i < Events.size(); i++)
+        if (name == Events[i].data)
+           return Events[i].type;
+    return -1; 
 }
 
-char get_result_type_by_line(QByteArray line)
+int get_event_group(QByteArray name)
 {
-  unsigned int i;
-    
-  for (i = 0; i < event_types.size(); i++) 
-    if ( (event_types[i].group == E_RESULT) && line == event_types[i].name ) 
-      return event_types[i].type;
-    
-  return -1;  
+    unsigned int i;
+       
+    for (i = 0; i < Events.size(); i++)
+        if (name == Events[i].data)
+           return Events[i].group;
+    return -1; 
 }
 
+int get_event_group(char type)
+{
+    return Events[type].group;       
+}

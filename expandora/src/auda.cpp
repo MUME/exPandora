@@ -11,15 +11,15 @@
 
 
 #include "defines.h"
-#include "croom.h"
+#include "CRoom.h"
 #include "configurator.h"
 
 
-#include "rooms.h"
+#include "Map.h"
 #include "xml2.h"
 
 #include "dispatch.h"
-#include "renderer.h"
+#include "mainwindow.h"
 #include "event.h"
 #include "stacks.h"
 #include "forwarder.h"
@@ -40,14 +40,13 @@ int mud_emulation = 0;          /* we are in emulation mode */
 
 /* RENDERER THREAD MAIN DEFINES*/
 class RendererThread : public QThread {
-
 public:
-        virtual void run();
+      virtual void run();
 } renderer_thread;
 
 void RendererThread::run()
 {
-  renderer_main();
+  renderer_thread_main(0, NULL);
   print_debug(DEBUG_RENDERER, "quiting child thread function"); 
 }
 /* RENDERER THREAD ENDS*/
@@ -93,9 +92,6 @@ int main(int argc, char *argv[])
     int     default_local_port = 3000;
     int     default_remote_port = 4242;
 
-    
-    
-    
 #ifdef Q_OS_MACX
     CFURLRef pluginRef = CFBundleCopyBundleURL(CFBundleGetMainBundle());
     CFStringRef macPath = CFURLCopyFileSystemPath(pluginRef, 
@@ -121,10 +117,6 @@ int main(int argc, char *argv[])
 
 
   
-    /* parse arguments */
-    auda_argc = argc;
-    auda_argv = argv;
-
     for (i=1; i < argc; i++) {
 
       if ((strcmp(argv[i], "--config") == 0) || ( strcmp(argv[i], "-c") == 0)) 
@@ -202,7 +194,7 @@ int main(int argc, char *argv[])
 
 
     /* set analyzer engine defaults */
-    engine_init();
+    //engine_init();
     
     printf("Using config file : %s.\r\n", configfile);
     conf.load_config(resPath, configfile);
@@ -246,35 +238,13 @@ int main(int argc, char *argv[])
 
     printf("Loading the database ... \r\n");
     xml_readbase( conf.get_base_file() );
-//    roomer.database_integrity_check("After xml reading");
-    
     printf("Successfuly loaded %i rooms!\n", Map.size());
-
-    /* init */
-    Ctop = new Tevent;
-    Ctop->type = C_EMPTY;
-    Ctop->next = NULL;
-    Ctop->prev = NULL;
-    Ctop->data[0] = 0;
-    Cbottom = Ctop;
-
-    Rtop = new Tevent;
-    Rtop->type = R_EMPTY;
-    Rtop->next = NULL;
-    Rtop->prev = NULL;
-    Rtop->data[0] = 0;
-    Rbottom = Rtop;
-
-    pre_Cstack=NULL;
-    pre_Rstack=NULL;
-    
-//    renderer_main();
 
     /* special init for the mud emulation */
     if (mud_emulation) {
       printf("Starting in MUD emulation mode...\r\n");
       
-      strcpy(last_prompt, "-->");
+      Engine.set_prompt("-->");
       stacker.put(1);
       stacker.swap();
     }
@@ -285,10 +255,6 @@ int main(int argc, char *argv[])
     renderer_thread.wait();
     proxy_thread.wait();
 
-    
-
     printf("Quiting !\n");
-
-
     return 0;
 }
