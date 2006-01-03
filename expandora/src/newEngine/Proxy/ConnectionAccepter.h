@@ -1,13 +1,14 @@
 #ifndef CONNECTIONACCEPTER
 #define CONNECTIONACCEPTER
 
-#include <qserversocket.h>
+
+#include <QTcpServer>
 
 class Proxy;
 
-class ConnectionAccepter : public QServerSocket {
+class ConnectionAccepter : public QTcpServer {
  public:
-  ConnectionAccepter(Proxy * home, Q_UINT16 port);
+  ConnectionAccepter(Proxy * home, quint16 port);
   virtual void newConnection(int socket);
   
  private:

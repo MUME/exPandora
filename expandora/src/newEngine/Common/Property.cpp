@@ -47,7 +47,7 @@ void Property::add(char c) {
 }
 
 void Property::add(char * string) {
-  char newUsed = tos + strlen(string);
+  signed char newUsed = tos + strlen(string);
   if (newUsed < 0); //throw exception
   else { 
     data.put(newUsed-1, 0);
@@ -58,7 +58,7 @@ void Property::add(char * string) {
 }
 
 void Property::add(const char * other, const char * end) {
-  char needed = tos + end - other;
+  signed char needed = tos + end - other;
   if (needed < 0); //throw exception
   else {
     data.put(needed-1, 0);

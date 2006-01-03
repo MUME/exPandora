@@ -14,6 +14,7 @@ SOURCES += Proxy.cpp ConnectionAccepter.cpp
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 CONFIG += debug thread qt opengl warn_on
+QT += network
 win32 {
 	CONFIG	+= console
 }

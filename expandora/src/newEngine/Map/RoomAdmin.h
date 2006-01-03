@@ -26,7 +26,7 @@ using namespace std;
 class RoomAdmin : public Component, public IntermediateNode {
  public:
   RoomAdmin();
-  void start(QThread::Priority) {}	
+  void run() {}	
 
  private:
   Q_OBJECT

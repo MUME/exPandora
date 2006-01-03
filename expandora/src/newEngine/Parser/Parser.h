@@ -6,6 +6,7 @@
 #include <qobject.h>
 #include <qmutex.h>
 #include <qthread.h>
+#include <QWaitCondition>
 
 #include "ParseEvent.h"
 #include "Property.h"
@@ -27,7 +28,7 @@
  * and decides if rooms have to be added (and where) and where the player is
  * the results are published via signals
  */
-class Parser : public Component, private QThread {
+class Parser : public Component {
  public slots:
   void event(ParseEvent *);
   void setTerrain(Property *);
@@ -45,17 +46,16 @@ class Parser : public Component, private QThread {
 
  public:
   Parser();
-  void run();
-  void start(Priority priority = InheritPriority) {QThread::start(priority);}
   Coordinate * getExpectedCoordinate(Room * base);
-
+  
+  
  private:
   Q_OBJECT
   void mudPop();
   void playerPop();
+  void checkQueues();
 		
   void dropNote(ParseEvent * ev);
-  void checkQueues();
   void experimenting();
   void syncing();
   void approved();

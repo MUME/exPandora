@@ -24,7 +24,7 @@ class Configuration : public Component, public QXmlDefaultHandler {
   Component * get(QString & id);
   void put(QString & id, Component * component);
   
-  void start(QThread::Priority = QThread::InheritPriority);
+  virtual void start();
 
 
   //bool characters(const QString& ch);

@@ -1,4 +1,5 @@
 #include "XmlStorage.h"
+#include <iostream>
 
 
 /**
@@ -110,7 +111,7 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
 }
 
 bool StructureParser::characters( const QString& ch ) {
-    strncpy( data, ( const char* ) ch, ch.length() );
+    strncpy( data,  ch.toAscii(), ch.length() );
     data[ ch.length() ] = 0;
 
 #ifdef DEBUG
@@ -175,13 +176,13 @@ bool StructureParser::startElement( const QString& , const QString& ,
         }
 
         s = attributes.value( "dir" );
-        strncpy( data, ( const char* ) s, s.length() );
+        strncpy( data,  s.toAscii(), s.length() );
         data[ s.length() ] = 0;
         char d = data[ 0 ];
 
 
         s = attributes.value( "to" );
-        strncpy( data, ( const char* ) s, s.length() );
+        strncpy( data, s.toAscii(), s.length() );
         data[ s.length() ] = 0;
 
         to = 0;
@@ -191,7 +192,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
             to = atoi( ( const char * ) data );
 
         s = attributes.value( "door" );
-        strncpy( data, ( const char* ) s, s.length() );
+        strncpy( data, s.toAscii(), s.length() );
         data[ s.length() ] = 0;
 
 
@@ -229,7 +230,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
         for ( int i = 0 ; i < attributes.length(); i++ ) {
             s = attributes.value( i );
             //strcpy(data, (const char *)s);
-            strncpy( data, ( const char* ) s, s.length() );
+            strncpy( data, s.toAscii(), s.length() );
             data[ s.length() ] = 0;
 
             if ( attributes.qName( i ) == "id" ) {
@@ -277,9 +278,9 @@ double StructureParser::timeFromString( QString & s ) {
     s[ 2 ] = 0;
     s[ 5 ] = 0;
     s[ 10 ] = 0;
-    double ret = ( strtod( ( const char * ) s + 6, ( char ** ) 0 ) - 1970 ) * 60 * 60 * 24 * 365.25;
-    ret += strtod( ( const char * ) s + 3, ( char ** ) 0 ) * 60 * 60 * 24 * 30.4375;
-    ret += strtod( ( const char * ) s, ( char ** ) 0 ) * 60 * 60 * 24;
+    double ret = ( strtod((const char *) s.toAscii() + 6, ( char ** ) 0 ) - 1970 ) * 60 * 60 * 24 * 365.25;
+    ret += strtod( (const char *)s.toAscii() + 3, ( char ** ) 0 ) * 60 * 60 * 24 * 30.4375;
+    ret += strtod( (const char *)s.toAscii(), ( char ** ) 0 ) * 60 * 60 * 24;
     ret += 60 * 60 * 24; // just add one day to get 2000 not being a Schaltjahr right
     s[ 2 ] = '.';
     s[ 5 ] = '.';
@@ -295,9 +296,9 @@ void XmlStorage::xml_writebase() {
     //int i;
     //char tmp[4028];
 
-    f = fopen( fileName, "w" );
+    f = fopen( fileName.toAscii(), "w" );
     if ( f == NULL ) {
-        printf( "XML: Error - can not open the file: %s.\r\n", fileName.ascii() );
+        std::cerr << "XML: Error - can not open the file: " << fileName.toStdString() << std::endl;
         return ;
     }
 

@@ -14,15 +14,15 @@ int main ( int argc, char *argv[] ) {
 	QString s;
 	if ( argc == 1 ) {
 		s = QFileDialog::getOpenFileName(
-		        QString::null,
-		        "Configuration (*.xml)",
-		        0,
-		        "open file dialog",
-		        "Choose a Configuration" );
-		} else
+				0,
+				"Choose a configuration",
+		        	QString(),
+		        	"Configuration (*.xml)");
+		} 
+	else
 		s = argv[ 1 ];
 
-	if ( s ) {
+	if ( !(s.isNull()) ) {
 		componentCreator creator = ( componentCreator ) QLibrary::resolve( "Configuration", "createComponent" );
 		Component * config = creator();
 		config->setProperty("fileName", s );

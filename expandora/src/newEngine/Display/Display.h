@@ -76,14 +76,14 @@ class RendererWidget : public QGLWidget {
 class MainWindow;
 class DisplayComponent : public Component {
  public:
-  void start(QThread::Priority priority = QThread::InheritPriority);
+  DisplayComponent();
   void toggle_renderer_reaction();
   void CalculateFrustum();
-
+  void run() {};
 
  private:
   MainWindow *renderer_window;
-
+  QGLFormat f;
 };
 
 

@@ -14,7 +14,8 @@ DESTDIR = ../../../lib/
 LIBS += -L../../../lib -lCommon
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
-CONFIG += debug thread qt opengl warn_on
+CONFIG += debug thread qt warn_on
+QT += opengl
 win32 {
 	CONFIG	+= console
 }

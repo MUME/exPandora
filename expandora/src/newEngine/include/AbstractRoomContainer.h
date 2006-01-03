@@ -10,6 +10,7 @@ class AbstractRoomContainer {
   virtual int numRooms() {return -1;}
   virtual AbstractRoomContainer * merge(AbstractRoomContainer * other) {return other;}
   virtual Room * insertRoom(ParseEvent *) {return 0;}
+  virtual ~AbstractRoomContainer() {}
 };
 
 #endif

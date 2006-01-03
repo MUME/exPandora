@@ -5,6 +5,7 @@
 #include <qimage.h>
 #include <qapplication.h>
 #include <qdatetime.h>
+#include <QKeyEvent>
 
 #include "Terrain.h"
 #include "Display.h"
@@ -29,8 +30,8 @@ const int RendererWidget::texture_visibilit_range = 300;
 const int RendererWidget::details_visibility_range = 500;
 
 
-RendererWidget::RendererWidget( QWidget *parent, const char *name )
-		: QGLWidget( parent, name ) {
+RendererWidget::RendererWidget( QWidget *parent, const char *)
+		: QGLWidget( parent) {
 	angley = 0;
 	anglex = 0;
 	anglez = 0;
@@ -140,7 +141,7 @@ void RendererWidget::resizeGL( int width, int height ) {
 	shiftView();
 }
 
-void DisplayComponent::start( QThread::Priority ) {
+DisplayComponent::DisplayComponent() {
 	printf( "Starting renderer ...\n" );
 
 	
@@ -149,10 +150,7 @@ void DisplayComponent::start( QThread::Priority ) {
 		exit(-1);
 	}
 
-	renderer_window = new MainWindow( 0, "MainWindow" );
-	qApp->setMainWidget( renderer_window );
 
-	QGLFormat f;
 	f.setDoubleBuffer( TRUE );
 	f.setDirectRendering( TRUE );
 	f.setRgba( TRUE );
@@ -160,7 +158,10 @@ void DisplayComponent::start( QThread::Priority ) {
 
 	QGLFormat::setDefaultFormat( f );
 
+	renderer_window = new MainWindow( 0, "MainWindow" );
+	//qApp->setMainWidget( renderer_window );
 	renderer_window->show();
+	
 	printf( "Renderer: ready and awaiting for events...\r\n" );
 
 }
@@ -429,7 +430,7 @@ void RendererWidget::shiftView() {
 
 
 void DisplayComponent::toggle_renderer_reaction() {
-	QKeyEvent * k = new QKeyEvent( QEvent::KeyPress, 0, 'r', 0, NULL, FALSE, 0 );
+	QKeyEvent * k = new QKeyEvent( QEvent::KeyPress, 'r', Qt::NoModifier );
 	QApplication::postEvent( renderer_window->renderer, k );
 }
 

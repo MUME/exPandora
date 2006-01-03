@@ -15,7 +15,7 @@ class ObjectRecycler : protected TinyList<T *> {
 };
 
 template <class T>
-ObjectRecycler<T>::ObjectRecycler<T>() {
+ObjectRecycler<T>::ObjectRecycler() {
   pos = 0;
 }
 

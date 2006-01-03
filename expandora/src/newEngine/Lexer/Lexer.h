@@ -56,7 +56,7 @@ class GenericLexer : public QObject {
 
     
 
-    void pushEvent(char type);
+    void pushEvent(signed char type);
     void pushProperty();
     void pushOptional();
     void skipProperty();
@@ -97,12 +97,12 @@ class PlayerLexer : public GenericLexer, public PlayerFlexLexer {
 the interface the lexer provides for the proxy; you can attach a parser, and feed it with input
 from mud and player. The threading is handled inside this class 
 */
-class Lexer : public Component, public QThread {
+class Lexer : public Component {
 
  public:
-  Lexer() {}
-  virtual void run();
-  void start(Priority priority = InheritPriority) {QThread::start(priority);}
+  Lexer();
+  
+
 
  public slots:
   void pushUserInput(char * input);
@@ -112,10 +112,10 @@ class Lexer : public Component, public QThread {
   Q_OBJECT
   
   void init();
-  QWaitCondition inputSync;
-  QMutex inputLock;
-  queue<char *> userInput;
-  queue<char *> mudInput;
+  //QWaitCondition inputSync;
+  //QMutex inputLock;
+  //queue<char *> userInput;
+  //queue<char *> mudInput;
 		
   PlayerLexer playerLexer;
   MudLexer mudLexer;

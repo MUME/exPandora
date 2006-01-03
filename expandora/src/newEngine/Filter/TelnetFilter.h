@@ -14,7 +14,7 @@ class TelnetFilter : public Component {
 		char * purgeProtocolSequences( char * input, int length );
 
 	public:
-		void start( QThread::Priority ) {}
+		void run() {}
 
 	public slots:
 

@@ -16,7 +16,7 @@ Configuration::Configuration() : currentComponent( this ) {
 	put( *( new QString( "configuration" ) ), this );
 }
 
-void Configuration::start( QThread::Priority ) {
+void Configuration::start() {
 	QFile xmlFile( property( "fileName" ).toString() );
 	QXmlInputSource source( &xmlFile );
 
@@ -78,9 +78,9 @@ void Configuration::newComponent( const QXmlAttributes & atts ) {
 	componentCreator creator = ( componentCreator ) lib->resolve( "createComponent" );
 	if ( creator == 0 ) {
 		if ( lib->isLoaded() )
-			cout << "library loaded but creator not found: " << lib->library() << "\n";
+			cout << "library loaded but creator not found: " << lib->fileName().toStdString() << "\n";
 		else
-			cout << "library can't be loaded: " << lib->library() << "\n";
+			cout << "library can't be loaded: " << lib->fileName().toStdString() << "\n";
 		exit(-1) ;
 	}
 	currentComponent = creator();
@@ -90,7 +90,7 @@ void Configuration::newComponent( const QXmlAttributes & atts ) {
 void Configuration::addOption( const QXmlAttributes & atts ) {
 	QString name = atts.value( "name" );
 	QString value = atts.value( "value" );
-	currentComponent->setProperty( ( const char* ) name, value );
+	currentComponent->setProperty( name.toAscii(), value );
 }
 
 void Configuration::connectComponents( const QXmlAttributes & atts ) {
@@ -100,9 +100,7 @@ void Configuration::connectComponents( const QXmlAttributes & atts ) {
 	QString sl = atts.value( "slot" );
 
 
-	get
-		( to ) ->connect( get
-			                  ( from ), signal( sig ), slot( sl ) );
+	get( to ) ->connect( get( from ), signal( sig ).toAscii(), slot( sl ).toAscii() );
 }
 
 

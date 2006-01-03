@@ -8,6 +8,10 @@
 #include <qlabel.h>
 #include <qlineedit.h>
 #include <qpushbutton.h>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QMenu>
+#include <QDockWidget>
 
 #include "Display.h"
 
@@ -78,14 +82,14 @@ class MainWindow : public QMainWindow
   QLabel        *locationLabel; 
   QLabel        *formulaLabel; 
   QLabel        *modLabel; 
-  QPopupMenu    *optionsMenu;
-  QDockWindow   *dock;
+  QMenu    	*optionsMenu;
+  QDockWidget   *dock;
   RoomInfo      *roominfo;
 
-  int hide_status_id;
-  int hide_menu_id;
-  int hide_roominfo_id;
-  int always_on_top_id;
+  QAction * hide_status_id;
+  QAction * hide_menu_id;
+  QAction * hide_roominfo_id;
+  QAction * always_on_top_id;
 
 
   bool          LeftButtonPressed;

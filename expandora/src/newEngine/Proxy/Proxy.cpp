@@ -20,16 +20,16 @@ extern "C" MY_EXPORT Component * createComponent() {
 }
 
 
-void Proxy::start(QThread::Priority)
+void Proxy::run()
 {
   // we will get the accepter back when it is connected
   new ConnectionAccepter(this, property("localPort").toInt());
 }
 
 void Proxy::acceptConnection(ConnectionAccepter * source, int playerSocket) {
-  userSocket.setSocket(playerSocket);
+  userSocket.setSocketDescriptor(playerSocket);
 
-  mudSocket.connectToHost(property("remoteHost").asString(), property("remotePort").toInt());
+  mudSocket.connectToHost(property("remoteHost").toString(), property("remotePort").toInt());
   delete source; // we only accept one connection
   QObject::connect(&userSocket, SIGNAL(readyRead()), this, SLOT(processUserStream()));
   QObject::connect(&mudSocket, SIGNAL(readyRead()), this, SLOT(processMudStream()));
@@ -38,10 +38,10 @@ void Proxy::acceptConnection(ConnectionAccepter * source, int playerSocket) {
 void Proxy::processUserStream() {
   int read;
   while(userSocket.bytesAvailable()) {
-    read = userSocket.readBlock(buffer, 8191);
+    read = userSocket.read(buffer, 8191);
     if (read != -1) {
       buffer[read] = 0;
-      mudSocket.writeBlock(buffer, read);
+      mudSocket.write(buffer, read);
       emit analyzeUserStream(buffer, read);
     }
   }
@@ -50,10 +50,10 @@ void Proxy::processUserStream() {
 void Proxy::processMudStream() {
   int read;
   while(mudSocket.bytesAvailable()) {
-    read = mudSocket.readBlock(buffer, 8191);
+    read = mudSocket.read(buffer, 8191);
     if (read != -1) {
       buffer[read] = 0;
-      userSocket.writeBlock(buffer, read);
+      userSocket.write(buffer, read);
       emit analyzeUserStream(buffer, read);
     }
   }

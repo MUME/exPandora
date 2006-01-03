@@ -18,45 +18,21 @@ extern "C" MY_EXPORT Component * createComponent() {
 }
 
 
-void Lexer::pushUserInput (char * input) {
-  inputLock.lock();
-  userInput.push(input);
-  inputLock.unlock();
-  inputSync.wakeOne();
+void Lexer::pushUserInput (char * input) { 
+  playerLexer.switch_streams(new istringstream(input), 0); 
+  playerLexer.yylex();
 }
 
 void Lexer::pushMudInput(char * input) {
-  inputLock.lock();
-  mudInput.push(input);
-  inputLock.unlock();
-  inputSync.wakeOne();
+  mudLexer.switch_streams(new istringstream(input), 0); 
+  mudLexer.yylex();
 }
 
-void Lexer::run() {
-  init();
-  istringstream * buf = 0;
-  while(1) {
-    if (!userInput.empty()) {
-      inputLock.lock();
-      string temp = string(userInput.front());
-      userInput.pop();
-      inputLock.unlock();
-      playerLexer.switch_streams(buf = new istringstream(temp), 0); 
-      playerLexer.yylex();
-      delete(buf);
-    }
-    else if(!mudInput.empty()) {
-      inputLock.lock();
-      string temp = string(mudInput.front());
-      mudInput.pop();
-      inputLock.unlock();
-      mudLexer.switch_streams(buf = new istringstream(temp), 0); 
-      mudLexer.yylex();
-      delete(buf);
-    }
-    else inputSync.wait();
-  }    
+Lexer::Lexer() : Component(true) {
+	init();
 }
+
+
 
 GenericLexer::GenericLexer() {
   event = pemm.activate();
@@ -64,7 +40,7 @@ GenericLexer::GenericLexer() {
 }
 
 
-void GenericLexer::pushEvent(char _type) {
+void GenericLexer::pushEvent(signed char _type) {
   if (event->timestamp < 1) event->timestamp = m_timestamp();
   event->type = _type;
   emit eventFound(event);

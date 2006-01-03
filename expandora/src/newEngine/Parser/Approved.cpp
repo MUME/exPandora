@@ -7,7 +7,7 @@ void Approved::foundRoom(QObject * sender, Room * perhaps) {
     owner = sender;
   }
   else {
-    QObject::connect(this, SIGNAL(releaseRoom(int)), sender, SLOT(releaseRoom(int)));
+    QObject::connect(this, SIGNAL(releaseRoom(int)), sender, SLOT(releaseRoom(int)), Qt::DirectConnection);
     emit releaseRoom(perhaps->getId());
     QObject::disconnect(this, SIGNAL(releaseRoom(int)), sender, 0);
     if (matchedRoom != 0) moreThanOne = true; 
@@ -31,7 +31,7 @@ Room * Approved::oneMatch() {
 }
 
 void Approved::reset() {
-  QObject::connect(this, SIGNAL(releaseRoom(int)), owner, SLOT(releaseRoom(int)));
+  QObject::connect(this, SIGNAL(releaseRoom(int)), owner, SLOT(releaseRoom(int)), Qt::DirectConnection);
   emit releaseRoom(matchedRoom->getId());
   QObject::disconnect(this, SIGNAL(releaseRoom(int)), owner, 0);
   matchedRoom = 0;

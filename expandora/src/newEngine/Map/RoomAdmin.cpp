@@ -11,7 +11,7 @@ extern "C" MY_EXPORT RoomAdmin * createComponent()
   return new RoomAdmin;
 }
 
-RoomAdmin::RoomAdmin() : IntermediateNode(), mapLock(true)
+RoomAdmin::RoomAdmin() : IntermediateNode(), mapLock(QMutex::Recursive)
 {
   mapLock.lock();
   greatestUsedId = -1;

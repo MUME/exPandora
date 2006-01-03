@@ -16,7 +16,7 @@ class BaseEvent {
 	public:
 		void clear() {timestamp = 0; type = 0;};
 		long timestamp;
-		char type;
+		signed char type;
 };
 
 //extern ObjectRecycler<BaseEvent> bemm;

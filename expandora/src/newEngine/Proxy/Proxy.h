@@ -3,7 +3,7 @@
 
 
 #include <qobject.h>
-#include <qsocket.h>
+#include <QTcpSocket>
 #include "Component.h"
 #include "ConnectionAccepter.h"
 
@@ -27,7 +27,7 @@ class Proxy : public Component {
 		Proxy() {}
 		~Proxy() {}
 		
-		void start( QThread::Priority priority );
+		void run();
 		void acceptConnection( ConnectionAccepter * source, int socket );
 
 		int getLocalPort() const {return localPort;}
@@ -43,8 +43,8 @@ class Proxy : public Component {
 		QString remoteHost;
 		int remotePort;
 		int localPort;
-		QSocket mudSocket;
-		QSocket userSocket;
+		QTcpSocket mudSocket;
+		QTcpSocket userSocket;
 		char buffer[ 8192 ];
 
 	};

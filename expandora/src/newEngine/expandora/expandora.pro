@@ -5,6 +5,7 @@
 TEMPLATE = app
 
 INCLUDEPATH += ../include
+LIBS += -L../../../lib -lCommon
 OBJECTS_DIR	= obj
 
 CONFIG += debug thread qt opengl warn_on

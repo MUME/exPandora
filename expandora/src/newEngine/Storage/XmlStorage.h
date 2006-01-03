@@ -81,7 +81,7 @@ class XmlStorage: public Component {
 		}
 		void xml_writebase();
 		void xml_readbase();
-		void start( QThread::Priority = QThread::InheritPriority ) {
+		void run() {
 			xml_readbase();
 		}
 	public slots:

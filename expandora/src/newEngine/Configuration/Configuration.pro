@@ -8,6 +8,7 @@ INCLUDEPATH += . ../include/
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 CONFIG += debug thread qt opengl warn_on
+QT += xml
 win32 {
 	CONFIG	+= console
 }
