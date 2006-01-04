@@ -10,18 +10,14 @@ extern "C" MY_EXPORT TelnetFilter * createComponent() {
   return new TelnetFilter;
 }
 
-  /** these methods purge protocol-specific things from the input, save a copy 
-      in the buffer, then call the analyzer thread asynchronously; so they
-      return before the buffer is analyzed ... */
+  /** these methods are called asynchronously because the connectionType is queued
+  	like this we get all the benefits of explicit threading for free. */
 void TelnetFilter::analyzeMudStream(char * input, int length) {
   emit newMudInput(purgeProtocolSequences(input, length)); // pushes the input and wakes the parser thread
   return;
 } 
 
 
-
-
-      
   /** this one should probably be handled differently - not everything is to be
       passed on - a hackish way will be modifying the input ... */
 void TelnetFilter::analyzeUserStream(char * input, int length) {

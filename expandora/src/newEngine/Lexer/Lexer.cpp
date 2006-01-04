@@ -30,6 +30,10 @@ void Lexer::pushMudInput(char * input) {
 
 Lexer::Lexer() : Component(true) {
 	init();
+	connect(&playerLexer, SIGNAL(eventFound(ParseEvent* )), this, SIGNAL(eventFound(ParseEvent* )));
+	connect(&mudLexer, SIGNAL(eventFound(ParseEvent* )), this, SIGNAL(eventFound(ParseEvent* )));
+	connect(&playerLexer, SIGNAL(terrainDetected(Property* )), this, SIGNAL(terrainDetected(Property* )));
+	connect(&mudLexer, SIGNAL(terrainDetected(Property* )), this, SIGNAL(terrainDetected(Property* )));
 }
 
 

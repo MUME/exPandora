@@ -79,7 +79,7 @@ void Proxy::processMudStream()
     {
       buffer[read] = 0;
       userSocket->write(buffer, read);
-      emit analyzeUserStream(buffer, read);
+      emit analyzeMudStream(buffer, read);
     }
   }
 }

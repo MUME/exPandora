@@ -101,12 +101,16 @@ class Lexer : public Component {
 
  public:
   Lexer();
-  
+  virtual Qt::ConnectionType requiredConnectionType(const char *) {return Qt::QueuedConnection;}
 
 
  public slots:
   void pushUserInput(char * input);
   void pushMudInput(char * input); 
+ 
+ signals:
+    void terrainDetected(Property *);
+    void eventFound(ParseEvent *);
  
  private: 
   Q_OBJECT
