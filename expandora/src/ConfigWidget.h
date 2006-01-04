@@ -10,7 +10,6 @@ Q_OBJECT
 public:
     ConfigWidget (QWidget *parent = 0);
     
-    void run();
 public slots:
     virtual void accept();
     void autorefreshUpdated(bool);

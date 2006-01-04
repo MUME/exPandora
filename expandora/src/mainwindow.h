@@ -60,7 +60,6 @@ class MainWindow : public QMainWindow
   QAction       *emulationAct;
   
   RoomEditDialog    edit_dialog;
-  ConfigWidget      analyser_dialog;
   PatternEditDialog pattern_dialog;
 
 
@@ -69,6 +68,9 @@ class MainWindow : public QMainWindow
   QPoint        old_pos;
 
   void edit_room(unsigned int id);
+
+private:
+  ConfigWidget	*generalSettingsDialog;
 
 public:
     MainWindow(QWidget *parent, const char *name = 0);

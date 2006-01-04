@@ -8,28 +8,10 @@
 ConfigWidget::ConfigWidget (QWidget *parent) : QDialog(parent)
 {
     setupUi(this);                        
+    setWindowTitle(tr("General Settings"));
     
     connect(checkBox_autorefresh, SIGNAL(toggled(bool)), this, SLOT(autorefreshUpdated(bool)) );
 
-}
-
-void ConfigWidget::autorefreshUpdated(bool state)
-{
-    if (state) {
-        spinBox_namequote->setEnabled(true);
-        spinBox_descquote->setEnabled(true);
-    } else {
-        spinBox_namequote->setEnabled(false);
-        spinBox_descquote->setEnabled(false);
-    }
-}
-
-
-void ConfigWidget::run()
-{
-
-    if (isVisible())
-        return;
     if (conf.get_brief_mode()) 
         checkBox_brief->setChecked(true);
     else 
@@ -78,10 +60,17 @@ void ConfigWidget::run()
         
     lineEdit_visrange->setText(QString("%1").arg(conf.get_texture_vis()) );
     lineEdit_detrange->setText(QString("%1").arg(conf.get_details_vis()) );
-    
-    show();
-    raise();
-    activateWindow();
+}
+
+void ConfigWidget::autorefreshUpdated(bool state)
+{
+    if (state) {
+        spinBox_namequote->setEnabled(true);
+        spinBox_descquote->setEnabled(true);
+    } else {
+        spinBox_namequote->setEnabled(false);
+        spinBox_descquote->setEnabled(false);
+    }
 }
 
 void ConfigWidget::accept()

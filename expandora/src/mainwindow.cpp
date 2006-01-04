@@ -269,7 +269,13 @@ void MainWindow::loadConfig()
 
 void MainWindow::generalSetting()
 {
-    analyser_dialog.run();
+    if (!generalSettingsDialog) {
+        generalSettingsDialog = new ConfigWidget(this);
+    }
+
+    generalSettingsDialog->show();
+    generalSettingsDialog->raise();
+    generalSettingsDialog->activateWindow();
 }
 
 void MainWindow::emulation_mode()
@@ -510,6 +516,7 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   connect(emulationAct, SIGNAL(triggered()), this, SLOT(emulation_mode()));    
 
 
+  generalSettingsDialog = NULL;
   setupGeneralAct= new QAction(tr("General Settings ..."), this);
   setupGeneralAct->setStatusTip(tr("Edit general settings"));
   connect(setupGeneralAct, SIGNAL(triggered()), this, SLOT(generalSetting()) );    
