@@ -139,13 +139,13 @@ void RendererWidget::resizeGL( int width, int height )
 void RendererWidget::paintGL()
 {
 //    print_debug(DEBUG_RENDERER, "in paintGL()");
-  QTime t;
-  t.start();
+//  QTime t;
+//  t.start();
 
   display();
 
     
-  printf("Rendering's done. Time elapsed %d ms\r\n", t.elapsed());
+//  printf("Rendering's done. Time elapsed %d ms\r\n", t.elapsed());
 }
 
 
@@ -613,14 +613,15 @@ void RendererWidget::draw(void)
 
 void RendererWidget::display(void)
 {
-  QTime t;
-  t.start();
+  
 
+  if (glredraw) {
+    QTime t;
+    t.start();
 
-  if (glredraw)
     draw();
-    
-  printf("Rendering's done. Time elapsed %d ms\r\n", t.elapsed());
+    print_debug(DEBUG_RENDERER, "Rendering's done. Time elapsed %d ms", t.elapsed());
+  }  
   
 }
 
