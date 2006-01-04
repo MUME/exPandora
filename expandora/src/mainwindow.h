@@ -86,7 +86,7 @@ public:
 private slots:
   void hide_menu();
   void hide_status();
-  void always_on_top();
+  void always_on_top(bool);
   void newFile();
   void open();
   void reload();

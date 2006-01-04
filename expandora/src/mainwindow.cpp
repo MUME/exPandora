@@ -500,8 +500,8 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   always_on_top_action= new QAction(tr("Always on Top"), this);
   always_on_top_action->setStatusTip(tr("Always on Top"));
   always_on_top_action->setCheckable(true);
+  connect(always_on_top_action, SIGNAL(toggled(bool)), this, SLOT(always_on_top(bool)));
   always_on_top_action->setChecked(true);
-  connect(always_on_top_action, SIGNAL(triggered()), this, SLOT(always_on_top()));    
 
   emulationAct= new QAction(tr("Emulation Mode"), this);
   emulationAct->setStatusTip(tr("Offline MUME Emulation"));
@@ -548,28 +548,6 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   optionsMenu->addAction(loadConfigAct);
     
   
-
-
-   Qt::WindowFlags flags = windowFlags();
-#ifndef Q_OS_MACX
-   if ( flags && Qt::WindowStaysOnTopHint) {
-      flags ^= Qt::WindowStaysOnTopHint;
-   }
-   else{
-      flags |= Qt::WindowStaysOnTopHint;
-   }
-#else
-   if( flags && Qt::WindowStaysOnTopHint){
-      flags ^= Qt::WindowStaysOnTopHint;
-   
-}
-#endif
-/*
-   QPoint p(geometry().x(),geometry().y());
-   setParent(0,flags,p,true);
-*/
-  setWindowFlags(flags);
-
 
   /* status bar magicz */
   locationLabel = new QLabel("NO_SYNC", this); 
@@ -635,20 +613,21 @@ void MainWindow::hide_menu()
   }
 }
 
-void MainWindow::always_on_top()
+void MainWindow::always_on_top(bool set_on_top)
 {
   print_debug(DEBUG_INTERFACE, "always_on_top called");
 
   Qt::WindowFlags flags = windowFlags();
-  if( flags && Qt::WindowStaysOnTopHint )
+  if( set_on_top )
   {
-    flags ^= Qt::WindowStaysOnTopHint;
-  } else {
     flags |= Qt::WindowStaysOnTopHint;
+    print_debug(DEBUG_INTERFACE, "setting WindowStaysOnTopHint");
+  } else {
+    flags &= ~Qt::WindowStaysOnTopHint;
+    print_debug(DEBUG_INTERFACE, "clearing WindowStaysOnTopHint");
   }
-  printf("Setting flag.\r\n");
-//  setWindowFlags(flags);
-  printf("The flag is set.\r\n");
+  setWindowFlags(flags);
+  show();
 }
 
 
