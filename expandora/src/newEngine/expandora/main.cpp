@@ -8,28 +8,48 @@ using std::cerr;
 #include <qobject.h>
 #include <qstringlist.h>
 
-int main ( int argc, char *argv[] ) {
-	QApplication::setColorSpec( QApplication::CustomColor );
-	QApplication a( argc, argv );
-	QString s;
-	if ( argc == 1 ) {
-		s = QFileDialog::getOpenFileName(
-				0,
-				"Choose a configuration",
-		        	QString(),
-		        	"Configuration (*.xml)");
-		} 
-	else
-		s = argv[ 1 ];
+int main ( int argc, char *argv[] )
+{
+  //QApplication::setColorSpec( QApplication::CustomColor );
+  QApplication a( argc, argv );
+  a.setQuitOnLastWindowClosed (false);
+  QString s;
+  if ( argc == 1 )
+  {
+    s = QFileDialog::getOpenFileName(
+          0,
+          "Choose a configuration",
+          QString(),
+          "Configuration (*.xml)");
+  }
+  else
+  {
+    s = argv[ 1 ];
+  }
 
-	if ( !(s.isNull()) ) {
-		componentCreator creator = ( componentCreator ) QLibrary::resolve( "Configuration", "createComponent" );
-		Component * config = creator();
-		config->setProperty("fileName", s );
-		config->start();
-		a.exec();
-		} else {
-		cerr << "no file\n";
-		}
+
+  if ( !(s.isNull()) )
+  {
+    QLibrary lib( "Configuration" );
+    componentCreator creator = ( componentCreator ) lib.resolve( "createComponent" );
+	if ( creator == 0 ) {
+		if ( lib.isLoaded() )
+			std::cout << "library loaded but creator not found: " << lib.fileName().toStdString() << "\n";
+		else
+			std::cout << "library can't be loaded: " << lib.fileName().toStdString() << "\n";
+		exit(-1) ;
 	}
+    //componentCreator creator = ( componentCreator ) QLibrary::resolve( QString("Configuration"), "createComponent" );
+    Component * config = creator();
+    if (!config->setProperty("fileName", s ))
+    	throw "couldn't set fileName for configuration";
+    config->start();
+    a.setQuitOnLastWindowClosed (true);
+    a.exec();
+  }
+  else
+  {
+    cerr << "no file\n";
+  }
+}
 
