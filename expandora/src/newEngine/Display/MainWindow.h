@@ -62,7 +62,7 @@ class MainWindow : public QMainWindow
   RendererWidget *renderer;
 
   private slots:
-  void hide_menu();
+  
   void hide_status();
   void hide_roominfo();
   void always_on_top();
@@ -75,8 +75,7 @@ class MainWindow : public QMainWindow
   void wheelEvent(QWheelEvent *);
 
   void keyPressEvent( QKeyEvent * );
-  void hide();                              /* hide all extra widgets */
-
+  
   
 
   QLabel        *locationLabel; 
@@ -87,7 +86,6 @@ class MainWindow : public QMainWindow
   RoomInfo      *roominfo;
 
   QAction * hide_status_id;
-  QAction * hide_menu_id;
   QAction * hide_roominfo_id;
   QAction * always_on_top_id;
 

@@ -94,13 +94,26 @@ void Configuration::addOption( const QXmlAttributes & atts ) {
 }
 
 void Configuration::connectComponents( const QXmlAttributes & atts ) {
-	QString from = atts.value( "from" );
-	QString sig = atts.value( "signal" );
-	QString to = atts.value( "to" );
-	QString sl = atts.value( "slot" );
+	QString temp = atts.value( "from" );
+	Component * from = get(temp);
+	temp = atts.value( "signal" );
+	QString sig = signal(temp);
+	temp = atts.value( "to" );
+	Component * to = get(temp);
+	temp = atts.value( "slot" );
+	QString sl = slot(temp);
 
+	Qt::ConnectionType requiredSlot = to->requiredConnectionType(sl.toLatin1());
+	Qt::ConnectionType requiredSignal = from->requiredConnectionType(sig.toLatin1());
+	
+	Qt::ConnectionType resultType;
+	if (requiredSlot == requiredSignal || requiredSignal == Qt::AutoCompatConnection)
+		resultType = requiredSlot;
+	else if (requiredSlot == Qt::AutoCompatConnection)
+		resultType = requiredSignal;
+	//else throw ConnectionImpossible(from, sig, to, slot);
 
-	get( to ) ->connect( get( from ), signal( sig ).toAscii(), slot( sl ).toAscii() );
+	to->connect(from, sig.toLatin1(), sl.toLatin1(), resultType);
 }
 
 

@@ -33,6 +33,7 @@ protected:
    */
   virtual void start();
   virtual ~Component();
+  virtual Qt::ConnectionType requiredConnectionType(const char *) {return Qt::AutoCompatConnection;}
   Component::Component(bool threaded = false);
   
 };

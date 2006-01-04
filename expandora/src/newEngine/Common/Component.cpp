@@ -10,6 +10,7 @@ void Component::start() {
 	}
 }
 
+
 Component::Component(bool threaded) {
 	if (threaded) thread = new ComponentThreader(this);
 	else thread = 0;

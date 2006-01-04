@@ -19,9 +19,9 @@ RoomInfo::RoomInfo(QWidget* parent, const char*)
  : QWidget(parent)
 {
   /* ------- */
-  id_label = new QLabel("ID: Out of sync", this);
-  terrain_label = new QLabel("T: NONE", this);
-  coord_label = new QLabel("COORD:", this);
+  id_label = new QLabel("ID: Out of sync");
+  terrain_label = new QLabel("T: NONE");
+  coord_label = new QLabel("COORD:");
   
   topLayout = new QHBoxLayout; 
   topLayout->addWidget(id_label); 
@@ -32,7 +32,7 @@ RoomInfo::RoomInfo(QWidget* parent, const char*)
   /* ------- */  
   
   /* ------- */
-  name_label= new QLabel("RN ", this);
+  name_label= new QLabel("RN ");
   name_edit = new QLineEdit(this);
 
   name_edit->setAlignment(Qt::AlignLeft);
@@ -42,7 +42,7 @@ RoomInfo::RoomInfo(QWidget* parent, const char*)
 //  nameLayout->addStretch(1);
   nameLayout->addWidget(name_edit);
   /* ------- */
-  desc_label= new QLabel("D ", this);
+  desc_label= new QLabel("D ");
   
   desc_edit = new QLineEdit(this);
   
@@ -52,7 +52,7 @@ RoomInfo::RoomInfo(QWidget* parent, const char*)
   descLayout->addWidget(desc_edit);
 
   /* --- */
-  note_label= new QLabel("Note ", this);
+  note_label= new QLabel("Note ");
   
   note_edit = new QLineEdit(this);
   
@@ -62,8 +62,8 @@ RoomInfo::RoomInfo(QWidget* parent, const char*)
   noteLayout->addWidget(note_edit);
   /* --- */
   
-  exits_label = new QLabel("Exits:", this);
-  doors_label = new QLabel("Doors:", this);
+  exits_label = new QLabel("Exits:");
+  doors_label = new QLabel("Doors:");
   
   
   mainLayout = new QVBoxLayout(this); 
@@ -113,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent, const char *)
 {
   renderer =  new RendererWidget( this, "Renderer");
   setCentralWidget( renderer );
+  resize(640, 480);
 
   QMenu *fileMenu = new QMenu( "File", 0 );
   fileMenu->addAction( tr("&Exit"), qApp, SLOT( quit() ), Qt::CTRL+Qt::Key_Q );
@@ -120,10 +121,8 @@ MainWindow::MainWindow(QWidget *parent, const char *)
 
   
   optionsMenu = new QMenu( "Options", 0 );
-  optionsMenu->addAction( tr("Hide All"), this, SLOT( hide() ), Qt::CTRL+Qt::Key_H );
-  //optionsMenu->setCheckable(true);
-  hide_menu_id = optionsMenu->addAction( tr("Hide/Show Menu"), this, SLOT( hide_menu() ), Qt::Key_F12);
-  hide_menu_id->setCheckable(true);
+
+ 
   hide_status_id = optionsMenu->addAction( tr("Hide/Show Status"), this, SLOT( hide_status()), Qt::Key_F11 );
   hide_status_id->setCheckable(true);
   hide_roominfo_id = optionsMenu->addAction( tr("Hide/Show Room info"), this, SLOT( hide_roominfo()), Qt::Key_F10);
@@ -137,13 +136,13 @@ MainWindow::MainWindow(QWidget *parent, const char *)
   
   menuBar()->addMenu( optionsMenu);
   
-  locationLabel = new QLabel("NO_SYNC", this); 
+  locationLabel = new QLabel("NO_SYNC"); 
   locationLabel->setAlignment(AlignHCenter); 
   locationLabel->setMinimumSize(locationLabel->sizeHint()); 
   
-  formulaLabel = new QLabel(this); 
+  formulaLabel = new QLabel(); 
   
-  modLabel = new QLabel(tr("     "), this); 
+  modLabel = new QLabel(tr("     ")); 
   modLabel->setAlignment(AlignHCenter); 
   modLabel->setMinimumSize(modLabel->sizeHint());      
   modLabel->clear(); 
@@ -153,55 +152,35 @@ MainWindow::MainWindow(QWidget *parent, const char *)
   statusBar()->addWidget(modLabel); 
   
   
-  hide_menu_id->setChecked(false);
-  hide_roominfo_id->setCheckable(true);
-  hide_status_id->setCheckable(false);
+  
+  hide_roominfo_id->setChecked(true);
+  hide_status_id->setChecked(true);
   always_on_top_id->setChecked(true);
-  /*optionsMenu->setItemChecked(hide_menu_id, false );
-  optionsMenu->setItemChecked(hide_status_id, false );
-  optionsMenu->setItemChecked(hide_roominfo_id, true );
- 
-  optionsMenu->setItemChecked(always_on_top_id, true );*/
-//  this->setWFlags(Qt::WStyle_Customize | Qt::WStyle_StaysOnTop);
+  
 
   dock = new QDockWidget("Room Info", this);
-  //dock->setResizeEnabled( TRUE );
-//  dock->setVerticalStretchable( TRUE );
-//  dock->setHorizontalStretchable( TRUE );
   addDockWidget(Qt::BottomDockWidgetArea, dock);
   
   roominfo = new RoomInfo(dock, "roominfo");
   dock->setWidget(roominfo);
 
-/*
-   int flags = getWFlags();
+
+   Qt::WindowFlags flags = windowFlags();
 #ifndef Q_OS_MACX
-   if(testWFlags(Qt::WStyle_StaysOnTop)){
-      flags ^= Qt::WStyle_StaysOnTop;
+   if(flags && Qt::WindowStaysOnTopHint){
+      flags ^= Qt::WindowStaysOnTopHint;
    }
    else{
-      flags |= Qt::WStyle_StaysOnTop;
+      flags |= Qt::WindowStaysOnTopHint;
    }
 #else
-   if(testWFlags(Qt::WStyle_StaysOnTop)){
-      flags ^= Qt::WStyle_StaysOnTop;
+   if(flags && Qt::WindowStaysOnTopHint){
+      flags ^= Qt::WindowStaysOnTopHint;
    
 }
 #endif
-
-   QPoint p(geometry().x(),geometry().y());
-   reparent(0,flags,p,true);
-*/
-//  this->reparent(NULL, this->getWFlags() | WStyle_StaysOnTop, QPoint(0,0),true);  
-    /* ---- */
-//  setDockEnabled(DockBottom, false);
-//  setDockEnabled(DockTop, false);
-//  setDockEnabled(DockLeft, false);
-//  setDockEnabled(DockRight, false);
-  
-
-
-
+	setWindowFlags(flags);
+ 
   LeftButtonPressed = false;
   RightButtonPressed = false;
 
@@ -217,51 +196,24 @@ void MainWindow::update_status_bar(Room * rr)
 }
 
 
-void MainWindow::hide()
-{
-  
-  
-  menuBar()->hide();
-  statusBar()->hide();
-  dock->hide();
-
-  
-  hide_menu_id->setChecked(true);
-  hide_status_id->setChecked(true);
-  hide_roominfo_id->setChecked(true);
-  //optionsMenu->setItemChecked(hide_status_id, true );
-  //optionsMenu->setItemChecked(hide_roominfo_id, true );
-}
 
 
-void MainWindow::hide_menu()
-{
-  
-  if (hide_menu_id->isChecked()) 
-  {
-    menuBar()->show();  
-    //optionsMenu->setItemChecked(hide_menu_id, false);
-  } else {
-    menuBar()->hide();
-    //optionsMenu->setItemChecked(hide_menu_id, true);
-  }
-}
+
+
 
 void MainWindow::always_on_top()
 {
-  /*
-  WFlags flags = getWFlags();
-  if(testWFlags(Qt::WStyle_StaysOnTop))
-  {
-    flags ^= Qt::WStyle_StaysOnTop;
-    optionsMenu->setItemChecked(always_on_top_id, false);
+  
+  Qt::WindowFlags flags = windowFlags();
+  if(flags && Qt::WindowStaysOnTopHint){
+      flags ^= Qt::WindowStaysOnTopHint;
+    
   } else {
-    flags |= Qt::WStyle_StaysOnTop;
-    optionsMenu->setItemChecked(always_on_top_id, true);
+    flags |= Qt::WindowStaysOnTopHint;
+    
   }
-  QPoint p(geometry().x(),geometry().y());
-  reparent(0,flags,p,true);
-*/
+  setWindowFlags(flags);
+
 }
 
 
@@ -372,20 +324,7 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
             renderer->shiftView();
             break;				
 
-         case Key_F12:
-            hide_menu();
-            break;
-         case Key_F11:
-            hide_status();
-            break;				
-         case Key_F10:
-            hide_roominfo();
-            break;				
-
-         case CTRL+Key_H:
-            hide();
-            break;				
-
+        
          
     }
     
