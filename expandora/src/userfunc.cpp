@@ -168,7 +168,7 @@ const struct user_command_type user_commands[] = {
   {"down",          usercmd_move,         DOWN,           USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"look",          usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
 //  {"l",             usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
-  {"examine",       usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
+  {"examine",       usercmd_move,         USER_MOVE_EXAMINE, USERCMD_FLAG_INSTANT,   NULL, NULL},
 //  {"exa",           usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
 //  {"exam",          usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"mmerge",        usercmd_mmerge,       0,    USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
@@ -1667,8 +1667,20 @@ USERCMD(usercmd_move)
                   p = skip_spaces(line);
                   if (!*p) {      
                     Engine.add_event(C_LOOK, NULL);
-                  }
-                  send_to_mud("look\n");
+                    send_to_mud("look\n");
+                  } else {
+		    send_to_mud("look %s\n", p);
+		  }
+                  
+                  break;
+          case USER_MOVE_EXAMINE:
+                  p = skip_spaces(line);
+                  if (!*p) {      
+                    Engine.add_event(C_LOOK, NULL);
+                    send_to_mud("examine\n");
+                  } else {
+		    send_to_mud("examine %s\n", p);
+		  }
                   
                   break;
     }      
@@ -1699,6 +1711,7 @@ USERCMD(usercmd_move)
                   dir = DOWN;
                   break;
           case USER_MOVE_LOOK:
+          case USER_MOVE_EXAMINE:
                   r->send_room();
                   send_to_user( (const char *) Engine.get_prompt());
                   return USER_PARSE_DONE;
