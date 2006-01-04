@@ -15,48 +15,73 @@
  * and handles platform specific issues
  */
 
-extern "C" MY_EXPORT Component * createComponent() {
+extern "C" MY_EXPORT Component * createComponent()
+{
   return new Proxy;
 }
 
 
-void Proxy::run()
+Proxy::Proxy() : Component(true), server(this)
 {
-  // we will get the accepter back when it is connected
-  new ConnectionAccepter(this, property("localPort").toInt());
+  userSocket = 0;
+  mudSocket = new QTcpSocket(this);
+  server.setMaxPendingConnections(1);
+  if(!connect(&server, SIGNAL(newConnection()), SLOT(acceptConnection()))) throw "can't connect to TcpServer";
 }
 
-void Proxy::acceptConnection(ConnectionAccepter * source, int playerSocket) {
-  userSocket.setSocketDescriptor(playerSocket);
-
-  mudSocket.connectToHost(property("remoteHost").toString(), property("remotePort").toInt());
-  delete source; // we only accept one connection
-  QObject::connect(&userSocket, SIGNAL(readyRead()), this, SLOT(processUserStream()));
-  QObject::connect(&mudSocket, SIGNAL(readyRead()), this, SLOT(processMudStream()));
+void Proxy::start() {
+	server.listen(QHostAddress::Any, localPort);
+	Component::start();
 }
 
-void Proxy::processUserStream() {
+
+void Proxy::acceptConnection()
+{
+  if (userSocket) return; // ignore additional connections
+  userSocket = server.nextPendingConnection();
+  server.setMaxPendingConnections(0);
+  mudSocket->connectToHost(remoteHost, remotePort);
+
+  QObject::connect(userSocket, SIGNAL(readyRead()), this, SLOT(processUserStream()));
+  QObject::connect(mudSocket, SIGNAL(readyRead()), this, SLOT(processMudStream()));
+  QObject::connect(mudSocket, SIGNAL(disconnected()), QObject::thread(), SLOT(quit()));
+  QObject::connect(userSocket, SIGNAL(disconnected()), this, SLOT(resetServer()));
+}
+
+void Proxy::resetServer() {
+	server.setMaxPendingConnections(1);
+	delete(userSocket);
+	userSocket = 0;
+}
+
+void Proxy::processUserStream()
+{
   int read;
-  while(userSocket.bytesAvailable()) {
-    read = userSocket.read(buffer, 8191);
-    if (read != -1) {
+  while(userSocket->bytesAvailable())
+  {
+    read = userSocket->read(buffer, 8191);
+    if (read != -1)
+    {
       buffer[read] = 0;
-      mudSocket.write(buffer, read);
+      mudSocket->write(buffer, read);
       emit analyzeUserStream(buffer, read);
     }
   }
 }
-  
-void Proxy::processMudStream() {
+
+void Proxy::processMudStream()
+{
   int read;
-  while(mudSocket.bytesAvailable()) {
-    read = mudSocket.read(buffer, 8191);
-    if (read != -1) {
+  while(mudSocket->bytesAvailable())
+  {
+    read = mudSocket->read(buffer, 8191);
+    if (read != -1)
+    {
       buffer[read] = 0;
-      userSocket.write(buffer, read);
+      userSocket->write(buffer, read);
       emit analyzeUserStream(buffer, read);
     }
   }
 }
 
- 
+

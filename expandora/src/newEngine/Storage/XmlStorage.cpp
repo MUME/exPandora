@@ -1,6 +1,6 @@
 #include "XmlStorage.h"
 #include <iostream>
-
+#include <QApplication>
 
 /**
  * this method is called when a component of this type should be
@@ -172,7 +172,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
         /* special */
         if ( attributes.length() < 3 ) {
             printf( "Not enough exit attributes in XML file!" );
-            exit( 1 );
+            qApp->quit();
         }
 
         s = attributes.value( "dir" );

@@ -147,7 +147,7 @@ DisplayComponent::DisplayComponent() {
 	
 	if ( !QGLFormat::hasOpenGL() ) {
 		qWarning( "This system has no OpenGL support. Exiting." );
-		exit(-1);
+		qApp->quit();
 	}
 
 

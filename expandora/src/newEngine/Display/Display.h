@@ -79,7 +79,6 @@ class DisplayComponent : public Component {
   DisplayComponent();
   void toggle_renderer_reaction();
   void CalculateFrustum();
-  void run() {};
 
  private:
   MainWindow *renderer_window;

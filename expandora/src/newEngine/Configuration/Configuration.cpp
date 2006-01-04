@@ -81,7 +81,7 @@ void Configuration::newComponent( const QXmlAttributes & atts ) {
 			cout << "library loaded but creator not found: " << lib->fileName().toStdString() << "\n";
 		else
 			cout << "library can't be loaded: " << lib->fileName().toStdString() << "\n";
-		exit(-1) ;
+		throw "Component couldn't be loaded";
 	}
 	currentComponent = creator();
 	put( id, currentComponent );
@@ -89,8 +89,8 @@ void Configuration::newComponent( const QXmlAttributes & atts ) {
 
 void Configuration::addOption( const QXmlAttributes & atts ) {
 	QString name = atts.value( "name" );
-	QString value = atts.value( "value" );
-	currentComponent->setProperty( name.toAscii(), value );
+	QVariant value = atts.value( "value" );
+	currentComponent->setProperty( name.toLatin1(), value );
 }
 
 void Configuration::connectComponents( const QXmlAttributes & atts ) {
@@ -111,7 +111,7 @@ void Configuration::connectComponents( const QXmlAttributes & atts ) {
 		resultType = requiredSlot;
 	else if (requiredSlot == Qt::AutoCompatConnection)
 		resultType = requiredSignal;
-	//else throw ConnectionImpossible(from, sig, to, slot);
+	else throw "can't connect non-matching slot and signal";
 
 	to->connect(from, sig.toLatin1(), sl.toLatin1(), resultType);
 }

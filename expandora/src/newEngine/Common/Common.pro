@@ -16,7 +16,8 @@ HEADERS += ../include/Frustum.h \
            ../include/SimpleString.h \
            ../include/TinyList.h \
            ../include/AbstractRoomContainer.h \
-           ../include/RoomSignalHandler.h 
+           ../include/RoomSignalHandler.h \ 
+	../include/ParseEvent.h
 SOURCES += Frustum.cpp \
            Component.cpp \
            BaseEvent.cpp \
@@ -33,8 +34,7 @@ OBJECTS_DIR = obj
 MOC_DIR = moc
 INCLUDEPATH += ../include
 CONFIG += debug thread qt opengl warn_on
-DESTDIR = ../../../lib/
-HEARDER += ../include/ParseEvent.h
+DESTDIR = ../../../lib
 win32{
   CONFIG += console
 }

@@ -6,7 +6,9 @@
 
 void Component::start() {
 	if (thread) {
+		moveToThread(thread);
 		thread->start();
+		
 	}
 }
 

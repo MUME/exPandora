@@ -10,8 +10,8 @@ extern "C" MY_EXPORT TelnetFilter * createComponent() {
   return new TelnetFilter;
 }
 
-  /** these methods purge protocol-specific things from the imput, save a copy 
-      in the buffer, then call the analyzer thread via a QWaitCondition; so they
+  /** these methods purge protocol-specific things from the input, save a copy 
+      in the buffer, then call the analyzer thread asynchronously; so they
       return before the buffer is analyzed ... */
 void TelnetFilter::analyzeMudStream(char * input, int length) {
   emit newMudInput(purgeProtocolSequences(input, length)); // pushes the input and wakes the parser thread

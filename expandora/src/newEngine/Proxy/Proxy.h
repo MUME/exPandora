@@ -4,12 +4,13 @@
 
 #include <qobject.h>
 #include <QTcpSocket>
+#include <QTcpServer>
 #include "Component.h"
-#include "ConnectionAccepter.h"
+
 
 class Proxy : public Component {
 
-
+		Q_OBJECT
 		Q_PROPERTY( int localPort READ getLocalPort WRITE setLocalPort )
 		Q_PROPERTY( QString remoteHost READ getRemoteHost WRITE setRemoteHost )
 		Q_PROPERTY( int remotePort READ getRemotePort WRITE setRemotePort )
@@ -22,29 +23,29 @@ class Proxy : public Component {
 	public slots:
 		void processUserStream();
 		void processMudStream();
+		void acceptConnection();
+		void resetServer();
 
 	public:
-		Proxy() {}
+		Proxy();
 		~Proxy() {}
 		
-		void run();
-		void acceptConnection( ConnectionAccepter * source, int socket );
-
+		void start();
 		int getLocalPort() const {return localPort;}
-		void setLocalPort(int & i) {localPort = i;}
+		void setLocalPort(int i) {localPort = i;}
 		QString getRemoteHost() const {return remoteHost;}
-		void setRemoteHost(QString & i) {remoteHost = i;}
+		void setRemoteHost(QString i) {remoteHost = i;}
 		int getRemotePort() const {return remotePort;}
-		void setRemotePort(int & i) {remotePort = i;}
+		void setRemotePort(int i) {remotePort = i;}
 		
 	private:
-		Q_OBJECT
-
+		
+		QTcpServer server;
 		QString remoteHost;
 		int remotePort;
 		int localPort;
-		QTcpSocket mudSocket;
-		QTcpSocket userSocket;
+		QTcpSocket * mudSocket;
+		QTcpSocket * userSocket;
 		char buffer[ 8192 ];
 
 	};
