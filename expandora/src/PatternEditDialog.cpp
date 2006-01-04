@@ -22,7 +22,6 @@ PatternEditDialog::PatternEditDialog(QWidget *parent) : QDialog(parent)
 void PatternEditDialog::run()
 {
     unsigned int    i;
-    QString s;
 
     if (isVisible())
         return;

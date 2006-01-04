@@ -273,6 +273,7 @@ void MainWindow::generalSetting()
         generalSettingsDialog = new ConfigWidget(this);
     }
 
+    generalSettingsDialog->run();
     generalSettingsDialog->show();
     generalSettingsDialog->raise();
     generalSettingsDialog->activateWindow();
@@ -303,7 +304,11 @@ void MainWindow::emulation_mode()
 
 void MainWindow::editPatterns()
 {
-    pattern_dialog.run();
+    if (!pattern_dialog) {
+        pattern_dialog = new PatternEditDialog(this);
+    }
+
+    pattern_dialog->run();
 }
 
 
@@ -432,6 +437,7 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
 
 
   /* Room menu */
+  edit_dialog = NULL;
   roomeditAct= new QAction(tr("Edit Current Room"), this);
   roomeditAct->setStatusTip(tr("View/Edit current Room's info"));
   connect(roomeditAct, SIGNAL(triggered()), this, SLOT(edit_current_room()));    
@@ -522,6 +528,7 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   connect(setupGeneralAct, SIGNAL(triggered()), this, SLOT(generalSetting()) );    
   
   
+  pattern_dialog = NULL;
   patternEditAct= new QAction(tr("Edit Patterns"), this);
   patternEditAct->setStatusTip(tr("Edit Patterns"));
   connect(patternEditAct, SIGNAL(triggered()), this, SLOT(editPatterns()) );    
@@ -836,11 +843,15 @@ void MainWindow::edit_current_room()
 
 void MainWindow::edit_room(unsigned int id)
 {
-    edit_dialog.clear_data();
-    edit_dialog.load_room_data(id);
+    if (!edit_dialog) {
+        edit_dialog = new RoomEditDialog(this);
+    }
+
+    edit_dialog->clear_data();
+    edit_dialog->load_room_data(id);
         
-    edit_dialog.show();
-    edit_dialog.raise();
-    edit_dialog.activateWindow();
+    edit_dialog->show();
+    edit_dialog->raise();
+    edit_dialog->activateWindow();
 }
 

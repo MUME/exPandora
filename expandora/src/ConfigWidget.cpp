@@ -12,6 +12,11 @@ ConfigWidget::ConfigWidget (QWidget *parent) : QDialog(parent)
     
     connect(checkBox_autorefresh, SIGNAL(toggled(bool)), this, SLOT(autorefreshUpdated(bool)) );
 
+}
+
+void ConfigWidget::run()
+{
+
     if (conf.get_brief_mode()) 
         checkBox_brief->setChecked(true);
     else 

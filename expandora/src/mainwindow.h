@@ -59,8 +59,6 @@ class MainWindow : public QMainWindow
   QAction       *setupGeneralAct;
   QAction       *emulationAct;
   
-  RoomEditDialog    edit_dialog;
-  PatternEditDialog pattern_dialog;
 
 
   bool          LeftButtonPressed;
@@ -70,7 +68,9 @@ class MainWindow : public QMainWindow
   void edit_room(unsigned int id);
 
 private:
-  ConfigWidget	*generalSettingsDialog;
+  ConfigWidget *generalSettingsDialog;
+  PatternEditDialog *pattern_dialog;
+  RoomEditDialog *edit_dialog;
 
 public:
     MainWindow(QWidget *parent, const char *name = 0);
