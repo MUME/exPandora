@@ -4,8 +4,8 @@
 
 TEMPLATE = lib
 INCLUDEPATH += . ../include
-DESTDIR = ../../../lib/
-LIBS += -L../../../lib -lCommon
+DESTDIR = ../lib/
+LIBS += -L../lib -lCommon
 
 
 # Input

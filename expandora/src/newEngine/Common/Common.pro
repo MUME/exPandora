@@ -34,7 +34,7 @@ OBJECTS_DIR = obj
 MOC_DIR = moc
 INCLUDEPATH += ../include
 CONFIG += debug thread qt opengl warn_on
-DESTDIR = ../../../lib
+DESTDIR = ../lib
 win32{
   CONFIG += console
 }

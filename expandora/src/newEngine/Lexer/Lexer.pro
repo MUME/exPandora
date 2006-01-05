@@ -16,5 +16,5 @@ SOURCES += Lexer.cpp
 
 LEXSOURCES += mud.lex player.lex
 
-DESTDIR = ../../../lib/
-LIBS += -L../../../lib -lCommon
+DESTDIR = ../lib/
+LIBS += -L../lib -lCommon

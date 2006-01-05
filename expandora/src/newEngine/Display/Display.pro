@@ -10,8 +10,8 @@ INCLUDEPATH += . ../include/
 HEADERS += Display.h MainWindow.h Terrain.h CachedRoom.h
 SOURCES += Display.cpp MainWindow.cpp Terrain.cpp CachedRoom.cpp
 
-DESTDIR = ../../../lib/
-LIBS += -L../../../lib -lCommon
+DESTDIR = ../lib/
+LIBS += -L../lib -lCommon
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 CONFIG += debug thread qt warn_on

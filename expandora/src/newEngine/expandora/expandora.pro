@@ -5,7 +5,7 @@
 TEMPLATE = app
 
 INCLUDEPATH += ../include
-LIBS += -L../../../lib -lCommon
+LIBS += -L../lib -lCommon
 OBJECTS_DIR	= obj
 
 CONFIG += debug thread qt opengl warn_on
@@ -13,13 +13,9 @@ win32 {
 	CONFIG	+= console
 }
 
-!macx {
-	DESTDIR = ../../../bin
-}
 
-macx {
-	DESTDIR = ../../../
-}
+DESTDIR = ../bin
+
 
 
 
