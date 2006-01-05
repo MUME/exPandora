@@ -4,7 +4,7 @@
 #include "RoomCollection.h"
 #include <stack>
 
-using namespace Qt;
+
 /**
  * this method is called when a component of this type should be
  * created from a library. MY_EXPORT is defined in Component.h
@@ -15,10 +15,9 @@ extern "C" MY_EXPORT Component * createComponent()
   return new Parser;
 }
 
-
+using namespace Qt;
 
 Parser::Parser() : Component(true) {
-	
   mostLikelyRoom = 0;
   state = SYNCING;
   matchingTolerance = 0;
@@ -34,7 +33,7 @@ Parser::Parser() : Component(true) {
  * The slots need to be queued because we want to make sure all data is only accessed
  * from this thread
  */
-ConnectionType requiredConnectionType(const char * signalOrSlot) {
+ConnectionType Parser::requiredConnectionType(const char * signalOrSlot) {
   QLatin1String str(signalOrSlot);
   if (str == SLOT(event(ParseEvent *)) || str == SLOT(setTerrain(Property *)))
     return QueuedConnection;

@@ -29,6 +29,7 @@
  * the results are published via signals
  */
 class Parser : public Component {
+Q_OBJECT
  public slots:
   void event(ParseEvent *);
   /* the setTerrain signal should be replaced by some "hint" in the properties */
@@ -51,7 +52,6 @@ class Parser : public Component {
   virtual Qt::ConnectionType requiredConnectionType(const char *);
   
  private:
-  Q_OBJECT
   void mudPop();
   void playerPop();
   void checkQueues();
@@ -62,8 +62,6 @@ class Parser : public Component {
   void approved();
   void evaluatePaths();
 
-  //QWaitCondition parserSync;
-  //QMutex parserMutex;
   char state;
   int matchingTolerance;
   int remoteMapDelay;

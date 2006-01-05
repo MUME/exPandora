@@ -1,6 +1,6 @@
 <configuration>
-	<component id="Display" file="Display"/>
 	<component id="Parser" file="Parser"/>
+	<component id="Display" file="Display"/>
 	<component id="Lexer" file="Lexer"/>
 	<component id="Filter" file="Filter"/>
 	<component id="Map" file="Map"/>
@@ -12,6 +12,7 @@
 	<component id="Storage" file="Storage">
 		<!--option name="fileName" value="../databases/mume.xml"/-->
 	</component>
+	
 	<connection 
 		from="Proxy" 
 		signal="analyzeUserStream( char *, int )" 
