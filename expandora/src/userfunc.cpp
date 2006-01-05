@@ -785,6 +785,7 @@ USERCMD(usercmd_mgoto)
       return USER_PARSE_DONE;
     }
       
+    Engine.setMgoto(true);  /* ignore prompt while we are in mgoto mode */
     stacker.put(Map.getroom(id));
     stacker.swap();
   } else {
@@ -800,6 +801,7 @@ USERCMD(usercmd_mgoto)
       return USER_PARSE_DONE;
     }
 
+    Engine.setMgoto(true);  /* ignore prompt while we are in mgoto mode */
     stacker.put(r->exits[dir]);
     stacker.swap();
   }

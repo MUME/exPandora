@@ -184,7 +184,9 @@ void CRoom::sety(int ny)
 
 void CRoom::setz(int nz)
 {
+  Map.remove_from_plane(this);
   z = nz;
+  Map.add_to_plane(this);
   modified();
 }
 

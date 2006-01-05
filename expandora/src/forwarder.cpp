@@ -4,6 +4,10 @@
  * for solaris: gcc forwarder.c -lsocket -lnsl
  *
  */
+ 
+#define DEBUG
+
+
 #include <csignal>
 #include <qglobal.h>
 
@@ -352,7 +356,7 @@ int proxy_loop(void)
             if (rd>0) {
               #ifdef DEBUG
                 intbuff[rd] = 0;
-                //fprintf(debug_file, "\r\n-received_from_user(len %i)->", rd);
+                fprintf(debug_file, "\r\n-received_from_user(len %i):\r\n", rd);
                 fwrite(intbuff, rd, 1, debug_file);
                 fflush(debug_file);
               #endif
@@ -363,7 +367,7 @@ int proxy_loop(void)
 
                 #ifdef DEBUG
                   intbuff[rd] = 0;
-                  //fprintf(debug_file, "\r\n-sent_to_mud(len %i)->", rd);
+                  fprintf(debug_file, "\r\n-sent_to_mud(len %i):\r\n", rd);
                   fwrite(intbuff, rd, 1, debug_file);
                   fflush(debug_file);
                 #endif
@@ -392,7 +396,7 @@ int proxy_loop(void)
             if (rd>0) {
               #ifdef DEBUG
                 intbuff[rd] = 0;
-                //fprintf(debug_file, "\r\n<-receive_from_mud(len %i)-", rd);
+                fprintf(debug_file, "\r\n<-receive_from_mud(len %i)\r\n", rd);
                 fwrite(intbuff, rd, 1, debug_file);
                 fflush(debug_file);
               #endif
@@ -402,7 +406,7 @@ int proxy_loop(void)
 
               #ifdef DEBUG
                 intbuff[rd] = 0;
-                //fprintf(debug_file, "\r\n<-sent_to_user(len %i)-", rd);
+                fprintf(debug_file, "\r\n<-sent_to_user(len %i)\r\n", rd);
                 fwrite(intbuff, rd, 1, debug_file);
                 fflush(debug_file);
               #endif

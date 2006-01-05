@@ -7,10 +7,12 @@
 #include "CRoom.h"
 #include "event.h"
 
-struct TCode {
+class CEngine;
+
+typedef struct {
   QByteArray name;
-  void (*func)();
-};
+  void (CEngine::*func)();
+} TCode;
 
 typedef std::vector<int> TScript;
 
@@ -21,7 +23,9 @@ class CEngine {
     bool resync;                  /* do full resync */
     bool mapping;                 /* mapping is On/OFF */
     bool gettingfirstroom;        /* getting the very first room in base */
+    bool mgoto;
     char redraw;                  
+
 
   QByteArray last_roomname;
   QByteArray last_desc;
@@ -32,24 +36,7 @@ class CEngine {
   CEventPipe CPipe;
   CEventPipe RPipe;      
 
-/*
-  enum commands { REDRAW,
-               SWAP,
-               RESYNC,
-               CREMOVE,
-               RREMOVE,
-               TRY_DIR,
-               TRY_ALL_DIRS,
-               DONE,
-               APPLY_ROOMNAME,
-               APPLY_DESC,
-               APPLY_EXITS,
-               APPLY_PROMPT,
-               MAPPINGOFF
-             };
-*/
-
-//  std::vector<TCode *>          codes;   /* single codes of the script */
+  std::vector<TCode>          codes;   /* single codes of the script */
   std::vector<TScript>        programs;    /* set of scripts */
 
   int code_field[EVENTS_NUM][EVENTS_NUM];
@@ -60,10 +47,7 @@ class CEngine {
   void run();
   void engine_init(); /* init flags */
   void populate_events();
-public:
-    CEngine();
-    ~CEngine();
-
+/*  
     void engine_command_swap(void);
     void engine_command_resync(void);
     void engine_command_rremove(void);
@@ -76,6 +60,25 @@ public:
     void engine_command_apply_exits(void);
     void engine_command_apply_prompt(void);
     void engine_command_mappingoff(void);
+*/
+    void command_mappingoff();
+    void command_resync();
+    void command_swap();
+    void command_rremove();
+    void command_cremove();
+    void command_redraw();
+    void command_trydir();
+    void command_tryalldirs();
+    void command_applyroomname();
+    void command_applydesc();
+    void command_applyexits();
+    void command_applyprompt();
+    void command_done();
+
+public:
+    CEngine();
+    ~CEngine();
+
 
 
     CRoom *addedroom;	/* new room, contains new data is addinrroom==1 */
@@ -107,22 +110,11 @@ public:
     bool isAddingroom() { return addingroom; }
     void setAddingroom(bool b) { addingroom = b; }
     
+    void setMgoto(bool b) { mgoto = b; }
+    bool isMgoto() { return mgoto; }
     bool empty();                      /* are pipes empty? */
     void clear();                      
     
-    void command_mappingoff();
-    void command_resync();
-    void command_swap();
-    void command_rremove();
-    void command_cremove();
-    void command_redraw();
-    void command_trydir();
-    void command_tryalldirs();
-    void command_applyroomname();
-    void command_applydesc();
-    void command_applyexits();
-    void command_applyprompt();
-    void command_done();
 };
 
 extern class CEngine Engine;

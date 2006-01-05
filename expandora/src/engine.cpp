@@ -21,39 +21,6 @@
 
 class CEngine Engine;
 
-/*   --- wrapper for engine functions ---- */
-void command_redraw()     { Engine.command_redraw(); }
-void command_mappingoff() { Engine.command_mappingoff(); }
-void command_resync()     { Engine.command_resync(); }
-void command_swap()       { Engine.command_swap(); }
-void command_rremove()    { Engine.command_rremove();    }
-void command_cremove()    { Engine.command_cremove(); }
-void command_trydir()     { Engine.command_trydir(); }
-void command_tryalldirs() { Engine.command_tryalldirs(); }
-void command_applyroomname(){ Engine.command_applyroomname(); }
-void command_applydesc()   { Engine.command_applydesc(); }
-void command_applyexits()  { Engine.command_applyexits(); }
-void command_applyprompt() { Engine.command_applyprompt(); }
-void command_done()        { Engine.command_done(); }
-
-const struct TCode program_codes[] = {
-  {"redraw", command_redraw},
-  {"mappingoff", command_mappingoff   },
-  {"resync", command_resync           },
-  {"swap", command_swap               },
-  {"rremove", command_rremove         },
-  {"cremove", command_cremove         },
-  {"try_dir", command_trydir          },
-  {"try_all_dirs", command_tryalldirs },
-  {"apply_roomname", command_applyroomname },
-  {"apply_desc", command_applydesc             },
-  {"apply_exits", command_applyexits            },
-  {"apply_prompt", command_applyprompt           },
-  {"done", command_done                   },
-
-  {NULL, NULL}    
-};
-
 
 /*---------------- * REDRAW ---------------------------- */
 void CEngine::command_redraw()
@@ -67,7 +34,7 @@ void CEngine::command_redraw()
 void CEngine::command_mappingoff()
 {
   if (mapping) {
-    print_debug(DEBUG_ANALYZER, "in mappingoff");
+//    print_debug(DEBUG_ANALYZER, "in mappingoff");
     send_to_user("--[ Mapping is now OFF!\r\n");
     mapping = 0;
     addingroom = 0;
@@ -85,6 +52,7 @@ void CEngine::command_applyroomname()
 //  print_debug(DEBUG_ANALYZER, "in apply_roomname");
 
   /* set the environment flags and variables */
+  setMgoto( false );    /* if we get a new roomname incoming, mgoto has to go away */
   redraw  = 1;
   set_roomname(r_event.data);
 
@@ -173,7 +141,7 @@ void CEngine::command_applydesc()
 /*---------------- * APPLY_EXITS ------------------------ */
 void CEngine::command_applyexits()
 {
-  print_debug(DEBUG_ANALYZER, "in apply_exits");
+//  print_debug(DEBUG_ANALYZER, "in apply_exits");
 
   set_exits(r_event.data);
   
@@ -188,8 +156,10 @@ void CEngine::command_applyprompt()
   unsigned int i;
   CRoom *room;
 
+  if (mgoto) 
+      return;
   
-  print_debug(DEBUG_ANALYZER, "in apply_prompt");
+//  print_debug(DEBUG_ANALYZER, "in apply_prompt");
   if (redraw) redraw++;
   
   terrain = r_event.data[1 + conf.get_prompt_col_len()];  /*second charecter is terrain*/
@@ -235,8 +205,9 @@ void CEngine::command_applyprompt()
 /*---------------- * SWAP  ------------------------- */
 void CEngine::command_swap()
 {
-  print_debug(DEBUG_ANALYZER, "in swap");
-  stacker.swap();
+//  print_debug(DEBUG_ANALYZER, "in swap");
+  if (!mgoto)
+      stacker.swap();
 
   if (stacker.amount() == 0 && resync) 
     command_resync();
@@ -246,7 +217,7 @@ void CEngine::command_swap()
   
   
   if (redraw >= 2) { 
-    print_debug(DEBUG_ANALYZER, "[ in REDRAW ]");
+//    print_debug(DEBUG_ANALYZER, "[ in REDRAW ]");
     toggle_renderer_reaction();
     redraw  = 0;
   }
@@ -386,6 +357,47 @@ CEngine::CEngine()
 
     engine_init();
     populate_events();    
+    TCode code;
+    
+    code.name = "redraw"; code.func = &CEngine::command_redraw;
+    codes.push_back(code);
+
+    code.name = "mappingoff"; code.func = &CEngine::command_mappingoff;
+    codes.push_back(code);
+
+    code.name = "resync"; code.func = &CEngine::command_resync;
+    codes.push_back(code);
+
+    code.name = "swap"; code.func = &CEngine::command_swap;
+    codes.push_back(code);
+
+    code.name = "rremove"; code.func = &CEngine::command_rremove;
+    codes.push_back(code);
+
+    code.name = "cremove"; code.func = &CEngine::command_cremove;
+    codes.push_back(code);
+
+    code.name = "try_dir"; code.func = &CEngine::command_trydir;
+    codes.push_back(code);
+
+    code.name = "try_all_dirs"; code.func = &CEngine::command_tryalldirs;
+    codes.push_back(code);
+
+    code.name = "apply_roomname"; code.func = &CEngine::command_applyroomname;
+    codes.push_back(code);
+
+    code.name = "apply_desc"; code.func = &CEngine::command_applydesc;
+    codes.push_back(code);
+
+    code.name = "apply_exits"; code.func = &CEngine::command_applyexits;
+    codes.push_back(code);
+
+    code.name = "apply_prompt"; code.func = &CEngine::command_applyprompt;
+    codes.push_back(code);
+
+    code.name = "done"; code.func = &CEngine::command_done;
+    codes.push_back(code);
+
 
     for (i = 0; i < EVENTS_NUM; i++)
         for (j = 0; j < EVENTS_NUM; j++)
@@ -445,7 +457,7 @@ void CEngine::run()
 */
        for (i = 0; i < script.size(); i++) {
            code = script[i];
-           program_codes[code].func();
+           (*this.*(codes[code].func))();
        }   
     } else {
         done = true;
@@ -463,6 +475,7 @@ void CEngine::engine_init()
   resync =                 1;
   mapping =                0;
   gettingfirstroom =       0;
+  mgoto             =      0;
 
   redraw = 0;
   
@@ -511,15 +524,15 @@ int CEngine::parse_command_line(char cause, char result, char *line)
       continue;
     
     /* now find fitting command and translate it in interpreter code */
-    for (i = 0; program_codes[i].func; i++) 
-        if (program_codes[i].name == command) {
+    for (i = 0; i < codes.size(); i++) 
+        if (codes[i].name == command) {
            script.push_back( i );
            len++;
            break;
       }
     
     /* we've found the match, right ? else ...*/
-    if (program_codes[i].func == NULL) {
+    if (i == codes.size() ) {
       printf("%s is not a command!\r\n", command);
       return 1;
     }
