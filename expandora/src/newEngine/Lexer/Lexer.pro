@@ -11,7 +11,7 @@ win32 {
 	CONFIG	+= console
 }
 # Input
-HEADERS += LexDefs.h Lexer.h
+HEADERS += Lexer.h
 SOURCES += Lexer.cpp
 
 LEXSOURCES += mud.lex player.lex

@@ -4,7 +4,7 @@
 #include "RoomCollection.h"
 #include <stack>
 
-
+using namespace Qt;
 /**
  * this method is called when a component of this type should be
  * created from a library. MY_EXPORT is defined in Component.h
@@ -27,10 +27,24 @@ Parser::Parser() : Component(true) {
   paths = new list<Path *>;
 }
 
+/**
+ * the signals - apart from playerMoved have to be DirectConnections because we want to 
+ * be sure to find all available rooms and we also want to make sure a room is actually
+ * inserted into the map before we search for it
+ * The slots need to be queued because we want to make sure all data is only accessed
+ * from this thread
+ */
+ConnectionType requiredConnectionType(const char * signalOrSlot) {
+  QLatin1String str(signalOrSlot);
+  if (str == SLOT(event(ParseEvent *)) || str == SLOT(setTerrain(Property *)))
+    return QueuedConnection;
+  else if (str == SIGNAL(playerMoved(Coordinate *, Coordinate *)))
+    return AutoCompatConnection;
+  else 
+    return DirectConnection;
+}
 
-
-
-
+// this slot will eventually be replaced by looking into the hints of each property
 void Parser::setTerrain(Property * ter)
 {
   activeTerrain = ter->get(0); // the first character has to be the terrain id

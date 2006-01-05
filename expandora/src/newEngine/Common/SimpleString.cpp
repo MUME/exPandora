@@ -26,6 +26,7 @@ void SimpleString::copy(SimpleString * other) {
   int newLen = other->size();
   put (newLen-1, 0);
   strncpy(list, otherText, newLen);
+  hint = other->getHint();
 
 }
     

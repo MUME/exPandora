@@ -31,6 +31,7 @@
 class Parser : public Component {
  public slots:
   void event(ParseEvent *);
+  /* the setTerrain signal should be replaced by some "hint" in the properties */
   void setTerrain(Property *);
 
  signals:
@@ -47,7 +48,7 @@ class Parser : public Component {
  public:
   Parser();
   Coordinate * getExpectedCoordinate(Room * base);
-  
+  virtual Qt::ConnectionType requiredConnectionType(const char *);
   
  private:
   Q_OBJECT
@@ -61,8 +62,8 @@ class Parser : public Component {
   void approved();
   void evaluatePaths();
 
-  QWaitCondition parserSync;
-  QMutex parserMutex;
+  //QWaitCondition parserSync;
+  //QMutex parserMutex;
   char state;
   int matchingTolerance;
   int remoteMapDelay;

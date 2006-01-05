@@ -15,7 +15,7 @@ class Property : public ListCycler<char>, private ListStack<char> {
  public:	
 
   Property(); 
-  ~Property() {;}
+  ~Property() {}
   void clear();
   void skip();
   void skipMany();
@@ -32,7 +32,7 @@ class Property : public ListCycler<char>, private ListStack<char> {
   SimpleString * copyString() {return data.copy();}
   bool equals (SimpleString * other) {return data.equals(other);}
   int compare(SimpleString * other) {return data.compare(other);}
-  
+  void hint(char hint) {data.setHint(hint);}
  private:
   SimpleString data;
   int used;
