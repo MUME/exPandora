@@ -27,8 +27,7 @@ SOURCES += Frustum.cpp \
            Room.cpp \
            RoomCollection.cpp \
            SimpleString.cpp \
-           RoomSignalHandler.cpp \
-           Common.cpp 
+           RoomSignalHandler.cpp
 TEMPLATE = lib
 OBJECTS_DIR = obj
 MOC_DIR = moc
