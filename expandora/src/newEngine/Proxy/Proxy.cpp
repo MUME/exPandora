@@ -29,9 +29,10 @@ Proxy::Proxy() : Component(true), server(this)
   if(!connect(&server, SIGNAL(newConnection()), SLOT(acceptConnection()))) throw "can't connect to TcpServer";
 }
 
-void Proxy::start() {
-	server.listen(QHostAddress::Any, localPort);
-	Component::start();
+void Proxy::start()
+{
+  server.listen(QHostAddress::Any, localPort);
+  Component::start();
 }
 
 
@@ -39,19 +40,24 @@ void Proxy::acceptConnection()
 {
   if (userSocket) return; // ignore additional connections
   userSocket = server.nextPendingConnection();
-  server.setMaxPendingConnections(0);
+  
   mudSocket->connectToHost(remoteHost, remotePort);
 
   QObject::connect(userSocket, SIGNAL(readyRead()), this, SLOT(processUserStream()));
   QObject::connect(mudSocket, SIGNAL(readyRead()), this, SLOT(processMudStream()));
-  QObject::connect(mudSocket, SIGNAL(disconnected()), QObject::thread(), SLOT(quit()));
+  QObject::connect(mudSocket, SIGNAL(disconnected()), this, SLOT(resetServer()));
   QObject::connect(userSocket, SIGNAL(disconnected()), this, SLOT(resetServer()));
 }
 
-void Proxy::resetServer() {
-	server.setMaxPendingConnections(1);
-	delete(userSocket);
-	userSocket = 0;
+void Proxy::resetServer()
+{
+  userSocket->disconnect();
+  mudSocket->disconnect();
+  userSocket->disconnectFromHost();
+  mudSocket->disconnectFromHost();
+  delete(userSocket);
+  userSocket = 0;
+  
 }
 
 void Proxy::processUserStream()

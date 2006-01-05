@@ -1,6 +1,6 @@
 #include "Component.h"
 #include <iostream>
-using std::cerr;
+
 #include <qfiledialog.h>
 #include <qapplication.h>
 #include <qlibrary.h>
@@ -8,8 +8,11 @@ using std::cerr;
 #include <qobject.h>
 #include <qstringlist.h>
 
+using namespace std;
+
 int main ( int argc, char *argv[] )
 {
+  try {
   //QApplication::setColorSpec( QApplication::CustomColor );
   QApplication a( argc, argv );
   a.setQuitOnLastWindowClosed (false);
@@ -50,6 +53,10 @@ int main ( int argc, char *argv[] )
   else
   {
     cerr << "no file\n";
+  }
+  } catch (char const * error) {
+    cerr << error << endl;
+    exit(-1);
   }
 }
 

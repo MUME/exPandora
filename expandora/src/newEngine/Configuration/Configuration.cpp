@@ -12,6 +12,8 @@ extern "C" MY_EXPORT Component * createComponent() {
 	return new Configuration;
 }
 
+using namespace Qt;
+
 Configuration::Configuration() : currentComponent( this ) {
 	put( *( new QString( "configuration" ) ), this );
 }
@@ -103,13 +105,13 @@ void Configuration::connectComponents( const QXmlAttributes & atts ) {
 	temp = atts.value( "slot" );
 	QString sl = slot(temp);
 
-	Qt::ConnectionType requiredSlot = to->requiredConnectionType(sl.toLatin1());
-	Qt::ConnectionType requiredSignal = from->requiredConnectionType(sig.toLatin1());
+	ConnectionType requiredSlot = to->requiredConnectionType(sl.toLatin1());
+	ConnectionType requiredSignal = from->requiredConnectionType(sig.toLatin1());
 	
-	Qt::ConnectionType resultType;
-	if (requiredSlot == requiredSignal || requiredSignal == Qt::AutoCompatConnection)
+	ConnectionType resultType;
+	if (requiredSlot == requiredSignal || requiredSignal == AutoCompatConnection)
 		resultType = requiredSlot;
-	else if (requiredSlot == Qt::AutoCompatConnection)
+	else if (requiredSlot == AutoCompatConnection)
 		resultType = requiredSignal;
 	else throw "can't connect non-matching slot and signal";
 
