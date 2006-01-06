@@ -1,6 +1,22 @@
 <configuration>
 	<component id="Parser" file="Parser"/>
-	<component id="Display" file="Display"/>
+	<component id="Display" file="Display">
+	  <option name="terrains" value="[#.f(<%~WU+:=O/>"/>
+	  <option name="terrain:[" value="images/indoors.png"/>
+	  <option name="terrain:#" value="images/city.png"/>
+	  <option name="terrain:." value="images/field.png"/>
+	  <option name="terrain:f" value="images/forest.png"/>
+	  <option name="terrain:(" value="images/hills.png"/>
+	  <option name="terrain:<" value="images/mountatin.png"/>
+	  <option name="terrain:%" value="images/shallowwater.png"/>
+	  <option name="terrain:~" value="images/river.png"/>
+	  <option name="terrain:W" value="images/rapids.png"/>
+	  <option name="terrain:U" value="images/underwater.png"/>
+	  <option name="terrain:+" value="images/road.png"/>
+	  <option name="terrain::" value="images/brush.png"/>
+	  <option name="terrain:=" value="images/tunnel.png"/>
+	  <option name="terrain:O" value="images/cavern.png"/>
+	</component>
 	<component id="Lexer" file="Lexer"/>
 	<component id="Filter" file="Filter"/>
 	<component id="Map" file="Map"/>

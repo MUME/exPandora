@@ -97,6 +97,7 @@ ROOMCOL		\33\[32m
 <PROMPT>"U".+">"    		| 
 <PROMPT>"+".+">"    		| 
 <PROMPT>":".+">"    		| 
+<PROMPT>"O".+">"    		|
 <PROMPT>"=".+">"    		append(YYText()[0]); markTerrain(); pushProperty(); pushEvent(ROOM); BEGIN(INITIAL);
 <PROMPT>{ROOMCOL}               skipProperty(); pushEvent(ROOM); BEGIN(ROOMNAME);
 <PROMPT>">"			skipProperty(); pushEvent(ROOM); BEGIN(INITIAL);

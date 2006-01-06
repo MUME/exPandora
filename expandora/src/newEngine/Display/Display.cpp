@@ -81,8 +81,9 @@ void RendererWidget::initializeGL() {
 		glEndList();
 	}
 
-	for ( map<char, Terrain *>::iterator i = Terrain::terrains.begin(); i != Terrain::terrains.end(); ++i ) {
-		p = ( *i ).second;
+	for ( vector<Terrain *>::iterator i = Terrain::terrains.begin(); i != Terrain::terrains.end(); ++i ) {
+		p = ( *i );
+		if (!p) continue;
 
 		glGenTextures( 1, &p->texture );
 

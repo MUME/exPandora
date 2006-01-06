@@ -17,7 +17,7 @@ HEADERS += ../include/Frustum.h \
            ../include/TinyList.h \
            ../include/AbstractRoomContainer.h \
            ../include/RoomSignalHandler.h \ 
-	../include/ParseEvent.h
+	../include/ParseEvent.h 
 SOURCES += Frustum.cpp \
            Component.cpp \
            BaseEvent.cpp \

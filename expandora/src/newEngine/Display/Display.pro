@@ -8,7 +8,7 @@ INCLUDEPATH += . ../include/
 
 # Input
 HEADERS += Display.h MainWindow.h Terrain.h CachedRoom.h
-SOURCES += Display.cpp MainWindow.cpp CachedRoom.cpp
+SOURCES += Display.cpp MainWindow.cpp CachedRoom.cpp Terrain.cpp
 
 DESTDIR = ../lib/
 LIBS += -L../lib -lCommon

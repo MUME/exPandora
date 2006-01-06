@@ -12,8 +12,7 @@ class Terrain {
   		char   pattern;    	/* appropriate pattern */
   		GLuint texture;		/* and texture handler for renderer */
   		GLuint gllist;		/* OpenGL display list */
-  		//Terrain *next;
-  		static map<char, Terrain *> terrains;
+  		static vector<Terrain *> terrains;
 		static map<QString, char> terrainIDs;
 };
 #endif
