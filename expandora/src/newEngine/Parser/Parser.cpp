@@ -51,9 +51,9 @@ void Parser::setTerrain(Property * ter)
 
 void Parser::dropNote(ParseEvent * note)
 {
-  if (mostLikelyRoom != 0)
+  if (mostLikelyRoom)
   {
-    while (note->next() != 0) mostLikelyRoom->addOptional(note->current());
+    while (note->next()) mostLikelyRoom->addOptional(note->current());
   }
   pemm.deactivate(note);
 }
@@ -96,15 +96,15 @@ void Parser::checkQueues()
   {
     if (state != SYNCING) state = SYNCING;
   }
-  else while ( (!(mudEvents.empty())) && mudEvents.front()->timestamp < playerEvents.front()->timestamp)
+  else while ( !mudEvents.empty() && mudEvents.front()->timestamp < playerEvents.front()->timestamp)
     {
       mudPop();
       state = SYNCING;
     }
   if (mudEvents.empty()) return;
 
-  //now we are sure we have a user event that happened before the mud event
-
+  // now we are sure we have a user event that happened before the mud event
+  // or we only have a mud event and are in syncing state
 
   switch (state)
   {
@@ -158,20 +158,22 @@ void Parser::approved()
     emit lookingForRooms(&appr, c); //needs to be synchronous
     //QThread::usleep(remoteMapDelay);
     perhaps = appr.oneMatch();
-    if (perhaps != 0)
+    if (perhaps)
     {
-      //parserMutex.lock();
+      
       QObject::connect(this, SIGNAL(addExit(int, int, int)), appr.getOwner(), SLOT(addExit(int, int, int)), Qt::DirectConnection);
       emit addExit(mostLikelyRoom->getId(), perhaps->getId(), playerEvents.front()->type);
       QObject::disconnect(this, SIGNAL(addExit(int, int, int)), 0,0);
-      //parserMutex.unlock();
+      
     }
     cmm.deactivate(c);
   }
-  if (perhaps != 0)
+  if (perhaps)
   {
     emit playerMoved(mostLikelyRoom->getCoordinate(), perhaps->getCoordinate());
     mostLikelyRoom = perhaps;
+    mudPop();
+    playerPop();
   }
   else
   {
@@ -181,36 +183,9 @@ void Parser::approved()
     paths->push_front(root);
     experimenting();
   }
-
-  
-
-  mudPop();
-  playerPop();
 }
 
-/*
-void Parser::syncingRoom(Room * room) {
-    state = DANGLING_APPROVED;
-    lastMostLikely = mostLikelyRoom;
-    mostLikelyRoom = room;
-    emit playerMoved(0, mostLikelyRoom->getCoordinate());
-}
- 
-void Parser::match(Room * room) {
-  insertLock.lock();
-  if (state == DANGLING_APPROVED) { // a second room was found in approved
-    state = EXPERIMENTING;
-    experimentingRoom(lastMostLikely);
-    insertLock.unlock();
-    experimenting();
-    return;
-  }
-  else if (state == APPROVED) approvedRoom(room);
-  else if (state == EXPERIMENTING) experimentingRoom(room);
-  else if (state == SYNCING) syncingRoom(room);
-  inserLock.unlock();
-}
-*/
+
 
 void Parser::playerPop()
 {

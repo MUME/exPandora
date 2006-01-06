@@ -5,7 +5,7 @@ Experimenting::Experimenting(Parser * par, list<Path *> * pat, double pa) {
   parent = par;
   pathAcceptance = pa;
   shortPaths = pat;
-  paths = new list<Path *>();
+  paths = new list<Path *>;
   best = 0;
   second = 0;
   prevBest = shortPaths->front()->getProb();
@@ -41,15 +41,15 @@ void Experimenting::receiveRoom(QObject * map, Room * room) {
 
 list<Path *> * Experimenting::evaluate() {
   Path * working = 0;
-  for (list<Path *>::iterator i = shortPaths->begin(); i != shortPaths->end(); ++i) {
-    working = paths->front();
-    paths->pop_front();
+  while(!shortPaths->empty()) {
+    working = shortPaths->front();
+    shortPaths->pop_front();
     if (!(working->hasChildren())) working->deny();	
   }
  
   if (best != 0) {
     if (second == 0 || best->getProb() > second->getProb()*pathAcceptance) {
-      for (list<Path *>::iterator i = paths->begin(); i != paths->end(); i++) {
+      for (list<Path *>::iterator i = paths->begin(); i != paths->end(); ++i) {
 	(*i)->deny();
       }
       paths->clear();

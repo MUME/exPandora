@@ -35,7 +35,7 @@ class Property : public ListCycler<char>, private ListStack<char> {
   void hint(char hint) {data.setHint(hint);}
  private:
   SimpleString data;
-  int used;
+  //int used;
 };
 
 

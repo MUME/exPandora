@@ -2,7 +2,7 @@
 #include "Approved.h"
 
 void Approved::receiveRoom(QObject * sender, Room * perhaps) {  
-  if (matchedRoom != 0 && perhaps->fastCompare(myEvent, matchingTolerance)) {
+  if (matchedRoom == 0 && perhaps->fastCompare(myEvent, matchingTolerance)) {
     matchedRoom = perhaps;
     owner = sender;
   }
@@ -15,10 +15,12 @@ void Approved::receiveRoom(QObject * sender, Room * perhaps) {
 }
 
 Approved::Approved(ParseEvent * event, int tolerance) :
+  matchedRoom(0),
   myEvent(event),
   matchingTolerance(tolerance),
   owner(0),
   moreThanOne(false)
+  
 {
 }
 
@@ -31,9 +33,11 @@ Room * Approved::oneMatch() {
 }
 
 void Approved::reset() {
-  QObject::connect(this, SIGNAL(releaseRoom(int)), owner, SLOT(releaseRoom(int)), Qt::DirectConnection);
-  emit releaseRoom(matchedRoom->getId());
-  QObject::disconnect(this, SIGNAL(releaseRoom(int)), owner, 0);
+  if(matchedRoom) {
+    QObject::connect(this, SIGNAL(releaseRoom(int)), owner, SLOT(releaseRoom(int)), Qt::DirectConnection);
+    emit releaseRoom(matchedRoom->getId());
+    QObject::disconnect(this, SIGNAL(releaseRoom(int)), owner, 0);
+  }
   matchedRoom = 0;
   moreThanOne = false;
   owner = 0;

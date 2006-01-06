@@ -52,5 +52,5 @@
 	<connection from="Parser" signal="addExit(int, int, int)"
 		    to="Map" slot="addExit(int, int, int)"/>
 	<connection from="Parser" signal="createRoom(ParseEvent *, Coordinate *, char)"
-		    to="Map" slot="createRoom(ParseEvent *, Coordinate *, char)"
+		    to="Map" slot="createRoom(ParseEvent *, Coordinate *, char)"/>
 </configuration>

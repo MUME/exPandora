@@ -44,9 +44,9 @@ GenericLexer::GenericLexer() {
 }
 
 
-void GenericLexer::pushEvent(signed char _type) {
+void GenericLexer::pushEvent(signed char x_type) {
   if (event->timestamp < 1) event->timestamp = m_timestamp();
-  event->type = _type;
+  event->type = x_type;
   emit eventFound(event);
   event = pemm.activate();
 }

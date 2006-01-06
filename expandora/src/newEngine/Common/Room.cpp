@@ -16,18 +16,18 @@ Room::Room() {
 
 void Room::init(ParseEvent * event) {
 
-  TinyList<Property *> * _properties = event->getProperties();
+  TinyList<Property *> * x_properties = event->getProperties();
 
 #ifdef DEBUG
-  fprintf(stderr, "creating room: %s\n", _properties->get(0)->getText());
+  fprintf(stderr, "creating room: %s\n", x_properties->get(0)->getText());
 #endif
 
-  for (char i = 0; _properties->get(i); i++)
-    properties.put(i, _properties->get(i)->copyString());
+  for (char i = 0; x_properties->get(i); ++i)
+    properties.put(i, x_properties->get(i)->copyString());
 
-  TinyList<Property *> * _optionalProperties = event->getOptionals();
-  for (char i = 0; _optionalProperties->get(i) != 0; i++)
-    optionalProperties.put(i, _optionalProperties->get(i)->copyString());
+  TinyList<Property *> * x_optionalProperties = event->getOptionals();
+  for (char i = 0; x_optionalProperties->get(i) != 0; i++)
+    optionalProperties.put(i, x_optionalProperties->get(i)->copyString());
 }
 
 
@@ -55,7 +55,8 @@ set<int> * Room::go(BaseEvent * dir) {
     return ret;
   }
   else {
-    ret->insert(exits.get(dir->type)->begin(), exits.get(dir->type)->end());
+    set<int> * dirExits = exits.get(dir->type);
+    if (dirExits) ret->insert(exits.get(dir->type)->begin(), exits.get(dir->type)->end());
     return ret;
   }
 }
@@ -78,10 +79,10 @@ void Room::clear() {
     optionalProperties.remove(i);
   }
   for (unsigned int i = 0; i < exits.size(); ++i) {
-    if (exits.get(i) != 0) exits.get(i)->clear();
+    if (exits.get(i)) exits.get(i)->clear();
   }
   for (unsigned int i = 0; i < reverseExits.size(); ++i) {
-    if (reverseExits.get(i) != 0) reverseExits.get(i)->clear();
+    if (reverseExits.get(i)) reverseExits.get(i)->clear();
   }
 
   terrain = 0;

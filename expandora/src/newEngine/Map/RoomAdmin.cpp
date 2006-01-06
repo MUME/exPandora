@@ -1,6 +1,8 @@
 #include "RoomAdmin.h"
 #include "IntermediateNode.h"
 
+using namespace Qt;
+
 /**
  * this method is called when a component of this type should be
  * created from a library. MY_EXPORT is defined in Component.h
@@ -27,13 +29,17 @@ void RoomAdmin::removeRoom(int id)
   mapLock.unlock();
 }
 
-void RoomAdmin::lookingForRooms(QObject * recipient, Frustum * frustum) {
+void RoomAdmin::lookingForRooms(QObject * recipient, Frustum * frustum)
+{
   Room * r = 0;
   mapLock.lock();
-  connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
-  for(vector<Room *>::iterator i = roomIndex.begin(); i != roomIndex.end(); ++i) {
+  if (!connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)), DirectConnection))
+    throw "can't connect to specified recipient";
+  for(vector<Room *>::iterator i = roomIndex.begin(); i != roomIndex.end(); ++i)
+  {
     r = *i;
-    if(r && frustum->PointInFrustum(r->getCoordinate())) {
+    if(r && frustum->PointInFrustum(r->getCoordinate()))
+    {
       locks[r->getId()].insert(recipient);
       emit foundRoom(this, r);
     }
@@ -49,7 +55,8 @@ void RoomAdmin::lookingForRooms(QObject * recipient, Coordinate * pos)
   if (r)
   {
     locks[r->getId()].insert(recipient);
-    connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
+    if (!connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)), DirectConnection))
+      throw "can't connect to specified recipient";
     emit foundRoom(this, r);
     disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
   }
@@ -62,7 +69,8 @@ void RoomAdmin::lookingForRooms(QObject * recipient, int id)
   if (greatestUsedId >= id)
   {
     Room * r = roomIndex[id];
-    connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
+    if (!connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)), DirectConnection))
+      throw "can't connect to specified recipient";
     locks[id].insert(recipient);
 
     emit foundRoom(this, r);
@@ -113,16 +121,21 @@ void RoomAdmin::createRoom(ParseEvent * event, Coordinate * expectedPosition, ch
 {
   mapLock.lock();
   Room * room = IntermediateNode::insertRoom(event);
+  if (!room) {
+    mapLock.unlock();
+    return;
+  }
   room->setTerrain(t);
   map.setNearest(expectedPosition, room);
   assignId(room);
+  event->reset();
   mapLock.unlock();
 }
 
 void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
 {
   if (greatestUsedId == -1) createRoom(event, new Coordinate(0,0,0), 0);
-  
+
   AbstractRoomContainer * ret;
   Room * r;
   mapLock.lock();
@@ -130,7 +143,8 @@ void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
   if (ret->numRooms() >= 0)
   {
 
-    connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
+    if (!connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)), DirectConnection))
+      throw "can't connect to specified recipient";
     for(set<Room *>::iterator i = ((RoomCollection*)ret)->begin(); i != ((RoomCollection*)ret)->end(); ++i)
     {
       r = *i;
@@ -145,23 +159,32 @@ void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
 
 }
 
-void RoomAdmin::addExit(int f, int t, int d) {
-	Room * from = roomIndex[f];
-	Room * to = roomIndex[t];
-	from->addExit(d, t);
-	to->addReverseExit(d, f);
+void RoomAdmin::addExit(int f, int t, int d)
+{
+  mapLock.lock();
+  Room * from = roomIndex[f];
+  Room * to = roomIndex[t];
+  from->addExit(d, t);
+  to->addReverseExit(d, f);
+  mapLock.unlock();
 }
 
 // removes the lock on a room
 // after the last lock is removed, the room is deleted
-void RoomAdmin::releaseRoom(QObject * sender, int id) {
+void RoomAdmin::releaseRoom(QObject * sender, int id)
+{
+  mapLock.lock();
   locks[id].erase(sender);
   if(locks[id].empty()) removeRoom(id);
+  mapLock.unlock();
 }
 
 // makes a lock on a room permanent and anonymous.
 // Like that the room can't be deleted via releaseRoom anymore.
-void RoomAdmin::keepRoom(QObject * sender, int id) {
+void RoomAdmin::keepRoom(QObject * sender, int id)
+{
+  mapLock.lock();
   locks[id].insert(0);
   locks[id].erase(sender);
+  mapLock.unlock();
 }

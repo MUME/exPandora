@@ -4,15 +4,22 @@
 ObjectRecycler<Path> pamm;
 RoomSignalHandler Path::signaler;
 
+Path::Path() :
+  active(false),
+  parent(0),
+  probability(0),
+  room(0) 
+{}
+
 void Path::init(Room * in_room, QObject * owner) {
   if (active) {
     throw "fatal: path already active";
   }
   else active = true;
 
-  signaler.hold(room, owner);
   room = in_room;
-
+  signaler.hold(room, owner);
+  
   children.clear();
   parent = 0;
   probability = 1;
@@ -83,7 +90,7 @@ void Path::deny() {
     throw "fatal: path inactive";
   }
   if (!children.empty()) return;
-  if (room != 0) signaler.release(room);
+  signaler.release(room);
   room = 0;
   if (parent != 0) {
     parent->removeChild(this);
@@ -98,12 +105,12 @@ void Path::clear() {
   if (!active) {
     throw "fatal: path inactive";
   }
+  active = false;
   if (room != 0) signaler.release(room);
   room = 0;
   children.clear();
   parent = 0;
   probability = 1;
-  active = false;
 }
 		
 

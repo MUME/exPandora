@@ -8,7 +8,7 @@
 class Path {
 
  public:
-  Path() {active = false;}
+  Path();  
   void removeChild(Path * p);
   void setParent(Path * p);
   bool hasChildren() {return (!children.empty());};

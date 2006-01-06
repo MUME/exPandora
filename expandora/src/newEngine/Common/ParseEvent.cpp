@@ -39,13 +39,13 @@ void ParseEvent::copy(ParseEvent * other) {
   pos = other->getPos();
   TinyList<Property *> * otherProps = other->getProperties();
   Property * prop = 0;
-  for (unsigned int p = 0; otherProps->get(p) != 0; p++) {
+  for (unsigned int p = 0; otherProps->get(p) != 0; ++p) {
     prop = otherProps->get(p)->copy();
     reqStack.push(prop);
   }
   otherProps = other->getOptionals();
 
-  for (unsigned int p = 0; otherProps->get(p) != 0; p++) {
+  for (unsigned int p = 0; otherProps->get(p) != 0; ++p) {
     prop = otherProps->get(p)->copy();
     optStack.push(prop);
   }
