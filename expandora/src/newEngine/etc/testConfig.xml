@@ -1,21 +1,21 @@
 <configuration>
 	<component id="Parser" file="Parser"/>
 	<component id="Display" file="Display">
-	  <option name="terrains" value="[#.f(<%~WU+:=O/>"/>
-	  <option name="terrain:[" value="images/indoors.png"/>
-	  <option name="terrain:#" value="images/city.png"/>
-	  <option name="terrain:." value="images/field.png"/>
-	  <option name="terrain:f" value="images/forest.png"/>
-	  <option name="terrain:(" value="images/hills.png"/>
-	  <option name="terrain:<" value="images/mountatin.png"/>
-	  <option name="terrain:%" value="images/shallowwater.png"/>
-	  <option name="terrain:~" value="images/river.png"/>
-	  <option name="terrain:W" value="images/rapids.png"/>
-	  <option name="terrain:U" value="images/underwater.png"/>
-	  <option name="terrain:+" value="images/road.png"/>
-	  <option name="terrain::" value="images/brush.png"/>
-	  <option name="terrain:=" value="images/tunnel.png"/>
-	  <option name="terrain:O" value="images/cavern.png"/>
+	  <option name="terrains" value="[#.f(&lt;%~WU+:=O/>"/>
+	  <option name="[" value="images/indoors.png"/>
+	  <option name="#" value="images/city.png"/>
+	  <option name="." value="images/field.png"/>
+	  <option name="f" value="images/forest.png"/>
+	  <option name="(" value="images/hills.png"/>
+	  <option name="&lt;" value="images/mountain.png"/>
+	  <option name="%" value="images/shallowwater.png"/>
+	  <option name="~" value="images/river.png"/>
+	  <option name="W" value="images/rapids.png"/>
+	  <option name="U" value="images/underwater.png"/>
+	  <option name="+" value="images/road.png"/>
+	  <option name=":" value="images/brush.png"/>
+	  <option name="=" value="images/tunnel.png"/>
+	  <option name="O" value="images/cavern.png"/>
 	</component>
 	<component id="Lexer" file="Lexer"/>
 	<component id="Filter" file="Filter"/>

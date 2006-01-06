@@ -95,7 +95,7 @@ void RoomInfo::update_info(Room * rr)
 
   if(rr)
   {
-    sprintf(str, " %s ", Terrain::terrains[rr->getTerrain()]->desc);
+    sprintf(str, " %s ", (const char *)(Terrain::terrains[rr->getTerrain()]->desc).toLatin1());
 
 
     terrain_label->setText( str );

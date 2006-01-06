@@ -3,7 +3,9 @@
 
 #include <qobject.h>
 #include <qthread.h>
+#include <QVariant>
 #include <iostream>
+#include <map>
 
 #ifdef Q_WS_WIN
 # define MY_EXPORT __declspec(dllexport)
@@ -24,6 +26,7 @@ class Component : public QObject {
 	
 protected:
 	ComponentThreader * thread;
+	std::map<QString, QVariant> options;
 	  
  public:
   /* set the component to a running state 
@@ -35,6 +38,7 @@ protected:
   virtual ~Component();
   virtual Qt::ConnectionType requiredConnectionType(const char *) {return Qt::AutoCompatConnection;}
   Component::Component(bool threaded = false);
+  void setOption(QString & key, QVariant & value) {options[key] = value;}
   
 };
 

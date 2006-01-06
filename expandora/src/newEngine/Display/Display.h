@@ -84,10 +84,12 @@ class DisplayComponent : public Component {
   void playerMoved(Coordinate *, Coordinate *);
   
  public:
-  DisplayComponent();
+  virtual void start();
   void toggle_renderer_reaction();
 
  private:
+  void resolveTerrains();
+  QString extractDescription(QString & filename);
   RendererWidget *renderer;
   MainWindow *renderer_window;
   QGLFormat f;

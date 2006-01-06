@@ -92,7 +92,7 @@ void Configuration::newComponent( const QXmlAttributes & atts ) {
 void Configuration::addOption( const QXmlAttributes & atts ) {
 	QString name = atts.value( "name" );
 	QVariant value = atts.value( "value" );
-	currentComponent->setProperty( name.toLatin1(), value );
+	currentComponent->setOption( name, value );
 }
 
 void Configuration::connectComponents( const QXmlAttributes & atts ) {

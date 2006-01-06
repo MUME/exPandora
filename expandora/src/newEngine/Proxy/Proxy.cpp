@@ -31,6 +31,9 @@ Proxy::Proxy() : Component(true), server(this)
 
 void Proxy::start()
 {
+  localPort = options["localPort"].toInt();
+  remotePort = options["remotePort"].toInt();
+  remoteHost = options["remoteHost"].toString();
   server.listen(QHostAddress::Any, localPort);
   Component::start();
 }
