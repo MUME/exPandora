@@ -12,11 +12,10 @@ class Terrain {
   		char   pattern;    	/* appropriate pattern */
   		GLuint texture;		/* and texture handler for renderer */
   		GLuint gllist;		/* OpenGL display list */
-  		Terrain *next;
+  		//Terrain *next;
+  		static map<char, Terrain *> terrains;
+		static map<QString, char> terrainIDs;
 };
-
-extern map<char, Terrain *> terrains;
-extern map<QString, char> terrainIDs;
 #endif
 
 #ifdef DMALLOC

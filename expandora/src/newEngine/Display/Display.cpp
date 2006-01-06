@@ -81,7 +81,7 @@ void RendererWidget::initializeGL() {
 		glEndList();
 	}
 
-	for ( map<char, Terrain *>::iterator i = terrains.begin(); i != terrains.end(); i++ ) {
+	for ( map<char, Terrain *>::iterator i = Terrain::terrains.begin(); i != Terrain::terrains.end(); ++i ) {
 		p = ( *i ).second;
 
 		glGenTextures( 1, &p->texture );
@@ -305,7 +305,7 @@ void RendererWidget::receiveRoom( QObject * owner, Room * pr ) {
 	glTranslatef( d.x, d.y, d.z );
 	if ( ( pr->getTerrain() != 0 ) && texture ) {
 		glEnable( GL_TEXTURE_2D );
-		glBindTexture( GL_TEXTURE_2D, ( terrains.find( pr->getTerrain() ) ) ->second->texture );
+		glBindTexture( GL_TEXTURE_2D, ( Terrain::terrains[pr->getTerrain()] ->texture ));
 
 		glBegin( GL_QUADS );
 

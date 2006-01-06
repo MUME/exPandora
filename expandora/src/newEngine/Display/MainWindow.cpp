@@ -95,7 +95,7 @@ void RoomInfo::update_info(Room * rr)
 
   if(rr)
   {
-    sprintf(str, " %s ", terrains.find(rr->getTerrain())->second->desc);
+    sprintf(str, " %s ", Terrain::terrains[rr->getTerrain()]->desc);
 
 
     terrain_label->setText( str );
