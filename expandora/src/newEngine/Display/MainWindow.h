@@ -1,8 +1,8 @@
 #ifndef MAINWINDOW
 #define MAINWINDOW
 
-#include <qmainwindow.h> 
-#include <qstringlist.h> 
+#include <qmainwindow.h>
+#include <qstringlist.h>
 #include <qgl.h>
 #include <qthread.h>
 #include <qlabel.h>
@@ -17,8 +17,8 @@
 
 class RoomInfo : public QWidget
 {
-  Q_OBJECT 
-    public:
+  Q_OBJECT
+public:
 
   RoomInfo(QWidget *parent, const char *name = 0);
 
@@ -42,45 +42,45 @@ class RoomInfo : public QWidget
 
   void update_info(Room * rr);
 
- private:
+private:
   QHBoxLayout   *topLayout;
-  QHBoxLayout   *noteLayout; 
-  QHBoxLayout   *nameLayout; 
-  QHBoxLayout   *descLayout; 
-  QVBoxLayout   *mainLayout; 
+  QHBoxLayout   *noteLayout;
+  QHBoxLayout   *nameLayout;
+  QHBoxLayout   *descLayout;
+  QVBoxLayout   *mainLayout;
 
 };
 
 
 class MainWindow : public QMainWindow
 {
-  Q_OBJECT 
-    public:
-  MainWindow(QWidget *parent, const char *name = 0);
-  
+  Q_OBJECT
+public:
+  MainWindow(QWidget *parent);
+
   void update_status_bar(Room * rr);
   RendererWidget *renderer;
 
-  private slots:
-  
+private slots:
+
   void hide_status();
   void hide_roominfo();
   void always_on_top();
 
 
- private:
+private:
   void mousePressEvent( QMouseEvent *);
   void mouseReleaseEvent( QMouseEvent *);
   void mouseMoveEvent( QMouseEvent *);
   void wheelEvent(QWheelEvent *);
 
   void keyPressEvent( QKeyEvent * );
-  
-  
 
-  QLabel        *locationLabel; 
-  QLabel        *formulaLabel; 
-  QLabel        *modLabel; 
+
+
+  QLabel        *locationLabel;
+  QLabel        *formulaLabel;
+  QLabel        *modLabel;
   QMenu    	*optionsMenu;
   QDockWidget   *dock;
   RoomInfo      *roominfo;

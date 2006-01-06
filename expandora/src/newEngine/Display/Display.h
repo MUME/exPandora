@@ -48,7 +48,7 @@ class RendererWidget : public QGLWidget {
 
  public slots:
   void moveMarker(Coordinate *, Coordinate *);
-  void drawRoom(QObject *,Room *);
+  void receiveRoom(QObject *,Room *);
   
  public:
   GLfloat       angley;
@@ -58,7 +58,7 @@ class RendererWidget : public QGLWidget {
   int           usery;
   int           userz;		/* additional shift added by user */
 
-  RendererWidget( QWidget *parent, const char *name=0 );
+  RendererWidget( QWidget *parent);
   void drawExit(Coordinate * from, Coordinate * to, unsigned int dir);
   void shiftView();
   void CalculateFrustum();
@@ -68,19 +68,27 @@ class RendererWidget : public QGLWidget {
   void resizeGL( int width, int height );
 
  signals:
-  void viewableAreaChanged(Frustum *); 
+  void viewableAreaChanged(QObject *, Frustum *); 
 };
 
 
 
 class MainWindow;
 class DisplayComponent : public Component {
+ Q_OBJECT
+  
+ signals:
+  void lookingForRooms(QObject *, Frustum *);
+  
+ public slots:
+  void playerMoved(Coordinate *, Coordinate *);
+  
  public:
   DisplayComponent();
   void toggle_renderer_reaction();
-  void CalculateFrustum();
 
  private:
+  RendererWidget *renderer;
   MainWindow *renderer_window;
   QGLFormat f;
 };

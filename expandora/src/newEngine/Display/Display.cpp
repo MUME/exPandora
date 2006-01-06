@@ -30,7 +30,7 @@ const int RendererWidget::texture_visibilit_range = 300;
 const int RendererWidget::details_visibility_range = 500;
 
 
-RendererWidget::RendererWidget( QWidget *parent, const char *)
+RendererWidget::RendererWidget( QWidget *parent)
 		: QGLWidget( parent) {
 	angley = 0;
 	anglex = 0;
@@ -158,12 +158,21 @@ DisplayComponent::DisplayComponent() {
 
 	QGLFormat::setDefaultFormat( f );
 
-	renderer_window = new MainWindow( 0, "MainWindow" );
-	//qApp->setMainWidget( renderer_window );
+	renderer_window = new MainWindow( 0 );
+	renderer =  new RendererWidget( renderer_window );
+	QObject::connect(renderer, SIGNAL(viewableAreaChanged(QObject *,Frustum *)), this, SIGNAL(lookingForRooms(QObject *,Frustum *)));
+	renderer_window->setCentralWidget( renderer );
+	renderer_window->renderer = renderer;
 	renderer_window->show();
 	
 	printf( "Renderer: ready and awaiting for events...\r\n" );
 
+}
+
+
+
+void DisplayComponent::playerMoved(Coordinate * from, Coordinate * to) {
+  renderer->moveMarker(from, to);
 }
 
 
@@ -219,7 +228,7 @@ void RendererWidget::drawMarker( Coordinate * pos ) {
 
 
 
-void RendererWidget::drawRoom( QObject * owner, Room * pr ) {
+void RendererWidget::receiveRoom( QObject * owner, Room * pr ) {
 
 
 
@@ -424,14 +433,14 @@ void RendererWidget::shiftView() {
 	colour[ 3 ] = 0.4;
 
 
-	emit viewableAreaChanged( &frustum );
+	emit viewableAreaChanged( this, &frustum );
 }
 
 
 
 void DisplayComponent::toggle_renderer_reaction() {
 	QKeyEvent * k = new QKeyEvent( QEvent::KeyPress, 'r', Qt::NoModifier );
-	QApplication::postEvent( renderer_window->renderer, k );
+	QApplication::postEvent( renderer, k );
 }
 
 

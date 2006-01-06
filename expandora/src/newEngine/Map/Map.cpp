@@ -5,9 +5,9 @@
 /**
  * doesn't modify c
  */
-bool Map::defined(Coordinate * _c) {
+bool Map::defined(Coordinate * in_c) {
 	Coordinate * c = cmm.activate();
-	c->x = _c->x, c->y = _c->y, c->z=_c->z;
+	c->x = in_c->x, c->y = in_c->y, c->z = in_c->z;
 	vector<vector<vector<Room *> > > & segment = getSegment(c);
 	try {
 		if (segment.at(c->x).at(c->y).at(c->z) != 0) {
@@ -18,7 +18,7 @@ bool Map::defined(Coordinate * _c) {
 			cmm.deactivate(c);
 			return false;
 		}
-	} catch (out_of_range e) {
+	} catch (out_of_range & e) {
 		cmm.deactivate(c);
 		return false;
 	}

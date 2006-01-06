@@ -9,6 +9,8 @@ Frustum::~Frustum()
 {}
 
 
+
+
 void Frustum::NormalizePlane(int side)
 {
   // Here we calculate the magnitude of the normal to the plane (point A B C)
@@ -129,7 +131,7 @@ void Frustum::rebuild(float * proj, float * modl)
 
   // Normalize the FRONT side
   NormalizePlane(FRONT);
-
+/*
   // find out the center of the frustum
   // first get the origin of the coordinate system
   // get the distance of the origin to the center
@@ -149,7 +151,7 @@ void Frustum::rebuild(float * proj, float * modl)
   center.x = (int)(clip[12] + frustum[FRONT][A]*dist);
   center.y = (int)(clip[13] + frustum[FRONT][B]*dist);
   center.z = (int)(clip[14] + frustum[FRONT][C]*dist);
-
+*/
 }
 
 

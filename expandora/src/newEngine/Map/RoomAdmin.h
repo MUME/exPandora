@@ -26,7 +26,7 @@ using namespace std;
 class RoomAdmin : public Component, public IntermediateNode {
  public:
   RoomAdmin();
-  void run() {}	
+  virtual Qt::ConnectionType requiredConnectionType(const char *) {return Qt::DirectConnection;}
 
  private:
   Q_OBJECT

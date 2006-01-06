@@ -111,11 +111,10 @@ void RoomInfo::update_info(Room * rr)
 
 
 
-MainWindow::MainWindow(QWidget *parent, const char *)
+MainWindow::MainWindow(QWidget *parent)
     : QMainWindow( parent)
 {
-  renderer =  new RendererWidget( this, "Renderer");
-  setCentralWidget( renderer );
+  
   resize(640, 480);
 
   QMenu *fileMenu = new QMenu( "File", 0 );

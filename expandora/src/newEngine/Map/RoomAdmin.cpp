@@ -27,6 +27,21 @@ void RoomAdmin::removeRoom(int id)
   mapLock.unlock();
 }
 
+void RoomAdmin::lookingForRooms(QObject * recipient, Frustum * frustum) {
+  Room * r = 0;
+  mapLock.lock();
+  connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
+  for(vector<Room *>::iterator i = roomIndex.begin(); i != roomIndex.end(); ++i) {
+    r = *i;
+    if(r && frustum->PointInFrustum(r->getCoordinate())) {
+      locks[r->getId()].insert(recipient);
+      emit foundRoom(this, r);
+    }
+  }
+  disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
+  mapLock.unlock();
+}
+
 void RoomAdmin::lookingForRooms(QObject * recipient, Coordinate * pos)
 {
   mapLock.lock();
@@ -34,9 +49,9 @@ void RoomAdmin::lookingForRooms(QObject * recipient, Coordinate * pos)
   if (r)
   {
     locks[r->getId()].insert(recipient);
-    connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
+    connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
     emit foundRoom(this, r);
-    disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
+    disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
   }
   mapLock.unlock();
 }
@@ -47,11 +62,11 @@ void RoomAdmin::lookingForRooms(QObject * recipient, int id)
   if (greatestUsedId >= id)
   {
     Room * r = roomIndex[id];
-    connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
+    connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
     locks[id].insert(recipient);
 
     emit foundRoom(this, r);
-    disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
+    disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
   }
   mapLock.unlock();
 }
@@ -113,20 +128,17 @@ void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
   if (ret->numRooms() >= 0)
   {
 
-    connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
+    connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
     for(set<Room *>::iterator i = ((RoomCollection*)ret)->begin(); i != ((RoomCollection*)ret)->end(); ++i)
     {
       r = *i;
       locks[r->getId()].insert(recipient);
       emit foundRoom(this, r);
     }
-    disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(foundRoom(QObject *, Room *)));
+    disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
     delete ret;
   }
   mapLock.unlock();
-
-  // in the future the cycling will be done inside the map ONLY,
-  // so this won't be needed anymore and rooms can be searched in several maps in parallel
   event->reset();
 
 }
@@ -136,4 +148,18 @@ void RoomAdmin::addExit(int f, int t, int d) {
 	Room * to = roomIndex[t];
 	from->addExit(d, t);
 	to->addReverseExit(d, f);
+}
+
+// removes the lock on a room
+// after the last lock is removed, the room is deleted
+void RoomAdmin::releaseRoom(QObject * sender, int id) {
+  locks[id].erase(sender);
+  if(locks[id].empty()) removeRoom(id);
+}
+
+// makes a lock on a room permanent and anonymous.
+// Like that the room can't be deleted via releaseRoom anymore.
+void RoomAdmin::keepRoom(QObject * sender, int id) {
+  locks[id].insert(0);
+  locks[id].erase(sender);
 }
