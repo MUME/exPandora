@@ -8,9 +8,6 @@
 #define MOVE_FAIL -2 
 #define UNKNOWN -5
 
-//#include "ObjectRecycler.h"
-
-
 
 class BaseEvent {
 	public:
@@ -19,7 +16,7 @@ class BaseEvent {
 		signed char type;
 };
 
-//extern ObjectRecycler<BaseEvent> bemm;
+
 #endif
 
 #ifdef DMALLOC

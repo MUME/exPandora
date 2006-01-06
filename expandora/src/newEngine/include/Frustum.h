@@ -30,6 +30,10 @@ enum PlaneData {
 };
 
 
+
+
+
+
 class Frustum
 {
 public:
@@ -37,17 +41,14 @@ public:
 
   ~Frustum();
   
-  Coordinate * getCenter() {return &center;}
+  
   bool PointInFrustum(Coordinate * c);
   void rebuild(float * proj, float * modl);
   float getDistance(Coordinate * c, int side = FRONT);
-
 private:
-  Coordinate center;
+  //Coordinate center;
   void NormalizePlane(int side);
   float frustum[6][4];
 
 };
-
-
 #endif
