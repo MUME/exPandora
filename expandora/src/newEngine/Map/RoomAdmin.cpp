@@ -121,6 +121,8 @@ void RoomAdmin::createRoom(ParseEvent * event, Coordinate * expectedPosition, ch
 
 void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
 {
+  if (greatestUsedId == -1) createRoom(event, new Coordinate(0,0,0), 0);
+  
   AbstractRoomContainer * ret;
   Room * r;
   mapLock.lock();

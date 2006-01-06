@@ -97,7 +97,6 @@ void RendererWidget::initializeGL()
     buf1.load( p->filename );
     tex1 = QGLWidget::convertToGLFormat( buf1 ); // flipped 32bit RGBA
 
-    glGenTextures( 1, &p->texture );
     glBindTexture( GL_TEXTURE_2D, p->texture );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );

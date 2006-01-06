@@ -25,7 +25,7 @@ class Experimenting : public QObject {
   list<Path *> * evaluate();
   
  public slots:
-  void foundRoom(QObject *, Room *);
+  void receiveRoom(QObject *, Room *);
 
  signals:
   void releaseRoom(int);

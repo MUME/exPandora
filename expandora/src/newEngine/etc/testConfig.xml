@@ -42,11 +42,15 @@
 	<connection from="Lexer" signal="eventFound(ParseEvent *)"
 		    to="Parser" slot="event(ParseEvent *)"/>
 	<connection from="Parser" signal="playerMoved(Coordinate *, Coordinate *)"
-		    to="Map" slot="playerMoved(Coordinate *, Coordinate *)"/>
+		    to="Display" slot="playerMoved(Coordinate *, Coordinate *)"/>
 	<connection from="Parser" signal="lookingForRooms(QObject *,ParseEvent *)"
 		    to="Map" slot="lookingForRooms(QObject *,ParseEvent *)"/>
 	<connection from="Parser" signal="lookingForRooms(QObject *,int)"
 		    to="Map" slot="lookingForRooms(QObject *,int)"/>
 	<connection from="Display" signal="lookingForRooms(QObject *,Frustum *)"
 		    to="Map" slot="lookingForRooms(QObject *,Frustum *)"/>
+	<connection from="Parser" signal="addExit(int, int, int)"
+		    to="Map" slot="addExit(int, int, int)"/>
+	<connection from="Parser" signal="createRoom(ParseEvent *, Coordinate *, char)"
+		    to="Map" slot="createRoom(ParseEvent *, Coordinate *, char)"
 </configuration>

@@ -10,7 +10,7 @@ class Syncing : public QObject {
    list<Path *> * paths;
    
  public slots:
-   void foundRoom(QObject *, Room *);
+   void receiveRoom(QObject *, Room *);
 
  public:
    Syncing(list<Path *> * in);

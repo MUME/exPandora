@@ -43,7 +43,7 @@ Q_OBJECT
   void lookingForRooms(QObject *,int);
   void lookingForRooms(QObject *,Coordinate *);
   void playerMoved(Coordinate *, Coordinate *);
-  void createRoom(ParseEvent *, Coordinate *, int);
+  void createRoom(ParseEvent *, Coordinate *, char);
   void addExit(int, int, int);
 
  public:
@@ -67,7 +67,7 @@ Q_OBJECT
   int remoteMapDelay;
   queue<ParseEvent *> playerEvents;
   queue<ParseEvent *> mudEvents;
-  int activeTerrain;
+  char activeTerrain;
   list<Path *> * paths;
   Room * mostLikelyRoom;
   double pathAcceptance;

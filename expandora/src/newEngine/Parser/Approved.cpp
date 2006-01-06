@@ -1,7 +1,7 @@
 
 #include "Approved.h"
 
-void Approved::foundRoom(QObject * sender, Room * perhaps) {  
+void Approved::receiveRoom(QObject * sender, Room * perhaps) {  
   if (matchedRoom != 0 && perhaps->fastCompare(myEvent, matchingTolerance)) {
     matchedRoom = perhaps;
     owner = sender;

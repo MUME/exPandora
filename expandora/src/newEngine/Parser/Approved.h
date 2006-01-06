@@ -20,7 +20,7 @@ class Approved : public QObject{
 
 
  public slots:
-   void foundRoom(QObject *, Room *);
+   void receiveRoom(QObject *, Room *);
 
  signals:
    void releaseRoom(int);
