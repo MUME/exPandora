@@ -28,6 +28,7 @@ int renderer_thread_main(int argc, char *argv[])
   }
   
   renderer_window = new MainWindow( 0, "MainWindow" );
+  renderer_window->setWindowTitle("Pandora");
 //  a.setMainWidget( renderer_window );
   
   QGLFormat f;
