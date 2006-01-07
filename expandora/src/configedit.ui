@@ -243,6 +243,45 @@
       </item>
      </layout>
     </widget>
+    <widget class="QCheckBox" name="checkBox_forwardIAC" >
+     <property name="geometry" >
+      <rect>
+       <x>11</x>
+       <y>131</y>
+       <width>226</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Forward the IAC to the client</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_forwardPromptColour" >
+     <property name="geometry" >
+      <rect>
+       <x>11</x>
+       <y>161</y>
+       <width>226</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Forward Prompt Colour to Client</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_promptIAC" >
+     <property name="geometry" >
+      <rect>
+       <x>11</x>
+       <y>101</y>
+       <width>226</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Use IAC for prompt detection</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="tab" >
     <attribute name="title" >

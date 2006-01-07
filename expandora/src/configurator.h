@@ -54,6 +54,9 @@ class Cconfigurator {
     QRegExp     roomname_exp;
     QRegExp     exits_exp;
     QRegExp     prompt_exp;
+    bool        request_prompt;     /* IAC check */
+    bool        forward_IAC;
+    bool        forwardPromptColour;
     
     /* data */
     QByteArray  database_path;
@@ -182,6 +185,15 @@ public:
     
     int get_desc_quote() { return desc_quote; }
     int get_name_quote() { return name_quote; }
+    
+    bool is_prompt_IAC() { return request_prompt;}
+    void set_prompt_IAC(bool b);
+    void send_IAC_prompt_request();
+    bool is_forward_IAC()   { return forward_IAC; }
+    void set_forward_IAC(bool b) { forward_IAC = b; set_conf_mod(true); }
+    bool is_forwardPromptColour()   { return forwardPromptColour; }
+    void set_forwardPromptColour(bool b) { forwardPromptColour = b; set_conf_mod(true); }
+    
 };
 
 extern class Cconfigurator conf;

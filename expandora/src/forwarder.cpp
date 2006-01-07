@@ -51,7 +51,6 @@
 
 QMutex tcp_mutex;
 
-
 int proxy_hangsock;
 fd_set proxy_descr1, proxy_descr2;
 struct sockaddr_in my_net_name, his_net_name;
@@ -336,6 +335,8 @@ int proxy_loop(void)
         }
       
         renderer_window->enable_online_actions();
+        if (conf.is_prompt_IAC())
+            conf.send_IAC_prompt_request();        
       }
     }
     

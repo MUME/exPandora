@@ -112,7 +112,39 @@ void Cdispatcher::dispatch_buffer()
   l = 0;
 
   while (o_pos < o_len) {
-    /* telnet sequences support */
+    
+    
+    if ((unsigned char)o_buf[o_pos] == (unsigned char) IAC && 
+        (unsigned char)o_buf[o_pos + 1] == (unsigned char)0xf9 &&
+        conf.is_prompt_IAC() ) 
+    {
+            line[l] = 0;
+            rx = conf.get_prompt_exp();
+            printf("IAC check RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
+            
+            if (rx_pos = rx.indexIn(line) >= 0) {
+                memcpy(buffer[amount].line, line, l);
+                buffer[amount].type = IS_PROMPT;
+                if (conf.is_forward_IAC()) {
+                    buffer[amount].line[l] = (unsigned char) IAC ;
+                    buffer[amount].line[l+1] = (unsigned char) 0xf9;
+                    buffer[amount].line[l+2] = 0 ;
+                    buffer[amount].len = l + 2;
+                } else {
+                    buffer[amount].line[l] = 0;
+                    buffer[amount].len = l;
+                }
+                printf("PROMPT: %s\r\n", buffer[amount].line);
+                
+                o_pos += 2;    /* its a match, so move the pointer futher */
+                amount++;
+                l = 0;
+                continue;
+            }
+    }
+    
+    
+    /* telnet sequences filter (or rather anti-filer, we let them go as they are */
     if ((unsigned char)o_buf[o_pos] == (unsigned char) IAC) {
       if (l != 0) {
         /* in case we met this damn telnet sequence right in the middle */
@@ -121,6 +153,7 @@ void Cdispatcher::dispatch_buffer()
         memcpy(buffer[amount].line, line, l);
         buffer[amount].len = l;   
         buffer[amount].type = IS_NONE;  /* line without end - will be just coppied as is */
+//        printf("Telnet seq ..%s..!\r\n", buffer[amount].line );
           
         amount++;
         l = 0;
@@ -132,6 +165,9 @@ void Cdispatcher::dispatch_buffer()
       o_pos+=3;
       buffer[amount].type = IS_TELNET;
       amount++;
+
+//      printf("The continuing line ..%s..!\r\n", buffer[amount].line);
+
 
       l = 0;
       continue;
@@ -145,8 +181,8 @@ void Cdispatcher::dispatch_buffer()
           
     
           rx = conf.get_prompt_exp();
-
-          if (rx_pos = rx.indexIn(line) >= 0) {
+          if ( conf.is_prompt_IAC() || (conf.get_prompt_col() != "") )   
+            if (rx_pos = rx.indexIn(line) >= 0) {
               rx_pos += rx.matchedLength();
                         /* here we assume we've found prompt */
               memcpy(buffer[amount].line, line, rx_pos);
@@ -166,7 +202,7 @@ void Cdispatcher::dispatch_buffer()
               printf("------------------Fixed bug with prompt in line!\r\n");
               l = 0;
               continue;
-          }
+            }
           
           memcpy(buffer[amount].line, line, l);
           buffer[amount].type = IS_CRLF;
@@ -215,8 +251,7 @@ void Cdispatcher::dispatch_buffer()
 
 
     rx = conf.get_prompt_exp();
-    printf("LINE: ..%s..\r\n", line);
-    printf("RegExp: %s match: %i\r\n", qPrintable( rx.pattern() ), rx.indexIn(line) );
+    printf("RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
 
     if (rx_pos = rx.indexIn(line) >= 0) {
         memcpy(buffer[amount].line, line, l);

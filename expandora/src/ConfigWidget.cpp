@@ -60,8 +60,9 @@ void ConfigWidget::run()
     else
         checkBox_terrain->setChecked(false);
 
-    
-    
+    checkBox_promptIAC->setChecked( conf.is_prompt_IAC() );
+    checkBox_forwardIAC->setChecked( conf.is_forward_IAC() );
+    checkBox_forwardPromptColour->setChecked( conf.is_forwardPromptColour() );
         
     lineEdit_visrange->setText(QString("%1").arg(conf.get_texture_vis()) );
     lineEdit_detrange->setText(QString("%1").arg(conf.get_details_vis()) );
@@ -129,7 +130,21 @@ void ConfigWidget::accept()
     if (conf.get_terrain_check() != checkBox_terrain->isChecked() )
         conf.set_terrain_check( checkBox_terrain->isChecked() );
     
+    if (conf.is_prompt_IAC() != checkBox_promptIAC->isChecked() ) {
+        conf.set_prompt_IAC( checkBox_terrain->isChecked() );
+        if (!conf.is_prompt_IAC()) {
+            QMessageBox::critical(this, "Cofiguration",
+                              QString("You have to reconnect to reset prompt IAC detection!"));
+        }
+    }
         
+    if (conf.is_forward_IAC() != checkBox_forwardIAC->isChecked() )
+        conf.set_forward_IAC( checkBox_forwardIAC->isChecked() );
+    
+   if (conf.is_forwardPromptColour() != checkBox_forwardPromptColour->isChecked() )
+        conf.set_forwardPromptColour( checkBox_forwardPromptColour->isChecked() );
+
+    
     
     i = lineEdit_visrange->text().toInt();
     if (i == 0) {

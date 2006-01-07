@@ -53,7 +53,9 @@ Cconfigurator::Cconfigurator()
     /* patterns */
     set_exits_pat("Exits:");
     
-    
+    set_prompt_IAC(true);
+    set_forward_IAC(true);
+    set_forwardPromptColour(true);
     /* regexps - the working pony */
     flush_all_exps();
 
@@ -153,22 +155,30 @@ void Cconfigurator::refresh_roomname_exp()
 
 void Cconfigurator::refresh_prompt_exp()
 {
-    char IAC[3];
-    
-    IAC[0] = 0xff;
-    IAC[1] = 0xf9;
-    IAC[2] = 0;
-    
     if (get_prompt_col() != "") {
         prompt_exp.setPattern("^"+ QRegExp::escape(get_prompt_col()) + ".*" +  QRegExp::escape(">") 
-                     + "(" + QRegExp::escape(IAC) + ")?"  + QRegExp::escape(get_end_col()));
-                    
+                     + QRegExp::escape(get_end_col()));
     } else {
-        prompt_exp.setPattern("^.*" +  QRegExp::escape(">")  + "(" + QRegExp::escape(IAC) + ")?" );
+        prompt_exp.setPattern("^.*" +  QRegExp::escape(">"));
     }
 }
 
+void Cconfigurator::set_prompt_IAC(bool b) 
+{ 
+    printf("BOol is %i.\r\n", b);
+    request_prompt = b; 
+    refresh_prompt_exp();
+    if (b)
+        send_IAC_prompt_request();
+    set_conf_mod(true);
+}
 
+void Cconfigurator::send_IAC_prompt_request()
+{
+    char *idprompt = "~$#EP2\nG\n";
+    send_to_mud(idprompt);
+    printf("Sent IAC request.\r\n");
+}
 
 /* ----------- COLOURS SECTION ---------------*/
 void Cconfigurator::set_look_col(QByteArray str)
@@ -435,6 +445,9 @@ int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
                   (const char *) get_look_col() );
   fprintf(f, "  <promptcolour>%s</promptcolour>\r\n", 
                   (const char *) get_prompt_col() );
+  fprintf(f, "  <prompt IAC=\"%s\" forwardIAC=\"%s\">\r\n", 
+                  ON_OFF(is_prompt_IAC()), ON_OFF( is_forward_IAC() ) );
+                  
   fprintf(f, "  <GLvisibility textures=\"%i\" details=\"%i\">\r\n", 
                   get_texture_vis(),  get_details_vis() );
   
@@ -584,6 +597,33 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         return TRUE;
     } else if (qName == "promptcolour") {
         flag = PROMPTCOLOUR;
+        return TRUE;
+    } else if (qName == "prompt") {
+        s = attributes.value("IAC");
+        s = s.toLower();
+        printf("Prompt IAC requesting/usage : %s\r\n", qPrintable(s) );
+        if (s == "on") 
+            conf.set_prompt_IAC(true);
+        else 
+            conf.set_prompt_IAC(false);
+        
+        s = attributes.value("forwardIAC");
+        s = s.toLower();
+        printf("Prompt IAC forwarding (to client) : %s\r\n", qPrintable(s) );
+        if (s == "on") 
+            conf.set_forward_IAC(true);
+        else 
+            conf.set_forward_IAC(false);
+
+        s = attributes.value("forwardColour");
+        s = s.toLower();
+        printf("Prompt Colour forwarding (to client) : %s\r\n", qPrintable(s) );
+        if (s == "on") 
+            conf.set_forwardPromptColour(true);
+        else 
+            conf.set_forwardPromptColour(false);
+
+        
         return TRUE;
     } else if (qName == "GLvisibility") {
         if (attributes.length() < 2) {
