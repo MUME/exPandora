@@ -61,7 +61,7 @@ public:
 
 void ProxyThread::run()
 {
-  proxy_loop();
+    proxy_loop();
 }
 /* PROX THREAD ENDS */
 
@@ -236,9 +236,6 @@ int main(int argc, char *argv[])
 
     printf("-- Starting Pandora\n");
   
-  
-    proxy_init();
-
     printf("Loading the database ... \r\n");
     xml_readbase( conf.get_base_file() );
     printf("Successfuly loaded %i rooms!\n", Map.size());
@@ -251,6 +248,8 @@ int main(int argc, char *argv[])
       stacker.put(1);
       stacker.swap();
     }
+ 
+    proxy_init();
  
     renderer_thread.start();
     proxy_thread.start();

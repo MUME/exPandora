@@ -105,7 +105,3 @@ extern class roommanager Map;/* room manager */
 
 #endif
 
-
-#ifdef DMALLOC
-#include <dmalloc.h>
-#endif

@@ -25,7 +25,7 @@ using namespace std;
 #pragma warning(disable:4305) // init: truncation from const double to float
 #endif
 
-GLfloat marker_colour[4] =  {1.0, 0.2, 0.0, 0.6};
+GLfloat marker_colour[4] =  {1.0, 0.1, 0.1, 0.9};
 
 
 #define MARKER_SIZE           (ROOM_SIZE/2.0)
@@ -70,6 +70,10 @@ RendererWidget::RendererWidget( QWidget *parent, const char *name )
   curx = 0;
   cury = 0;
   curz = 0;			/* current rooms position */
+  
+  last_drawn_marker = 0;
+  last_drawn_trail = 0;
+
 }
 
 
@@ -93,8 +97,9 @@ void RendererWidget::initializeGL()
   glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 
     
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-    glPixelStorei(GL_RGBA, 1);
+//    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_TEXTURE_ENV_MODE_REPLACE);
+  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glPixelStorei(GL_RGBA, 1);
 
 
     print_debug(DEBUG_RENDERER, "in init()");
@@ -149,35 +154,10 @@ void RendererWidget::paintGL()
 }
 
 
-
-void RendererWidget::glDrawMarkers()
+/* mode 1 = full marker, mode 2 - partial marker */
+void RendererWidget::drawMarker(int dx, int dy, int dz, int mode)
 {
-    CRoom *p;
-    unsigned int k;
-    
-    int dx, dy, dz;
-
-    
-    glColor4f(marker_colour[0],marker_colour[1],marker_colour[2],marker_colour[3]);
-    for (k = 0; k < stacker.amount(); k++) {
-      
-      p = stacker.get(k);
-
-      if (p == NULL) {
-        printf("RENDERER ERROR: Stuck upon corrupted room while drawing red pointers.\r\n");
-          continue;
-      }
-
-      dx = p->x - curx;
-      dy = p->y - cury;
-      dz = (p->z - curz) /* * DIST_Z */;
-
-/*      glTranslatef(dx, dy, dz);
-      print_debug(DEBUG_RENDERER, "marker dx: %i, dy: %i, dz: %i, curx %i, cury %i, curz %i", 
-                                    dx, dy, dz, curx, cury, curz);
-*/
-      
-      /* upper */
+          /* upper */
       glBegin(GL_TRIANGLES);
       glVertex3f(               dx, MARKER_SIZE + dy + ROOM_SIZE,  0.0f + dz);
       glVertex3f(-MARKER_SIZE + dx,               dy + ROOM_SIZE,  0.0f + dz);
@@ -204,11 +184,88 @@ void RendererWidget::glDrawMarkers()
       glVertex3f(-MARKER_SIZE + dx - ROOM_SIZE,            dy,     0.0f + dz);
       glVertex3f(               dx - ROOM_SIZE, -MARKER_SIZE + dy, 0.0f + dz);
       glEnd();
+    
 
-//      glTranslatef(-dx, -dy, -dz);
+      if (mode == 1) {
+        /* left */
+        glBegin(GL_QUADS);
+        glVertex3f(dx - ROOM_SIZE - (MARKER_SIZE / 3.5), dy + ROOM_SIZE + (MARKER_SIZE / 3.5), 0.0f);
+        glVertex3f(dx - ROOM_SIZE - (MARKER_SIZE / 3.5), dy - ROOM_SIZE                      , 0.0f);
+        glVertex3f(dx - ROOM_SIZE                      , dy - ROOM_SIZE                      , 0.0f);
+        glVertex3f(dx - ROOM_SIZE                      , dy + ROOM_SIZE + (MARKER_SIZE / 3.5), 0.0f);
+        glEnd();
+
+        /* right */
+        glBegin(GL_QUADS);
+        glVertex3f(dx + ROOM_SIZE                      , dy + ROOM_SIZE + (MARKER_SIZE / 3.5), 0.0f);
+        glVertex3f(dx + ROOM_SIZE                      , dy - ROOM_SIZE                      , 0.0f);
+        glVertex3f(dx + ROOM_SIZE + (MARKER_SIZE / 3.5), dy - ROOM_SIZE                      , 0.0f);
+        glVertex3f(dx + ROOM_SIZE + (MARKER_SIZE / 3.5), dy + ROOM_SIZE + (MARKER_SIZE / 3.5), 0.0f);
+        glEnd();
+
+        /* upper */
+        glBegin(GL_QUADS);
+        glVertex3f(dx - ROOM_SIZE - (MARKER_SIZE / 3.5), dy + ROOM_SIZE + (MARKER_SIZE / 3.5), 0.0f);
+        glVertex3f(dx - ROOM_SIZE - (MARKER_SIZE / 3.5), dy + ROOM_SIZE                      , 0.0f);
+        glVertex3f(dx + ROOM_SIZE + (MARKER_SIZE / 3.5), dy + ROOM_SIZE                      , 0.0f);
+        glVertex3f(dx + ROOM_SIZE + (MARKER_SIZE / 3.5), dy + ROOM_SIZE + (MARKER_SIZE / 3.5), 0.0f);
+        glEnd();
+
+        /* lower */
+        glBegin(GL_QUADS);
+        glVertex3f(dx - ROOM_SIZE - (MARKER_SIZE / 3.5), dy - ROOM_SIZE                      , 0.0f);
+        glVertex3f(dx - ROOM_SIZE - (MARKER_SIZE / 3.5), dy - ROOM_SIZE + (MARKER_SIZE / 3.5), 0.0f);
+        glVertex3f(dx + ROOM_SIZE + (MARKER_SIZE / 3.5), dy - ROOM_SIZE + (MARKER_SIZE / 3.5), 0.0f);
+        glVertex3f(dx + ROOM_SIZE + (MARKER_SIZE / 3.5), dy - ROOM_SIZE                      , 0.0f);
+        glEnd();
+    }
+}
+
+
+void RendererWidget::glDrawMarkers()
+{
+    CRoom *p;
+    unsigned int k;
+    
+    int dx, dy, dz;
+
+    if (stacker.amount() == 0)
+        return;
+    
+    
+    glColor4f(marker_colour[0],marker_colour[1],marker_colour[2],marker_colour[3]);
+    for (k = 0; k < stacker.amount(); k++) {
+        
+        p = stacker.get(k);
+    
+        if (p == NULL) {
+            printf("RENDERER ERROR: Stuck upon corrupted room while drawing red pointers.\r\n");
+            continue;
+        }
+    
+        dx = p->x - curx;
+        dy = p->y - cury;
+        dz = (p->z - curz) /* * DIST_Z */;
+    
+
+        drawMarker(dx, dy, dz, 1);
+    }
+    
+    
+    if (last_drawn_marker != stacker.first()->id) {
+        last_drawn_trail = last_drawn_marker;
+        last_drawn_marker = stacker.first()->id;
     }
 
-
+    if (last_drawn_trail) {
+        glColor4f(marker_colour[0] / 1.1, marker_colour[1] / 1.5, marker_colour[2] / 1.5, marker_colour[3] / 1.5);
+        p = Map.getroom(last_drawn_trail);
+        dx = p->x - curx;
+        dy = p->y - cury;
+        dz = (p->z - curz) ;
+        drawMarker(dx, dy, dz, 2);
+    }
+    
 }
 
 
@@ -219,8 +276,8 @@ void RendererWidget::glDrawRoom(CRoom *p)
     GLfloat dx, dx2, dy, dy2, dz, dz2;
     CRoom *r;
     int k;
-    char lines, texture;
     float distance;
+    bool lines, texture;    
 
     rooms_drawn_csquare++;
     
@@ -238,6 +295,7 @@ void RendererWidget::glDrawRoom(CRoom *p)
     
     rooms_drawn_total++;
 
+
     distance = m_Frustum[FRONT][A] * dx + m_Frustum[FRONT][B] * dy + 
                m_Frustum[FRONT][C] * dz + m_Frustum[FRONT][D];
     
@@ -253,19 +311,6 @@ void RendererWidget::glDrawRoom(CRoom *p)
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, conf.sectors[ p->sector].texture);
       glCallList(conf.sectors[ p->sector].gllist);  
-/*      glBegin(GL_QUADS);
-      
-      glTexCoord2f(0.0, 1.0);
-      glVertex3f(-ROOM_SIZE,  ROOM_SIZE, 0.0f);
-      glTexCoord2f(0.0, 0.0);
-      glVertex3f(-ROOM_SIZE, -ROOM_SIZE, 0.0f);
-      glTexCoord2f(1.0, 0.0);
-      glVertex3f( ROOM_SIZE, -ROOM_SIZE, 0.0f);
-      glTexCoord2f(1.0, 1.0);
-      glVertex3f( ROOM_SIZE,  ROOM_SIZE, 0.0f);
-      
-      glEnd();
-*/
       glDisable(GL_TEXTURE_2D);
     } else {
       glCallList(basic_gllist);
@@ -479,7 +524,7 @@ void RendererWidget::draw(void)
     CRoom *p;
     CPlane *plane;  
 
-
+    
     rooms_drawn_csquare=0;
     rooms_drawn_total=0;
     square_frustum_checks = 0;
@@ -530,7 +575,7 @@ void RendererWidget::draw(void)
         
         z = plane->z - curz;
         
-        
+/*        
         if (z == 0) {
           colour[0] = 0.1; colour[1] = 0.8; colour[2] = 0.8; colour[3] = 0.6; 
         } else if (z > 1) {
@@ -548,53 +593,29 @@ void RendererWidget::draw(void)
         } else if (z <= -14) {
           colour[0] = 0; colour[1] = 0; colour[2] = 0; colour[3] = 0; 
         }
+*/        
+        if (z == 0) {
+          colour[0] = 1; colour[1] = 1; colour[2] = 1; colour[3] = 0.8; 
+        } else if (z > 1) {
+          colour[0] = 1; colour[1] = 1; colour[2] = 1; colour[3] = 0.1; 
+        } else if (z < -1) {
+          colour[0] = 1; colour[1] = 1; colour[2] = 1; colour[3] = 0.3; 
+        } else if (z == -1) {
+          colour[0] = 1; colour[1] = 1; colour[2] = 1; colour[3] = 0.4; 
+        } else if (z == 1) {
+          colour[0] = 1; colour[1] = 1; colour[2] = 1; colour[3] = 0.2; 
+        } else if (z <= -5) {
+          colour[0] = 1; colour[1] = 1; colour[2] = 1; colour[3] = 0.2; 
+        } else if (z <= -10) {
+          colour[0] = 1; colour[1] = 1; colour[2] = 1; colour[3] = 0.1; 
+        } else if (z <= -14) {
+          colour[0] = 1; colour[1] = 1; colour[2] = 1; colour[3] = 0; 
+        }
         glColor4f(colour[0], colour[1], colour[2], colour[3]);
         
         current_plane_z = plane->z;
         
         glDrawCSquare(plane->squares);
-/*        {                             // hrm, 2ms vs 6 ms 
-            unsigned int k, j;
-            CSquare *p = plane->squares;
-            vector<CSquare *>   storage_a;
-            vector<CSquare *>   storage_b;
-            vector<CSquare *>   *vec_a, *vec_b, *tmp_v;
-            
-            
-            if (!SquareInFrustum(p)) {
-                plane = plane->next;
-                continue;
-            }
-                
-            vec_a = &storage_a;
-            vec_b = &storage_b;
-            vec_a->clear();
-            vec_b->clear();
-                
-            vec_a->push_back(p);
-            while (vec_a->size()) {
-                vec_b->clear();
-                for (k = 0; k < vec_a->size(); k++) {
-                    p = (*vec_a)[k];
-                    if (p->to_be_passed()) {
-                        if (p->subsquares[ Left_Upper ])    vec_b->push_back(p->subsquares[ Left_Upper ]);
-                        if (p->subsquares[ Right_Upper ])   vec_b->push_back(p->subsquares[ Right_Upper ]);
-                        if (p->subsquares[ Left_Lower ])    vec_b->push_back(p->subsquares[ Left_Lower ]);
-                        if (p->subsquares[ Right_Lower ])   vec_b->push_back(p->subsquares[ Right_Lower ]);
-                    } else {
-                        for (j = 0; j < p->rooms.size(); j++) 
-                            glDrawRoom(p->rooms[j]);
-                    }
-                }
-                tmp_v = vec_b;
-                vec_b = vec_a;
-                vec_a = tmp_v;
-            }
-                
-        }
-*/        
-        
-        
         plane = plane->next;
     }
     

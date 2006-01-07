@@ -1,3 +1,6 @@
+#ifndef CDISPATCHER_H
+#define CDISPATCHER_H
+
 
 #include <vector>
 #include <QString>
@@ -12,11 +15,6 @@ using namespace std;
 #define IS_TELNET       7       /* telnet protocol commands */
 #define IS_NONE         8       /* is not an ascii line */
 
-/* global variables */
-extern char    base_file[];
-extern int     local_port;
-extern char    remote_host[];
-extern int     remote_port;
 
 struct Tincoming_lines {
     char line[MAX_DATA_LEN];
@@ -73,6 +71,4 @@ public:
 
 extern class Cdispatcher dispatcher;
 
-#ifdef DMALLOC
-#include <dmalloc.h>
 #endif

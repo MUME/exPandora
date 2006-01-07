@@ -103,6 +103,8 @@ void Cdispatcher::dispatch_buffer()
 {
   int l;
   char line[MAX_DATA_LEN];
+  QRegExp rx;
+  int rx_pos;
   
   
   line[0] = 0;  /* set first terminator */
@@ -140,35 +142,31 @@ void Cdispatcher::dispatch_buffer()
       if ((o_buf[o_pos] == 0xd) && (o_buf[o_pos + 1] == 0xa)) {
           line[l] = 0;
           o_pos += 2;
-
-          /* ODOA lines might contain prompt in them */
-          if (line[0] == '*' || (line[0] == 'o' && line[1]!='r') || line[0] == '!' || line[0] == ')') {
-              unsigned int z;
-              for (z = 1; z < (strlen(line) - 1); z++) 
-                  if (line[z] == '>') {
-                      /* here we assume we've found prompt */
-                      memcpy(buffer[amount].line, line, z + 1);
-                      buffer[amount].type = IS_CRLF;
-                      buffer[amount].line[z+1] = 0;
-                      buffer[amount].len = z + 1;
-                      printf(" fixed prompt is : ..%s..\r\n", buffer[amount].line);
-
-                      amount++;
-
-                      
-                      strcpy(buffer[amount].line, line + z + 1);
-                      buffer[amount].len = strlen(buffer[amount].line);
-                      buffer[amount].type = IS_CRLF;
-                      printf(" fixed line is : ..%s..\r\n", buffer[amount].line);
-                      amount++;
-                      
-                      printf("------------------Fixed bug with prompt in line!\r\n");
-                      l = 0;
-                      continue;
-                  }
-              
-          } 
           
+    
+          rx = conf.get_prompt_exp();
+
+          if (rx_pos = rx.indexIn(line) >= 0) {
+              rx_pos += rx.matchedLength();
+                        /* here we assume we've found prompt */
+              memcpy(buffer[amount].line, line, rx_pos);
+              buffer[amount].type = IS_CRLF;
+              buffer[amount].line[rx_pos] = 0;
+              buffer[amount].len = rx_pos;
+              printf(" fixed prompt is : ..%s..\r\n", buffer[amount].line);
+                
+              amount++;
+                                    
+              strcpy(buffer[amount].line, line + rx_pos);
+              buffer[amount].len = strlen(buffer[amount].line);
+              buffer[amount].type = IS_CRLF;
+              printf(" fixed line is : ..%s..\r\n", buffer[amount].line);
+              amount++;
+                                    
+              printf("------------------Fixed bug with prompt in line!\r\n");
+              l = 0;
+              continue;
+          }
           
           memcpy(buffer[amount].line, line, l);
           buffer[amount].type = IS_CRLF;
@@ -215,18 +213,20 @@ void Cdispatcher::dispatch_buffer()
   if (l == 0)
       return;
 
-  for (unsigned int i=l; i!=0; i--) 
-      if (line[i]=='>') {
-          /* its not very smart prompt detection, but its not very complicated also ! =) */
-          /* this is prompt then */
 
-          memcpy(buffer[amount].line, line, l);
-          buffer[amount].type = IS_PROMPT;
-          buffer[amount].line[l] = 0;
-          buffer[amount].len = l;
-          amount++;
-          return;
-      } 
+    rx = conf.get_prompt_exp();
+    printf("LINE: ..%s..\r\n", line);
+    printf("RegExp: %s match: %i\r\n", qPrintable( rx.pattern() ), rx.indexIn(line) );
+
+    if (rx_pos = rx.indexIn(line) >= 0) {
+        memcpy(buffer[amount].line, line, l);
+        buffer[amount].type = IS_PROMPT;
+        buffer[amount].line[l] = 0;
+        buffer[amount].len = l;
+        printf("PROMPT: %s\r\n", buffer[amount].line);
+        amount++;
+        return;
+    } 
       
   /* else its splitted line */
   memcpy(buffer[amount].line, line, l);
@@ -385,13 +385,13 @@ int Cdispatcher::check_failure(char *nline)
 	
       	if (!collecting_colours) {
             /* check if we shall start collecting colours */
-	    rx.setPattern("Use 'change colour <field> <attribute>' where <field> can be one of:");
+	    rx.setPattern("Use 'change colour <field> <attribute>' where <field>");
             if (rx.indexIn(nline) >= 0) {
 	        collecting_colours = true;
 	        return 1;
 	    }
         } else {
-            rx.setPattern("or 'change colour <field> default|monochrome|none' where <field> can be one of:");
+            rx.setPattern("or 'change colour <field> default|monochrome|none' where <field>");
             if (rx.indexIn(nline) >= 0) {
                 /* check for double colours */
                 

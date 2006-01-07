@@ -84,10 +84,10 @@ void MainWindow::disable_online_actions()
 
 void MainWindow::enable_online_actions()
 {
-  mappingAct->setEnabled(true);
-  automergeAct->setEnabled(true);
-  angryLinkerAct->setEnabled(true);
-  calibrateColoursAct->setEnabled(true);
+    mappingAct->setEnabled(true);
+    automergeAct->setEnabled(true);
+    angryLinkerAct->setEnabled(true);
+    calibrateColoursAct->setEnabled(true);
 }
 
 

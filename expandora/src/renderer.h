@@ -39,7 +39,6 @@ public:
   int           current_plane_z;        /* to avoid arguments usage */
   GLuint        basic_gllist;
 
-
     
   int           rooms_drawn_csquare;
   int           rooms_drawn_total;
@@ -67,9 +66,12 @@ private:
   int           cury;
   int           curz;			/* current rooms position */ 
   
-
+  unsigned int last_drawn_marker;
+  unsigned int last_drawn_trail;
+  
 
   void glDrawMarkers();
+  void drawMarker(int, int, int, int);
   void glDrawRoom(CRoom *p);
   
   void glDrawCSquare(CSquare *p);
@@ -80,8 +82,4 @@ private:
 
 
 
-#endif
-
-#ifdef DMALLOC
-#include <dmalloc.h>
 #endif

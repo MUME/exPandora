@@ -82,6 +82,3 @@ int parse_user_input_line(char *line);
 
 #endif
 
-#ifdef DMALLOC
-#include <dmalloc.h>
-#endif

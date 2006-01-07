@@ -153,8 +153,19 @@ void Cconfigurator::refresh_roomname_exp()
 
 void Cconfigurator::refresh_prompt_exp()
 {
-    prompt_exp.setPattern("^"+ QRegExp::escape(get_prompt_col()) + ".*>" 
-                    + QRegExp::escape(get_end_col()));
+    char IAC[3];
+    
+    IAC[0] = 0xff;
+    IAC[1] = 0xf9;
+    IAC[2] = 0;
+    
+    if (get_prompt_col() != "") {
+        prompt_exp.setPattern("^"+ QRegExp::escape(get_prompt_col()) + ".*" +  QRegExp::escape(">") 
+                     + "(" + QRegExp::escape(IAC) + ")?"  + QRegExp::escape(get_end_col()));
+                    
+    } else {
+        prompt_exp.setPattern("^.*" +  QRegExp::escape(">")  + "(" + QRegExp::escape(IAC) + ")?" );
+    }
 }
 
 
@@ -170,6 +181,7 @@ void Cconfigurator::set_look_col(QByteArray str)
 void Cconfigurator::set_prompt_col(QByteArray str) 
 { 
     prompt_col = str; 
+    refresh_prompt_exp();
     set_conf_mod(true);
 }
 
@@ -194,7 +206,7 @@ int Cconfigurator::get_sector_by_desc(QByteArray desc)
         if (sectors[i].desc == desc)
             return i;
     }
-    return -1;
+    return 0;
 }
 
 GLuint Cconfigurator::get_texture_by_desc(QByteArray desc)

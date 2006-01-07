@@ -49,6 +49,4 @@ extern class CTree NameMap;
 
 #endif
 
-#ifdef DMALLOC
-#include <dmalloc.h>
-#endif
+

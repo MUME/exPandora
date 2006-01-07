@@ -179,7 +179,7 @@ void CEngine::command_applyprompt()
   }
 
   
-  if (stacker.amount() == 0) {
+  if (stacker.amount() == 0 || terrain == 0) {
     return;
   }
   
@@ -545,8 +545,6 @@ int CEngine::parse_command_line(char cause, char result, char *line)
   }
  
   /* else link the new command */
-  printf("Adding the script for event type : %s, %s, %i\r\n", 
-        (const char *) Events[(int)cause].data, (const char *) Events[(int)result].data,  programs.size() );
   code_field[(int)cause][(int)result] = programs.size();
   programs.push_back(script);
   return 0;  

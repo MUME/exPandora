@@ -80,6 +80,4 @@ int MIN(int a, int b);
 
 #endif
 
-#ifdef DMALLOC
-#include <dmalloc.h>
-#endif
+

@@ -6,7 +6,7 @@ MOC_DIR		= moc
 
 CONFIG		+= qt opengl warn_on thread release
 
-QT += xml opengl gui
+QT += xml opengl gui network
 
 win32 {
 	CONFIG	+= console
