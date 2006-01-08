@@ -53,6 +53,8 @@ class Cdispatcher
     int check_roomname(char *line);
     int check_exits(char *line);
     int check_failure(char *nline);
+    
+    int dispatch_prompt(char *line, char *buf, int l, int mode);
 	
 public:
     bool getting_colour_scheme;

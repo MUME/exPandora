@@ -165,7 +165,6 @@ void Cconfigurator::refresh_prompt_exp()
 
 void Cconfigurator::set_prompt_IAC(bool b) 
 { 
-    printf("BOol is %i.\r\n", b);
     request_prompt = b; 
     refresh_prompt_exp();
     if (b)
@@ -177,7 +176,6 @@ void Cconfigurator::send_IAC_prompt_request()
 {
     char *idprompt = "~$#EP2\nG\n";
     send_to_mud(idprompt);
-    printf("Sent IAC request.\r\n");
 }
 
 /* ----------- COLOURS SECTION ---------------*/
@@ -445,8 +443,9 @@ int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
                   (const char *) get_look_col() );
   fprintf(f, "  <promptcolour>%s</promptcolour>\r\n", 
                   (const char *) get_prompt_col() );
-  fprintf(f, "  <prompt IAC=\"%s\" forwardIAC=\"%s\">\r\n", 
-                  ON_OFF(is_prompt_IAC()), ON_OFF( is_forward_IAC() ) );
+  fprintf(f, "  <prompt IAC=\"%s\" forwardIAC=\"%s\" forwardColour=\"%s\">\r\n", 
+                  ON_OFF(is_prompt_IAC()), ON_OFF( is_forward_IAC() ) , 
+                  ON_OFF( is_forwardPromptColour() )  );
                   
   fprintf(f, "  <GLvisibility textures=\"%i\" details=\"%i\">\r\n", 
                   get_texture_vis(),  get_details_vis() );

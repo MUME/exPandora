@@ -11,6 +11,9 @@ Q_OBJECT
     int editing_index;
     
     vector<TPattern> patterns;
+    void enableFrame();
+    void disableFrame();
+    
 public:
     PatternEditDialog(QWidget *parent = 0);
     void run();

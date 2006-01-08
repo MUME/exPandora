@@ -27,7 +27,7 @@ void PatternEditDialog::run()
         return;
 
     patterns.clear();
-    frame->setEnabled(false);
+    disableFrame();
     editing_index = 0;
     
     for (i = 0; i < conf.patterns.size(); i++) 
@@ -35,6 +35,7 @@ void PatternEditDialog::run()
     
     for (i = 0; i < Events.size(); i++)
         comboBox_type->addItem(Events[i].data);
+
 
     redraw();
     show();
@@ -46,7 +47,7 @@ void PatternEditDialog::run()
 void PatternEditDialog::edit_clicked()
 {
     editing_index = listWidget->currentRow();
-    frame->setEnabled(true);
+    enableFrame();
 
     checkBox_regexp->setChecked(patterns[editing_index].is_regexp);
     lineEdit_expr->setText(patterns[editing_index].pattern);
@@ -70,14 +71,16 @@ void PatternEditDialog::redraw()
             .arg( tmp2, -90 );
         listWidget->addItem(s);   
     }
+    listWidget->setCurrentRow(0);
     repaint();
 }
 
 
 void PatternEditDialog::save_clicked()
 {
-    frame->setEnabled(false);
     TPattern p;
+    
+    disableFrame();
     
     if (editing_index == -1) {
         editing_index = patterns.size();
@@ -93,8 +96,14 @@ void PatternEditDialog::save_clicked()
 
 void PatternEditDialog::add_clicked()
 {
-    frame->setEnabled(true);
-    editing_index = -1;
+    if (frame->isEnabled()) {
+        editing_index = -1;    
+        disableFrame();
+        save_clicked();
+    } else {
+        enableFrame();
+        editing_index = -1;
+    }
 }
 
 void PatternEditDialog::remove_clicked()
@@ -127,3 +136,17 @@ void PatternEditDialog::accept()
     patterns.clear();        
     done(Accepted);
 }
+
+
+void PatternEditDialog::enableFrame()
+{
+    frame->setEnabled(true);
+    pushButton_remove->setEnabled(false);
+}
+
+void PatternEditDialog::disableFrame()
+{
+    frame->setEnabled(false);
+    pushButton_remove->setEnabled(true);
+}
+

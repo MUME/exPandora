@@ -115,15 +115,15 @@ const struct user_command_type user_commands[] = {
     "Turn descriptions analyzer in mapping mode on/off.",
    "    Usage: mautomerge [boolean]\r\n"
    "    Examples: mautomerge / mautomerge on / mautomerge true / mautomerge 1 / mautomerge yes\r\n\r\n"
-   "    This command turns the descriptions analyzer and automatic merging on/off. Turn it off in\r\n"
-   "badly created zone and link rooms manually.\r\n"},
+   "    This command turns the descriptions analyzer and automatic merging\r\n"
+   "on/off. Turn it off in badly created zones and link rooms manually.\r\n"},
   {"mangrylinker",   usercmd_config,   USER_CONF_ANGRYLINKER,     0,   
     "Turn the AngryLinker on/off.",
    "    Usage: mangrylinker [boolean]\r\n"
    "    Examples: mangrylinker / mangrylinker on / mangrylinker true\r\n\r\n"
-   "    AngryLinker attempts to link the surrounding rooms based on its coordinates.\r\n"
-   "Be VERY careful using this - you can easilly get mistakenly linked rooms. Though this is a\r\n"
-   "very helpful option for 10x10 zones. \r\n"},
+   "    AngryLinker attempts to link the surrounding rooms based on its coordinates\r\n"
+   "Be VERY careful using this - you can easily get mistakenly linked rooms.\r\n"
+   "Though this is a very helpful option for 10x10 zones.\r\n"},
   {"mcheckterrain",   usercmd_config,   USER_CONF_TERRAIN,     0,   
     "Turn terrain analyzer on/off.",
    "    Usage: mcheckterrain [boolean]\r\n"
@@ -138,9 +138,9 @@ const struct user_command_type user_commands[] = {
   {"mload",         usercmd_mload,         0,           USERCMD_FLAG_REDRAW,   
     "Load file/Reload the database from disk.",
    "    Usage: mload [filename]\r\n"
-   "    Examples: mload / mload warpmap.xml\r\n\r\n"
-   "    Without arguments this command reloads already opened database. As argument you can specify some\r\n"
-   "other database file to load.\r\n"},
+   "    Examples: mload / mload mume.xml\r\n\r\n"
+   "    Without arguments this command reloads the currently opened database.\r\n"
+   "As argument you can specify some other database-file to load.\r\n"},
   {"mreset",         usercmd_mreset,         0,           USERCMD_FLAG_REDRAW,   
     "Reset mappers state stacks.",
    "    Usage: mreset\r\n"
@@ -167,21 +167,19 @@ const struct user_command_type user_commands[] = {
   {"up",            usercmd_move,         UP,             USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"down",          usercmd_move,         DOWN,           USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"look",          usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
-//  {"l",             usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"examine",       usercmd_move,         USER_MOVE_EXAMINE, USERCMD_FLAG_INSTANT,   NULL, NULL},
-//  {"exa",           usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
-//  {"exam",          usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"mmerge",        usercmd_mmerge,       0,    USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
     "Merge twin rooms - manual launch.",
    "    Usage: mmerge [id] [force]\r\n"
    "    Examples: mmerge / mmerge 120 / mmerge 120 force\r\n\r\n"
-   "Without arguments this command will try to merge last added room with either\r\n"
-   "found room or given room. Force argument disables the roomname and desc checks.\r\n"},
+   "    Without arguments this command will try to merge the last added room with either\r\n"
+   "found twin room or given (by id) room. Force argument disables the roomname and desc checks.\r\n"},
    {"mnewmap",        usercmd_mnewmap,       0,           0,   
     "Start new map (loads current room as base room).",
    "    Usage: mnewmap\r\n"
    "    Examples: mnewmap\r\n\r\n"
-   "Gets current room as base room for new map via sending examine command to the game.\r\n"},
+   "    Uses the current room as new base room for a new map by sending examine\r\n"
+   "command to the game.\r\n"},
   {"mdecx",             usercmd_mdec,        USER_DEC_X,   USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
     "Decrease the X coordinate.",
    "    Usage: mdecx [integer]\r\n"
@@ -208,7 +206,7 @@ const struct user_command_type user_commands[] = {
     "Set the coordinates for current room.",
    "    Usage: mcoord [X] [Y] [Z]\r\n"
    "    Examples: mcoord -2 4 5 / mcoord -2 / mcoord -2 4 / mcoord -2 4 5 \r\n\r\n"
-   "Set the coordinates of current rooms to given values.\r\n"},
+   "Set the coordinates of the current room to the given values.\r\n"},
 
   {"mdoor",             usercmd_mdoor,   USER_DOOR_NORMAL,  USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
     "Add a door in direction",
@@ -216,16 +214,16 @@ const struct user_command_type user_commands[] = {
     "   Examples: mdoor stonedoor east\r\n" 
     "             mdoor stonedoor w\r\n"
     "             mdoor remove w\r\n\r\n"
-    "If there is no connection in given direction an undefined connection will be created.\r\n"
-    "Existing doorname will be removed - so take care.\r\n"
+    "If there is no connection in given direction an undefined connection will\r\n"
+    "be created. Any existing doorname will be removed - so take care.\r\n"
     "   Note that remove has to be written fully and not in capitals.\r\n"},
   {"mexit",             usercmd_mdoor,   USER_DOOR_EXIT,     USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
     "Add a nonsecret door",
     "   Usage: mdoor <doorname> <dirrection>\r\n"
     "    Examples: mdoor stonedoor east / mdoor stonedoor w\r\n\r\n"
-    "If there is no connection in given direction an undefined connection will be created.\r\n"
-    "Existing doorname will be removed - so take care. Door name \"exit\" is reserved word,\r\n"
-    "and basicly means - nonsecret exit. Use \"Exit\" to mark secret door.\r\n"},
+    "If there is no connection in given direction an undefined connection will\r\n"
+    "Any existing doorname will be removed - so take care. Door name \"exit\" is\r\n"
+    "reserved word and basicly means - nonsecret exit. Use \"mexit\" to mark secret doors.\r\n"},
   {"mmark",             usercmd_mmark,          0,      USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
     "Mark/Flag some direction.",
     "    Usage: mmark <dir> <flag>\r\n"
@@ -235,12 +233,12 @@ const struct user_command_type user_commands[] = {
     "Link current room with some other.",
     "    Usage: mlink <dirrection> <id> [backdir] [force|oneway]\r\n"
     "    Examples: \r\n"
-    "   mlink west 120          link exit werst in current room with exit east in room 120.\r\n"
-    "                    Wont work if exit if already busy.\r\n"
+    "   mlink west 120          link exit west in current room with exit east in room 120.\r\n"
+    "                    Wont work if exit is already taken(busy).\r\n"
     "   mlink e 120 o           link exit west as oneway to room 120.\r\n"
-    "   mlink w 120 e force     link west to 120 and force all connections. If exists are busy\r\n"
-    "                           they will be overwritten. Doors will stay though.\r\n"
-    "   mlink w 120 o force     link west to 120 and force it.\r\n\r\n"
+    "   mlink w 120 e force     link west to 120 and force binding of all connections. If exits are \r\n"
+    "                           already takes(busy)they will be overwritten. Doornames will stay.\r\n"
+    "   mlink w 120 o force     link west to 120 and force connections.\r\n\r\n"
     "    Link two rooms.\r\n"},
   {"mdetach",             usercmd_mdetach,          0,      USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
     "Detach connections in 2 rooms.",
@@ -283,7 +281,8 @@ const struct user_command_type user_commands[] = {
   {"mrefresh",              usercmd_mrefresh,        0,      USERCMD_FLAG_SYNC,
     "Refresh roomdesc.",
     "    Usage: mrefresh \r\n\r\n"
-    "   Uses last seen roomdesc. use together with mgoto.\r\n"},
+    "    Uses last seen roomdesc and all other information (e.g terrain flags).\r\n"
+    "Use together with mgoto.\r\n"},
   {"mtreestats",              usercmd_mtreestats,        0,      0,
     "Print tree search engine statistics.",
     "    Usage: mtreestats \r\n\r\n"

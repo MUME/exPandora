@@ -154,6 +154,7 @@ void CEngine::command_applyprompt()
 {
   char terrain;
   unsigned int i;
+  int col_pos;
   CRoom *room;
 
   if (mgoto) 
@@ -162,7 +163,17 @@ void CEngine::command_applyprompt()
 //  print_debug(DEBUG_ANALYZER, "in apply_prompt");
   if (redraw) redraw++;
   
-  terrain = r_event.data[1 + conf.get_prompt_col_len()];  /*second charecter is terrain*/
+  
+  
+  col_pos = r_event.data.indexOf(conf.get_prompt_col());
+  if (col_pos == 0) {
+    terrain = r_event.data[1 + conf.get_prompt_col_len()];  /*second charecter is terrain*/
+  } else if (col_pos == -1) {
+    terrain = r_event.data[1];  /* no prompt colour in there !*/
+  } else if (col_pos > 0) { /* shouldn't be possible ? */
+    terrain = r_event.data[col_pos + 1 + conf.get_prompt_col_len()];
+  }
+  
   if (conf.get_sector_by_pattern(terrain) == 0) 
      terrain = 0;
 

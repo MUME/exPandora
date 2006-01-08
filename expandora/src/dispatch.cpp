@@ -40,17 +40,17 @@ void Cdispatcher::set_leaderpatter(char *line)
 }
 
 
+
+
 int Cdispatcher::check_roomname(char *line) {
     char roomname[MAX_STR_LEN];
     QRegExp rx;
-    unsigned int i;
     
 
     rx = conf.get_roomname_exp();
 
     if (rx.indexIn(line) >= 0) {
         /* so we got a roomname in this line */
-        for (i = 0; i<strlen(line); i++) {
             int rn_start;
             int rn_end;
             int rn_len;
@@ -74,8 +74,6 @@ int Cdispatcher::check_roomname(char *line) {
             getting_desc = 1;   /* get desc if it will be there */
             
             return 1;
-            
-        }
         
     } 
       
@@ -99,6 +97,46 @@ int Cdispatcher::check_exits(char *line)
     return 0;
 }
 
+/* we know we have prompt in line and want to put the resulting, patched prompt in buf, returning the */
+/* length of the dispatched prompt */
+/* mode == 1 means handle the IAC ending too, rest means ignore it */
+int Cdispatcher::dispatch_prompt(char *line, char *buf, int l, int mode)
+{
+    int rn_start;
+    int rn_end;
+    int len;
+    QByteArray s;
+
+    /* zap the prompt colour, if needed */
+    if (conf.is_forwardPromptColour()) {
+        s = conf.get_prompt_col();
+        rn_start = s.length();
+                        
+        s = conf.get_end_col();
+        rn_end = s.length();
+        len = l - rn_start - rn_end;
+                        
+        memcpy(buf, &line[rn_start], len);
+    } else {
+        memcpy(buf, line, l);
+        len = l;
+    }
+    
+    if (mode == 1) {
+        if (conf.is_forward_IAC()) {
+            buf[len] = (unsigned char) IAC ;
+            buf[len+1] = (unsigned char) 0xf9;
+            buf[len+2] = 0 ;
+            len = len + 2;
+        } else {
+            buf[l] = 0;
+        }
+    }
+        
+    return len;
+}
+
+
 void Cdispatcher::dispatch_buffer() 
 {
   int l;
@@ -118,29 +156,20 @@ void Cdispatcher::dispatch_buffer()
         (unsigned char)o_buf[o_pos + 1] == (unsigned char)0xf9 &&
         conf.is_prompt_IAC() ) 
     {
-            line[l] = 0;
-            rx = conf.get_prompt_exp();
-            printf("IAC check RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
+        line[l] = 0;
+        rx = conf.get_prompt_exp();
+        printf("IAC check RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
             
-            if (rx_pos = rx.indexIn(line) >= 0) {
-                memcpy(buffer[amount].line, line, l);
-                buffer[amount].type = IS_PROMPT;
-                if (conf.is_forward_IAC()) {
-                    buffer[amount].line[l] = (unsigned char) IAC ;
-                    buffer[amount].line[l+1] = (unsigned char) 0xf9;
-                    buffer[amount].line[l+2] = 0 ;
-                    buffer[amount].len = l + 2;
-                } else {
-                    buffer[amount].line[l] = 0;
-                    buffer[amount].len = l;
-                }
-                printf("PROMPT: %s\r\n", buffer[amount].line);
-                
-                o_pos += 2;    /* its a match, so move the pointer futher */
-                amount++;
-                l = 0;
-                continue;
-            }
+        if (rx_pos = rx.indexIn(line) >= 0) {
+            buffer[amount].type = IS_PROMPT;
+            buffer[amount].len = dispatch_prompt(line, buffer[amount].line, l, 1);
+            printf("PROMPT: %s\r\n", buffer[amount].line);
+            
+            o_pos += 2;    /* its a match, so move the pointer futher */
+            amount++;
+            l = 0;
+            continue;
+        }
     }
     
     
@@ -186,9 +215,8 @@ void Cdispatcher::dispatch_buffer()
               rx_pos += rx.matchedLength();
                         /* here we assume we've found prompt */
               memcpy(buffer[amount].line, line, rx_pos);
+              buffer[amount].len = dispatch_prompt(line, buffer[amount].line, rx_pos, 1);
               buffer[amount].type = IS_CRLF;
-              buffer[amount].line[rx_pos] = 0;
-              buffer[amount].len = rx_pos;
               printf(" fixed prompt is : ..%s..\r\n", buffer[amount].line);
                 
               amount++;
