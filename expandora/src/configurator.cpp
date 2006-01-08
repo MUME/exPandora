@@ -36,6 +36,7 @@ Cconfigurator::Cconfigurator()
     set_angrylinker(true);
     set_exits_check(false);
     set_terrain_check(true);
+    set_always_on_top(true);
     
     set_details_vis(500);
     set_texture_vis(300);
@@ -370,6 +371,12 @@ void Cconfigurator::set_brief_mode(bool b)
     set_conf_mod(true);
 }
 
+void Cconfigurator::set_always_on_top(bool b)
+{
+    always_on_top = b;
+    set_conf_mod(true);
+}
+
 void Cconfigurator::set_name_quote(int i)
 {
     name_quote = i;
@@ -503,6 +510,9 @@ int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
   fprintf(f, "  <engineflags briefmode=\"%s\" automerge=\"%s\"  angrylinker=\"%s\">\r\n", 
                   ON_OFF(get_brief_mode()), 
                   ON_OFF(get_automerge() ), ON_OFF( get_angrylinker()) );
+
+  fprintf(f, "  <guisettings always_on_top=\"%s\">\r\n", 
+                  ON_OFF(get_always_on_top()) );
 
   fprintf(f, "  <refresh auto=\"%s\" roomnamequote=\"%i\" descquote=\"%i\">\r\n",
                   ON_OFF( get_autorefresh() ), get_name_quote(), get_desc_quote() );
@@ -721,6 +731,22 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         printf("Analyzers: desc ON, exits %s, terrain %s.\r\n",
                     ON_OFF(conf.get_exits_check() ), ON_OFF(conf.get_terrain_check()) );
         
+        return TRUE;
+    } else if (qName == "guisettings") {
+        if (attributes.length() < 1) {
+            printf("(guisettings token) Not enough attributes in XML file!");
+            exit(1);
+        }        
+        
+        s = attributes.value("always_on_top");
+        s = s.toLower();
+        if (s == "on") 
+            conf.set_always_on_top(true);
+        else 
+            conf.set_always_on_top(false);
+
+        printf("GUI settings: always_on_top %s.\r\n", ON_OFF(conf.get_always_on_top()) );
+
         return TRUE;
     } else if (qName == "engineflags") {
         if (attributes.length() < 3) {

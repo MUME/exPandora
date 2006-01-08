@@ -85,6 +85,7 @@ class Cconfigurator {
     bool exits_check;             /* apply exits check to stacks */
     bool terrain_check;           /* apply terrain check to stacks */
     bool brief_mode;
+    bool always_on_top;           /* keep Pandora window on top of others */
         
 
     
@@ -183,6 +184,7 @@ public:
     void set_details_vis(int i);
     void set_texture_vis(int i);    
     void set_brief_mode(bool b);
+    void set_always_on_top(bool b);
     void set_desc_quote(int i);
     void set_name_quote(int i);
     
@@ -200,6 +202,7 @@ public:
     bool get_exits_check() { return exits_check; }
     bool get_terrain_check() { return terrain_check; } 
     bool get_brief_mode()     {return brief_mode;}
+    bool get_always_on_top()     {return always_on_top;}
     
     int get_details_vis() { return details_visibility_range; }
     int get_texture_vis() { return texture_visibilit_range; }

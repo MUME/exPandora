@@ -524,7 +524,7 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   always_on_top_action->setStatusTip(tr("Always on Top"));
   always_on_top_action->setCheckable(true);
   connect(always_on_top_action, SIGNAL(toggled(bool)), this, SLOT(always_on_top(bool)));
-  always_on_top_action->setChecked(true);
+  always_on_top_action->setChecked(conf.get_always_on_top());
 
   emulationAct= new QAction(tr("Emulation Mode"), this);
   emulationAct->setStatusTip(tr("Offline MUME Emulation"));
@@ -661,6 +661,7 @@ void MainWindow::always_on_top(bool set_on_top)
   }
   setWindowFlags(flags);
   show();
+  conf.set_always_on_top(set_on_top);
 }
 
 
