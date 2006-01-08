@@ -217,7 +217,8 @@ void Cdispatcher::dispatch_buffer()
           
     
           rx = conf.get_prompt_exp();
-          if ( conf.is_prompt_IAC() || (conf.get_prompt_col() != "") )   
+          if ( conf.get_prompt_col() != "" && 
+               (strncmp(line, (const char *) conf.get_prompt_col(), conf.get_prompt_col_len() ) == 0) )   
             if (rx_pos = rx.indexIn(line) >= 0) {
               rx_pos += rx.matchedLength();
                         /* here we assume we've found prompt */
