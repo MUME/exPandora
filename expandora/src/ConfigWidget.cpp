@@ -11,8 +11,9 @@ ConfigWidget::ConfigWidget (QWidget *parent) : QDialog(parent)
     setWindowTitle(tr("General Settings"));
     
     connect(checkBox_autorefresh, SIGNAL(toggled(bool)), this, SLOT(autorefreshUpdated(bool)) );
-
+    connect(checkBox_promptIAC, SIGNAL(toggled(bool)), this, SLOT(promptIACclicked(bool)) );
 }
+
 
 void ConfigWidget::run()
 {
@@ -62,6 +63,7 @@ void ConfigWidget::run()
 
     checkBox_promptIAC->setChecked( conf.is_prompt_IAC() );
     checkBox_forwardIAC->setChecked( conf.is_forward_IAC() );
+    promptIACclicked( conf.is_prompt_IAC() );
     checkBox_forwardPromptColour->setChecked( conf.is_forwardPromptColour() );
         
     lineEdit_visrange->setText(QString("%1").arg(conf.get_texture_vis()) );
@@ -76,6 +78,15 @@ void ConfigWidget::autorefreshUpdated(bool state)
     } else {
         spinBox_namequote->setEnabled(false);
         spinBox_descquote->setEnabled(false);
+    }
+}
+
+void ConfigWidget::promptIACclicked(bool state)
+{
+    if (state) {
+        checkBox_forwardIAC->setEnabled(true);
+    } else {
+        checkBox_forwardIAC->setEnabled(false);
     }
 }
 

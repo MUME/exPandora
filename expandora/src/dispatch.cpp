@@ -101,23 +101,32 @@ int Cdispatcher::dispatch_prompt(char *line, char *buf, int l, int mode)
     int len;
     QByteArray s;
 
+    printf("investigating the line ..%s..\r\n", line);
+
+    printf("Flags: IAC %i, forwardIAC %i, forwardColour %i, mode %i\r\n", 
+            conf.is_prompt_IAC(), conf.is_forward_IAC(), conf.is_forwardPromptColour(), mode);
     /* zap the prompt colour, if needed */
-    if (conf.is_forwardPromptColour()) {
+    if (!conf.is_forwardPromptColour() && conf.get_prompt_col() != "") {
         s = conf.get_prompt_col();
         rn_start = s.length();
                         
-        s = conf.get_end_col();
-        rn_end = s.length();
-        len = l - rn_start - rn_end;
+        if (strncmp(line, (const char *) s, rn_start) == 0) {
+            s = conf.get_end_col();
+            rn_end = s.length();
+            len = l - rn_start - rn_end;
                         
-        memcpy(buf, &line[rn_start], len);
+            memcpy(buf, &line[rn_start], len);
+        } else {
+            memcpy(buf, line, l);
+            len = l;
+        }
     } else {
         memcpy(buf, line, l);
         len = l;
     }
     
     if (mode == 1) {
-        if (conf.is_forward_IAC()) {
+        if (conf.is_forward_IAC() && conf.is_prompt_IAC()) {
             buf[len] = (unsigned char) IAC ;
             buf[len+1] = (unsigned char) 0xf9;
             buf[len+2] = 0 ;
@@ -127,6 +136,8 @@ int Cdispatcher::dispatch_prompt(char *line, char *buf, int l, int mode)
         }
     }
         
+        
+    printf("Resulting line ..%s..\r\n", buf);        
     getting_desc = 0;   /* if we miss exits, then prompt turns this off */ 
     spells_print_mode = false;   
     return len;
@@ -159,7 +170,7 @@ void Cdispatcher::dispatch_buffer()
         if (rx_pos = rx.indexIn(line) >= 0) {
             buffer[amount].type = IS_PROMPT;
             buffer[amount].len = dispatch_prompt(line, buffer[amount].line, l, 1);
-//            printf("PROMPT: %s\r\n", buffer[amount].line);
+            printf("PROMPT(IAC): %s\r\n", buffer[amount].line);
             
             o_pos += 2;    /* its a match, so move the pointer futher */
             amount++;
@@ -211,7 +222,7 @@ void Cdispatcher::dispatch_buffer()
               rx_pos += rx.matchedLength();
                         /* here we assume we've found prompt */
               memcpy(buffer[amount].line, line, rx_pos);
-              buffer[amount].len = dispatch_prompt(line, buffer[amount].line, rx_pos, 1);
+              buffer[amount].len = dispatch_prompt(line, buffer[amount].line, rx_pos, 0);
               buffer[amount].type = IS_CRLF;
               printf(" fixed prompt is : ..%s..\r\n", buffer[amount].line);
                 
@@ -278,11 +289,9 @@ void Cdispatcher::dispatch_buffer()
 //    printf("RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
 
     if (rx_pos = rx.indexIn(line) >= 0) {
-        memcpy(buffer[amount].line, line, l);
+        buffer[amount].len = dispatch_prompt(line, buffer[amount].line, l, 0);
         buffer[amount].type = IS_PROMPT;
-        buffer[amount].line[l] = 0;
-        buffer[amount].len = l;
-//        printf("PROMPT: %s\r\n", buffer[amount].line);
+        printf("PROMPT: %s\r\n", buffer[amount].line);
         amount++;
         return;
     } 
