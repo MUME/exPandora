@@ -13,6 +13,7 @@
 #include "RoomEditDialog.h"
 #include "ConfigWidget.h"
 #include "PatternEditDialog.h"
+#include "SpellsDialog.h"
 #include "renderer.h"
 
 int renderer_thread_main(int argc, char *argv[]);
@@ -57,6 +58,8 @@ class MainWindow : public QMainWindow
   QAction       *loadConfigAct;
   QAction       *patternEditAct;  
   QAction       *setupGeneralAct;
+  QAction       *spellsAct;
+  
   QAction       *emulationAct;
   
 
@@ -68,9 +71,10 @@ class MainWindow : public QMainWindow
   void edit_room(unsigned int id);
 
 private:
-  ConfigWidget *generalSettingsDialog;
+  ConfigWidget      *generalSettingsDialog;
   PatternEditDialog *pattern_dialog;
-  RoomEditDialog *edit_dialog;
+  RoomEditDialog    *edit_dialog;
+  SpellsDialog      *spells_dialog;
 
 public:
     MainWindow(QWidget *parent, const char *name = 0);
@@ -109,6 +113,7 @@ private slots:
   void emulation_mode();  
   void edit_current_room();
   void publish_map();
+  void spellsSettings();
 
   void mousePressEvent( QMouseEvent *);
   void mouseReleaseEvent( QMouseEvent *);

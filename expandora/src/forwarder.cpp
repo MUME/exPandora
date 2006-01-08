@@ -336,7 +336,8 @@ int proxy_loop(void)
       
         renderer_window->enable_online_actions();
         if (conf.is_prompt_IAC())
-            conf.send_IAC_prompt_request();        
+            conf.send_IAC_prompt_request();    
+        Engine.clear(); /* clear event pipes */   
       }
     }
     

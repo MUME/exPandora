@@ -29,8 +29,6 @@ class Cdispatcher
     int o_len;
     int o_pos;
 	
-    char leader_pattern[MAX_STR_LEN];  /* "You now follow "; */
-
     struct Tincoming_lines buffer[300];
     int amount;
 
@@ -46,15 +44,19 @@ class Cdispatcher
     QByteArray get_colour_name(QByteArray str);
     
     char last_leaders_movement;
-    char leader[MAX_STR_LEN];
-    char following_leader;
-
+    QByteArray leader;
+    bool following_leader;
+    QRegExp follow_leader_exp;
+    QRegExp leader_moves_exp;
+    QRegExp you_follow_exp;
     
     int check_roomname(char *line);
     int check_exits(char *line);
     int check_failure(char *nline);
     
     int dispatch_prompt(char *line, char *buf, int l, int mode);
+    
+    bool spells_print_mode; /* After "Affected by:" until next prompt */
 	
 public:
     bool getting_colour_scheme;
@@ -64,7 +66,7 @@ public:
     
     void  analyze_mud_stream(char *buf, int *n);
     void analyze_user_stream(char *buf, int *n);
-    char *get_leader() {return leader; }
+    QByteArray get_leader() {return leader; }
     
     void dispatch_buffer(); 
 	

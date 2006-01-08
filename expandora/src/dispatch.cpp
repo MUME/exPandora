@@ -25,22 +25,15 @@
 
 class Cdispatcher dispatcher;
 
-Cdispatcher::Cdispatcher() {
-  amount = 0;
-  roomdesc[0]=0;
-  getting_desc = 0;
-  leader[0] = 0;        /* no leader yet */
-  following_leader = 0;
-  strcpy(leader_pattern, "You now follow ");
-}
-
-void Cdispatcher::set_leaderpatter(char *line)
+Cdispatcher::Cdispatcher() 
 {
-  strcpy(leader_pattern, line);
+    amount = 0;
+    roomdesc[0]=0;
+    getting_desc = 0;
+    leader[0] = 0;        /* no leader yet */
+    following_leader = false;
+    follow_leader_exp.setPattern("You now follow ");
 }
-
-
-
 
 int Cdispatcher::check_roomname(char *line) {
     char roomname[MAX_STR_LEN];
@@ -97,6 +90,7 @@ int Cdispatcher::check_exits(char *line)
     return 0;
 }
 
+
 /* we know we have prompt in line and want to put the resulting, patched prompt in buf, returning the */
 /* length of the dispatched prompt */
 /* mode == 1 means handle the IAC ending too, rest means ignore it */
@@ -133,6 +127,8 @@ int Cdispatcher::dispatch_prompt(char *line, char *buf, int l, int mode)
         }
     }
         
+    getting_desc = 0;   /* if we miss exits, then prompt turns this off */ 
+    spells_print_mode = false;   
     return len;
 }
 
@@ -158,12 +154,12 @@ void Cdispatcher::dispatch_buffer()
     {
         line[l] = 0;
         rx = conf.get_prompt_exp();
-        printf("IAC check RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
+//        printf("IAC check RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
             
         if (rx_pos = rx.indexIn(line) >= 0) {
             buffer[amount].type = IS_PROMPT;
             buffer[amount].len = dispatch_prompt(line, buffer[amount].line, l, 1);
-            printf("PROMPT: %s\r\n", buffer[amount].line);
+//            printf("PROMPT: %s\r\n", buffer[amount].line);
             
             o_pos += 2;    /* its a match, so move the pointer futher */
             amount++;
@@ -279,14 +275,14 @@ void Cdispatcher::dispatch_buffer()
 
 
     rx = conf.get_prompt_exp();
-    printf("RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
+//    printf("RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
 
     if (rx_pos = rx.indexIn(line) >= 0) {
         memcpy(buffer[amount].line, line, l);
         buffer[amount].type = IS_PROMPT;
         buffer[amount].line[l] = 0;
         buffer[amount].len = l;
-        printf("PROMPT: %s\r\n", buffer[amount].line);
+//        printf("PROMPT: %s\r\n", buffer[amount].line);
         amount++;
         return;
     } 
@@ -377,13 +373,103 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             print_debug(DEBUG_DISPATCHER, "line after fixing: %s", a_line);
             */
           
+          
+            /* now do all necessary spells checks */
+            {
+                unsigned int p;
+            
+//                printf("Checking spells on %s.\r\n", a_line);
+                for (p = 0; p < conf.spells.size(); p++) {
+                    if (conf.spells[p].up_mes == a_line || 
+                        (conf.spells[p].refresh_mes == a_line && conf.spells[p].refresh_mes != "")) {
+                        printf("SPELL %s Starting/Restaring timer.\r\n",  (const char *) conf.spells[p].name);
+                        conf.spells[p].timer.start();   /* start counting */
+                        conf.spells[p].up = true;        
+                        break;
+                    }
+                    
+                    /* if some spell is up - only then we check if its down */
+                    if (conf.spells[p].up && conf.spells[p].down_mes == a_line) {
+                        conf.spells[p].up = false;
+                        printf("SPELL: %s is DOWN. Uptime: %s.\r\n", (const char *) conf.spells[p].name, 
+                                                qPrintable( conf.spell_up_for(p) ) );
+                        break;                                    
+                    }
+                }
+            
+                            
+                            
+                if (spells_print_mode) {
+                    /* we are somewhere between the lines "Affected by:" and prompt */
+                    for (p = 0; p < conf.spells.size(); p++) {
+//                        printf("Spell name %s, line %s\r\n", (const char *) conf.spells[p].name, &a_line[2] );    
+                        if (conf.spells[p].name == &a_line[2]) {
+                            QString s;
+                            
+                            if (conf.spells[p].up)
+                                s = QString("- %1 (up for %2)")
+                                    .arg( (const char *)conf.spells[p].name )
+                                    .arg( conf.spell_up_for(p) );
+                            else 
+                                s = QString("- %1 (unknown time)")
+                                    .arg( (const char *)conf.spells[p].name );
+ 
+                            memcpy(buf + new_len, qPrintable(s), s.length());
+                            new_len += s.length();
+                            memcpy(buf + new_len, "\r\n", 2);
+                            new_len += 2;
+                            
+                            break;    
+                        }
+                    }
+                    if (p != conf.spells.size())
+                        continue; /* dont print this line if we got a match for it */
+                        
+                        
+                }
+            
+            }
+          
+            if (conf.spells_pattern == a_line) {
+                unsigned int spell;
+                QByteArray message = "Timers:";
+                
+                spells_print_mode = true;   /* print the spells data */
+                /* addon timers first */
+                memcpy(buf + new_len, (const char *) message, message.length());
+                new_len += message.length();
+                memcpy(buf + new_len, "\r\n", 2);
+                new_len += 2;
+
+                for (spell = 0; spell < conf.spells.size(); spell++) 
+                    if (conf.spells[spell].addon && conf.spells[spell].up) {
+                        /* there is a timer ticking */
+                        QString s;
+                           
+                        s = QString("- %1 (up for %2)")
+                            .arg( (const char *)conf.spells[spell].name )
+                            .arg( conf.spell_up_for(spell) );
+
+                        memcpy(buf + new_len, qPrintable(s), s.length());
+                        new_len += s.length();
+                        memcpy(buf + new_len, "\r\n", 2);
+                        new_len += 2;
+                        break;
+                    }
+            
+            }
 		
+             		
+            
             if (check_roomname(a_line) == 0) 
                 if (check_exits(a_line) == 0)
                     if (check_failure(a_line) == 0)
-                    {
-                        /* none */
-                    }
+                        {
+                            /* none */
+                        }
+                        
+                        
+                        
         }            
 
         if (buffer[i].type == IS_PROMPT) {
@@ -439,7 +525,6 @@ QByteArray Cdispatcher::get_colour(QByteArray str)
 
 int Cdispatcher::check_failure(char *nline)
 {
-    char tmp_leader_moves[MAX_STR_LEN];
     QRegExp rx;
     vector<QByteArray>::iterator i;
 
@@ -517,55 +602,69 @@ int Cdispatcher::check_failure(char *nline)
     }         
   }
 
-  if (strncmp(nline, leader_pattern, strlen(leader_pattern)) == 0) {
-    strcpy(leader, nline + strlen(leader_pattern));
-    one_argument(leader, leader, 1);
-    following_leader = 1;
-    if (leader[strlen(leader)-1] == '.')
-        leader[strlen(leader)-1] = 0;
-    send_to_user("-- [Pandora: Following leader : '%s'\r\n", leader);
+
+  if (follow_leader_exp.indexIn(nline) >= 0) {
+    unsigned int j;
+        
+    for (j = follow_leader_exp.matchedLength(); j < MAX_STR_LEN; j++) {
+        if (nline[j] == '\0' || nline[j] == '.')
+            break;
+        if (nline[j] == '(') {
+            j--;
+           break;
+       }
+    }
+    leader = QByteArray(nline).mid(follow_leader_exp.matchedLength(), j - follow_leader_exp.matchedLength());
+        
+
+    you_follow_exp.setPattern("You follow (" + leader + "|Someone)");                                         
+
+    QByteArray r = "";
+    r.append( UPPER(leader[0]) );
+    leader.replace(0, 1, r);  /* capitalize the first letter */
     
+    leader_moves_exp.setPattern(leader + ".* leaves (north|east|south|west|up|down)" );
+                                         
+    following_leader = 1;
+    send_to_user("-- [Pandora: Following leader : '%s'\r\n", (const char *) leader);
+    send_to_user("---[ Pattern: %s  Pattern: %s\r\n", qPrintable( leader_moves_exp.pattern() ), 
+                            qPrintable( you_follow_exp.pattern() )  );
+
     return 1;
   }
 
   if (following_leader) {
-    sprintf(tmp_leader_moves, "%s leaves ", leader);
-    if (strncmp(nline, tmp_leader_moves, strlen(tmp_leader_moves) ) == 0 ) {
-      last_leaders_movement = nline[ strlen(tmp_leader_moves) ];
-      printf("Last leaders movement %c.\r\n", last_leaders_movement);
-      return 1;
+    
+    if (leader_moves_exp.indexIn(nline) >= 0) {
+        unsigned int j;
+        for (j = leader_moves_exp.matchedLength() - 1; j > 0; j--) 
+            if (nline[j] == ' ')
+                break;
+      
+        last_leaders_movement = nline[ j + 1 ];
+        print_debug(DEBUG_DISPATCHER, "Saved leaders movement %c.", last_leaders_movement);
+        return 1;
     }
-  
-    sprintf(tmp_leader_moves, "You follow %s.", leader);
-    if (strcmp(nline, tmp_leader_moves) == 0) {
+    if (you_follow_exp.indexIn(nline) >= 0) {
 
+      print_debug(DEBUG_DISPATCHER, "Effective leaders movement %c.", last_leaders_movement);
       if ( Engine.isMapping() ) {
           Engine.setMapping(false);
           send_to_user("--[Pandora: Mapping is now OFF!\r\n");
       }
       
       switch (last_leaders_movement) {
-        case 'n' : 
-		         Engine.add_event(C_MOVE, "north");
+        case 'n' : Engine.add_event(C_MOVE, "north");
                 break;
-        case 'e' :
-		         Engine.add_event(C_MOVE, "east");
+        case 'e' : Engine.add_event(C_MOVE, "east");
                 break;
-        case 's' :
-		         Engine.add_event(C_MOVE, "south");
+        case 's' : Engine.add_event(C_MOVE, "south");
                 break;
-        case 'w' :
-		         Engine.add_event(C_MOVE, "west");
+        case 'w' : Engine.add_event(C_MOVE, "west");
                 break;
-        case 'u' :
-		         Engine.add_event(C_MOVE, "up");
+        case 'u' : Engine.add_event(C_MOVE, "up");
                 break;
-        case 'd' :
-		         Engine.add_event(C_MOVE, "down");
-                break;
-        
-        default:
-                return 1;
+        case 'd' : Engine.add_event(C_MOVE, "down");
                 break;
       }
       

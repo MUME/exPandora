@@ -15,6 +15,7 @@ win32 {
 FORMS +=	configedit.ui
 FORMS +=	patterndialog.ui
 FORMS +=        roomedit.ui
+FORMS +=	spellsdialog.ui
 
 HEADERS		+=configurator.h
 HEADERS		+=CRoom.h
@@ -34,6 +35,7 @@ HEADERS		+=xml2.h
 HEADERS		+=RoomEditDialog.h
 HEADERS		+=ConfigWidget.h
 HEADERS		+=PatternEditDialog.h
+HEADERS		+=SpellsDialog.h
 HEADERS		+=mainwindow.h
 
 
@@ -55,6 +57,7 @@ SOURCES		+=xml2.cpp
 SOURCES		+=mainwindow.cpp
 SOURCES		+=RoomEditDialog.cpp
 SOURCES		+=ConfigWidget.cpp
+SOURCES		+=SpellsDialog.cpp
 SOURCES		+=PatternEditDialog.cpp
 
 

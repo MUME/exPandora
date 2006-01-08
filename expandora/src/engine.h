@@ -113,7 +113,7 @@ public:
     void setMgoto(bool b) { mgoto = b; }
     bool isMgoto() { return mgoto; }
     bool empty();                      /* are pipes empty? */
-    void clear();                      
+    void clear();                      /* clears events pipes */
     
 };
 

@@ -313,6 +313,16 @@ void MainWindow::editPatterns()
 }
 
 
+void MainWindow::spellsSettings()
+{
+    if (!spells_dialog) {
+        spells_dialog = new SpellsDialog(this);
+    }
+
+    spells_dialog->run();
+}
+
+
 void MainWindow::publish_map()
 {
     bool mark[MAX_ROOMS];
@@ -534,6 +544,13 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   patternEditAct->setStatusTip(tr("Edit Patterns"));
   connect(patternEditAct, SIGNAL(triggered()), this, SLOT(editPatterns()) );    
 
+  
+  spells_dialog = NULL;
+  spellsAct= new QAction(tr("Spells Settings"), this);
+  spellsAct->setStatusTip(tr("Spells Settings"));
+  connect(spellsAct, SIGNAL(triggered()), this, SLOT(spellsSettings()) );    
+
+
   saveConfigAct= new QAction(tr("Save Configuration ..."), this);
   saveConfigAct->setStatusTip(tr("Save current configuration"));
   connect(saveConfigAct, SIGNAL(triggered()), this, SLOT(saveConfig()));    
@@ -557,6 +574,7 @@ MainWindow::MainWindow(QWidget *parent, const char *name)
   optionsMenu->addSeparator();
   optionsMenu->addAction(setupGeneralAct);  
   optionsMenu->addAction(patternEditAct);  
+  optionsMenu->addAction(spellsAct);  
   optionsMenu->addSeparator();
   optionsMenu->addAction(saveConfigAct);
   optionsMenu->addAction(saveConfigAsAct);

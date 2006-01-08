@@ -8,6 +8,7 @@
 #include <QXmlDefaultHandler>
 #include <QGLWidget>
 #include <map>
+#include <QTime>
 
 #include "CRoom.h"
 #include "event.h"
@@ -33,6 +34,17 @@ struct room_sectors_data {
   GLuint texture;          /* and texture handler for renderer */
   GLuint gllist;            /* OpenGL display list */
 };
+
+
+typedef struct {
+    QByteArray  name;           /* spells name */
+    QByteArray  up_mes;         /* up message/pattern */
+    QByteArray  down_mes;       /* down message */
+    QByteArray  refresh_mes;    /* refresh message */
+    QTime       timer;          /* timer */
+    bool        addon;          /* if this spell has to be added after the "Affected by:" line */
+    bool        up;             /* is this spell currently up ? */
+} TSpell;
 
 class Cconfigurator {
     /* general */
@@ -73,6 +85,7 @@ class Cconfigurator {
     bool exits_check;             /* apply exits check to stacks */
     bool terrain_check;           /* apply terrain check to stacks */
     bool brief_mode;
+        
 
     
     int texture_visibilit_range;
@@ -86,8 +99,16 @@ class Cconfigurator {
     void parse_line(char *line);
     
     void reset_current_config();
-
+    
+    
 public:
+
+    /* spells */
+    vector<TSpell>  spells;
+    QByteArray      spells_pattern;
+    void add_spell(QByteArray spellname, QByteArray up, QByteArray down, QByteArray refresh, bool addon);
+    void add_spell(TSpell s);
+    QString spell_up_for(unsigned int p);
 
     /* this patterns data should be public for easier read access, write access
         will be implemented via functions anyway */
@@ -215,6 +236,7 @@ private:
 
   struct room_sectors_data texture;
   TPattern pattern;
+  TSpell   spell;
   
   int i;
 };

@@ -92,6 +92,8 @@ Cconfigurator::Cconfigurator()
     first.texture = 1;
     first.gllist = 1;
     sectors.push_back(first);
+    
+    spells_pattern = "Affected by:";
 }
 
 
@@ -99,6 +101,7 @@ void Cconfigurator::reset_current_config()
 {
     patterns.clear();
     sectors.clear();
+    spells.clear();
     
     struct room_sectors_data first;
         
@@ -138,6 +141,50 @@ void Cconfigurator::add_pattern(QByteArray pattern, QByteArray data, char marker
     set_conf_mod(true);
 }
 
+
+/* --------------------------------------- spells ----------------------------------------- */
+void Cconfigurator::add_spell(QByteArray spellname, QByteArray up, QByteArray down, QByteArray refresh, bool addon)
+{
+    TSpell spell;
+    
+    spell.name = spellname;
+    spell.up_mes = up;
+    spell.down_mes = down;
+    spell.refresh_mes = refresh;
+    spell.addon = addon;
+    spell.up = false;
+    
+    spells.push_back(spell);
+    set_conf_mod(true);
+}
+
+void Cconfigurator::add_spell(TSpell spell)
+{
+    spells.push_back(spell);
+    set_conf_mod(true);
+}
+
+QString Cconfigurator::spell_up_for(unsigned int p)
+{
+    QString s;
+    int min;
+    int sec;
+    
+    if (p > spells.size())
+        return "";
+        
+    sec = spells[p].timer.elapsed() / (1000);
+    min = sec / 60;
+    sec = sec % 60;    
+        
+    s = QString("- %1%2:%3%4")
+            .arg( min / 10 )
+            .arg( min % 10 )
+            .arg( sec / 10 )
+            .arg( sec % 10 );
+
+    return s;
+}
 
 
 /* ----------------- REGULAR EXPRESSIONS SECTION ---------------- */
@@ -487,6 +534,17 @@ int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
                   (const char *) patterns[i].event.data, 
                   (const char *) patterns[i].pattern );
   }
+  
+  for (i = 0; i < spells.size(); i++) {
+        fprintf(f, "  <spell addon=\"%s\" name=\"%s\" up=\"%s\" refresh=\"%s\" down=\"%s\">\r\n",
+                    YES_NO(spells[i].addon), 
+                    (const char *) spells[i].name,
+                    (const char *) spells[i].up_mes,
+                    (const char *) spells[i].refresh_mes,
+                    (const char *) spells[i].down_mes);
+  }
+
+  
   i = 0;
   while (debug_data[i].name) {
       fprintf(f, "  <debug name=\"%s\"  state=\"%s\">\r\n", debug_data[i].name, ON_OFF(debug_data[i].state));
@@ -773,6 +831,34 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         pattern.event.data = s.toAscii();
         
         flag = PATTERN;         /* get the inner data ! */
+        return TRUE;
+    } else if (qName == "spell") {
+        if (attributes.length() < 4) {
+            printf("(pattern token) Not enough attributes in XML file!");
+            exit(1);
+        }        
+
+        spell.up = false;
+        s = attributes.value("addon");
+        s = s.toLower();
+        spell.addon = false;
+        if (s == "yes") 
+          spell.addon = true;
+        
+        
+        s = attributes.value("name");
+        spell.name = s.toAscii();
+        
+        s = attributes.value("up");
+        spell.up_mes = s.toAscii();
+
+        s = attributes.value("refresh");
+        spell.refresh_mes = s.toAscii();
+
+        s = attributes.value("down");
+        spell.down_mes = s.toAscii();
+
+        conf.add_spell(spell);
         return TRUE;
     } else if (qName == "debug") {
         if (attributes.length() < 1) {

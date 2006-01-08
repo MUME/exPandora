@@ -131,7 +131,7 @@ void ConfigWidget::accept()
         conf.set_terrain_check( checkBox_terrain->isChecked() );
     
     if (conf.is_prompt_IAC() != checkBox_promptIAC->isChecked() ) {
-        conf.set_prompt_IAC( checkBox_terrain->isChecked() );
+        conf.set_prompt_IAC( checkBox_promptIAC->isChecked() );
         if (!conf.is_prompt_IAC()) {
             QMessageBox::critical(this, "Cofiguration",
                               QString("You have to reconnect to reset prompt IAC detection!"));

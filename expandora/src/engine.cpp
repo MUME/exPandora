@@ -49,7 +49,7 @@ void CEngine::command_applyroomname()
   unsigned int i;
   int match;
   
-//  print_debug(DEBUG_ANALYZER, "in apply_roomname");
+  print_debug(DEBUG_ANALYZER, "in apply_roomname");
 
   /* set the environment flags and variables */
   setMgoto( false );    /* if we get a new roomname incoming, mgoto has to go away */
@@ -96,7 +96,7 @@ void CEngine::command_applydesc()
   unsigned int i;
   int match;
   
-//  print_debug(DEBUG_ANALYZER, "in apply_desc");
+  print_debug(DEBUG_ANALYZER, "in apply_desc");
 
   set_desc(r_event.data);
 
@@ -141,7 +141,7 @@ void CEngine::command_applydesc()
 /*---------------- * APPLY_EXITS ------------------------ */
 void CEngine::command_applyexits()
 {
-//  print_debug(DEBUG_ANALYZER, "in apply_exits");
+  print_debug(DEBUG_ANALYZER, "in apply_exits");
 
   set_exits(r_event.data);
   
@@ -160,7 +160,7 @@ void CEngine::command_applyprompt()
   if (mgoto) 
       return;
   
-//  print_debug(DEBUG_ANALYZER, "in apply_prompt");
+  print_debug(DEBUG_ANALYZER, "in apply_prompt");
   if (redraw) redraw++;
   
   
@@ -168,11 +168,9 @@ void CEngine::command_applyprompt()
   col_pos = r_event.data.indexOf(conf.get_prompt_col());
   if (col_pos == 0) {
     terrain = r_event.data[1 + conf.get_prompt_col_len()];  /*second charecter is terrain*/
-  } else if (col_pos == -1) {
+  } else {
     terrain = r_event.data[1];  /* no prompt colour in there !*/
-  } else if (col_pos > 0) { /* shouldn't be possible ? */
-    terrain = r_event.data[col_pos + 1 + conf.get_prompt_col_len()];
-  }
+  } 
   
   if (conf.get_sector_by_pattern(terrain) == 0) 
      terrain = 0;
@@ -216,7 +214,7 @@ void CEngine::command_applyprompt()
 /*---------------- * SWAP  ------------------------- */
 void CEngine::command_swap()
 {
-//  print_debug(DEBUG_ANALYZER, "in swap");
+  print_debug(DEBUG_ANALYZER, "in swap");
   if (!mgoto)
       stacker.swap();
 
@@ -286,7 +284,7 @@ void CEngine::command_trydir()
   unsigned int i;
   CRoom *room;
   
-//  print_debug(DEBUG_ANALYZER, "in try_dir");
+  print_debug(DEBUG_ANALYZER, "in try_dir");
   dir = numbydir(c_event.data[0]);
   
   if (stacker.amount() == 0) 
@@ -344,7 +342,7 @@ void CEngine::command_tryalldirs()
   CRoom *room;
   unsigned int i, j;
 
-//  print_debug(DEBUG_ANALYZER, "in try_all_dirs");
+  print_debug(DEBUG_ANALYZER, "in try_all_dirs");
   command_mappingoff();
 
   if (stacker.amount() == 0) {
@@ -810,7 +808,7 @@ void CEngine::printstacks()
             ON_OFF(mapping), ON_OFF(conf.get_automerge()), 
             ON_OFF(conf.get_exits_check() ), ON_OFF(conf.get_terrain_check() ),
             ON_OFF(conf.get_autorefresh() ), conf.get_name_quote(), conf.get_desc_quote(),
-            ON_OFF(conf.get_angrylinker() ), dispatcher.get_leader()
+            ON_OFF(conf.get_angrylinker() ), (const char *) dispatcher.get_leader()
             );
     
     send_to_user(line);
