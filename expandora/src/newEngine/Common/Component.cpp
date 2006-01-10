@@ -10,8 +10,7 @@ void Component::start() {
 		thread->start();
 	  } catch (char const * error) {
 	    cerr << error << endl;
-	    thread->terminate();
-	    delete thread;
+	    throw error;
 	  }
 		
 	}

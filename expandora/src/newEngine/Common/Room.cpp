@@ -18,9 +18,7 @@ void Room::init(ParseEvent * event) {
 
   TinyList<Property *> * x_properties = event->getProperties();
 
-#ifdef DEBUG
-  fprintf(stderr, "creating room: %s\n", x_properties->get(0)->getText());
-#endif
+
 
   for (char i = 0; x_properties->get(i); ++i)
     properties.put(i, x_properties->get(i)->copyString());
@@ -38,6 +36,15 @@ void Room::addExit(int direc, int target) {
     exits.put(direc, roomsInDir);
   }
   roomsInDir->insert(target);
+}
+
+void Room::addReverseExit(int direc, int from) {
+  set<int> * roomsInDir = reverseExits.get(direc);
+  if (roomsInDir == 0) {
+    roomsInDir = new set<int>;
+    exits.put(direc, roomsInDir);
+  }
+  roomsInDir->insert(from);
 }
 
 
@@ -65,10 +72,6 @@ set<int> * Room::go(BaseEvent * dir) {
  * return all properties to pmm and remove this room from the room collection
  */
 void Room::clear() {
-
-#ifdef DEBUG
-  fprintf(stderr, "deleting room: '%s' with id %i\n", properties.get(0)->getText(), id);
-#endif
 
   for (char i = 0; properties.get(i) != 0; i++) {
     ssmm.deactivate(properties.get(i));

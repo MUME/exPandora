@@ -16,11 +16,11 @@ void Approved::receiveRoom(QObject * sender, Room * perhaps) {
 
 Approved::Approved(Parser * in_parser, ParseEvent * event, int tolerance) :
   matchedRoom(0),
-  parser(in_parser),
   myEvent(event),
   matchingTolerance(tolerance),
   owner(0),
-  moreThanOne(false)
+  moreThanOne(false),
+  parser(in_parser)
   
 {
 }

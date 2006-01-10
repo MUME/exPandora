@@ -25,7 +25,7 @@ class Path {
   void setProb(double p) {probability = p;};
 
  private:
-  static RoomSignalHandler signaler;
+  static RoomSignalHandler * signaler;
   bool active;
   Path * parent;
   set<Path *> children;
