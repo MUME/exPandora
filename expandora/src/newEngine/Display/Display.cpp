@@ -232,6 +232,10 @@ void RendererWidget::moveMarker( Coordinate * oldPos, Coordinate * newPos )
     glColor4f( marker_colour[ 0 ], marker_colour[ 1 ], marker_colour[ 2 ], marker_colour[ 3 ] );
     drawMarker( newPos );
   }
+  userx = newPos->x;
+  usery = newPos->y;
+  userz = newPos->z;
+  shiftView();
 }
 
 

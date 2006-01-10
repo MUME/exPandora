@@ -34,7 +34,7 @@ bool Frustum::PointInFrustum(Coordinate * c)
   for(int i = 0; i < 6; ++i )
   {
     // Calculate the plane equation and check if the point is behind a side of the frustum
-    if(frustum[i][A] * c->x + frustum[i][B] * c->y + frustum[i][C] * c->z + frustum[i][D] <= 0)
+    if(frustum[i][A] * (float)c->x + frustum[i][B] * (float)c->y + frustum[i][C] * (float)c->z + frustum[i][D] <= 0)
     {
       // The point was behind a side, so it ISN'T in the frustum
       return false;

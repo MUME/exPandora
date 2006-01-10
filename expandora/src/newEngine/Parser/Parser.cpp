@@ -35,7 +35,7 @@ Parser::Parser() : Component(true) {
  */
 ConnectionType Parser::requiredConnectionType(const char * signalOrSlot) {
   QLatin1String str(signalOrSlot);
-  if (str == SLOT(event(ParseEvent *)) || str == SLOT(setActiveTerrain(Property *)))
+  if (str == SLOT(event(ParseEvent *)) || str == SLOT(setTerrain(Property *)))
     return QueuedConnection;
   else if (str == SIGNAL(playerMoved(Coordinate *, Coordinate *)))
     return AutoCompatConnection;

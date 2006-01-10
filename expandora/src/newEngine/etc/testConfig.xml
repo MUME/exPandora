@@ -38,7 +38,7 @@
 	<connection from="Filter" signal="newMudInput(char *)"
 		    to="Lexer" slot="pushMudInput(char *)"/>
 	<connection from="Lexer" signal="terrainDetected(Property *)"
-		    to="Parser" slot="setActiveTerrain(Property *)"/>
+		    to="Parser" slot="setTerrain(Property *)"/>
 	<connection from="Lexer" signal="eventFound(ParseEvent *)"
 		    to="Parser" slot="event(ParseEvent *)"/>
 	<connection from="Parser" signal="playerMoved(Coordinate *, Coordinate *)"

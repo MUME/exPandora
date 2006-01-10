@@ -20,7 +20,7 @@ class Coordinate
 
     int distance(Coordinate * other);
     void clear();
-    Coordinate(int _x = 0, int _y = 0, int _z = 0) : x(_x), y(_y), z(_z)
+    Coordinate(int in_x = 0, int in_y = 0, int in_z = 0) : x(in_x), y(in_y), z(in_z)
     {}
     Coordinate * go (BaseEvent * ev);
     void add
