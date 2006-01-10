@@ -229,13 +229,17 @@ void RendererWidget::moveMarker( Coordinate * oldPos, Coordinate * newPos )
 
   if ( newPos != 0 )
   {
+    userx = 0;
+    usery = 0;
+    userz = BASE_Z;
     glColor4f( marker_colour[ 0 ], marker_colour[ 1 ], marker_colour[ 2 ], marker_colour[ 3 ] );
     drawMarker( newPos );
+    shiftView();
+    
+    
   }
-  userx = newPos->x;
-  usery = newPos->y;
-  userz = newPos->z;
-  shiftView();
+  
+  
 }
 
 
@@ -496,13 +500,13 @@ void RendererWidget::shiftView()
 
   glColor3ub( 255, 0, 0 );
 
-  glTranslatef( 0, 0, userz );
+  
 
   glRotatef( anglex, 1.0f, 0.0f, 0.0f );
   glRotatef( angley, 0.0f, 1.0f, 0.0f );
   glRotatef( anglez, 0.0f, 0.0f, 1.0f );
 
-  glTranslatef( userx, usery, 0 );
+  glTranslatef( userx, usery, userz );
 
   CalculateFrustum();
 
@@ -515,6 +519,7 @@ void RendererWidget::shiftView()
 
 
   emit viewableAreaChanged( this, &frustum );
+  swapBuffers();
 }
 
 
@@ -532,17 +537,23 @@ void DisplayComponent::toggle_renderer_reaction()
 
 void RendererWidget::CalculateFrustum()
 {
-  float proj[ 16 ];                               // This will hold our projection matrix
-  float modl[ 16 ];                               // This will hold our modelview matrix
+    float   proj[16];                               // This will hold our projection matrix
+    float   modl[16];                               // This will hold our modelview matrix
+    float   clip[16];                               // This will hold the clipping planes
 
-  glGetFloatv( GL_PROJECTION_MATRIX, proj );
+    glPushMatrix ();
+    
+    glGetFloatv(GL_PROJECTION_MATRIX, proj);
 
-  glGetFloatv( GL_MODELVIEW_MATRIX, modl );
-
-
-  // Now that we have our modelview and projection matrix, if we combine these 2 matrices,
-  // it will give us our clipping planes.
-  frustum.rebuild( proj, modl );
+    glGetFloatv(GL_MODELVIEW_MATRIX, modl);
+    
+    glLoadMatrixf (proj);
+    glMultMatrixf (modl);
+    
+    glGetFloatv(GL_MODELVIEW_MATRIX, clip);
+    glPopMatrix (); 
+    
+    frustum.rebuild(clip);
 
 }
 

@@ -75,11 +75,12 @@ class RoomAdmin : public Component, public IntermediateNode {
  signals:
   // if a room is sent out via foundRoom it is locked so that it doesn't
   // get deleted while being processed by another component.
+  // a room can be locked by multiple components but each component can only create one lock
   void foundRoom(QObject *, Room *);
 
   // this signal is sent out if a room is deleted. So any clients still
   // working on this room can start some emergency action.
-  void deletedRoom(QObject *, Room *);
+  void deletedRoom(QObject *, int);
 };
 
 

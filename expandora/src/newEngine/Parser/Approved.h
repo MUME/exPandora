@@ -4,6 +4,7 @@
 #include <qobject.h>
 #include "Room.h"
 #include "ParseEvent.h"
+#include "Parser.h"
 
 
 class Approved : public QObject{
@@ -14,7 +15,7 @@ class Approved : public QObject{
    int matchingTolerance;   
    QObject * owner;
    bool moreThanOne;
-   
+   Parser * parser;
    
 
 
@@ -23,10 +24,10 @@ class Approved : public QObject{
    void receiveRoom(QObject *, Room *);
 
  signals:
-   void releaseRoom(int);
+   void releaseRoom(QObject *, int);
 
  public:
-   Approved(ParseEvent * event, int tolerance);
+   Approved(Parser * parser, ParseEvent * event, int tolerance);
    Room * oneMatch();
    QObject * getOwner(); 
    void reset();

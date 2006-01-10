@@ -1,13 +1,18 @@
 #include "Component.h"
+#include <iostream>
+using namespace std;
 
-/*void Component::run() {
-	std::cout << "this component is not threaded and doesn't need starting"<< std::endl;
-}*/
 
 void Component::start() {
 	if (thread) {
+	  try {
 		moveToThread(thread);
 		thread->start();
+	  } catch (char const * error) {
+	    cerr << error << endl;
+	    thread->terminate();
+	    delete thread;
+	  }
 		
 	}
 }

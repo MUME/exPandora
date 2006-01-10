@@ -43,7 +43,7 @@ public:
   
   
   bool PointInFrustum(Coordinate * c);
-  void rebuild(float * proj, float * modl);
+  void rebuild(float * clip);
   float getDistance(Coordinate * c, int side = FRONT);
 private:
   //Coordinate center;

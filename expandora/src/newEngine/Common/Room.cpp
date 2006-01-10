@@ -140,7 +140,7 @@ bool Room::fastCompare(ParseEvent * ev, int tolerance) {
 				
 bool Room::isNew() {
   for (unsigned int i = 0; i < reverseExits.size(); ++i) {
-    if (!reverseExits.get(i) && !reverseExits.get(i)->empty()) return false;
+    if (reverseExits.get(i) && !reverseExits.get(i)->empty()) return false;
   }
   return true;
 }

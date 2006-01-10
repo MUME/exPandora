@@ -23,8 +23,8 @@ class RoomSignalHandler : public QObject {
   void keep(Room * room);
 
  signals:
-  void keepRoom(int);
-  void releaseRoom(int);
+  void keepRoom(QObject *, int);
+  void releaseRoom(QObject *, int);
   /* Sending to the rooms' owners:
      keepRoom: keep the room, but we don't need it anymore for now
      releaseRoom: delete the room, if you like */

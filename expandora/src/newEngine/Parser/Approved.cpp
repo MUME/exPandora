@@ -7,15 +7,16 @@ void Approved::receiveRoom(QObject * sender, Room * perhaps) {
     owner = sender;
   }
   else {
-    QObject::connect(this, SIGNAL(releaseRoom(int)), sender, SLOT(releaseRoom(int)), Qt::DirectConnection);
-    emit releaseRoom(perhaps->getId());
+    QObject::connect(this, SIGNAL(releaseRoom(QObject *, int)), sender, SLOT(releaseRoom(QObject *, int)), Qt::DirectConnection);
+    emit releaseRoom(parser, perhaps->getId());
     QObject::disconnect(this, SIGNAL(releaseRoom(int)), sender, 0);
     if (matchedRoom != 0) moreThanOne = true; 
   }
 }
 
-Approved::Approved(ParseEvent * event, int tolerance) :
+Approved::Approved(Parser * in_parser, ParseEvent * event, int tolerance) :
   matchedRoom(0),
+  parser(in_parser),
   myEvent(event),
   matchingTolerance(tolerance),
   owner(0),
@@ -34,9 +35,9 @@ Room * Approved::oneMatch() {
 
 void Approved::reset() {
   if(matchedRoom) {
-    QObject::connect(this, SIGNAL(releaseRoom(int)), owner, SLOT(releaseRoom(int)), Qt::DirectConnection);
-    emit releaseRoom(matchedRoom->getId());
-    QObject::disconnect(this, SIGNAL(releaseRoom(int)), owner, 0);
+    QObject::connect(this, SIGNAL(releaseRoom(QObject *, int)), owner, SLOT(releaseRoom(QObject *, int)), Qt::DirectConnection);
+    emit releaseRoom(this, matchedRoom->getId());
+    QObject::disconnect(this, SIGNAL(releaseRoom(QObject *, int)), owner, 0);
   }
   matchedRoom = 0;
   moreThanOne = false;

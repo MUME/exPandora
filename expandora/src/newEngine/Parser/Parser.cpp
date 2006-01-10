@@ -60,7 +60,7 @@ void Parser::dropNote(ParseEvent * note)
 
 void Parser::event(ParseEvent * ev)
 {
-  //parserMutex.lock();
+  
   if (ev->type >= 0)
   {
     // a move event
@@ -84,8 +84,7 @@ void Parser::event(ParseEvent * ev)
       return;
     }
   }
-  //parserMutex.unlock();
-  //parserSync.wakeOne();
+  
   checkQueues();
 }
 
@@ -139,14 +138,12 @@ void Parser::approved()
 
   // now we have a move and a room on the event queues;
 
-  Approved appr(mudEvents.front(), matchingTolerance);
+  Approved appr(this, mudEvents.front(), matchingTolerance);
   set<int> * possible = mostLikelyRoom->go(playerEvents.front());
   for (set<int>::iterator i = possible->begin(); i != possible->end(); ++i)
   {
     emit lookingForRooms(&appr, *i);
   }
-
-  //QObject::thread()->wait(remoteMapDelay);
 
   Room * perhaps = appr.oneMatch();
 
@@ -156,15 +153,13 @@ void Parser::approved()
     appr.reset();
     c = getExpectedCoordinate(mostLikelyRoom);
     emit lookingForRooms(&appr, c); //needs to be synchronous
-    //QThread::usleep(remoteMapDelay);
+    
     perhaps = appr.oneMatch();
     if (perhaps)
     {
-      
-      QObject::connect(this, SIGNAL(addExit(int, int, int)), appr.getOwner(), SLOT(addExit(int, int, int)), Qt::DirectConnection);
+
       emit addExit(mostLikelyRoom->getId(), perhaps->getId(), playerEvents.front()->type);
-      QObject::disconnect(this, SIGNAL(addExit(int, int, int)), 0,0);
-      
+
     }
     cmm.deactivate(c);
   }
@@ -219,7 +214,6 @@ void Parser::syncing()
 
   Syncing sync(paths);
   emit lookingForRooms(&sync, mudEvents.front());
-  //QThread::usleep(remoteMapDelay);
 
   paths = sync.evaluate();
   evaluatePaths();
@@ -254,8 +248,6 @@ void Parser::experimenting()
   }
 
   emit lookingForRooms(&exp, mudEvents.front());
-
-  //QThread::usleep(remoteMapDelay);
 
   paths = exp.evaluate();
   

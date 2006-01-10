@@ -26,6 +26,7 @@ void RoomAdmin::removeRoom(int id)
   map.remove(roomIndex[id]->getCoordinate());
   roomIndex[id] = 0;
   unusedIds.push(id);
+  emit deletedRoom(this, id);
   mapLock.unlock();
 }
 
@@ -92,9 +93,7 @@ void RoomAdmin::assignId(Room * room)
     if (id > greatestUsedId) greatestUsedId = id;
   }
 
-#ifdef DEBUG
-  fprintf(stderr, "assigning id: %i\n", id);
-#endif
+
   room->setId(id);
 
   if ((int)roomIndex.size() <= id)
@@ -134,7 +133,12 @@ void RoomAdmin::createRoom(ParseEvent * event, Coordinate * expectedPosition, ch
 
 void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
 {
-  if (greatestUsedId == -1) createRoom(event, new Coordinate(0,0,0), 0);
+  if (greatestUsedId == -1) {
+    createRoom(event, new Coordinate(0,0,0), 0);
+    Room * room = roomIndex[greatestUsedId];
+    locks[room->getId()].insert(0);
+    room->addReverseExit(0,0);
+  }
 
   AbstractRoomContainer * ret;
   Room * r;
