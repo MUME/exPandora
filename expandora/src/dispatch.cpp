@@ -101,10 +101,10 @@ int Cdispatcher::dispatch_prompt(char *line, char *buf, int l, int mode)
     int len;
     QByteArray s;
 
-    printf("investigating the line ..%s..\r\n", line);
+//    printf("investigating the line ..%s..\r\n", line);
 
-    printf("Flags: IAC %i, forwardIAC %i, forwardColour %i, mode %i\r\n", 
-            conf.is_prompt_IAC(), conf.is_forward_IAC(), conf.is_forwardPromptColour(), mode);
+//    printf("Flags: IAC %i, forwardIAC %i, forwardColour %i, mode %i\r\n", 
+//            conf.is_prompt_IAC(), conf.is_forward_IAC(), conf.is_forwardPromptColour(), mode);
     /* zap the prompt colour, if needed */
     if (!conf.is_forwardPromptColour() && conf.get_prompt_col() != "") {
         s = conf.get_prompt_col();
@@ -137,7 +137,7 @@ int Cdispatcher::dispatch_prompt(char *line, char *buf, int l, int mode)
         
     buf[len] = 0;
             
-    printf("Resulting line ..%s..\r\n", buf);        
+//    printf("Resulting line ..%s..\r\n", buf);        
     getting_desc = 0;   /* if we miss exits, then prompt turns this off */ 
     spells_print_mode = false;   
     return len;
