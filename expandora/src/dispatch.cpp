@@ -129,14 +129,14 @@ int Cdispatcher::dispatch_prompt(char *line, char *buf, int l, int mode)
         if (conf.is_forward_IAC() && conf.is_prompt_IAC()) {
             buf[len] = (unsigned char) IAC ;
             buf[len+1] = (unsigned char) 0xf9;
-            buf[len+2] = 0 ;
             len = len + 2;
         } else {
-            buf[l] = 0;
+            len = l;
         }
     }
         
-        
+    buf[len] = 0;
+            
     printf("Resulting line ..%s..\r\n", buf);        
     getting_desc = 0;   /* if we miss exits, then prompt turns this off */ 
     spells_print_mode = false;   
