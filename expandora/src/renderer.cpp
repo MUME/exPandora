@@ -260,10 +260,12 @@ void RendererWidget::glDrawMarkers()
     if (last_drawn_trail) {
         glColor4f(marker_colour[0] / 1.1, marker_colour[1] / 1.5, marker_colour[2] / 1.5, marker_colour[3] / 1.5);
         p = Map.getroom(last_drawn_trail);
-        dx = p->x - curx;
-        dy = p->y - cury;
-        dz = (p->z - curz) ;
-        drawMarker(dx, dy, dz, 2);
+        if (p != NULL) {
+            dx = p->x - curx;
+            dy = p->y - cury;
+            dz = (p->z - curz) ;
+            drawMarker(dx, dy, dz, 2);
+        }
     }
     
 }

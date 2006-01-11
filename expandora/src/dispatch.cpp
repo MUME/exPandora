@@ -370,7 +370,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             for (k = buffer[i].line, j = a_line; *k; k++) {
               if (*(k+1) && *(k+1) == 0x8 && 
                     (*k == '|' || *k == '-' || *k == '\\' || *k == '/') ) {
-                print_debug(DEBUG_DISPATCHER, "Fixing properller chars in line %s", k);
+                print_debug(DEBUG_DISPATCHER, "Fixing propeller chars in line %s", k);
                 k += 2;
               }
               
