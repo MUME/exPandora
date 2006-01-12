@@ -139,7 +139,6 @@ int Cdispatcher::dispatch_prompt(char *line, char *buf, int l, int mode)
             
 //    printf("Resulting line ..%s..\r\n", buf);        
     getting_desc = 0;   /* if we miss exits, then prompt turns this off */ 
-    spells_print_mode = false;   
     return len;
 }
 
@@ -390,8 +389,8 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             
 //                printf("Checking spells on %s.\r\n", a_line);
                 for (p = 0; p < conf.spells.size(); p++) {
-                    if (conf.spells[p].up_mes == a_line || 
-                        (conf.spells[p].refresh_mes == a_line && conf.spells[p].refresh_mes != "")) {
+                    if ( (conf.spells[p].up_mes != "" && conf.spells[p].up_mes == a_line) || 
+                         (conf.spells[p].refresh_mes != "" && conf.spells[p].refresh_mes == a_line )) {
                         printf("SPELL %s Starting/Restaring timer.\r\n",  (const char *) conf.spells[p].name);
                         conf.spells[p].timer.start();   /* start counting */
                         conf.spells[p].up = true;        
@@ -399,7 +398,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                     }
                     
                     /* if some spell is up - only then we check if its down */
-                    if (conf.spells[p].up && conf.spells[p].down_mes == a_line) {
+                    if (conf.spells[p].up && conf.spells[p].down_mes != "" && conf.spells[p].down_mes == a_line) {
                         conf.spells[p].up = false;
                         printf("SPELL: %s is DOWN. Uptime: %s.\r\n", (const char *) conf.spells[p].name, 
                                                 qPrintable( conf.spell_up_for(p) ) );
@@ -409,10 +408,10 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             
                             
                             
-                if (spells_print_mode) {
+                if (spells_print_mode && (strlen(a_line) > 3)) {
                     /* we are somewhere between the lines "Affected by:" and prompt */
                     for (p = 0; p < conf.spells.size(); p++) {
-//                        printf("Spell name %s, line %s\r\n", (const char *) conf.spells[p].name, &a_line[2] );    
+                        printf("Spell name %s, line %s\r\n", (const char *) conf.spells[p].name, &a_line[2] );    
                         if (conf.spells[p].name == &a_line[2]) {
                             QString s;
                             
@@ -483,6 +482,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
         }            
 
         if (buffer[i].type == IS_PROMPT) {
+            spells_print_mode = false;      /* do not analyze spells anymore */
             Engine.set_prompt(buffer[i].line);
             Engine.add_event(R_PROMPT, buffer[i].line);
             notify_analyzer();
