@@ -7,7 +7,6 @@ INCLUDEPATH += . ../include
 DESTDIR = ../lib/
 LIBS += -L../lib -lCommon
 
-
 # Input
 HEADERS += XmlStorage.h
 SOURCES += XmlStorage.cpp
@@ -18,4 +17,8 @@ CONFIG += debug thread qt opengl warn_on
 QT += xml
 win32 {
 	CONFIG	+= console
+}
+debug {
+  #DEFINES += DMALLOC
+  #LIBS += -ldmallocthcxx
 }

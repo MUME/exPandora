@@ -45,17 +45,19 @@ Q_OBJECT
   void playerMoved(Coordinate *, Coordinate *);
   void createRoom(ParseEvent *, Coordinate *, char);
   void addExit(int, int, int);
+  
 
  public:
   Parser();
   Coordinate * getExpectedCoordinate(Room * base);
   virtual Qt::ConnectionType requiredConnectionType(const char *);
   
+  
  private:
   void mudPop();
   void playerPop();
   void checkQueues();
-		
+  
   void dropNote(ParseEvent * ev);
   void experimenting();
   void syncing();
@@ -70,6 +72,7 @@ Q_OBJECT
   char activeTerrain;
   list<Path *> * paths;
   Room * mostLikelyRoom;
+  
   double pathAcceptance;
 
 

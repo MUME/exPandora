@@ -1,8 +1,9 @@
 #ifndef PATH
 #define PATH
 
-#include "Room.h"
 #include "RoomSignalHandler.h"
+#include "Room.h"
+
 
 
 class Path {
@@ -12,9 +13,9 @@ class Path {
   void removeChild(Path * p);
   void setParent(Path * p);
   bool hasChildren() {return (!children.empty());};
-  void init(Room * room, QObject * owner);
+  void init(Room * room, QObject * owner, QObject * locker);
   Room * getRoom() {return room;};
-  Path * fork(Room * room, Coordinate * expectedCoordinate, QObject * owner, double pathAcceptance); 
+  Path * fork(Room * room, Coordinate * expectedCoordinate, QObject * owner, double pathAcceptance, QObject * locker); 
   //new Path is fetched from pamm, distance between rooms is calculated and probability is updated accordingly
   double getProb() {return probability;};	
   void approve();

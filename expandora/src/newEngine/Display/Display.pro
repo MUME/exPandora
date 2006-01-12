@@ -19,3 +19,7 @@ QT += opengl
 win32 {
 	CONFIG	+= console
 }
+debug {
+  #DEFINES += DMALLOC
+  #LIBS += -ldmallocthcxx
+}

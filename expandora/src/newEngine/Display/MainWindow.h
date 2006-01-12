@@ -3,8 +3,6 @@
 
 #include <qmainwindow.h>
 #include <qstringlist.h>
-#include <qgl.h>
-#include <qthread.h>
 #include <qlabel.h>
 #include <qlineedit.h>
 #include <qpushbutton.h>
@@ -20,7 +18,7 @@ class RoomInfo : public QWidget
   Q_OBJECT
 public:
 
-  RoomInfo(QWidget *parent, const char *name = 0);
+  RoomInfo(QWidget *parent);
 
   QLabel*     id_label;
   QLabel*     terrain_label;
@@ -95,5 +93,7 @@ private:
   QPoint        old_pos;
 };
 
-
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 #endif

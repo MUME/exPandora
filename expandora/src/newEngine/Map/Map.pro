@@ -25,3 +25,8 @@ SOURCES += CharacterTable.cpp \
            Map.cpp \
            RoomAdmin.cpp \
            SearchTreeNode.cpp
+
+debug {
+  #DEFINES += DMALLOC
+  #LIBS += -ldmallocthcxx
+}

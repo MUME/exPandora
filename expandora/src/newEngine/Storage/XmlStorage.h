@@ -96,6 +96,8 @@ class XmlStorage: public Component {
 		void addRoom( ParseEvent *, int, Coordinate *, char );
 };
 
-
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 #endif
 

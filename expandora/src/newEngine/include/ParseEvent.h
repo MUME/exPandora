@@ -6,7 +6,7 @@
 #define UKNOWN_NUMBER 0
 
 
-
+#include <stdlib.h>
 #include "ObjectRecycler.h"
 #include "TinyList.h"
 #include "ListStack.h"
@@ -45,8 +45,9 @@ class ParseEvent : public BaseEvent, public ListCycler<Property *> {
 
 extern ObjectRecycler<ParseEvent> pemm;
 
-#endif
+
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#endif
 #endif

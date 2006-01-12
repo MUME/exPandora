@@ -1,20 +1,25 @@
-#include "Component.h"
 #include <iostream>
-
 #include <qfiledialog.h>
 #include <qapplication.h>
 #include <qlibrary.h>
 #include <qvariant.h>
 #include <qobject.h>
 #include <qstringlist.h>
-
+#include <QGLWidget>
+#include "Component.h"
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 using namespace std;
 
 int main ( int argc, char *argv[] )
 {
+  
   try {
-  //QApplication::setColorSpec( QApplication::CustomColor );
+  
+  
   QApplication a( argc, argv );
+  
   a.setQuitOnLastWindowClosed (false);
   QString s;
   if ( argc == 1 )

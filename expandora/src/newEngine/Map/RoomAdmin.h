@@ -1,6 +1,13 @@
 #ifndef ROOMADMIN
 #define ROOMADMIN
 
+#include <qthread.h>
+#include <qmutex.h>
+#include <vector>
+#include <stack>
+#include <set>
+#include <map>
+
 #include "RoomSearchNode.h"
 #include "IntermediateNode.h"
 #include "Component.h"
@@ -8,12 +15,7 @@
 #include "Room.h"
 #include "Map.h"
 
-#include <qthread.h>
-#include <qmutex.h>
-#include <vector>
-#include <stack>
-#include <set>
-#include <map>
+
 
 
 
@@ -84,9 +86,10 @@ class RoomAdmin : public Component, public IntermediateNode {
 };
 
 
-#endif
+
 	
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#endif
 #endif

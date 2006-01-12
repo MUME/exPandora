@@ -1,11 +1,13 @@
-#include "CachedRoom.h"
 #include "Display.h"
+#include "CachedRoom.h"
 
-RoomSignalHandler CachedRoom::signaler;
+
+RoomSignalHandler * CachedRoom::signaler;
 map<int, CachedRoom *> CachedRoom::cache;
 
-CachedRoom::CachedRoom(Room * in_base, QObject * owner) : base(in_base) {
-  signaler.hold(base, owner);
+CachedRoom::CachedRoom(Room * in_base, QObject * owner, QObject * locker) : base(in_base) {
+  if (!signaler) signaler = new RoomSignalHandler;
+  signaler->hold(base, owner, locker);
   set<int> * rawExits;
   for (int i = base->numExits()-1; i >= 0; --i) {
     rawExits = base->getNeighbours(i);
@@ -26,7 +28,8 @@ CachedRoom::CachedRoom(Room * in_base, QObject * owner) : base(in_base) {
 }
 
 CachedRoom::~CachedRoom() {
-  signaler.release(base);
+  cache.erase(base->getId());
+  signaler->release(base);
 }
 
 int CachedRoom::getId() {
@@ -40,7 +43,7 @@ Coordinate * CachedRoom::getCoordinate() {
 void CachedRoom::removeReverse(int id) {
   reverseExits.erase(id);
   if (exits.empty() && reverseExits.empty()) {
-    cache.erase(base->getId());
+    
     delete this;
   }
 }
@@ -65,7 +68,6 @@ void CachedRoom::drawExits(CachedRoom * other, RendererWidget * renderer) {
   */
 
   if (exits.empty() && reverseExits.empty()) {
-    cache.erase(base->getId());
     delete this;
   }
 }

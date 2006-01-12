@@ -1,22 +1,5 @@
 <configuration>
 	<component id="Parser" file="Parser"/>
-	<component id="Display" file="Display">
-	  <option name="terrains" value="[#.f(&lt;%~WU+:=O/>"/>
-	  <option name="[" value="images/indoors.png"/>
-	  <option name="#" value="images/city.png"/>
-	  <option name="." value="images/field.png"/>
-	  <option name="f" value="images/forest.png"/>
-	  <option name="(" value="images/hills.png"/>
-	  <option name="&lt;" value="images/mountain.png"/>
-	  <option name="%" value="images/shallowwater.png"/>
-	  <option name="~" value="images/river.png"/>
-	  <option name="W" value="images/rapids.png"/>
-	  <option name="U" value="images/underwater.png"/>
-	  <option name="+" value="images/road.png"/>
-	  <option name=":" value="images/brush.png"/>
-	  <option name="=" value="images/tunnel.png"/>
-	  <option name="O" value="images/cavern.png"/>
-	</component>
 	<component id="Lexer" file="Lexer"/>
 	<component id="Filter" file="Filter"/>
 	<component id="Map" file="Map"/>
@@ -25,8 +8,25 @@
 		<option name="remoteHost" value="mume.org"/>
 		<option name="remotePort" value="4242"/>
 	</component>
-	<component id="Storage" file="Storage">
+	<!--component id="Storage" file="Storage"-->
 		<!--option name="fileName" value="../databases/mume.xml"/-->
+	<!--/component-->
+	<component id="Display" file="Display">
+	  <option name="terrains" value="[#.f(&lt;%~WU+:=O/>"/>
+	<option name="[" value="images/indoors.png"/>
+	<option name="#" value="images/city.png"/>
+	<option name="." value="images/field.png"/>
+	<option name="f" value="images/forest.png"/>
+	<option name="(" value="images/hills.png"/>
+	<option name="&lt;" value="images/mountain.png"/>
+	<option name="%" value="images/shallowwater.png"/>
+	<option name="~" value="images/river.png"/>
+	<option name="W" value="images/rapids.png"/>
+	<option name="U" value="images/underwater.png"/>
+	<option name="+" value="images/road.png"/>
+	<option name=":" value="images/brush.png"/>
+	<option name="=" value="images/tunnel.png"/>
+	<option name="O" value="images/cavern.png"/>
 	</component>
 	
 	<connection from="Proxy" signal="analyzeUserStream( char *, int )" 
@@ -47,6 +47,8 @@
 		    to="Map" slot="lookingForRooms(QObject *,ParseEvent *)"/>
 	<connection from="Parser" signal="lookingForRooms(QObject *,int)"
 		    to="Map" slot="lookingForRooms(QObject *,int)"/>
+	<connection from="Parser" signal="lookingForRooms(QObject *, Coordinate *)"
+		    to="Map" slot="lookingForRooms(QObject *, Coordinate *)"/>
 	<connection from="Display" signal="lookingForRooms(QObject *,Frustum *)"
 		    to="Map" slot="lookingForRooms(QObject *,Frustum *)"/>
 	<connection from="Parser" signal="addExit(int, int, int)"

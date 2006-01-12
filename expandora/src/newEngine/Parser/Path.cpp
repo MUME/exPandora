@@ -13,14 +13,14 @@ Path::Path() :
 if (!signaler) signaler = new RoomSignalHandler;
 }
 
-void Path::init(Room * in_room, QObject * owner) {
+void Path::init(Room * in_room, QObject * owner, QObject * locker) {
   if (active) {
     throw "fatal: path already active";
   }
   else active = true;
 
   room = in_room;
-  signaler->hold(room, owner);
+  signaler->hold(room, owner, locker);
   
   children.clear();
   parent = 0;
@@ -33,7 +33,7 @@ void Path::init(Room * in_room, QObject * owner) {
  * distance between rooms is calculated 
  * and probability is updated accordingly
  */
-Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, QObject * owner, double pathAcceptance) {
+Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, QObject * owner, double pathAcceptance, QObject * locker) {
   if (!active) {
     throw "fatal: path inactive";
   }
@@ -43,7 +43,7 @@ Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, QObject * own
   if (ret == parent) {
     throw "fatal: building path circle";
   }
-  ret->init(in_room, owner);
+  ret->init(in_room, owner, locker);
   ret->setParent(this);
   children.insert(ret);
   double dist = expectedCoordinate->distance(in_room->getCoordinate());

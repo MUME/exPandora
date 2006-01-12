@@ -120,6 +120,8 @@ void Parser::checkQueues()
 }
 
 
+
+
 void Parser::approved()
 {
   if (playerEvents.front()->type == UNIQUE)
@@ -174,7 +176,7 @@ void Parser::approved()
   {
     state = EXPERIMENTING;
     Path * root = pamm.activate();
-    root->init(mostLikelyRoom, 0);
+    root->init(mostLikelyRoom, 0, 0);
     paths->push_front(root);
     experimenting();
   }

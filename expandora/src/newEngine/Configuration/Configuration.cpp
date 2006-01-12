@@ -116,6 +116,7 @@ void Configuration::connectComponents( const QXmlAttributes & atts ) {
 	else throw "can't connect non-matching slot and signal";
 
 	to->connect(from, sig.toLatin1(), sl.toLatin1(), resultType);
+
 }
 
 

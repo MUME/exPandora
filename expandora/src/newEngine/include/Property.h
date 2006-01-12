@@ -5,7 +5,7 @@
 #define SKIPPED_ONE INT_MAX
 #define SKIPPED_MANY INT_MAX-1
 
-#include <limits.h>
+#include <stdlib.h>
 #include "ObjectRecycler.h"
 #include "ListCycler.h"
 #include "ListStack.h"
@@ -40,8 +40,10 @@ class Property : public ListCycler<char>, private ListStack<char> {
 
 
 extern ObjectRecycler<Property> pmm;
-#endif
+
 
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
+#endif
+

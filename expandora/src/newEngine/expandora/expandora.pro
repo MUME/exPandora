@@ -12,12 +12,12 @@ CONFIG += debug thread qt opengl warn_on
 win32 {
 	CONFIG	+= console
 }
-
+QT += opengl
 
 DESTDIR = ../bin
-
-
-
-
 # Input
 SOURCES += main.cpp
+debug {
+  #DEFINES += DMALLOC
+  #LIBS += -ldmallocthcxx
+}

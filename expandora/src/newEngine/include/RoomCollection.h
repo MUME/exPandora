@@ -1,9 +1,10 @@
 #ifndef ROOMCOLLECTION
 #define ROOMCOLLECTION
 #include <set>
+#include "Room.h"
 #include "ParseEvent.h"
 #include "AbstractRoomContainer.h"
-#include "Room.h"
+
 #include "ObjectRecycler.h"
 
 using namespace std;
@@ -32,9 +33,10 @@ class RoomCollection : public AbstractRoomContainer {
 };
 
 extern ObjectRecycler<RoomCollection> rcmm; // room collection memory management ... :(
-#endif
+
 
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#endif
 #endif

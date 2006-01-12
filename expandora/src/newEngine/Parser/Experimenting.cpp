@@ -17,7 +17,7 @@ Experimenting::Experimenting(Parser * par, list<Path *> * pat, double pa) {
 void Experimenting::receiveRoom(QObject * map, Room * room) {
   for (list<Path *>::iterator i = shortPaths->begin(); i != shortPaths->end(); ++i) {
     Coordinate * c = parent->getExpectedCoordinate((*i)->getRoom());
-    Path * working = (*i)->fork(room, c, map, pathAcceptance);
+    Path * working = (*i)->fork(room, c, map, pathAcceptance, this);
     if (working->getProb() < prevBest/pathAcceptance) {
       (*i)->removeChild(working);
       pamm.deactivate(working);

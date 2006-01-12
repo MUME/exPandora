@@ -15,7 +15,7 @@
 
 using namespace Qt;
 
-RoomInfo::RoomInfo(QWidget* parent, const char*)
+RoomInfo::RoomInfo(QWidget* parent)
     : QWidget(parent)
 {
   /* ------- */
@@ -116,7 +116,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
   
   resize(640, 480);
-
+  renderer =  new RendererWidget( this );
+  setCentralWidget( renderer );
+  
+  
   QMenu *fileMenu = new QMenu( "File", 0 );
   fileMenu->addAction( tr("&Exit"), qApp, SLOT( quit() ), Qt::CTRL+Qt::Key_Q );
   menuBar()->addMenu( fileMenu );
@@ -157,39 +160,22 @@ MainWindow::MainWindow(QWidget *parent)
 
   hide_roominfo_id->setChecked(true);
   hide_status_id->setChecked(true);
-  always_on_top_id->setChecked(true);
+  always_on_top_id->setChecked(false);
 
 
   dock = new QDockWidget("Room Info", this);
   addDockWidget(Qt::BottomDockWidgetArea, dock);
 
-  roominfo = new RoomInfo(dock, "roominfo");
+  roominfo = new RoomInfo(dock);
   dock->setWidget(roominfo);
 
 
-  Qt::WindowFlags flags = windowFlags();
-#ifndef Q_OS_MACX
-  if(flags && Qt::WindowStaysOnTopHint)
-  {
-    flags ^= Qt::WindowStaysOnTopHint;
-  }
-  else
-  {
-    flags |= Qt::WindowStaysOnTopHint;
-  }
-#else
-  if(flags && Qt::WindowStaysOnTopHint)
-  {
-    flags ^= Qt::WindowStaysOnTopHint;
-
-  }
-#endif
-  setWindowFlags(flags);
+  
 
   LeftButtonPressed = false;
   RightButtonPressed = false;
 
-
+  show();
 }
 
 void MainWindow::update_status_bar(Room * rr)
@@ -231,12 +217,10 @@ void MainWindow::hide_status()
   if (hide_status_id->isChecked())
   {
     statusBar()->show();
-    //optionsMenu->setItemChecked(hide_status_id, false);
   }
   else
   {
     statusBar()->hide();
-    //optionsMenu->setItemChecked(hide_status_id, true);
   }
 
 }
@@ -248,18 +232,17 @@ void MainWindow::hide_roominfo()
   if (hide_roominfo_id->isChecked())
   {
     dock->show();
-    //optionsMenu->setItemChecked(hide_roominfo_id, false);
   }
   else
   {
     dock->hide();
-    //optionsMenu->setItemChecked(hide_roominfo_id, true);
   }
 }
 
 
 void MainWindow::keyPressEvent( QKeyEvent *k )
 {
+
   switch ( tolower(k->key()) )
   {
   case 'c':
@@ -337,10 +320,8 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
     renderer->userz = BASE_Z;
     renderer->shiftView();
     break;
-
-
-
   }
+  
 
 }
 

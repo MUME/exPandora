@@ -28,8 +28,10 @@ class Experimenting : public QObject {
   void receiveRoom(QObject *, Room *);
 
  signals:
-  void releaseRoom(int);
+  void releaseRoom(QObject *, int);
 };
-
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 #endif
 

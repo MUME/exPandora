@@ -51,4 +51,9 @@ private:
   float frustum[6][4];
 
 };
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 #endif

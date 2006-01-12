@@ -1,4 +1,3 @@
-//#pragma once
 #ifndef OBJECTRECYCLER
 #define OBJECTRECYCLER
 #include "TinyList.h"
@@ -46,8 +45,9 @@ T * ObjectRecycler<T>::activate() {
   else return new T();
 }
 
-#endif
+
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#endif
 #endif

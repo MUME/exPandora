@@ -18,7 +18,15 @@
  * every component that should be available from a library should inherit Component
  * and implement a componentCreator which is available via "extern "C" MY_EXPORT ..."
  */
-class ComponentThreader;
+class ComponentThreader : public QThread {
+	private:
+		Q_OBJECT;
+		
+
+	public:
+		ComponentThreader() {}
+		void run(); 				
+};
 
 class Component : public QObject {
  private:
@@ -42,16 +50,12 @@ protected:
   
 };
 
-class ComponentThreader : public QThread {
-	private:
-		Q_OBJECT;
-		Component * component;
 
-	public:
-		ComponentThreader(Component * comp) : component(comp) {}
-		void run() {exec();}				
-};
 
 typedef Component * (*componentCreator)();
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 
 #endif

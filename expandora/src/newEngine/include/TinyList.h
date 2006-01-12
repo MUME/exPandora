@@ -72,8 +72,9 @@ template <class T>
 void TinyList<T>::remove(unsigned int c) {
 	if (c < listSize) list[c] = 0;
 }
-#endif
+
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#endif
 #endif

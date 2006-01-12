@@ -20,4 +20,8 @@ class SimpleString : public TinyList<char> {
 
 extern ObjectRecycler<SimpleString> ssmm;
 
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 #endif

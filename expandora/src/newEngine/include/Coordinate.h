@@ -2,9 +2,10 @@
 #define COORDINATE
 #include <vector>
 #include <map>
+#include <qstring.h>
 #include "BaseEvent.h"
 #include "ObjectRecycler.h"
-#include <qstring.h>
+
 
 using namespace std;
 
@@ -33,5 +34,11 @@ class Coordinate
 
 
 extern ObjectRecycler<Coordinate> cmm;
+
+
+#ifdef DMALLOC
+#include <dmalloc.h>
 #endif
+#endif
+
 

@@ -135,9 +135,11 @@ void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
 {
   if (greatestUsedId == -1) {
     createRoom(event, new Coordinate(0,0,0), 0);
-    Room * room = roomIndex[greatestUsedId];
-    locks[room->getId()].insert(0);
-    room->addReverseExit(0,0);
+    if (greatestUsedId >= 0) {
+      Room * room = roomIndex[greatestUsedId];
+      locks[room->getId()].insert(0);
+      room->addReverseExit(0,0);
+    }
   }
 
   AbstractRoomContainer * ret;

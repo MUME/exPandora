@@ -19,3 +19,7 @@ SOURCES += Configuration.cpp
 
 DESTDIR = ../lib/
 LIBS += -L../lib -lCommon
+debug {
+  #DEFINES += DMALLOC
+  #LIBS += -ldmallocthcxx
+}

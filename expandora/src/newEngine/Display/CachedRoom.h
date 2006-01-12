@@ -1,8 +1,9 @@
 #ifndef CACHEDROOM
 #define CACHEDROOM
+#include "RoomSignalHandler.h"
 #include "Coordinate.h"
 #include "Room.h"
-#include "RoomSignalHandler.h"
+
 
 class RendererWidget;
 
@@ -13,7 +14,7 @@ class RendererWidget;
 class CachedRoom;
 class CachedRoom {
  private:
-  static RoomSignalHandler signaler;
+  static RoomSignalHandler * signaler;
   static map<int, CachedRoom *> cache;
   map<int, set<int> > exits; //other's id->dirs
   map<int, set<int> > reverseExits;
@@ -21,7 +22,7 @@ class CachedRoom {
   void removeReverse(int id);
   
  public:
-  CachedRoom(Room * base, QObject * owner);
+  CachedRoom(Room * base, QObject * owner, QObject * locker);
   ~CachedRoom();
   void drawExits(CachedRoom * other, RendererWidget * renderer);
   void drawExits(RendererWidget * renderer);
@@ -29,5 +30,7 @@ class CachedRoom {
   Coordinate * getCoordinate();
 
 };
-
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 #endif

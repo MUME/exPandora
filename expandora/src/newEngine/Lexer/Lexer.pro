@@ -18,3 +18,7 @@ LEXSOURCES += mud.lex player.lex
 
 DESTDIR = ../lib/
 LIBS += -L../lib -lCommon
+debug {
+  #DEFINES += DMALLOC
+  #LIBS += -ldmallocthcxx
+}

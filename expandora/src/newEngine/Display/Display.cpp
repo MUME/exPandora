@@ -14,6 +14,9 @@
 #include "MainWindow.h"
 #include "CachedRoom.h"
 
+
+using namespace Qt;
+
 /**
  * this method is called when a component of this type should be
  * created from a library. MY_EXPORT is defined in Component.h
@@ -54,9 +57,9 @@ void RendererWidget::initializeGL()
   Terrain * p;
 
   glShadeModel( GL_SMOOTH );
-  glClearColor ( 0.0, 0.0, 0.0, 0.0 );	/* This Will Clear The Background Color To Black */
-  glPointSize ( 4.0 );		/* Add point size, to make it clear */
-  glLineWidth ( 2.0 );		/* Add line width,   ditto */
+  glClearColor ( 0.0, 0.0, 0.0, 0.0 );	// This Will Clear The Background Color To Black 
+  glPointSize ( 4.0 );		// Add point size, to make it clear 
+  glLineWidth ( 2.0 );		// Add line width,   ditto 
 
   glEnable( GL_BLEND );
   glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -150,27 +153,33 @@ void RendererWidget::resizeGL( int width, int height )
   shiftView();
 }
 
-void DisplayComponent::start()
-{
-  if ( !QGLFormat::hasOpenGL() )
-  {
-    throw "This system has no OpenGL support.";
-  }
-  resolveTerrains();
-
+DisplayComponent::DisplayComponent() {
+  renderer = 0;
+  renderer_window = 0;
   f.setDoubleBuffer( TRUE );
   f.setDirectRendering( TRUE );
   f.setRgba( TRUE );
   f.setDepth( TRUE );
 
   QGLFormat::setDefaultFormat( f );
+  
+}
+
+void DisplayComponent::start()
+{
+  if ( !QGLFormat::hasOpenGL() )
+  {
+    throw "This system has no OpenGL support.";
+  }
+
+  resolveTerrains();
 
   renderer_window = new MainWindow( 0 );
-  renderer =  new RendererWidget( renderer_window );
-  QObject::connect(renderer, SIGNAL(viewableAreaChanged(QObject *,Frustum *)), this, SIGNAL(lookingForRooms(QObject *,Frustum *)));
-  renderer_window->setCentralWidget( renderer );
-  renderer_window->renderer = renderer;
-  renderer_window->show();
+  renderer = renderer_window->renderer;
+
+
+  QObject::connect(renderer, SIGNAL(viewableAreaChanged(QObject *,Frustum *)), this, SIGNAL(lookingForRooms(QObject *,Frustum *)), DirectConnection);
+  
 
   Component::start();
 
@@ -293,7 +302,7 @@ void RendererWidget::receiveRoom( QObject * owner, Room * pr )
   char lines, texture;
   float distance;
 
-  CachedRoom * cr = new CachedRoom( pr, owner );
+  //CachedRoom * cr = new CachedRoom( pr, owner );
 
   Coordinate d( p->x - curx, p->y - cury, ( p->z - curz ) * DIST_Z );
 
@@ -301,8 +310,7 @@ void RendererWidget::receiveRoom( QObject * owner, Room * pr )
   lines = 1;
   texture = 1;
 
-  if ( !frustum.PointInFrustum( &d ) )
-    return ;
+  
 
   int z = p->z - curz;
 
@@ -403,12 +411,15 @@ void RendererWidget::receiveRoom( QObject * owner, Room * pr )
 
 
   glTranslatef( -d.x, -d.y, -d.z );
+  QObject::connect(this, SIGNAL(releaseRoom(QObject *, int)), owner, SLOT(releaseRoom(QObject *, int)), DirectConnection);
+  emit releaseRoom(this, pr->getId());
+  QObject::disconnect(this, SIGNAL(releaseRoom(QObject *, int)));
+  //if ( lines == 0 )
+  //  return ;
 
-  if ( lines == 0 )
-    return ;
-
+  
   // make the cached room draw its exits
-  cr->drawExits( this );
+  //cr->drawExits( this );
 
 }
 
@@ -524,11 +535,7 @@ void RendererWidget::shiftView()
 
 
 
-void DisplayComponent::toggle_renderer_reaction()
-{
-  QKeyEvent * k = new QKeyEvent( QEvent::KeyPress, 'r', Qt::NoModifier );
-  QApplication::postEvent( renderer, k );
-}
+
 
 
 
@@ -557,4 +564,6 @@ void RendererWidget::CalculateFrustum()
 
 }
 
-
+void RendererWidget::paintGL() {
+  emit viewableAreaChanged( this, &frustum );
+}

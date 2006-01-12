@@ -45,6 +45,8 @@ class Configuration : public Component, public QXmlDefaultHandler {
   QString fileName;
 };
 
-
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 
 #endif

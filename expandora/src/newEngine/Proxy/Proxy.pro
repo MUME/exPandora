@@ -16,3 +16,7 @@ QT += network
 win32{
   CONFIG += console
 }
+debug {
+  #DEFINES += DMALLOC
+  #LIBS += -ldmallocthcxx
+}

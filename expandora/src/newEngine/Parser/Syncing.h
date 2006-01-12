@@ -16,6 +16,8 @@ class Syncing : public QObject {
    Syncing(list<Path *> * in);
    list<Path *> * evaluate();
 };
-
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 #endif
    

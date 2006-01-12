@@ -24,7 +24,9 @@ class Map {
 		Coordinate * getNearestFree(Coordinate * c);
 		vector<vector<vector<Room *> > > map [2][2][2]; 
 };
-
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 #endif
 
 #ifdef DMALLOC

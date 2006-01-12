@@ -2,9 +2,10 @@
 #define ROOM_CLASS
 
 #include <set>
+#include "Coordinate.h"
 #include "ParseEvent.h"
 #include "Property.h"
-#include "Coordinate.h"
+
 #include "ObjectRecycler.h"
 #include "TinyList.h"
 
@@ -60,8 +61,9 @@ private:
 };
 
 extern ObjectRecycler<Room> rmm;
-#endif
+
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#endif
 #endif

@@ -1,9 +1,10 @@
 #ifndef SEARCHTREENODE
 #define SEARCHTREENODE
 #include <vector>
+#include "Room.h"
 #include "TinyList.h"
 #include "RoomSearchNode.h"
-#include "Room.h"
+
 
 using namespace std;
 
@@ -28,8 +29,9 @@ class SearchTreeNode : public RoomSearchNode {
 		virtual void setChild(char, RoomSearchNode *);
 		virtual AbstractRoomContainer * skipDown(ParseEvent * event);
 };
-#endif
+
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#endif
 #endif

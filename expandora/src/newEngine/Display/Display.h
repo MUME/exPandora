@@ -14,20 +14,13 @@
 #define ROOM_SIZE 0.2f	/* the size of the rooms walls */
 #define MARKER_SIZE           (ROOM_SIZE/2.0)
 
-class QAction; 
-class QLabel; 
-class FindDialog; 
-class Spreadsheet; 
-class QLineEdit;
-class QLabel;
-class QWidget;
-class QPushButton;
+
 
 
 class RendererWidget : public QGLWidget {
-
- private:
   Q_OBJECT 
+ private:
+  
   static const GLfloat marker_colour[4];
   static const int texture_visibilit_range;
   static const int details_visibility_range;
@@ -66,9 +59,11 @@ class RendererWidget : public QGLWidget {
  protected:
   void initializeGL();
   void resizeGL( int width, int height );
+  void paintGL();
 
  signals:
   void viewableAreaChanged(QObject *, Frustum *); 
+  void releaseRoom(QObject *, int);
 };
 
 
@@ -80,14 +75,17 @@ class DisplayComponent : public Component {
  signals:
   void lookingForRooms(QObject *, Frustum *);
   
+  
  public slots:
   void playerMoved(Coordinate *, Coordinate *);
   
  public:
+  DisplayComponent();
   virtual void start();
-  void toggle_renderer_reaction();
+
 
  private:
+  
   void resolveTerrains();
   QString extractDescription(QString & filename);
   RendererWidget *renderer;
@@ -95,16 +93,7 @@ class DisplayComponent : public Component {
   QGLFormat f;
 };
 
-
-
-
-
-
-
-
-
-#endif
-
 #ifdef DMALLOC
 #include <dmalloc.h>
+#endif
 #endif

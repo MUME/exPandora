@@ -42,7 +42,7 @@ void Room::addReverseExit(int direc, int from) {
   set<int> * roomsInDir = reverseExits.get(direc);
   if (roomsInDir == 0) {
     roomsInDir = new set<int>;
-    exits.put(direc, roomsInDir);
+    reverseExits.put(direc, roomsInDir);
   }
   roomsInDir->insert(from);
 }
@@ -51,7 +51,7 @@ void Room::addReverseExit(int direc, int from) {
 set<int> * Room::go(BaseEvent * dir) {
   set<int> * ret  = new set<int>();;
   Coordinate * move = Coordinate::stdMoves[dir->type];
-  if (move->x == move->y == move->z == 0) {
+  if ((move->x == 0) && (move->y == 0) && (move->z == 0)) {
     ret->insert(id);
     return ret;
   }
@@ -136,7 +136,7 @@ bool Room::fastCompare(ParseEvent * ev, int tolerance) {
     		
   for (; props->get(i) != 0 && properties.get(j) != 0; i++, j++) {
     tolerance -= props->get(i)->compare(properties.get(j));
-    if (tolerance <= 0) return false;
+    if (tolerance < 0) return false;
   }
   return true;
 }

@@ -39,5 +39,10 @@ template <class T>
 T ListCycler<T>::current() {
   return list->get(pos);
 }
-   
+
+
+#ifdef DMALLOC
+#include <dmalloc.h>
 #endif
+#endif
+

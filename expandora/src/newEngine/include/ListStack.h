@@ -1,4 +1,3 @@
-//#pragma once
 #ifndef LISTSTACK
 #define LISTSTACK
 
@@ -29,4 +28,8 @@ T ListStack<T>::pop() {
   return ret;
 }
 
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
 #endif

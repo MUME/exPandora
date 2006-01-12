@@ -25,11 +25,17 @@ class Approved : public QObject{
 
  signals:
    void releaseRoom(QObject *, int);
-
+   void keepRoom(QObject *, int);
  public:
    Approved(Parser * parser, ParseEvent * event, int tolerance);
+   ~Approved();
+   
    Room * oneMatch();
    QObject * getOwner(); 
    void reset();
 };
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 #endif

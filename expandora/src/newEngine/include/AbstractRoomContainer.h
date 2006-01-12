@@ -13,4 +13,8 @@ class AbstractRoomContainer {
   virtual ~AbstractRoomContainer() {}
 };
 
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 #endif
