@@ -42,9 +42,9 @@ void TelnetFilter::analyzeUserStream(char * input, int length)
 ConnectionType TelnetFilter::requiredConnectionType(const QString & str)
 {
   
-  if (str == SLOT(analyzeUserStream( char *, int )) || str == SLOT(analyzeMudStream( char *, int )))
+  if (str == SLOT(analyzeUserStream(char *, int)) || str == SLOT(analyzeMudStream(char *, int)))
     return DirectConnection;
-  else if (str == SIGNAL(newUserInput(char *)) || str == SIGNAL(newMudInput(char*)))
+  else if (str == SIGNAL(newUserInput(char *)) || str == SIGNAL(newMudInput(char *)))
     return QueuedConnection;
   else
     throw "no such signal or slot";

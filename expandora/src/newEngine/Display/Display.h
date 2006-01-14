@@ -47,9 +47,9 @@ class RendererWidget : public QGLWidget {
   GLfloat       angley;
   GLfloat       anglex;
   GLfloat       anglez;
-  int           userx;
-  int           usery;
-  int           userz;		/* additional shift added by user */
+  float           userx;
+  float           usery;
+  float           userz;		/* additional shift added by user */
 
   RendererWidget( QWidget *parent);
   void drawExit(Coordinate * from, Coordinate * to, unsigned int dir);

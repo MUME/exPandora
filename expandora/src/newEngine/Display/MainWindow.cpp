@@ -128,11 +128,11 @@ MainWindow::MainWindow(QWidget *parent)
   optionsMenu = new QMenu( "Options", 0 );
 
 
-  hide_status_id = optionsMenu->addAction( tr("Hide/Show Status"), this, SLOT( hide_status()), Qt::Key_F11 );
+/*  hide_status_id = optionsMenu->addAction( tr("Hide/Show Status"), this, SLOT( hide_status()), Qt::Key_F11 );
   hide_status_id->setCheckable(true);
   hide_roominfo_id = optionsMenu->addAction( tr("Hide/Show Room info"), this, SLOT( hide_roominfo()), Qt::Key_F10);
   hide_roominfo_id->setCheckable(true);
-
+*/
 
   optionsMenu->addSeparator();
 
@@ -141,9 +141,9 @@ MainWindow::MainWindow(QWidget *parent)
 
   menuBar()->addMenu( optionsMenu);
 
-  locationLabel = new QLabel("NO_SYNC");
+  /*locationLabel = new QLabel("NO_SYNC");
   locationLabel->setAlignment(AlignHCenter);
-  locationLabel->setMinimumSize(locationLabel->sizeHint());
+  locationLabel->setMinimumSize(locationLabel->sizeHint());*/
 
   formulaLabel = new QLabel();
 
@@ -152,22 +152,22 @@ MainWindow::MainWindow(QWidget *parent)
   modLabel->setMinimumSize(modLabel->sizeHint());
   modLabel->clear();
 
-  statusBar()->addWidget(locationLabel);
+//  statusBar()->addWidget(locationLabel);
   statusBar()->addWidget(formulaLabel, 1);
   statusBar()->addWidget(modLabel);
 
 
 
-  hide_roominfo_id->setChecked(true);
-  hide_status_id->setChecked(true);
+/*  hide_roominfo_id->setChecked(true);
+  hide_status_id->setChecked(true);*/
   always_on_top_id->setChecked(false);
 
 
-  dock = new QDockWidget("Room Info", this);
-  addDockWidget(Qt::BottomDockWidgetArea, dock);
+  //dock = new QDockWidget("Room Info", this);
+  //addDockWidget(Qt::BottomDockWidgetArea, dock);
 
-  roominfo = new RoomInfo(dock);
-  dock->setWidget(roominfo);
+  //roominfo = new RoomInfo(dock);
+  //dock->setWidget(roominfo);
 
 
   
@@ -178,12 +178,12 @@ MainWindow::MainWindow(QWidget *parent)
   show();
 }
 
-void MainWindow::update_status_bar(Room * rr)
+void MainWindow::update_status_bar(Room *)
 {
 
-  locationLabel->setText("silly location bar");
+//  locationLabel->setText("silly location bar");
 
-  roominfo->update_info(rr);
+//  roominfo->update_info(rr);
 }
 
 
@@ -214,7 +214,7 @@ void MainWindow::always_on_top()
 void MainWindow::hide_status()
 {
 
-  if (hide_status_id->isChecked())
+/*  if (hide_status_id->isChecked())
   {
     statusBar()->show();
   }
@@ -222,21 +222,21 @@ void MainWindow::hide_status()
   {
     statusBar()->hide();
   }
-
+*/
 }
 
 
 void MainWindow::hide_roominfo()
 {
 
-  if (hide_roominfo_id->isChecked())
+/*  if (hide_roominfo_id->isChecked())
   {
     dock->show();
   }
   else
   {
     dock->hide();
-  }
+  }*/
 }
 
 
@@ -356,7 +356,7 @@ void MainWindow::mouseReleaseEvent( QMouseEvent *e)
 void MainWindow::mouseMoveEvent( QMouseEvent *e)
 {
   QPoint pos;
-  int dist_x, dist_y;
+  float dist_x, dist_y;
 
   pos = e->pos();
   dist_x = pos.x() - old_pos.x();
@@ -366,14 +366,14 @@ void MainWindow::mouseMoveEvent( QMouseEvent *e)
   if (LeftButtonPressed)
   {
 
-    if ( ((dist_x * dist_x) + (dist_y * dist_y)) >= 100)
-    {
+    //if ( ((dist_x * dist_x) + (dist_y * dist_y)) >= 100)
+    //{
 
-      renderer->userx -= dist_x/4;
-      renderer->usery += dist_y/4;
+      renderer->userx += dist_x/10.0;
+      renderer->usery -= dist_y/10.0;
       renderer->shiftView();
       old_pos = pos;
-    }
+    //}
 
   }
   else if (RightButtonPressed)

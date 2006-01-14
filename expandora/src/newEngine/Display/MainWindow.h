@@ -76,15 +76,15 @@ private:
 
 
 
-  QLabel        *locationLabel;
+  //QLabel        *locationLabel;
   QLabel        *formulaLabel;
   QLabel        *modLabel;
   QMenu    	*optionsMenu;
-  QDockWidget   *dock;
-  RoomInfo      *roominfo;
+  //QDockWidget   *dock;
+  //RoomInfo      *roominfo;
 
-  QAction * hide_status_id;
-  QAction * hide_roominfo_id;
+  //QAction * hide_status_id;
+  //QAction * hide_roominfo_id;
   QAction * always_on_top_id;
 
 

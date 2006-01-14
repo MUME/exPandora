@@ -1,16 +1,16 @@
 <configuration>
 	<component id="Parser" type="Parser"/>
 	<component id="Lexer" type="Lexer"/>
-	<!--component id="Filter" type="Filter"/-->
+	<component id="Filter" type="Filter"/>
 	<component id="Map" type="Map"/>
 	<component id="Proxy" type="Proxy">
 		<option name="localPort" value="3000"/>
 		<option name="remoteHost" value="mume.org"/>
 		<option name="remotePort" value="4242"/>
 	</component>
-	<component id="Storage" type="Storage">
+	<!--component id="Storage" type="Storage">
 		<option name="fileName" value="databases/example_mume.xml"/>
-	</component>
+	</component-->
 	<component id="Display" type="Display">
 	  <option name="terrains" value="[#.f(&lt;%~WU+:=O/>"/>
 	<option name="[" value="images/indoors.png"/>
@@ -30,14 +30,14 @@
 	</component>
 	
 	
-	<!--connection from="Proxy" signal="analyzeUserStream( char *, int )" 
-		    to="Filter" slot="analyzeUserStream( char *, int )"/-->
-	<!--connection from="Proxy" signal="analyzeMudStream( char *, int )"
-		    to="Filter" slot="analyzeMudStream( char *, int )"/-->
-	<!--connection from="Filter" signal="newUserInput(char *)" 
-		    to="Lexer" slot="pushUserInput(char *)"/-->
-	<!--connection from="Filter" signal="newMudInput(char *)"
-		    to="Lexer" slot="pushMudInput(char *)"/-->
+	<connection from="Proxy" signal="analyzeUserStream(char *, int)" 
+		    to="Filter" slot="analyzeUserStream(char *, int)"/>
+	<connection from="Proxy" signal="analyzeMudStream(char *, int)"
+		    to="Filter" slot="analyzeMudStream(char *, int)"/>
+	<connection from="Filter" signal="newUserInput(char *)" 
+		    to="Lexer" slot="pushUserInput(char *)"/>
+	<connection from="Filter" signal="newMudInput(char *)"
+		    to="Lexer" slot="pushMudInput(char *)"/>
 	<connection from="Lexer" signal="terrainDetected(Property *)"
 		    to="Parser" slot="setTerrain(Property *)"/>
 	<connection from="Lexer" signal="eventFound(ParseEvent *)"
@@ -56,8 +56,8 @@
 		    to="Map" slot="addExit(int, int, int)"/>
 	<connection from="Parser" signal="createRoom(ParseEvent *, Coordinate *, char)"
 		    to="Map" slot="createRoom(ParseEvent *, Coordinate *, char)"/>
-	<connection from="Storage" signal="addRoom(ParseEvent *, Coordinate *, char, int)"
+	<!--connection from="Storage" signal="addRoom(ParseEvent *, Coordinate *, char, int)"
 		    to="Map" slot="createPredefinedRoom(ParseEvent *, Coordinate *, char, int)"/>
 	<connection from="Storage" signal="addExit(int, int, int)"
-		    to="Map" slot="addExit(int, int, int)"/>
+		    to="Map" slot="addExit(int, int, int)"/-->
 </configuration>
