@@ -13,6 +13,7 @@ class SimpleString : public TinyList<char> {
   virtual char * getText() {return TinyList<char>::list;}
   virtual SimpleString * copy();
   virtual void clear() {for (unsigned int i = 0; i < listSize; i++) list[i] = 0; hint = 0;}
+  SimpleString() : hint(0) {}
  protected:
   void copy(SimpleString * other);
   char hint; // the hint will denote the supposed meaning of the string, for example "Description" or "Exit"

@@ -22,17 +22,26 @@ Initializer<Lexer> lexer("Lexer");
 #endif
 
 void Lexer::pushUserInput (char * input) { 
-  playerLexer.switch_streams(new istringstream(input), 0); 
+  istringstream stream(input);
+  playerLexer.switch_streams(&stream, 0); 
   playerLexer.yylex();
+  delete[] input;
 }
 
 void Lexer::pushMudInput(char * input) {
-  mudLexer.switch_streams(new istringstream(input), 0); 
+  istringstream stream(input);
+  mudLexer.switch_streams(&stream, 0); 
   mudLexer.yylex();
+  delete[] input;
 }
 
 Lexer::Lexer() : Component(true) {
-	init();
+  playerLexer.setParent(this);
+  mudLexer.setParent(this);
+}
+
+void Lexer::init() {
+	setMoves();
 	connect(&playerLexer, SIGNAL(eventFound(ParseEvent* )), this, SIGNAL(eventFound(ParseEvent* )));
 	connect(&mudLexer, SIGNAL(eventFound(ParseEvent* )), this, SIGNAL(eventFound(ParseEvent* )));
 	connect(&playerLexer, SIGNAL(terrainDetected(Property* )), this, SIGNAL(terrainDetected(Property* )));

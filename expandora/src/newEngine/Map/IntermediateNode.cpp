@@ -3,13 +3,13 @@
 
 IntermediateNode::IntermediateNode(ParseEvent * event) {
   Property * prop = event->next();
-  if (prop != 0) {
-    myChars = new char[strlen(prop->rest()) + 1];
-    strcpy(myChars, prop->rest());
-  }
-  else {
+  if (prop == 0 || prop->size() == SKIPPED_ONE || prop->size() == SKIPPED_MANY) {
     myChars = new char[1];
     myChars[0] = 0;
+  }
+  else {
+    myChars = new char[strlen(prop->rest()) + 1];
+    strcpy(myChars, prop->rest());
   }
   rooms = 0;
   event->prev();
@@ -19,9 +19,7 @@ Room * IntermediateNode::insertRoom(ParseEvent * event) {
 	
   if (event->next() == 0) {
     if (rooms == 0) rooms = rcmm.activate();
-    Room * ret = rooms->insertRoom(event);
-    
-    return ret;
+    return rooms->insertRoom(event);
   }
   else if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) return 0;
 	

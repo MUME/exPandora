@@ -36,18 +36,19 @@ void Property::clear()
   tos = 0;
 }
 
-
-
-
-
-
 Property * Property::copy()
 {
-  if (tos == SKIPPED_ONE || tos == SKIPPED_MANY) 
-    throw "can't copy a SKIP property";
   Property * other = pmm.activate();
-  char * text = data.getText();
-  other->add(text, text+tos);
+  if (tos == SKIPPED_ONE) {
+    other->skip();
+  }
+  else if (tos == SKIPPED_MANY) {
+    other->skipMany();
+  }
+  else {
+    char * text = data.getText();
+    other->add(text, text+tos);
+  }
   return other;
 }
 

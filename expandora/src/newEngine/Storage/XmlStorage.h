@@ -77,7 +77,7 @@ class XmlStorage: public Component {
 		
 		
 		void xml_readbase();
-		void start() {
+		void init() {
 			xml_readbase();
 		}
 	public slots:

@@ -53,6 +53,13 @@ RendererWidget::RendererWidget( QWidget *parent)
   curz = 0;			/* current rooms position */
 }
 
+ConnectionType DisplayComponent::requiredConnectionType(const QString & str) {
+  if (str == SLOT(playerMoved(Coordinate *, Coordinate *)))
+    return QueuedConnection;
+  else 
+    return DirectConnection;
+}
+
 
 void RendererWidget::initializeGL()
 {
@@ -168,7 +175,7 @@ DisplayComponent::DisplayComponent() {
   
 }
 
-void DisplayComponent::start()
+void DisplayComponent::init()
 {
   if ( !QGLFormat::hasOpenGL() )
   {
@@ -182,9 +189,6 @@ void DisplayComponent::start()
 
 
   QObject::connect(renderer, SIGNAL(viewableAreaChanged(RoomRecipient *,Frustum *)), this, SIGNAL(lookingForRooms(RoomRecipient *,Frustum *)), DirectConnection);
-  
-
-  Component::start();
 
 }
 

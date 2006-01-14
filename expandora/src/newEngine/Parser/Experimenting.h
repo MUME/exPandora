@@ -26,10 +26,7 @@ class Experimenting : public RoomRecipient {
   Experimenting(Parser * parent, list<Path *> * paths, double pa);
   list<Path *> * evaluate();
   void receiveRoom(RoomAdmin *, Room *);
- 
-  
 
- 
 };
 #ifdef DMALLOC
 #include <mpatrol.h>

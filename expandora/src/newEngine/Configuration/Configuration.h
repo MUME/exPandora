@@ -21,7 +21,7 @@ class Configuration : public Component, public QXmlDefaultHandler {
   Component * get(const QString & id);
   void put(const QString & id, Component * component);
   
-  virtual void start();
+  virtual void init();
 
 
   //bool characters(const QString& ch);

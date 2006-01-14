@@ -32,7 +32,7 @@ using namespace std;
 
 class Lexer;
 
-/** 
+/**
 The GenericLexer provides some simplifications for the flex lexers - though some are only redundancies ...
 append creates (via Property.add) a new string and doesn't use yytext. 
 So the tree doesn't have to wonder if it has to copy the string 
@@ -42,35 +42,36 @@ otherwise we do a deep clear - simple.
 The memory allocation is handled by the ObjectRecycler 
 which will keep the rate of allocating/destroying strings low.
 */
-class GenericLexer : public QObject {
- private:
+class GenericLexer : public QObject
+{
+private:
   Q_OBJECT
 
- public:
+public:
   GenericLexer();
 
-    void append(char ap) {property->add(ap);} // append a single char
-    void append(const char * begin, const char * end) {property->add(begin, end);} // append some substring
-    void append(char * text) {property->add(text);} // append a 0-terminated string
-    void clearProperty() {property->clear();}
+  void append(char ap) {property->add(ap);} // append a single char
+  void append(const char * begin, const char * end) {property->add(begin, end);} // append some substring
+  void append(char * text) {property->add(text);} // append a 0-terminated string
+  void clearProperty() {property->clear();}
 
-    
 
-    void pushEvent(signed char type);
-    void pushProperty();
-    void pushOptional();
-    void skipProperty();
-    void skipSomeProperties();
-    
-  signals:
-    void terrainDetected(Property *);
-    void eventFound(ParseEvent *);
-    
+
+  void pushEvent(signed char type);
+  void pushProperty();
+  void pushOptional();
+  void skipProperty();
+  void skipSomeProperties();
+
+signals:
+  void terrainDetected(Property *);
+  void eventFound(ParseEvent *);
+
 protected:
-    long m_timestamp();
-    void markTerrain() {emit terrainDetected(property);}
-    ParseEvent * event;
-    Property * property;
+  long m_timestamp();
+  void markTerrain() {emit terrainDetected(property);}
+  ParseEvent * event;
+  Property * property;
 };
 
 /**
@@ -78,17 +79,20 @@ classes to hold the yylex() methods
 as we can't derive the flex generated methods from GenericLexer 
 we have to do it this way.
 */
-class MudLexer : public GenericLexer, public MudFlexLexer {
- private:
+class MudLexer : public GenericLexer, public MudFlexLexer
+{
+private:
   Q_OBJECT
- public:
+public:
   virtual int yylex();
-};	
-class PlayerLexer : public GenericLexer, public PlayerFlexLexer {
- private:
+};
+
+class PlayerLexer : public GenericLexer, public PlayerFlexLexer
+{
+private:
   Q_OBJECT
 
- public:
+public:
   virtual int yylex();
 };
 
@@ -97,28 +101,29 @@ class PlayerLexer : public GenericLexer, public PlayerFlexLexer {
 the interface the lexer provides for the proxy; you can attach a parser, and feed it with input
 from mud and player. The threading is handled inside this class 
 */
-class Lexer : public Component {
+class Lexer : public Component
+{
 
- public:
+private:
+  Q_OBJECT
+  void setMoves();
+  PlayerLexer playerLexer;
+  MudLexer mudLexer;
+  
+public:
   Lexer();
   virtual Qt::ConnectionType requiredConnectionType(const QString &) {return Qt::QueuedConnection;}
 
-
- public slots:
-  void pushUserInput(char * input);
-  void pushMudInput(char * input); 
- 
- signals:
-    void terrainDetected(Property *);
-    void eventFound(ParseEvent *);
- 
- private: 
-  Q_OBJECT
-  
+protected:
   void init();
-		
-  PlayerLexer playerLexer;
-  MudLexer mudLexer;
+
+public slots:
+  void pushUserInput(char * input);
+  void pushMudInput(char * input);
+
+signals:
+  void terrainDetected(Property *);
+  void eventFound(ParseEvent *);
 
 };
 

@@ -83,8 +83,8 @@ class DisplayComponent : public Component {
   
  public:
   DisplayComponent();
-  virtual void start();
-
+  virtual void init();
+  Qt::ConnectionType requiredConnectionType(const QString & str);
 
  private:
   

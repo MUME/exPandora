@@ -13,8 +13,8 @@ class Proxy : public Component {
 		Q_OBJECT
 		
 	signals:
-		void analyzeUserStream( char *, int );
-		void analyzeMudStream( char *, int );
+		void analyzeUserStream(char *);
+		void analyzeMudStream(char *);
 
 
 	public slots:
@@ -26,20 +26,20 @@ class Proxy : public Component {
 	public:
 		Proxy();
 		~Proxy() {}
-		Qt::ConnectionType requiredConnectionType(const QString &) {return Qt::DirectConnection;}
-		void start();
+		Qt::ConnectionType requiredConnectionType(const QString &) {return Qt::QueuedConnection;}
+		void init();
 		
 		
 	private:
 		
-		QTcpServer server;
+		QTcpServer * server;
 		QString remoteHost;
 		int remotePort;
 		int localPort;
 		QTcpSocket * mudSocket;
 		QTcpSocket * userSocket;
 		char buffer[ 8192 ];
-
+		char * purgeProtocolSequences(char * input, int length);
 	};
 #endif
 

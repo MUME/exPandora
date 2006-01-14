@@ -22,7 +22,7 @@ using namespace Qt;
 
 Configuration::Configuration() : currentComponent( this ) {}
 
-void Configuration::start()
+void Configuration::init()
 {
   QFile xmlFile( options["fileName"].toString() );
   QXmlInputSource source( &xmlFile );
@@ -67,9 +67,8 @@ bool Configuration::startElement( const QString& , const QString& ,
 bool Configuration::endElement ( const QString &, const QString &,
                                  const QString & qName )
 {
-  if ( qName == "configuration" )
-    for (map<QString, Component *>::iterator i = components.begin(); i != components.end(); ++i)
-      (*i).second->start();
+  if (qName == "component")
+    currentComponent->start();
   return true;
 }
 

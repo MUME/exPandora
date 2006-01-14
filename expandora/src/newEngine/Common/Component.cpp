@@ -4,12 +4,7 @@
 using namespace std;
 
 
-void Component::start() {
-	if (thread) {
-		moveToThread(thread);
-		thread->start();
-	}
-}
+
 
 map<QString, ComponentCreator *> & ComponentCreator::creators() {
       static map<QString, ComponentCreator *> creators;
@@ -18,22 +13,34 @@ map<QString, ComponentCreator *> & ComponentCreator::creators() {
 
 Component::Component(bool threaded) {
 	if (threaded) {
-	  thread = new ComponentThreader;
+	  thread = new ComponentThreader(this);
 	}
-	else thread = 0;
+	else {
+	  thread = 0;
+	}
+}
+
+void Component::start() {
+  if (thread) {
+    moveToThread(thread);
+    thread->start();
+  }
+  else 
+    init();
 }
 
 Component::~Component() {
 	if(thread) {
 		// last chance to get rid of the thread. 
 		// components should handle that in their own destructors
-		thread->quit();
+		thread->terminate();
 		delete thread;
 	}
 }
 
 void ComponentThreader::run() {
   try {
+    owner->runInit();
     exec();
   } catch (char const * error) {
 	    cerr << error << endl;

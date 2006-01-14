@@ -41,7 +41,7 @@
   * when comparing rooms
   * note that you can overwrite previously defined moves with Coordinate::insertMoves(...)
   */
-void Lexer::init() {
+void Lexer::setMoves() {
   map<QString, Coordinate *> myMoves;
   myMoves.insert(make_pair("north", new Coordinate(0,1,0)));
   myMoves.insert(make_pair("south", new Coordinate(0,-1,0)));

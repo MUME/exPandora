@@ -23,28 +23,26 @@ extern "C" MY_EXPORT Component * createComponent()
 Initializer<Proxy> proxy("Proxy");
 #endif
 
-Proxy::Proxy() : Component(true), server(this)
-{
-  userSocket = 0;
-  mudSocket = new QTcpSocket(this);
-  server.setMaxPendingConnections(1);
-  if(!connect(&server, SIGNAL(newConnection()), SLOT(acceptConnection()))) throw "can't connect to TcpServer";
-}
+Proxy::Proxy() : Component(true), userSocket(0)
+{}
 
-void Proxy::start()
+void Proxy::init()
 {
+  server = new QTcpServer(this);
+  mudSocket = new QTcpSocket(this);
+  server->setMaxPendingConnections(1);
+  if(!connect(server, SIGNAL(newConnection()), SLOT(acceptConnection()))) throw "can't connect to TcpServer";
   localPort = options["localPort"].toInt();
   remotePort = options["remotePort"].toInt();
   remoteHost = options["remoteHost"].toString();
-  server.listen(QHostAddress::Any, localPort);
-  Component::start();
+  server->listen(QHostAddress::Any, localPort);
 }
 
 
 void Proxy::acceptConnection()
 {
   if (userSocket) return; // ignore additional connections
-  userSocket = server.nextPendingConnection();
+  userSocket = server->nextPendingConnection();
   
   mudSocket->connectToHost(remoteHost, remotePort);
 
@@ -75,7 +73,7 @@ void Proxy::processUserStream()
     {
       buffer[read] = 0;
       mudSocket->write(buffer, read);
-      emit analyzeUserStream(buffer, read);
+      emit analyzeUserStream(purgeProtocolSequences(buffer, read));
     }
   }
 }
@@ -90,9 +88,24 @@ void Proxy::processMudStream()
     {
       buffer[read] = 0;
       userSocket->write(buffer, read);
-      emit analyzeMudStream(buffer, read);
+      emit analyzeMudStream(purgeProtocolSequences(buffer, read));
     }
   }
 }
 
-
+char * Proxy::purgeProtocolSequences(char * input, int length)
+{
+  char * lexingBuffer = new char[length+1];
+  int lag = 0;
+  for (int i = 0; i < length; ++i)
+  {
+    if (input[i] == '\xFF')
+    {
+      i += 2;
+      lag += 3;
+    }
+    else lexingBuffer[i-lag] = input[i];
+  }
+  lexingBuffer[length-lag] = 0;
+  return lexingBuffer;
+}
