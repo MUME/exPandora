@@ -5,7 +5,7 @@
 
 class RoomRecipient {
   public:
-    void receiveRoom(Room * room);
+    void receiveRoom(RoomAdmin const * admin, Room const * room) = 0;
 
 };
 

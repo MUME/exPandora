@@ -1,6 +1,7 @@
 #ifndef SEARCHTREENODE
 #define SEARCHTREENODE
 #include <vector>
+#include <iostream>
 #include "Room.h"
 #include "TinyList.h"
 #include "RoomSearchNode.h"
@@ -21,8 +22,8 @@ class SearchTreeNode : public RoomSearchNode {
 		//int next; // position of the first character after myChars
 	public:
 		SearchTreeNode(ParseEvent * event, TinyList<RoomSearchNode *> * children = 0);
-		SearchTreeNode(char * string, TinyList<RoomSearchNode *> * children = 0);
-		virtual ~SearchTreeNode() {printf("warning: SearchTreeNode destroyed");}
+		SearchTreeNode(char * string = 0, TinyList<RoomSearchNode *> * children = 0);
+		virtual ~SearchTreeNode() {cerr << "warning: SearchTreeNode destroyed"<< endl;}
 		virtual AbstractRoomContainer * getRooms(ParseEvent * event);
 		virtual Room * insertRoom(ParseEvent * event);
 		

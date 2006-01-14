@@ -15,7 +15,8 @@
 #include "Frustum.h"
 #include "Room.h"
 #include "Map.h"
-
+#include "RoomRecipient.h"
+#include "RoomAdmin.h"
 
 
 
@@ -26,9 +27,9 @@ using namespace std;
 /**
  * The RoomAdmin organizes rooms and their relations to each other.
  */
-class RoomAdmin : public Component, public IntermediateNode {
+class MapFrontend : public Component, public IntermediateNode, public RoomAdmin {
  public:
-  RoomAdmin();
+  MapFrontend();
   virtual Qt::ConnectionType requiredConnectionType(const QString &) {return Qt::DirectConnection;}
 
  private:
@@ -48,10 +49,10 @@ class RoomAdmin : public Component, public IntermediateNode {
 
  public slots:
   // looking for rooms leads to a bunch of foundRoom() signals
-  void lookingForRooms(QObject *,ParseEvent *);
-  void lookingForRooms(QObject *,unsigned int); // by id
-  void lookingForRooms(QObject *,Coordinate *);
-  void lookingForRooms(QObject *,Frustum *);
+  void lookingForRooms(RoomRecipient *,ParseEvent *);
+  void lookingForRooms(RoomRecipient *,unsigned int); // by id
+  void lookingForRooms(RoomRecipient *,Coordinate *);
+  void lookingForRooms(RoomRecipient *,Frustum *);
 
   // createRoom creates a room without a lock
   // it will get deleted if no one looks for it for a certain time
@@ -66,11 +67,11 @@ class RoomAdmin : public Component, public IntermediateNode {
 
   // removes the lock on a room
   // after the last lock is removed, the room is deleted
-  void releaseRoom(QObject *, int);
+  void releaseRoom(RoomRecipient *, int);
 
   // makes a lock on a room permanent and anonymous.
   // Like that the room can't be deleted via releaseRoom anymore.
-  void keepRoom(QObject *, int);
+  void keepRoom(RoomRecipient *, int);
 
   // other slots like moveRoom and forceDeleteRoom need to be 
   // implemented later
@@ -79,11 +80,11 @@ class RoomAdmin : public Component, public IntermediateNode {
   // if a room is sent out via foundRoom it is locked so that it doesn't
   // get deleted while being processed by another component.
   // a room can be locked by multiple components but each component can only create one lock
-  void foundRoom(QObject *, Room *);
+  void foundRoom(RoomAdmin *, Room *);
 
   // this signal is sent out if a room is deleted. So any clients still
   // working on this room can start some emergency action.
-  void deletedRoom(QObject *, int);
+  void deletedRoom(RoomAdmin *, int);
 };
 
 

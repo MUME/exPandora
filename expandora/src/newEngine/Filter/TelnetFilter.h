@@ -14,7 +14,7 @@ class TelnetFilter : public Component {
 		char * purgeProtocolSequences( char * input, int length );
 
 	public:
-		TelnetFilter() : Component(true) {}
+		TelnetFilter() {}
 		virtual Qt::ConnectionType requiredConnectionType(const QString &); 
 
 	public slots:

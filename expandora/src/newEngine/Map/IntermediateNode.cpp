@@ -1,7 +1,7 @@
 #include "IntermediateNode.h"
 
 
-IntermediateNode::IntermediateNode(ParseEvent * event) : SearchTreeNode((char *)0) {
+IntermediateNode::IntermediateNode(ParseEvent * event) {
   Property * prop = event->next();
   if (prop != 0) {
     myChars = new char[strlen(prop->rest()) + 1];

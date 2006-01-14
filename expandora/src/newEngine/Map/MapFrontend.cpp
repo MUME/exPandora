@@ -9,22 +9,22 @@ using namespace Qt;
  * and handles platform specific issues
  */
 #ifndef MONOLITHIC
-extern "C" MY_EXPORT RoomAdmin * createComponent()
+extern "C" MY_EXPORT MapFrontend * createComponent()
 {
-  return new RoomAdmin;
+  return new MapFrontend;
 }
 #else
-Initializer<RoomAdmin> roomAdmin("Map");
+Initializer<MapFrontend> roomAdmin("Map");
 #endif
 
-RoomAdmin::RoomAdmin() : IntermediateNode(), mapLock(QMutex::Recursive)
+MapFrontend::MapFrontend() : IntermediateNode(), mapLock(QMutex::Recursive)
 {
   mapLock.lock();
   greatestUsedId = UINT_MAX;
   mapLock.unlock();
 }
 
-void RoomAdmin::removeRoom(int id)
+void MapFrontend::removeRoom(int id)
 {
   mapLock.lock();
   map.remove(roomIndex[id]->getCoordinate());
@@ -34,7 +34,7 @@ void RoomAdmin::removeRoom(int id)
   mapLock.unlock();
 }
 
-void RoomAdmin::lookingForRooms(QObject * recipient, Frustum * frustum)
+void MapFrontend::lookingForRooms(RoomRecipient * recipient, Frustum * frustum)
 {
   Room * r = 0;
   mapLock.lock();
@@ -53,7 +53,7 @@ void RoomAdmin::lookingForRooms(QObject * recipient, Frustum * frustum)
   mapLock.unlock();
 }
 
-void RoomAdmin::lookingForRooms(QObject * recipient, Coordinate * pos)
+void MapFrontend::lookingForRooms(RoomRecipient * recipient, Coordinate * pos)
 {
   mapLock.lock();
   Room * r = map.get(pos);
@@ -69,7 +69,7 @@ void RoomAdmin::lookingForRooms(QObject * recipient, Coordinate * pos)
   mapLock.unlock();
 }
 
-void RoomAdmin::lookingForRooms(QObject * recipient, unsigned int id)
+void MapFrontend::lookingForRooms(RoomRecipient * recipient, unsigned int id)
 {
   mapLock.lock();
   if (greatestUsedId >= id)
@@ -84,7 +84,7 @@ void RoomAdmin::lookingForRooms(QObject * recipient, unsigned int id)
   mapLock.unlock();
 }
 
-void RoomAdmin::assignId(Room * room)
+void MapFrontend::assignId(Room * room)
 {
   unsigned int id;
 
@@ -109,7 +109,7 @@ void RoomAdmin::assignId(Room * room)
   mapLock.unlock();
 }
 
-void RoomAdmin::createPredefinedRoom(ParseEvent * event, Coordinate * c, char t, int id)
+void MapFrontend::createPredefinedRoom(ParseEvent * event, Coordinate * c, char t, int id)
 {
   mapLock.lock();
   unusedIds.push(id);
@@ -120,7 +120,7 @@ void RoomAdmin::createPredefinedRoom(ParseEvent * event, Coordinate * c, char t,
 
 
 
-void RoomAdmin::createRoom(ParseEvent * event, Coordinate * expectedPosition, char t)
+void MapFrontend::createRoom(ParseEvent * event, Coordinate * expectedPosition, char t)
 {
   mapLock.lock();
   Room * room = IntermediateNode::insertRoom(event);
@@ -135,7 +135,7 @@ void RoomAdmin::createRoom(ParseEvent * event, Coordinate * expectedPosition, ch
   mapLock.unlock();
 }
 
-void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
+void MapFrontend::lookingForRooms(RoomRecipient * recipient, ParseEvent * event)
 {
   mapLock.lock();
   if (greatestUsedId == UINT_MAX) {
@@ -170,7 +170,7 @@ void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
 
 }
 
-void RoomAdmin::addExit(int f, int t, int d)
+void MapFrontend::addExit(int f, int t, int d)
 {
   mapLock.lock();
   Room * from = roomIndex[f];
@@ -182,7 +182,7 @@ void RoomAdmin::addExit(int f, int t, int d)
 
 // removes the lock on a room
 // after the last lock is removed, the room is deleted
-void RoomAdmin::releaseRoom(QObject * sender, int id)
+void MapFrontend::releaseRoom(RoomRecipient * sender, int id)
 {
   if(!sender) 
     throw "anonymous locks are permanent and can't be released";
@@ -194,7 +194,7 @@ void RoomAdmin::releaseRoom(QObject * sender, int id)
 
 // makes a lock on a room permanent and anonymous.
 // Like that the room can't be deleted via releaseRoom anymore.
-void RoomAdmin::keepRoom(QObject * sender, int id)
+void MapFrontend::keepRoom(RoomRecipient * sender, int id)
 {
   if(!sender) 
     throw "anonymous locks are permanent and can't be kept twice";
