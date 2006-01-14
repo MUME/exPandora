@@ -6,9 +6,9 @@
 template <class T>
 class ListCycler {
  public:
-  ListCycler<T>() : pos(0) {;} 
+  ListCycler() : pos(0) {} 
   virtual void attachList(TinyList<T> * _list) {list = _list; pos = list->size();}
-  virtual ~ListCycler<T>() {}
+  virtual ~ListCycler() {}
   virtual T next();
   virtual T prev();
   virtual T current();
@@ -42,7 +42,7 @@ T ListCycler<T>::current() {
 
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif
 

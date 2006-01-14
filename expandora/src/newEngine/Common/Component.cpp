@@ -1,18 +1,25 @@
-#include "Component.h"
 #include <iostream>
+#include "Component.h"
+
 using namespace std;
 
 
 void Component::start() {
-	if (thread) {		
-		thread->start();
+	if (thread) {
 		moveToThread(thread);
+		thread->start();
 	}
 }
 
+map<QString, ComponentCreator *> & ComponentCreator::creators() {
+      static map<QString, ComponentCreator *> creators;
+      return creators;
+}
 
 Component::Component(bool threaded) {
-	if (threaded) thread = new ComponentThreader;
+	if (threaded) {
+	  thread = new ComponentThreader;
+	}
 	else thread = 0;
 }
 

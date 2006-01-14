@@ -26,5 +26,5 @@ class IntermediateNode : public SearchTreeNode {
 #endif
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif

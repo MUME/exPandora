@@ -1,8 +1,9 @@
+
+#include <stack>
+
 #include "Parser.h"
 
 
-#include "RoomCollection.h"
-#include <stack>
 
 
 /**
@@ -10,10 +11,14 @@
  * created from a library. MY_EXPORT is defined in Component.h
  * and handles platform specific issues
  */
+#ifndef MONOLITHIC
 extern "C" MY_EXPORT Component * createComponent()
 {
   return new Parser;
 }
+#else
+Initializer<Parser> parser("Parser");
+#endif
 
 using namespace Qt;
 
@@ -33,8 +38,8 @@ Parser::Parser() : Component(true) {
  * The slots need to be queued because we want to make sure all data is only accessed
  * from this thread
  */
-ConnectionType Parser::requiredConnectionType(const char * signalOrSlot) {
-  QLatin1String str(signalOrSlot);
+ConnectionType Parser::requiredConnectionType(const QString & str) {
+  
   if (str == SLOT(event(ParseEvent *)) || str == SLOT(setTerrain(Property *)))
     return QueuedConnection;
   else if (str == SIGNAL(playerMoved(Coordinate *, Coordinate *)))

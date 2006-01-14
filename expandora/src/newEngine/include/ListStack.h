@@ -30,6 +30,6 @@ T ListStack<T>::pop() {
 
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif

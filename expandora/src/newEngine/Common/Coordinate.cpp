@@ -1,8 +1,8 @@
 #include "Coordinate.h"
+using namespace std;
 
-
-vector<Coordinate *> Coordinate::stdMoves; //= *(new vector<Coordinate *>);
-map<QString, char> Coordinate::moveCodes; //= *(new map<QString, char>);
+vector<Coordinate *> Coordinate::stdMoves; 
+map<QString, char> Coordinate::moveCodes; 
 
 
 

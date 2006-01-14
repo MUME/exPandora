@@ -1,5 +1,6 @@
-#include "Experimenting.h"
 #include "Parser.h"
+#include "Experimenting.h"
+
 
 Experimenting::Experimenting(Parser * par, list<Path *> * pat, double pa) {
   parent = par;

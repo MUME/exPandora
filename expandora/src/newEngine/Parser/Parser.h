@@ -7,6 +7,7 @@
 #include <qmutex.h>
 #include <qthread.h>
 #include <QWaitCondition>
+#include <qmap.h>
 
 #include "ParseEvent.h"
 #include "Property.h"
@@ -17,6 +18,7 @@
 #include "Approved.h"
 #include "Syncing.h"
 #include "Component.h"
+#include "RoomCollection.h"
 
 #define APPROVED 0
 #define EXPERIMENTING 1
@@ -40,7 +42,7 @@ Q_OBJECT
   // the map shoud keep track of them and only deliver results to 
   // the interested objects
   void lookingForRooms(QObject *,ParseEvent *);
-  void lookingForRooms(QObject *,int);
+  void lookingForRooms(QObject *,unsigned int);
   void lookingForRooms(QObject *,Coordinate *);
   void playerMoved(Coordinate *, Coordinate *);
   void createRoom(ParseEvent *, Coordinate *, char);
@@ -50,7 +52,7 @@ Q_OBJECT
  public:
   Parser();
   Coordinate * getExpectedCoordinate(Room * base);
-  virtual Qt::ConnectionType requiredConnectionType(const char *);
+  virtual Qt::ConnectionType requiredConnectionType(const QString &);
   
   
  private:
@@ -81,5 +83,5 @@ Q_OBJECT
 #endif
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif

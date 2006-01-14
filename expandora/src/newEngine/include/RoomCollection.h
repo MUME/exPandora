@@ -4,7 +4,6 @@
 #include "Room.h"
 #include "ParseEvent.h"
 #include "AbstractRoomContainer.h"
-
 #include "ObjectRecycler.h"
 
 using namespace std;
@@ -37,6 +36,6 @@ extern ObjectRecycler<RoomCollection> rcmm; // room collection memory management
 
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif

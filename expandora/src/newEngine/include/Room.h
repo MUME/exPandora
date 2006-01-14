@@ -64,6 +64,6 @@ extern ObjectRecycler<Room> rmm;
 
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif

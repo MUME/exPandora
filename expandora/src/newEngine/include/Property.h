@@ -5,7 +5,8 @@
 #define SKIPPED_ONE INT_MAX
 #define SKIPPED_MANY INT_MAX-1
 
-#include <stdlib.h>
+
+
 #include "ObjectRecycler.h"
 #include "ListCycler.h"
 #include "ListStack.h"
@@ -43,7 +44,7 @@ extern ObjectRecycler<Property> pmm;
 
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif
 

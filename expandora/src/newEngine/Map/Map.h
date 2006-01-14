@@ -25,10 +25,10 @@ class Map {
 		vector<vector<vector<Room *> > > map [2][2][2]; 
 };
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif

@@ -31,7 +31,7 @@ class Experimenting : public QObject {
   void releaseRoom(QObject *, int);
 };
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif
 

@@ -4,7 +4,7 @@ using namespace Qt;
 
 void RoomSignalHandler::hold(Room * room, QObject * owner, QObject * locker) {
   owners[room] = owner;
-  lockers[room].insert(locker);
+  if (locker) lockers[room].insert(locker);
   ++holdCount[room];
 }
 
@@ -13,7 +13,7 @@ void RoomSignalHandler::release(Room * room) {
     throw "room can't be released because it isn't held";
   if (--holdCount[room] == 0) {
     QObject * rcv = owners[room];
-    if (rcv != 0) {
+    if(rcv) {
       QObject::connect(this, SIGNAL(releaseRoom(QObject *, int)), rcv, SLOT(releaseRoom(QObject *, int)), DirectConnection);
       for(set<QObject *>::iterator i = lockers[room].begin(); i != lockers[room].end(); ++i) {
 	emit releaseRoom(*i, room->getId());
@@ -31,7 +31,7 @@ void RoomSignalHandler::keep(Room * room) {
     throw "room can't be kept because it isn't held";
   --holdCount[room];
   QObject * rcv = owners[room];
-  if (rcv != 0) {
+  if (rcv) {
     QObject::connect(this, SIGNAL(keepRoom(QObject *, int)), rcv, SLOT(keepRoom(QObject *, int)), DirectConnection);
     emit keepRoom(*(lockers[room].begin()), room->getId());
     QObject::disconnect(this, SIGNAL(keepRoom(QObject *, int)));

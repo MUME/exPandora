@@ -22,6 +22,6 @@ extern ObjectRecycler<SimpleString> ssmm;
 
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif

@@ -32,6 +32,6 @@ class SearchTreeNode : public RoomSearchNode {
 
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif

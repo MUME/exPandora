@@ -2,9 +2,10 @@
 #define APPROVED_H
 
 #include <qobject.h>
+#include "Parser.h"
 #include "Room.h"
 #include "ParseEvent.h"
-#include "Parser.h"
+
 
 
 class Approved : public QObject{
@@ -35,7 +36,7 @@ class Approved : public QObject{
    void reset();
 };
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 
 #endif

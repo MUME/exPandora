@@ -7,16 +7,15 @@
 #include "ObjectRecycler.h"
 
 
-using namespace std;
 
-class Coordinate;
+
 class Coordinate
   {
   public:
 
-    static vector<Coordinate *> stdMoves;
-    static map<QString, char> moveCodes;
-    static void insertMoves(map<QString, Coordinate *> &);
+    static std::vector<Coordinate *> stdMoves;
+    static std::map<QString, char> moveCodes;
+    static void insertMoves(std::map<QString, Coordinate *> &);
     
 
     int distance(Coordinate * other);
@@ -37,7 +36,7 @@ extern ObjectRecycler<Coordinate> cmm;
 
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif
 

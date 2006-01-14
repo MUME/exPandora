@@ -18,5 +18,5 @@ class Terrain {
 #endif
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif

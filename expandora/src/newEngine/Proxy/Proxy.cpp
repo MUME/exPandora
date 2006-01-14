@@ -14,12 +14,14 @@
  * created from a library. MY_EXPORT is defined in Component.h
  * and handles platform specific issues
  */
-
+#ifndef MONOLITHIC
 extern "C" MY_EXPORT Component * createComponent()
 {
   return new Proxy;
 }
-
+#else
+Initializer<Proxy> proxy("Proxy");
+#endif
 
 Proxy::Proxy() : Component(true), server(this)
 {

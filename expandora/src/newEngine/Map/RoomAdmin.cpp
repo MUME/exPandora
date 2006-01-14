@@ -8,15 +8,19 @@ using namespace Qt;
  * created from a library. MY_EXPORT is defined in Component.h
  * and handles platform specific issues
  */
+#ifndef MONOLITHIC
 extern "C" MY_EXPORT RoomAdmin * createComponent()
 {
   return new RoomAdmin;
 }
+#else
+Initializer<RoomAdmin> roomAdmin("Map");
+#endif
 
 RoomAdmin::RoomAdmin() : IntermediateNode(), mapLock(QMutex::Recursive)
 {
   mapLock.lock();
-  greatestUsedId = -1;
+  greatestUsedId = UINT_MAX;
   mapLock.unlock();
 }
 
@@ -55,16 +59,17 @@ void RoomAdmin::lookingForRooms(QObject * recipient, Coordinate * pos)
   Room * r = map.get(pos);
   if (r)
   {
-    locks[r->getId()].insert(recipient);
+    
     if (!connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)), DirectConnection))
       throw "can't connect to specified recipient";
+    locks[r->getId()].insert(recipient);
     emit foundRoom(this, r);
     disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
   }
   mapLock.unlock();
 }
 
-void RoomAdmin::lookingForRooms(QObject * recipient, int id)
+void RoomAdmin::lookingForRooms(QObject * recipient, unsigned int id)
 {
   mapLock.lock();
   if (greatestUsedId >= id)
@@ -73,7 +78,6 @@ void RoomAdmin::lookingForRooms(QObject * recipient, int id)
     if (!connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)), DirectConnection))
       throw "can't connect to specified recipient";
     locks[id].insert(recipient);
-
     emit foundRoom(this, r);
     disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
   }
@@ -82,7 +86,7 @@ void RoomAdmin::lookingForRooms(QObject * recipient, int id)
 
 void RoomAdmin::assignId(Room * room)
 {
-  int id;
+  unsigned int id;
 
   mapLock.lock();
   if (unusedIds.empty()) id = ++greatestUsedId;
@@ -96,7 +100,7 @@ void RoomAdmin::assignId(Room * room)
 
   room->setId(id);
 
-  if ((int)roomIndex.size() <= id)
+  if (roomIndex.size() <= id)
   {
     roomIndex.resize(id + 1, 0);
     locks.resize(id + 1);
@@ -133,9 +137,10 @@ void RoomAdmin::createRoom(ParseEvent * event, Coordinate * expectedPosition, ch
 
 void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
 {
-  if (greatestUsedId == -1) {
+  mapLock.lock();
+  if (greatestUsedId == UINT_MAX) {
     createRoom(event, new Coordinate(0,0,0), 0);
-    if (greatestUsedId >= 0) {
+    if (greatestUsedId != UINT_MAX) {
       Room * room = roomIndex[greatestUsedId];
       locks[room->getId()].insert(0);
       room->addReverseExit(0,0);
@@ -144,7 +149,7 @@ void RoomAdmin::lookingForRooms(QObject * recipient, ParseEvent * event)
 
   AbstractRoomContainer * ret;
   Room * r;
-  mapLock.lock();
+  
   ret = IntermediateNode::getRooms(event);
   if (ret->numRooms() >= 0)
   {
@@ -179,6 +184,8 @@ void RoomAdmin::addExit(int f, int t, int d)
 // after the last lock is removed, the room is deleted
 void RoomAdmin::releaseRoom(QObject * sender, int id)
 {
+  if(!sender) 
+    throw "anonymous locks are permanent and can't be released";
   mapLock.lock();
   locks[id].erase(sender);
   if(locks[id].empty()) removeRoom(id);
@@ -189,6 +196,8 @@ void RoomAdmin::releaseRoom(QObject * sender, int id)
 // Like that the room can't be deleted via releaseRoom anymore.
 void RoomAdmin::keepRoom(QObject * sender, int id)
 {
+  if(!sender) 
+    throw "anonymous locks are permanent and can't be kept twice";
   mapLock.lock();
   locks[id].insert(0);
   locks[id].erase(sender);

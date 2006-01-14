@@ -13,10 +13,13 @@
  * created from a library. MY_EXPORT is defined in Component.h
  * and handles platform specific issues
  */
+#ifndef MONOLITHIC
 extern "C" MY_EXPORT Component * createComponent() {
   return new Lexer;
 }
-
+#else
+Initializer<Lexer> lexer("Lexer");
+#endif
 
 void Lexer::pushUserInput (char * input) { 
   playerLexer.switch_streams(new istringstream(input), 0); 

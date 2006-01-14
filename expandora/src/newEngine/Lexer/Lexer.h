@@ -101,7 +101,7 @@ class Lexer : public Component {
 
  public:
   Lexer();
-  virtual Qt::ConnectionType requiredConnectionType(const char *) {return Qt::QueuedConnection;}
+  virtual Qt::ConnectionType requiredConnectionType(const QString &) {return Qt::QueuedConnection;}
 
 
  public slots:
@@ -116,10 +116,6 @@ class Lexer : public Component {
   Q_OBJECT
   
   void init();
-  //QWaitCondition inputSync;
-  //QMutex inputLock;
-  //queue<char *> userInput;
-  //queue<char *> mudInput;
 		
   PlayerLexer playerLexer;
   MudLexer mudLexer;
@@ -130,5 +126,5 @@ class Lexer : public Component {
 #endif
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif

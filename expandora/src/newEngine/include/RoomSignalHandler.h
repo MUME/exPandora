@@ -32,6 +32,6 @@ class RoomSignalHandler : public QObject {
      releaseRoom: delete the room, if you like */
 };
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif

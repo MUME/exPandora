@@ -22,11 +22,14 @@ using namespace Qt;
  * created from a library. MY_EXPORT is defined in Component.h
  * and handles platform specific issues
  */
+#ifndef MONOLITHIC
 extern "C" MY_EXPORT Component * createComponent()
 {
   return new DisplayComponent;
 }
-
+#else
+Initializer<DisplayComponent> display("Display");
+#endif
 
 const GLfloat RendererWidget::marker_colour[] =
   {
@@ -243,6 +246,7 @@ void RendererWidget::moveMarker( Coordinate * oldPos, Coordinate * newPos )
     userz = BASE_Z;
     glColor4f( marker_colour[ 0 ], marker_colour[ 1 ], marker_colour[ 2 ], marker_colour[ 3 ] );
     drawMarker( newPos );
+    
     shiftView();
     
     

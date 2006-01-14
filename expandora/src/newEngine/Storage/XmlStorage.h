@@ -46,7 +46,7 @@ class StructureParser: public QObject, public QXmlDefaultHandler {
 
 	private:
 		Q_OBJECT
-		double timeFromString( QString & );
+		char terrainFromString(QLatin1String & terrain);
 		void buildProperties( char * roomDesc );
 
 		stack<Exit *> exits;
@@ -65,39 +65,33 @@ class StructureParser: public QObject, public QXmlDefaultHandler {
 
 	signals:
 		void addExit( int, int, int );
-		void addRoom( ParseEvent *, int, Coordinate *, char );
+		void addRoom( ParseEvent *, Coordinate *, char, int );
 };
 
 
 class XmlStorage: public Component {
-		Q_PROPERTY( QString fileName READ getFileName WRITE setFileName )
+	private:
+		Q_OBJECT	
 	public:
-		XmlStorage() : fileName( "" ) {}
-		QString getFileName() const {
-			return fileName;
-		}
-		void setFileName( QString & name ) {
-			fileName = name;
-		}
-		void xml_writebase();
+		XmlStorage() {}
+		
+		
 		void xml_readbase();
-		void run() {
+		void start() {
 			xml_readbase();
 		}
 	public slots:
-		void writeRoom( Room * room );
-		void writeExit( int, int, int );
-	private:
-		Q_OBJECT
-		QString fileName;
-		QMutex ioMutex;
+		//void writeRoom( Room * room );
+		//void writeExit( int, int, int );
+	
+		
 	signals:
 		void addExit( int, int, int );
-		void addRoom( ParseEvent *, int, Coordinate *, char );
+		void addRoom( ParseEvent *, Coordinate *, char, int );
 };
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif
 

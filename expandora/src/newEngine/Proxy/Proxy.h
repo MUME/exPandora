@@ -26,7 +26,7 @@ class Proxy : public Component {
 	public:
 		Proxy();
 		~Proxy() {}
-		
+		Qt::ConnectionType requiredConnectionType(const QString &) {return Qt::DirectConnection;}
 		void start();
 		
 		
@@ -44,5 +44,5 @@ class Proxy : public Component {
 #endif
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif

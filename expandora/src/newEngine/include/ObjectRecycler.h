@@ -4,50 +4,43 @@
 
 
 template <class T>
-class ObjectRecycler : protected TinyList<T *> {
- public:
-  ObjectRecycler<T>();
-  void deactivate(T * obj);
-  T * activate();
- protected:
+class ObjectRecycler : protected TinyList<T *>
+{
+public:
+  ObjectRecycler() :pos(0) {}
+
+
+  void deactivate(T * obj)
+  {
+    if (pos > 127) delete obj;
+    else
+    {
+      obj->clear();
+      TinyList<T *>::put(pos, obj);
+      pos++;
+    }
+  }
+  
+  
+  T * activate()
+  {
+    if (pos != 0)
+    {
+      pos--;
+      T * ret = TinyList<T*>::get(pos);
+      TinyList<T*>::remove(pos);
+      return ret;
+    }
+    else return new T;
+  }
+  
+  
+protected:
   unsigned int pos;
 };
 
-template <class T>
-ObjectRecycler<T>::ObjectRecycler() {
-  pos = 0;
-}
-
-template <class T>
-void ObjectRecycler<T>::deactivate(T * obj) {
-  //printf("deactivating ... old queue size: %i\n", size());
-
-  if (pos > 127) delete(obj);
-  else {
-    obj->clear();
-    TinyList<T *>::put(pos, obj);
-    pos++;
-  }
-
-  //printf("deactivating ... new queue size: %i\n", size());
-}
-
-template <class T>
-T * ObjectRecycler<T>::activate() {
-  //printf("acitvating ... old queue size: %i\n", size());
-  if (pos != 0) {
-    pos--;
-    T * ret = TinyList<T*>::get(pos);
-    TinyList<T*>::remove(pos); 
-    //printf("acitvating ... new queue size: %i\n", size());
-    return ret;
-  }
-  else return new T();
-}
-
-
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif

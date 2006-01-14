@@ -8,114 +8,139 @@
  * created from a library. MY_EXPORT is defined in Component.h
  * and handles platform specific issues
  */
-extern "C" MY_EXPORT Component * createComponent() {
-	return new Configuration;
+#ifndef MONOLITHIC
+extern "C" MY_EXPORT Configuration * createComponent()
+{
+  return new Configuration;
 }
+#else
+Initializer<Configuration> configuration("Configuration");
+#endif
 
 using namespace Qt;
 
-Configuration::Configuration() : currentComponent( this ) {
-	put( *( new QString( "configuration" ) ), this );
-}
 
-void Configuration::start() {
-	QFile xmlFile( property( "fileName" ).toString() );
-	QXmlInputSource source( &xmlFile );
+Configuration::Configuration() : currentComponent( this ) {}
 
-	QXmlSimpleReader reader;
-	reader.setContentHandler( this );
-	reader.parse( source );
+void Configuration::start()
+{
+  QFile xmlFile( options["fileName"].toString() );
+  QXmlInputSource source( &xmlFile );
+
+  QXmlSimpleReader reader;
+  reader.setContentHandler( this );
+  reader.parse( source );
 }
 
 Component * Configuration::get
-	( QString & id ) {
-	return ( *components.find( id ) ).second;
+  ( const QString & id )
+{
+  return components[id];
 }
 
 
-void Configuration::put( QString & id, Component * component ) {
-	pair<QString , Component *> val;
-	val.first = id;
-	val.second = component;
-	components.insert( val );
+void Configuration::put( const QString & id, Component * component )
+{
+  components[id] = component;
 }
 
 
 
 bool Configuration::startElement( const QString& , const QString& ,
                                   const QString& qName,
-                                  const QXmlAttributes& attributes ) {
-	if ( qName == "component" )
-		newComponent( attributes );
-	else if ( qName == "option" )
-		addOption( attributes );
-	else if ( qName == "connection" )
-		connectComponents( attributes );
-	else if ( qName == "configuration" )
-		return true;
-	else
-		return false;
-	return true;
+                                  const QXmlAttributes& attributes )
+{
+  if ( qName == "component" )
+    newComponent( attributes );
+  else if ( qName == "option" )
+    addOption( attributes );
+  else if ( qName == "connection" )
+    connectComponents( attributes );
+  else if ( qName == "configuration" )
+    return true;
+  else
+    return false;
+  return true;
 }
 
 
 bool Configuration::endElement ( const QString &, const QString &,
-                                 const QString & qName ) {
-	if ( qName == "component" )
-		currentComponent->start();
-	return true;
+                                 const QString & qName )
+{
+  if ( qName == "configuration" )
+    for (map<QString, Component *>::iterator i = components.begin(); i != components.end(); ++i)
+      (*i).second->start();
+  return true;
 }
 
-void Configuration::newComponent( const QXmlAttributes & atts ) {
-	QString id = atts.value( "id" );
-	QString file = atts.value( "file" );
-	QLibrary * lib;
+void Configuration::newComponent( const QXmlAttributes & atts )
+{
+  const QString type = atts.value("type");
+  const QString id = atts.value( "id" );
+  const QString file = atts.value( "file" );
 
-	if ( libs.find( file ) == libs.end() ) {
-		lib = new QLibrary( file );
-		libs.insert( make_pair( file, lib ) );
-	} else
-		lib = ( *libs.find( file ) ).second;
+  if (type.isEmpty())
+  {
+    if (file.isEmpty())
+      throw "no source given for component";
+    QLibrary * lib;
 
-	componentCreator creator = ( componentCreator ) lib->resolve( "createComponent" );
-	if ( creator == 0 ) {
-		if ( lib->isLoaded() )
-			cout << "library loaded but creator not found: " << lib->fileName().toStdString() << "\n";
-		else
-			cout << "library can't be loaded: " << lib->fileName().toStdString() << "\n";
-		throw "Component couldn't be loaded";
-	}
-	currentComponent = creator();
-	put( id, currentComponent );
+    if ( libs.find( file ) == libs.end() )
+    {
+      lib = new QLibrary( file );
+      libs[file] = lib;
+    }
+    else
+      lib = libs[file];
+
+    componentCreator creator = ( componentCreator ) lib->resolve( "createComponent" );
+    if ( creator == 0 )
+    {
+      if ( lib->isLoaded() )
+        cerr << "library loaded but creator not found: " << lib->fileName().toStdString() << "\n";
+      else
+        cerr << "library can't be loaded: " << lib->fileName().toStdString() << "\n";
+      throw "Component couldn't be loaded";
+    }
+    currentComponent = creator();
+  }
+  else {
+    currentComponent = ComponentCreator::creators()[type]->create();
+    if (!currentComponent) 
+      throw "invalid creator";
+  }
+  components[id] = currentComponent;
 }
 
-void Configuration::addOption( const QXmlAttributes & atts ) {
-	QString name = atts.value( "name" );
-	QVariant value = atts.value( "value" );
-	currentComponent->setOption( name, value );
+void Configuration::addOption( const QXmlAttributes & atts )
+{
+  QString name = atts.value( "name" );
+  QVariant value = atts.value( "value" );
+  currentComponent->setOption( name, value );
 }
 
-void Configuration::connectComponents( const QXmlAttributes & atts ) {
-	QString temp = atts.value( "from" );
-	Component * from = get(temp);
-	temp = atts.value( "signal" );
-	QString sig = signal(temp);
-	temp = atts.value( "to" );
-	Component * to = get(temp);
-	temp = atts.value( "slot" );
-	QString sl = slot(temp);
+void Configuration::connectComponents( const QXmlAttributes & atts )
+{
 
-	ConnectionType requiredSlot = to->requiredConnectionType(sl.toLatin1());
-	ConnectionType requiredSignal = from->requiredConnectionType(sig.toLatin1());
-	
-	ConnectionType resultType;
-	if (requiredSlot == requiredSignal || requiredSignal == AutoCompatConnection)
-		resultType = requiredSlot;
-	else if (requiredSlot == AutoCompatConnection)
-		resultType = requiredSignal;
-	else throw "can't connect non-matching slot and signal";
+  Component * from = components[atts.value( "from" )];
 
-	to->connect(from, sig.toLatin1(), sl.toLatin1(), resultType);
+  const QString sig = signal(atts.value( "signal" ));
+
+  Component * to = components[atts.value( "to" )];
+
+  const QString sl = slot(atts.value( "slot" ));
+
+  ConnectionType requiredSlot = to->requiredConnectionType(sl);
+  ConnectionType requiredSignal = from->requiredConnectionType(sig);
+
+  ConnectionType resultType;
+  if (requiredSlot == requiredSignal || requiredSignal == AutoCompatConnection)
+    resultType = requiredSlot;
+  else if (requiredSlot == AutoCompatConnection)
+    resultType = requiredSignal;
+  else throw "can't connect non-matching slot and signal";
+
+  QObject::connect(from, sig.toLatin1(), to, sl.toLatin1(), resultType);
 
 }
 
@@ -126,10 +151,12 @@ void Configuration::connectComponents( const QXmlAttributes & atts ) {
  * @param name name of the signal
  * @return mangled name of the signal
  */
-QString & Configuration::signal( QString & name ) {
-	return name.prepend( "2" );
+QString Configuration::signal(const QString & name )
+{
+  return QString(name).prepend( "2" );
 }
 
-QString & Configuration::slot( QString & name ) {
-	return name.prepend( "1" );
+QString Configuration::slot(const QString & name )
+{
+  return QString(name).prepend( "1" );
 }

@@ -2,7 +2,7 @@
 #define TELNETFILTER
 
 #include "Component.h"
-#include <qthread.h>
+
 
 
 
@@ -15,7 +15,7 @@ class TelnetFilter : public Component {
 
 	public:
 		TelnetFilter() : Component(true) {}
-		virtual Qt::ConnectionType requiredConnectionType(const char *) {return Qt::QueuedConnection;}
+		virtual Qt::ConnectionType requiredConnectionType(const QString &); 
 
 	public slots:
 
@@ -34,5 +34,5 @@ class TelnetFilter : public Component {
 #endif
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif

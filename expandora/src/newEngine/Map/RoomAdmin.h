@@ -7,6 +7,7 @@
 #include <stack>
 #include <set>
 #include <map>
+#include <qmap.h>
 
 #include "RoomSearchNode.h"
 #include "IntermediateNode.h"
@@ -28,7 +29,7 @@ using namespace std;
 class RoomAdmin : public Component, public IntermediateNode {
  public:
   RoomAdmin();
-  virtual Qt::ConnectionType requiredConnectionType(const char *) {return Qt::DirectConnection;}
+  virtual Qt::ConnectionType requiredConnectionType(const QString &) {return Qt::DirectConnection;}
 
  private:
   Q_OBJECT
@@ -37,18 +38,18 @@ class RoomAdmin : public Component, public IntermediateNode {
   vector<Room *> roomIndex;
   vector<set<QObject *> > locks;
   stack<int>  unusedIds;
-  int greatestUsedId;
+  unsigned int greatestUsedId;
   QMutex mapLock;
 
 
   void removeRoom(int id); 
   void assignId(Room * room); 
-  int lastId() {return greatestUsedId;}
+  unsigned int lastId() {return greatestUsedId;}
 
  public slots:
   // looking for rooms leads to a bunch of foundRoom() signals
   void lookingForRooms(QObject *,ParseEvent *);
-  void lookingForRooms(QObject *,int); // by id
+  void lookingForRooms(QObject *,unsigned int); // by id
   void lookingForRooms(QObject *,Coordinate *);
   void lookingForRooms(QObject *,Frustum *);
 
@@ -90,6 +91,6 @@ class RoomAdmin : public Component, public IntermediateNode {
 	
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif

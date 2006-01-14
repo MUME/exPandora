@@ -10,7 +10,7 @@
 
 #define MAX_TEXTURES    100
 #define DIST_Z	1	/* the distance between 2 rooms */
-#define BASE_Z  -12	/* the distance to the "camera" */
+#define BASE_Z  -6	/* the distance to the "camera" */
 #define ROOM_SIZE 0.2f	/* the size of the rooms walls */
 #define MARKER_SIZE           (ROOM_SIZE/2.0)
 
@@ -94,6 +94,6 @@ class DisplayComponent : public Component {
 };
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 #endif

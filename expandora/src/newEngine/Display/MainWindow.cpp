@@ -369,8 +369,8 @@ void MainWindow::mouseMoveEvent( QMouseEvent *e)
     if ( ((dist_x * dist_x) + (dist_y * dist_y)) >= 100)
     {
 
-      renderer->userx -= dist_x;
-      renderer->usery += dist_y;
+      renderer->userx -= dist_x/4;
+      renderer->usery += dist_y/4;
       renderer->shiftView();
       old_pos = pos;
     }
@@ -378,8 +378,8 @@ void MainWindow::mouseMoveEvent( QMouseEvent *e)
   }
   else if (RightButtonPressed)
   {
-    renderer->anglex -= dist_y;
-    renderer->angley -= dist_x;
+    renderer->anglex += dist_y;
+    renderer->angley += dist_x;
     renderer->shiftView();
     old_pos = pos;
 

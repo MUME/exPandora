@@ -8,5 +8,5 @@ extern char * characterTable;
 void initCharacterTable();	
 
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif

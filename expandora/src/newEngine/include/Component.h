@@ -44,18 +44,39 @@ protected:
    */
   virtual void start();
   virtual ~Component();
-  virtual Qt::ConnectionType requiredConnectionType(const char *) {return Qt::AutoCompatConnection;}
+  virtual Qt::ConnectionType requiredConnectionType(const QString &) {return Qt::AutoCompatConnection;}
   Component::Component(bool threaded = false);
-  void setOption(QString & key, QVariant & value) {options[key] = value;}
+  void setOption(const QString & key, const QVariant & value) {options[key] = value;}
+  
+};
+
+class ComponentCreator {
+  public:
+    virtual Component * create() = 0;
+    virtual ~ComponentCreator() {}
+    static std::map<QString, ComponentCreator *> & creators();
+};
+
+typedef Component * (*componentCreator)();
+
+template <class T>
+class Initializer : public ComponentCreator {
+  
+  public: 
+    Initializer(QString name) {
+      creators()[name] = this;
+    }
+    T * create() {
+      return new T;
+    }
+    
   
 };
 
 
 
-typedef Component * (*componentCreator)();
-
 #ifdef DMALLOC
-#include <dmalloc.h>
+#include <mpatrol.h>
 #endif
 
 #endif
