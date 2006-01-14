@@ -1,4 +1,4 @@
-#include "RoomAdmin.h"
+#include "MapFrontend.h"
 #include "IntermediateNode.h"
 
 using namespace Qt;
@@ -38,18 +38,17 @@ void MapFrontend::lookingForRooms(RoomRecipient * recipient, Frustum * frustum)
 {
   Room * r = 0;
   mapLock.lock();
-  if (!connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)), DirectConnection))
-    throw "can't connect to specified recipient";
+  
   for(vector<Room *>::iterator i = roomIndex.begin(); i != roomIndex.end(); ++i)
   {
     r = *i;
     if(r && frustum->PointInFrustum(r->getCoordinate()))
     {
       locks[r->getId()].insert(recipient);
-      emit foundRoom(this, r);
+      recipient->receiveRoom(this, r);
     }
   }
-  disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
+  
   mapLock.unlock();
 }
 
@@ -60,11 +59,10 @@ void MapFrontend::lookingForRooms(RoomRecipient * recipient, Coordinate * pos)
   if (r)
   {
     
-    if (!connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)), DirectConnection))
-      throw "can't connect to specified recipient";
+    
     locks[r->getId()].insert(recipient);
-    emit foundRoom(this, r);
-    disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
+    recipient->receiveRoom(this, r);
+    
   }
   mapLock.unlock();
 }
@@ -75,11 +73,10 @@ void MapFrontend::lookingForRooms(RoomRecipient * recipient, unsigned int id)
   if (greatestUsedId >= id)
   {
     Room * r = roomIndex[id];
-    if (!connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)), DirectConnection))
-      throw "can't connect to specified recipient";
+    
     locks[id].insert(recipient);
-    emit foundRoom(this, r);
-    disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
+    recipient->receiveRoom(this, r);
+    
   }
   mapLock.unlock();
 }
@@ -154,15 +151,14 @@ void MapFrontend::lookingForRooms(RoomRecipient * recipient, ParseEvent * event)
   if (ret->numRooms() >= 0)
   {
 
-    if (!connect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)), DirectConnection))
-      throw "can't connect to specified recipient";
+    
     for(set<Room *>::iterator i = ((RoomCollection*)ret)->begin(); i != ((RoomCollection*)ret)->end(); ++i)
     {
       r = *i;
       locks[r->getId()].insert(recipient);
-      emit foundRoom(this, r);
+      recipient->receiveRoom(this, r);
     }
-    disconnect(this, SIGNAL(foundRoom(QObject *, Room *)), recipient, SLOT(receiveRoom(QObject *, Room *)));
+    
     delete ret;
   }
   mapLock.unlock();

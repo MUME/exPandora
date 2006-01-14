@@ -2,11 +2,13 @@
 #define ROOMRECIPIENT
 
 #include "Room.h"
+#include "RoomAdmin.h"
 
 class RoomRecipient {
   public:
-    void receiveRoom(RoomAdmin const * admin, Room const * room) = 0;
-
+    virtual void receiveRoom(RoomAdmin * admin, Room * room) = 0;
+    virtual ~RoomRecipient() {};
 };
 
 #endif
+

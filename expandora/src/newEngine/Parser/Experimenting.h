@@ -5,12 +5,14 @@
 #include <qmutex.h>
 #include "Room.h"
 #include "Path.h"
+#include "RoomAdmin.h"
+#include "RoomRecipient.h"
 
 class Parser;
 
-class Experimenting : public QObject {
+class Experimenting : public RoomRecipient {
  private:
-  Q_OBJECT
+  
   list<Path *> * paths;
   list<Path *> * shortPaths;
   double prevBest;
@@ -23,12 +25,11 @@ class Experimenting : public QObject {
  public:
   Experimenting(Parser * parent, list<Path *> * paths, double pa);
   list<Path *> * evaluate();
+  void receiveRoom(RoomAdmin *, Room *);
+ 
   
- public slots:
-  void receiveRoom(QObject *, Room *);
 
- signals:
-  void releaseRoom(QObject *, int);
+ 
 };
 #ifdef DMALLOC
 #include <mpatrol.h>

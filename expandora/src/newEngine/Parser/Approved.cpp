@@ -1,16 +1,15 @@
 
 #include "Approved.h"
 
-void Approved::receiveRoom(QObject * sender, Room * perhaps) {  
+void Approved::receiveRoom(RoomAdmin * sender, Room * perhaps) {  
   if (matchedRoom == 0 && perhaps->fastCompare(myEvent, matchingTolerance)) {
     matchedRoom = perhaps;
     owner = sender;
   }
   else {
-    QObject::connect(this, SIGNAL(releaseRoom(QObject *, int)), sender, SLOT(releaseRoom(QObject *, int)), Qt::DirectConnection);
-    emit releaseRoom(this, perhaps->getId());
-    QObject::disconnect(this, SIGNAL(releaseRoom(QObject *, int)), sender, 0);
-    if (matchedRoom != 0) moreThanOne = true; 
+    
+    sender->releaseRoom(this, perhaps->getId());
+    
   }
 }
 
@@ -18,14 +17,14 @@ Approved::~Approved() {
   if(owner) {
     
     if (moreThanOne) {
-      QObject::connect(this, SIGNAL(releaseRoom(QObject *, int)), owner, SLOT(releaseRoom(QObject *, int)), Qt::DirectConnection);
-      emit releaseRoom(this, matchedRoom->getId());
-      QObject::disconnect(this, SIGNAL(releaseRoom(QObject *, int)), owner, 0);
+      
+      owner->releaseRoom(this, matchedRoom->getId());
+      
     }
     else {
-      QObject::connect(this, SIGNAL(keepRoom(QObject *, int)), owner, SLOT(keepRoom(QObject *, int)), Qt::DirectConnection);
-      emit keepRoom(this, matchedRoom->getId());
-      QObject::disconnect(this, SIGNAL(keepRoom(QObject *, int)), owner, 0);
+      
+      owner->keepRoom(this, matchedRoom->getId());
+      
     }
     
   }
@@ -54,9 +53,9 @@ Room * Approved::oneMatch() {
 
 void Approved::reset() {
   if(matchedRoom) {
-    QObject::connect(this, SIGNAL(releaseRoom(QObject *, int)), owner, SLOT(releaseRoom(QObject *, int)), Qt::DirectConnection);
-    emit releaseRoom(this, matchedRoom->getId());
-    QObject::disconnect(this, SIGNAL(releaseRoom(QObject *, int)), owner, 0);
+    
+    owner->releaseRoom(this, matchedRoom->getId());
+    
   }
   matchedRoom = 0;
   moreThanOne = false;
@@ -65,7 +64,7 @@ void Approved::reset() {
 
 
 
-QObject * Approved::getOwner() {
+RoomAdmin * Approved::getOwner() {
   if (moreThanOne) return 0;
   else return owner;
 }

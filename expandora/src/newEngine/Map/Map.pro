@@ -17,13 +17,13 @@ win32 {
 HEADERS += CharacterTable.h \
            IntermediateNode.h \
            Map.h \
-           RoomAdmin.h \
+           MapFrontend.h \
            RoomSearchNode.h \
            SearchTreeNode.h
 SOURCES += CharacterTable.cpp \
            IntermediateNode.cpp \
            Map.cpp \
-           RoomAdmin.cpp \
+           MapFrontend.cpp \
            SearchTreeNode.cpp
 
 debug {

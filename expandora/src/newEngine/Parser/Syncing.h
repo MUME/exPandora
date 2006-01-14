@@ -3,17 +3,16 @@
 
 #include <list>
 #include "Path.h"
+#include "RoomAdmin.h"
+#include "RoomRecipient.h"
 
-class Syncing : public QObject {
+class Syncing : public RoomRecipient {
  private:
-   Q_OBJECT
    list<Path *> * paths;
-   
- public slots:
-   void receiveRoom(QObject *, Room *);
 
  public:
    Syncing(list<Path *> * in);
+   void receiveRoom(RoomAdmin *, Room *);
    list<Path *> * evaluate();
 };
 #ifdef DMALLOC

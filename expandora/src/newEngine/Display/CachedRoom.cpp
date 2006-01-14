@@ -5,7 +5,7 @@
 RoomSignalHandler * CachedRoom::signaler;
 map<int, CachedRoom *> CachedRoom::cache;
 
-CachedRoom::CachedRoom(Room * in_base, QObject * owner, QObject * locker) : base(in_base) {
+CachedRoom::CachedRoom(Room * in_base, RoomAdmin * owner, RoomRecipient * locker) : base(in_base) {
   if (!signaler) signaler = new RoomSignalHandler;
   signaler->hold(base, owner, locker);
   set<int> * rawExits;

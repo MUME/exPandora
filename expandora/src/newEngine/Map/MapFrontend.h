@@ -1,5 +1,5 @@
-#ifndef ROOMADMIN
-#define ROOMADMIN
+#ifndef MAPFRONTEND
+#define MAPFRONTEND
 
 #include <qthread.h>
 #include <qmutex.h>
@@ -37,7 +37,7 @@ class MapFrontend : public Component, public IntermediateNode, public RoomAdmin 
 
   Map map;
   vector<Room *> roomIndex;
-  vector<set<QObject *> > locks;
+  vector<set<RoomRecipient *> > locks;
   stack<int>  unusedIds;
   unsigned int greatestUsedId;
   QMutex mapLock;
@@ -77,11 +77,7 @@ class MapFrontend : public Component, public IntermediateNode, public RoomAdmin 
   // implemented later
 
  signals:
-  // if a room is sent out via foundRoom it is locked so that it doesn't
-  // get deleted while being processed by another component.
-  // a room can be locked by multiple components but each component can only create one lock
-  void foundRoom(RoomAdmin *, Room *);
-
+  
   // this signal is sent out if a room is deleted. So any clients still
   // working on this room can start some emergency action.
   void deletedRoom(RoomAdmin *, int);

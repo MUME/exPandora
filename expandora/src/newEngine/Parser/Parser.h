@@ -41,9 +41,9 @@ Q_OBJECT
   // the QObjects in the signals denote the recipient of the results
   // the map shoud keep track of them and only deliver results to 
   // the interested objects
-  void lookingForRooms(QObject *,ParseEvent *);
-  void lookingForRooms(QObject *,unsigned int);
-  void lookingForRooms(QObject *,Coordinate *);
+  void lookingForRooms(RoomRecipient *,ParseEvent *);
+  void lookingForRooms(RoomRecipient *,unsigned int);
+  void lookingForRooms(RoomRecipient *,Coordinate *);
   void playerMoved(Coordinate *, Coordinate *);
   void createRoom(ParseEvent *, Coordinate *, char);
   void addExit(int, int, int);

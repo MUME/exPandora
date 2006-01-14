@@ -15,7 +15,7 @@ Experimenting::Experimenting(Parser * par, list<Path *> * pat, double pa) {
 
   
 
-void Experimenting::receiveRoom(QObject * map, Room * room) {
+void Experimenting::receiveRoom(RoomAdmin * map, Room * room) {
   for (list<Path *>::iterator i = shortPaths->begin(); i != shortPaths->end(); ++i) {
     Coordinate * c = parent->getExpectedCoordinate((*i)->getRoom());
     Path * working = (*i)->fork(room, c, map, pathAcceptance, this);

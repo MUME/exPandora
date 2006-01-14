@@ -2,70 +2,82 @@
 # ------------------------------------------- 
 # Subdir relative project main directory: ./src/newEngine
 # Target is an application:  
+# Target is an application:  
 
-HEADERS += RoomAdmin.h 
+
+SUBDIRS += Common \
+           Lexer \
+           Parser \
+           Map \
+	   Storage \
+           Filter \
+	   Display \
+	   Configuration \
+	   Proxy \
+	   expandora
+
+
+CONFIG += debug thread qt warn_on monolithic
+
+monolithic {
+
 ORIG_LIBS = $$LIBS
 ORIG_CONFIG = $$CONFIG
 ORIG_QT = $$QT
-LIBS = $$ORIG_LIBS
-CONFIG = $$ORIG_CONFIG
-QT = $$ORIG_QT
-INCLUDEPATH = include
-TEMPLATE = app
-OBJECTS_DIR = obj
-CONFIG += debug thread qt warn_on
-QT += opengl network xml
-DESTDIR = bin
-DEFINES += MONOLITHIC
-for(dir, SUBDIRS){
+
+for(dir, SUBDIRS) {
   LAST_SOURCES = $$SOURCES
-  SOURCES =
+  SOURCES = 
   LAST_HEADERS = $$HEADERS
   HEADERS =
   LAST_LEX = $$LEXSOURCES
   LEXSOURCES =
-  SOURCES = $$LAST_SOURCES
-  HEADERS = $$LAST_HEADERS
-  LEXSOURCES = $$LAST_LEX
-  include($${
-    ir
-    dir}/$${
-      dir}.pro)
-      dir}/$${dir
-    }
-  }
+  include($${dir}/$${dir}.pro)
+
   for(source, SOURCES){
-    LAST_SOURCES += $${
-       $${dir
-      dir}/$${
-        source}
-        dir}/$${source
-      }
-    }
+    LAST_SOURCES += $${dir}/$${source} 
   }
   for(header, HEADERS){
-    LAST_HEADERS += $${
-       $${dir
-      dir}/$${
-        header}
-        dir}/$${header
-      }
-    }
+    LAST_HEADERS += $${dir}/$${header}
   }
+  HEADERS = $$LAST_HEADERS
   for(source, LEXSOURCES){
-    LAST_LEX += $${
-      dir
-      dir}/$${
-        source}
-        dir}/$${source
-      }
-    }
+    LAST_LEX += $${dir}/$${source}
   }
+  
+  LEXSOURCES = $$LAST_LEX
+  SOURCES = $$LAST_SOURCES
+  HEADERS = $$LAST_HEADERS
 }
-win32{
-  CONFIG += console
+
+LIBS = $$ORIG_LIBS
+CONFIG = $$ORIG_CONFIG
+QT = $$ORIG_QT
+
+INCLUDEPATH = include
+
+TEMPLATE = app
+
+OBJECTS_DIR	= obj
+
+
+win32 {
+	CONFIG	+= console
 }
-debug{
-  DEFINES += DMALLOC
-  LIBS += -lmpatrolmt -lelf -lmpalloc -lbfd
+QT += opengl network xml
+
+DESTDIR = bin
+
+DEFINES += MONOLITHIC
+
+
+debug {
+ # DEFINES += DMALLOC
+ # LIBS += -lmpatrolmt -lelf -lmpalloc -lbfd
+}
+
+}
+
+modular {
+  TEMPLATE = subdirs
 }

@@ -7,6 +7,8 @@
 #include "Room.h"
 #include "CachedRoom.h"
 #include "Frustum.h"
+#include "RoomRecipient.h"
+#include "RoomAdmin.h"
 
 #define MAX_TEXTURES    100
 #define DIST_Z	1	/* the distance between 2 rooms */
@@ -17,7 +19,7 @@
 
 
 
-class RendererWidget : public QGLWidget {
+class RendererWidget : public QGLWidget, public RoomRecipient {
   Q_OBJECT 
  private:
   
@@ -41,7 +43,7 @@ class RendererWidget : public QGLWidget {
 
  public slots:
   void moveMarker(Coordinate *, Coordinate *);
-  void receiveRoom(QObject *,Room *);
+  
   
  public:
   GLfloat       angley;
@@ -55,15 +57,15 @@ class RendererWidget : public QGLWidget {
   void drawExit(Coordinate * from, Coordinate * to, unsigned int dir);
   void shiftView();
   void CalculateFrustum();
-
+  void receiveRoom(RoomAdmin *,Room *);
+  
  protected:
   void initializeGL();
   void resizeGL( int width, int height );
   void paintGL();
 
  signals:
-  void viewableAreaChanged(QObject *, Frustum *); 
-  void releaseRoom(QObject *, int);
+  void viewableAreaChanged(RoomRecipient *, Frustum *); 
 };
 
 
@@ -73,7 +75,7 @@ class DisplayComponent : public Component {
  Q_OBJECT
   
  signals:
-  void lookingForRooms(QObject *, Frustum *);
+  void lookingForRooms(RoomRecipient *, Frustum *);
   
   
  public slots:

@@ -22,7 +22,7 @@ class CachedRoom {
   void removeReverse(int id);
   
  public:
-  CachedRoom(Room * base, QObject * owner, QObject * locker);
+  CachedRoom(Room * base, RoomAdmin * owner, RoomRecipient * locker);
   ~CachedRoom();
   void drawExits(CachedRoom * other, RendererWidget * renderer);
   void drawExits(RendererWidget * renderer);

@@ -5,34 +5,26 @@
 #include "Parser.h"
 #include "Room.h"
 #include "ParseEvent.h"
+#include "RoomAdmin.h"
+#include "RoomRecipient.h"
 
 
-
-class Approved : public QObject{
+class Approved : public RoomRecipient {
  private:
-   Q_OBJECT
+
    Room * matchedRoom;
    ParseEvent * myEvent;
    int matchingTolerance;   
-   QObject * owner;
+   RoomAdmin * owner;
    bool moreThanOne;
    Parser * parser;
-   
 
-
-
- public slots:
-   void receiveRoom(QObject *, Room *);
-
- signals:
-   void releaseRoom(QObject *, int);
-   void keepRoom(QObject *, int);
  public:
    Approved(Parser * parser, ParseEvent * event, int tolerance);
    ~Approved();
-   
+   void receiveRoom(RoomAdmin *, Room *);
    Room * oneMatch();
-   QObject * getOwner(); 
+   RoomAdmin * getOwner(); 
    void reset();
 };
 #ifdef DMALLOC

@@ -181,7 +181,7 @@ void DisplayComponent::start()
   renderer = renderer_window->renderer;
 
 
-  QObject::connect(renderer, SIGNAL(viewableAreaChanged(QObject *,Frustum *)), this, SIGNAL(lookingForRooms(QObject *,Frustum *)), DirectConnection);
+  QObject::connect(renderer, SIGNAL(viewableAreaChanged(RoomRecipient *,Frustum *)), this, SIGNAL(lookingForRooms(RoomRecipient *,Frustum *)), DirectConnection);
   
 
   Component::start();
@@ -296,7 +296,7 @@ void RendererWidget::drawMarker( Coordinate * pos )
 
 
 
-void RendererWidget::receiveRoom( QObject * owner, Room * pr )
+void RendererWidget::receiveRoom( RoomAdmin * owner, Room * pr )
 {
 
 
@@ -415,9 +415,9 @@ void RendererWidget::receiveRoom( QObject * owner, Room * pr )
 
 
   glTranslatef( -d.x, -d.y, -d.z );
-  QObject::connect(this, SIGNAL(releaseRoom(QObject *, int)), owner, SLOT(releaseRoom(QObject *, int)), DirectConnection);
-  emit releaseRoom(this, pr->getId());
-  QObject::disconnect(this, SIGNAL(releaseRoom(QObject *, int)));
+  
+  owner->releaseRoom(this, pr->getId());
+  
   //if ( lines == 0 )
   //  return ;
 
