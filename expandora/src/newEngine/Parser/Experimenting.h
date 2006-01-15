@@ -7,6 +7,7 @@
 #include "Path.h"
 #include "RoomAdmin.h"
 #include "RoomRecipient.h"
+#include "PathParameters.h"
 
 class Parser;
 
@@ -15,15 +16,14 @@ class Experimenting : public RoomRecipient {
   
   list<Path *> * paths;
   list<Path *> * shortPaths;
-  double prevBest;
   Path * best;
   Path * second;
-  double pathAcceptance;
+  PathParameters params;
   Parser * parent;
-  QMutex deleteLock;
+  int numPaths;
 
  public:
-  Experimenting(Parser * parent, list<Path *> * paths, double pa);
+  Experimenting(Parser * parent, list<Path *> * paths);
   list<Path *> * evaluate();
   void receiveRoom(RoomAdmin *, Room *);
 

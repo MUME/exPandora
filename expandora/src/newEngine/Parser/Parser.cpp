@@ -27,7 +27,6 @@ Parser::Parser() : Component(true) {
   state = SYNCING;
   matchingTolerance = 0;
   remoteMapDelay = 0;
-  pathAcceptance = 3.0;
   paths = new list<Path *>;
 }
 
@@ -245,7 +244,7 @@ void Parser::experimenting()
     return;
   }
 
-  Experimenting exp(this, paths, pathAcceptance);
+  Experimenting exp(this, paths);
 
   for (list<Path *>::iterator i = paths->begin(); i != paths->end(); ++i)
   {

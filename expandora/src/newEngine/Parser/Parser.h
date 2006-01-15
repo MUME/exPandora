@@ -75,7 +75,7 @@ Q_OBJECT
   list<Path *> * paths;
   Room * mostLikelyRoom;
   
-  double pathAcceptance;
+  
 
 
 };	

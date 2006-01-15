@@ -14,8 +14,8 @@ win32 {
 }
 
 # Input
-HEADERS += Parser.h Path.h Approved.h Experimenting.h Syncing.h
-SOURCES += Parser.cpp Path.cpp Approved.cpp Experimenting.cpp Syncing.cpp
+HEADERS += Parser.h Path.h Approved.h Experimenting.h Syncing.h PathParameters.h
+SOURCES += Parser.cpp Path.cpp Approved.cpp Experimenting.cpp Syncing.cpp PathParameters.cpp
 debug {
   #DEFINES += DMALLOC
   #LIBS += -ldmallocthcxx

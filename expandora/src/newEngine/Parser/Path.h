@@ -5,7 +5,7 @@
 #include "Room.h"
 #include "RoomRecipient.h"
 #include "RoomAdmin.h"
-
+#include "PathParameters.h"
 
 class Path {
 
@@ -16,7 +16,7 @@ class Path {
   bool hasChildren() {return (!children.empty());};
   void init(Room * room, RoomAdmin * owner, RoomRecipient * locker);
   Room * getRoom() {return room;};
-  Path * fork(Room * room, Coordinate * expectedCoordinate, RoomAdmin * owner, double pathAcceptance, RoomRecipient * locker); 
+  Path * fork(Room * room, Coordinate * expectedCoordinate, RoomAdmin * owner, PathParameters params, RoomRecipient * locker); 
   //new Path is fetched from pamm, distance between rooms is calculated and probability is updated accordingly
   double getProb() {return probability;};	
   void approve();
