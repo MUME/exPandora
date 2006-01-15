@@ -245,13 +245,13 @@ void RendererWidget::moveMarker( Coordinate * oldPos, Coordinate * newPos )
 
   if ( newPos != 0 )
   {
-    userx = 0;
-    usery = 0;
-    userz = BASE_Z;
+    
+    userx = -newPos->x;
+    usery = -newPos->y;
+    userz = -newPos->z + BASE_Z;
+    shiftView();
     glColor4f( marker_colour[ 0 ], marker_colour[ 1 ], marker_colour[ 2 ], marker_colour[ 3 ] );
     drawMarker( newPos );
-    
-    shiftView();
     
     
   }
@@ -457,11 +457,12 @@ void RendererWidget::drawExit( Coordinate * from, Coordinate * to, unsigned int 
   sx = 0;
   sy = 0;
 
+  Coordinate null;
   Coordinate * dir = 0;
   if ( k < Coordinate::stdMoves.size() )
     dir = Coordinate::stdMoves[ k ];
-  else
-    dir = cmm.activate();
+  else 
+    dir = &null;
 
   if ( dir->y > 0 )
   {

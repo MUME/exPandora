@@ -85,20 +85,20 @@ ROOMCOL		\33\[32m
 <EXITS>"\n\r"			|
 <EXITS>"\r\n"			BEGIN(PROMPT);
 
-<PROMPT>"[".+">"    		|
-<PROMPT>"#".+">"    		| 
-<PROMPT>".".+">"    		| 
-<PROMPT>"f".+">"    		| 
-<PROMPT>"(".+">"    		| 
-<PROMPT>"<".+">"    		| 
-<PROMPT>"%".+">"    		| 
-<PROMPT>"~".+">"    		| 
-<PROMPT>"W".+">"    		| 
-<PROMPT>"U".+">"    		| 
-<PROMPT>"+".+">"    		| 
-<PROMPT>":".+">"    		| 
-<PROMPT>"O".+">"    		|
-<PROMPT>"=".+">"    		append(YYText()[0]); markTerrain(); pushProperty(); pushEvent(ROOM); BEGIN(INITIAL);
+<PROMPT>"["[^\r\n]*">"    		|
+<PROMPT>"#"[^\r\n]*">"    		| 
+<PROMPT>"."[^\r\n]*">"    		| 
+<PROMPT>"f"[^\r\n]*">"    		| 
+<PROMPT>"("[^\r\n]*">"    		| 
+<PROMPT>"<"[^\r\n]*">"    		| 
+<PROMPT>"%"[^\r\n]*">"    		| 
+<PROMPT>"~"[^\r\n]*">"    		| 
+<PROMPT>"W"[^\r\n]*">"    		| 
+<PROMPT>"U"[^\r\n]*">"    		| 
+<PROMPT>"+"[^\r\n]*">"    		| 
+<PROMPT>":"[^\r\n]*">"    		| 
+<PROMPT>"O"[^\r\n]*">"    		|
+<PROMPT>"="[^\r\n]*">"    		append(YYText()[0]); markTerrain(); pushProperty(); pushEvent(ROOM); BEGIN(INITIAL);
 <PROMPT>{ROOMCOL}               skipProperty(); pushEvent(ROOM); BEGIN(ROOMNAME);
 <PROMPT>">"			skipProperty(); pushEvent(ROOM); BEGIN(INITIAL);
 
