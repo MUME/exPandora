@@ -47,9 +47,8 @@ void SearchTreeNode::setChild(char position, RoomSearchNode * node) {
 }
 
 
-/**
- */
-Room * SearchTreeNode::insertRoom(ParseEvent * event) {
+
+RoomCollection * SearchTreeNode::insertRoom(ParseEvent * event) {
   RoomSearchNode * selectedChild = 0;
   char c = event->current()->next();
   for (int i = 0; myChars[i] != 0; i++) {
@@ -91,7 +90,7 @@ AbstractRoomContainer * SearchTreeNode::skipDown(ParseEvent * event) {
   for (unsigned int i = 0; i < 256; i++) {
     if ((selectedChild = children->get(i)) != 0) {
       copy = event->copy();
-      add = selectedChild->skipDown(event);
+      add = selectedChild->skipDown(copy);
       ret->merge(add);
       if (add->numRooms() > -1) rcmm.deactivate((RoomCollection *)add);
       pemm.deactivate(copy);

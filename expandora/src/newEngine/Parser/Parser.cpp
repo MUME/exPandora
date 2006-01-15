@@ -27,7 +27,7 @@ Parser::Parser() : Component(true) {
   state = SYNCING;
   matchingTolerance = 0;
   remoteMapDelay = 0;
-  pathAcceptance = 5.0;
+  pathAcceptance = 3.0;
   paths = new list<Path *>;
 }
 

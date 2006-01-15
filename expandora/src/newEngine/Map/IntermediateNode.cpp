@@ -15,11 +15,11 @@ IntermediateNode::IntermediateNode(ParseEvent * event) {
   event->prev();
 }
 
-Room * IntermediateNode::insertRoom(ParseEvent * event) {
+RoomCollection * IntermediateNode::insertRoom(ParseEvent * event) {
 	
   if (event->next() == 0) {
     if (rooms == 0) rooms = rcmm.activate();
-    return rooms->insertRoom(event);
+    return rooms;
   }
   else if (event->current()->size() == SKIPPED_ONE || event->current()->size() == SKIPPED_MANY) return 0;
 	

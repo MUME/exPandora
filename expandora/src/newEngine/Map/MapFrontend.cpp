@@ -17,7 +17,7 @@ extern "C" MY_EXPORT MapFrontend * createComponent()
 Initializer<MapFrontend> roomAdmin("Map");
 #endif
 
-MapFrontend::MapFrontend() : IntermediateNode(), mapLock(QMutex::Recursive)
+MapFrontend::MapFrontend() : mapLock(QMutex::Recursive)
 {
   mapLock.lock();
   greatestUsedId = UINT_MAX;
@@ -27,8 +27,12 @@ MapFrontend::MapFrontend() : IntermediateNode(), mapLock(QMutex::Recursive)
 void MapFrontend::removeRoom(int id)
 {
   mapLock.lock();
-  map.remove(roomIndex[id]->getCoordinate());
+  Room * room = roomIndex[id];
   roomIndex[id] = 0;
+  roomHomes[id]->removeRoom(room);
+  roomHomes[id] = 0;
+  map.remove(room->getCoordinate());
+  delete room;
   unusedIds.push(id);
   emit deletedRoom(this, id);
   mapLock.unlock();
@@ -81,7 +85,7 @@ void MapFrontend::lookingForRooms(RoomRecipient * recipient, unsigned int id)
   mapLock.unlock();
 }
 
-void MapFrontend::assignId(Room * room)
+void MapFrontend::assignId(Room * room, RoomCollection * roomHome)
 {
   unsigned int id;
 
@@ -101,8 +105,10 @@ void MapFrontend::assignId(Room * room)
   {
     roomIndex.resize(id + 1, 0);
     locks.resize(id + 1);
+    roomHomes.resize(id + 1);
   }
   roomIndex[id] = room;
+  roomHomes[room->getId()] = roomHome;
   mapLock.unlock();
 }
 
@@ -120,14 +126,17 @@ void MapFrontend::createPredefinedRoom(ParseEvent * event, Coordinate * c, char 
 void MapFrontend::createRoom(ParseEvent * event, Coordinate * expectedPosition, char t)
 {
   mapLock.lock();
-  Room * room = IntermediateNode::insertRoom(event);
-  if (!room) {
+  RoomCollection * roomHome = IntermediateNode::insertRoom(event);
+  
+  if (!roomHome) {
     mapLock.unlock();
     return;
   }
+  Room * room = roomHome->createRoom(event);
   room->setTerrain(t);
   map.setNearest(expectedPosition, room);
-  assignId(room);
+  assignId(room, roomHome);
+  
   event->reset();
   mapLock.unlock();
 }

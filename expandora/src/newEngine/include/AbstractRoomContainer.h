@@ -4,12 +4,13 @@
 #include "Room.h"
 #include "ParseEvent.h"
 
+class RoomCollection;
 class AbstractRoomContainer {
 
  public:
   virtual int numRooms() {return -1;}
   virtual AbstractRoomContainer * merge(AbstractRoomContainer * other) {return other;}
-  virtual Room * insertRoom(ParseEvent *) {return 0;}
+  virtual RoomCollection * insertRoom(ParseEvent *) {return 0;}
   virtual ~AbstractRoomContainer() {}
 };
 

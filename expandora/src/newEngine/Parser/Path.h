@@ -25,7 +25,8 @@ class Path {
   // and removes the respective rooms if experimental
   void clear();
   void setProb(double p) {probability = p;};
-
+  ~Path() {clear();}
+  
  private:
   static RoomSignalHandler * signaler;
   bool active;

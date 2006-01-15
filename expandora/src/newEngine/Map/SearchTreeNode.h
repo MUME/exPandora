@@ -25,7 +25,7 @@ class SearchTreeNode : public RoomSearchNode {
 		SearchTreeNode(char * string = 0, TinyList<RoomSearchNode *> * children = 0);
 		virtual ~SearchTreeNode() {cerr << "warning: SearchTreeNode destroyed"<< endl;}
 		virtual AbstractRoomContainer * getRooms(ParseEvent * event);
-		virtual Room * insertRoom(ParseEvent * event);
+		virtual RoomCollection * insertRoom(ParseEvent * event);
 		
 		virtual void setChild(char, RoomSearchNode *);
 		virtual AbstractRoomContainer * skipDown(ParseEvent * event);

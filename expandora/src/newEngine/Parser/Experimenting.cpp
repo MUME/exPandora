@@ -16,6 +16,8 @@ Experimenting::Experimenting(Parser * par, list<Path *> * pat, double pa) {
   
 
 void Experimenting::receiveRoom(RoomAdmin * map, Room * room) {
+  Path x;
+  x.init(room, map, this);
   for (list<Path *>::iterator i = shortPaths->begin(); i != shortPaths->end(); ++i) {
     Coordinate * c = parent->getExpectedCoordinate((*i)->getRoom());
     Path * working = (*i)->fork(room, c, map, pathAcceptance, this);
@@ -31,7 +33,8 @@ void Experimenting::receiveRoom(RoomAdmin * map, Room * room) {
 	best = working;
       }
       else {
-	if (second == 0) second = working;
+	if (second == 0 || working->getProb() > second->getProb()) 
+	  second = working;
 	paths->push_back(working);
       }
     }

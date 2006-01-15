@@ -48,7 +48,7 @@ Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, RoomAdmin * o
   children.insert(ret);
   double dist = expectedCoordinate->distance(in_room->getCoordinate());
   if (dist < 1) dist = 1.0/pathAcceptance;
-  if (in_room->isNew()) dist *= pathAcceptance; 
+  if (in_room->isNew()) dist *= pathAcceptance); 
   ret->setProb(probability / dist);
   
   return ret;

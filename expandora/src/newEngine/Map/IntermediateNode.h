@@ -16,7 +16,7 @@ class IntermediateNode : public SearchTreeNode {
  public:
   IntermediateNode() : SearchTreeNode("") {rooms = 0;}
   IntermediateNode(ParseEvent * event);
-  Room * insertRoom(ParseEvent * event); 
+  RoomCollection * insertRoom(ParseEvent * event); 
   AbstractRoomContainer * getRooms(ParseEvent * event);
   AbstractRoomContainer * skipDown(ParseEvent * event);       	
  private:

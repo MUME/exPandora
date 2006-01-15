@@ -13,7 +13,8 @@ class RoomCollection : public AbstractRoomContainer {
 		RoomCollection() {};
 		virtual ~RoomCollection() {} // implement it !
 		virtual int numRooms() {return rooms.size();} //let's hope this is implemented in some efficient way ...
-		virtual Room * insertRoom(ParseEvent * event);
+		Room * createRoom(ParseEvent * event);
+		RoomCollection * insertRoom(ParseEvent *) {return this;}
 		RoomCollection * filterByOptionals(ParseEvent * event);
 		void addRoom(Room * room);
 		virtual RoomCollection * merge(AbstractRoomContainer * other);
