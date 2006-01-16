@@ -14,7 +14,6 @@ HEADERS += ../include/Frustum.h \
            ../include/Room.h \
            ../include/SimpleString.h \
            ../include/TinyList.h \
-           ../include/AbstractRoomContainer.h \
 	../include/ParseEvent.h 
 SOURCES += Frustum.cpp \
            Component.cpp \

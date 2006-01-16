@@ -2,7 +2,7 @@
 #define ROOMSEARCHNODE
 #include "ParseEvent.h"
 #include "Room.h"
-#include <AbstractRoomContainer.h>
+#include "AbstractRoomContainer.h"
 
 
 class RoomSearchNode : public AbstractRoomContainer {

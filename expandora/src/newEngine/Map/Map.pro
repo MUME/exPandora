@@ -20,6 +20,7 @@ HEADERS += CharacterTable.h \
            MapFrontend.h \
            RoomSearchNode.h \
 	   RoomCollection.h \
+	   AbstractRoomContainer.h \
            SearchTreeNode.h
 SOURCES += CharacterTable.cpp \
            IntermediateNode.cpp \
