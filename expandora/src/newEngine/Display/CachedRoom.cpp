@@ -2,12 +2,10 @@
 #include "CachedRoom.h"
 
 
-RoomSignalHandler * CachedRoom::signaler;
-map<int, CachedRoom *> CachedRoom::cache;
 
-CachedRoom::CachedRoom(Room * in_base, RoomAdmin * owner, RoomRecipient * locker) : base(in_base) {
-  if (!signaler) signaler = new RoomSignalHandler;
-  signaler->hold(base, owner, locker);
+
+
+CachedRoom::CachedRoom(Room * in_base, RoomAdmin * in_owner, RoomRecipient * in_locker, map<int, CachedRoom *> & in_cache) : base(in_base), owner(in_owner), locker(in_locker), cache(in_cache) {
   set<int> * rawExits;
   for (int i = base->numExits()-1; i >= 0; --i) {
     rawExits = base->getNeighbours(i);
@@ -28,8 +26,8 @@ CachedRoom::CachedRoom(Room * in_base, RoomAdmin * owner, RoomRecipient * locker
 }
 
 CachedRoom::~CachedRoom() {
-  cache.erase(base->getId());
-  signaler->release(base);
+  cache[base->getId()] = 0;
+  owner->releaseRoom(locker, base->getId());
 }
 
 int CachedRoom::getId() {
@@ -43,7 +41,6 @@ Coordinate * CachedRoom::getCoordinate() {
 void CachedRoom::removeReverse(int id) {
   reverseExits.erase(id);
   if (exits.empty() && reverseExits.empty()) {
-    
     delete this;
   }
 }

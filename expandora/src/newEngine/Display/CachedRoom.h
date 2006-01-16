@@ -8,21 +8,23 @@
 class RendererWidget;
 
 /**
-   we need to remember which exits we have already draw and
+   we need to remember which exits we have already drawn and
    decide if we still need the room. That's why we cache
    it's exits and remove them from the cached room as we draw them.*/
 class CachedRoom;
 class CachedRoom {
  private:
-  static RoomSignalHandler * signaler;
-  static map<int, CachedRoom *> cache;
+
   map<int, set<int> > exits; //other's id->dirs
   map<int, set<int> > reverseExits;
   Room * base;
+  RoomAdmin * owner;
+  RoomRecipient * locker;
+  map<int, CachedRoom *> & cache;
   void removeReverse(int id);
-  
+
  public:
-  CachedRoom(Room * base, RoomAdmin * owner, RoomRecipient * locker);
+  CachedRoom(Room * base, RoomAdmin * owner, RoomRecipient * locker, map<int, CachedRoom *> & cache);
   ~CachedRoom();
   void drawExits(CachedRoom * other, RendererWidget * renderer);
   void drawExits(RendererWidget * renderer);

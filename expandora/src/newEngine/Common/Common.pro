@@ -16,7 +16,6 @@ HEADERS += ../include/Frustum.h \
            ../include/SimpleString.h \
            ../include/TinyList.h \
            ../include/AbstractRoomContainer.h \
-           ../include/RoomSignalHandler.h \ 
 	../include/ParseEvent.h 
 SOURCES += Frustum.cpp \
            Component.cpp \
@@ -27,7 +26,6 @@ SOURCES += Frustum.cpp \
            Room.cpp \
            RoomCollection.cpp \
            SimpleString.cpp \
-           RoomSignalHandler.cpp
 TEMPLATE = lib
 OBJECTS_DIR = obj
 MOC_DIR = moc
