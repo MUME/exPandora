@@ -18,6 +18,7 @@
 #include "Approved.h"
 #include "Syncing.h"
 #include "Component.h"
+#include "RoomSignalHandler.h"
 
 #define APPROVED 0
 #define EXPERIMENTING 1
@@ -73,6 +74,7 @@ Q_OBJECT
   char activeTerrain;
   list<Path *> * paths;
   Room * mostLikelyRoom;
+  RoomSignalHandler signaler;
   
   
 

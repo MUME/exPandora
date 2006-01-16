@@ -5,13 +5,15 @@
 #include "Path.h"
 #include "RoomAdmin.h"
 #include "RoomRecipient.h"
+#include "RoomSignalHandler.h"
 
 class Syncing : public RoomRecipient {
  private:
    list<Path *> * paths;
+   RoomSignalHandler * signaler;
 
  public:
-   Syncing(list<Path *> * in);
+   Syncing(list<Path *> * in, RoomSignalHandler * signaler);
    void receiveRoom(RoomAdmin *, Room *);
    list<Path *> * evaluate();
 };

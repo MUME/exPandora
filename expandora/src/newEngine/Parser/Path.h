@@ -14,7 +14,7 @@ class Path {
   void removeChild(Path * p);
   void setParent(Path * p);
   bool hasChildren() {return (!children.empty());};
-  void init(Room * room, RoomAdmin * owner, RoomRecipient * locker);
+  void init(Room * room, RoomAdmin * owner, RoomRecipient * locker, RoomSignalHandler * signaler);
   Room * getRoom() {return room;};
   Path * fork(Room * room, Coordinate * expectedCoordinate, RoomAdmin * owner, PathParameters params, RoomRecipient * locker); 
   //new Path is fetched from pamm, distance between rooms is calculated and probability is updated accordingly
@@ -28,12 +28,12 @@ class Path {
   ~Path() {clear();}
   
  private:
-  static RoomSignalHandler * signaler;
   bool active;
   Path * parent;
   set<Path *> children;
   double probability;
   Room * room; // in fact a path only has one room, one parent and soem children(forks).
+  RoomSignalHandler * signaler;
 };
 
 extern ObjectRecycler<Path> pamm;

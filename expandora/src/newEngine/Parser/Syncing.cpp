@@ -1,14 +1,15 @@
 #include "Syncing.h"
 
 
-Syncing::Syncing(list<Path *> * pa) :
-  paths(pa)
+Syncing::Syncing(list<Path *> * pa, RoomSignalHandler * in_signaler) :
+  paths(pa),
+  signaler(in_signaler)
 {
 }
 
 void Syncing::receiveRoom(RoomAdmin * sender, Room * room) {
   Path * path = pamm.activate();
-  path->init(room, sender, this);
+  path->init(room, sender, this, signaler);
   paths->push_front(path);
 }
   

@@ -180,7 +180,7 @@ void Parser::approved()
   {
     state = EXPERIMENTING;
     Path * root = pamm.activate();
-    root->init(mostLikelyRoom, 0, 0);
+    root->init(mostLikelyRoom, 0, 0, &signaler);
     paths->push_front(root);
     experimenting();
   }
@@ -218,7 +218,7 @@ void Parser::syncing()
 
   // now we have a move and a room on the event queues;
 
-  Syncing sync(paths);
+  Syncing sync(paths, &signaler);
   emit lookingForRooms(&sync, mudEvents.front());
 
   paths = sync.evaluate();

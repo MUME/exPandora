@@ -10,7 +10,6 @@ SUBDIRS += Common \
            Parser \
            Map \
 	   Storage \
-           Filter \
 	   Display \
 	   Configuration \
 	   Proxy \

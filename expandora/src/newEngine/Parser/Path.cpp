@@ -2,23 +2,23 @@
 
 
 ObjectRecycler<Path> pamm;
-RoomSignalHandler *  Path::signaler = 0;
+
 
 Path::Path() :
   active(false),
   parent(0),
   probability(0),
-  room(0) 
-{
-if (!signaler) signaler = new RoomSignalHandler;
-}
+  room(0),
+  signaler(0)
+{}
 
-void Path::init(Room * in_room, RoomAdmin * owner, RoomRecipient * locker) {
+void Path::init(Room * in_room, RoomAdmin * owner, RoomRecipient * locker, RoomSignalHandler * in_signaler) {
   if (active) {
     throw "fatal: path already active";
   }
   else active = true;
-
+  
+  signaler = in_signaler;
   room = in_room;
   signaler->hold(room, owner, locker);
   
@@ -43,7 +43,7 @@ Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, RoomAdmin * o
   if (ret == parent) {
     throw "fatal: building path circle";
   }
-  ret->init(in_room, owner, locker);
+  ret->init(in_room, owner, locker, signaler);
   ret->setParent(this);
   children.insert(ret);
   double dist = expectedCoordinate->distance(in_room->getCoordinate());
@@ -112,6 +112,7 @@ void Path::clear() {
   room = 0;
   children.clear();
   parent = 0;
+  signaler = 0;
   probability = 1.0;
 }
 		
