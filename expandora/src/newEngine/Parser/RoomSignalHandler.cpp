@@ -2,21 +2,26 @@
 
 using namespace Qt;
 
-void RoomSignalHandler::hold(Room * room, RoomAdmin * owner, RoomRecipient * locker) {
+void RoomSignalHandler::hold(Room * room, RoomAdmin * owner, RoomRecipient * locker)
+{
   owners[room] = owner;
   if (lockers[room].empty()) holdCount[room] = 0;
   if (locker) lockers[room].insert(locker);
   ++holdCount[room];
 }
 
-void RoomSignalHandler::release(Room * room) {
-  if (holdCount.find(room) == holdCount.end()) 
+void RoomSignalHandler::release(Room * room)
+{
+  if (holdCount.find(room) == holdCount.end())
     throw "room can't be released because it isn't held";
-  if (--holdCount[room] == 0) {
+  if (--holdCount[room] == 0)
+  {
     RoomAdmin * rcv = owners[room];
-    if(rcv) {
-      for(set<RoomRecipient *>::iterator i = lockers[room].begin(); i != lockers[room].end(); ++i) {
-	rcv->releaseRoom(*i, room->getId());
+    if(rcv)
+    {
+      for(set<RoomRecipient *>::iterator i = lockers[room].begin(); i != lockers[room].end(); ++i)
+      {
+        rcv->releaseRoom(*i, room->getId());
       }
       lockers[room].clear();
       owners[room] = 0;
@@ -24,20 +29,29 @@ void RoomSignalHandler::release(Room * room) {
   }
 }
 
-void RoomSignalHandler::keep(Room * room) {
-  if (holdCount.find(room) == holdCount.end()) 
+void RoomSignalHandler::keep(Room * room, char dir, int toId)
+{
+  if (holdCount.find(room) == holdCount.end())
     throw "room can't be kept because it isn't held";
   --holdCount[room];
   RoomAdmin * rcv = owners[room];
-  if (rcv) {
-    
+  if (rcv)
+  {
+
     rcv->keepRoom(*(lockers[room].begin()), room->getId());
-    
+
+    if (toId >= 0)
+    {
+      set<int> * neighbours = room->getNeighbours(dir);
+      if (!neighbours || neighbours->find(dir) == neighbours->end())
+        emit addExit(room->getId(), toId, dir);
+    }
   }
-  if (holdCount[room] == 0) {
+  if (holdCount[room] == 0)
+  {
     lockers[room].clear();
     owners[room] = 0;
   }
-  else 
+  else
     lockers[room].erase(lockers[room].begin());
 }

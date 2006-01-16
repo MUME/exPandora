@@ -9,7 +9,8 @@ Path::Path() :
   parent(0),
   probability(0),
   room(0),
-  signaler(0)
+  signaler(0),
+  dir(0)
 {}
 
 void Path::init(Room * in_room, RoomAdmin * owner, RoomRecipient * locker, RoomSignalHandler * in_signaler) {
@@ -24,6 +25,7 @@ void Path::init(Room * in_room, RoomAdmin * owner, RoomRecipient * locker, RoomS
   
   children.clear();
   parent = 0;
+  
   probability = 1.0;
 }
 
@@ -33,12 +35,12 @@ void Path::init(Room * in_room, RoomAdmin * owner, RoomRecipient * locker, RoomS
  * distance between rooms is calculated 
  * and probability is updated accordingly
  */
-Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, RoomAdmin * owner, PathParameters p, RoomRecipient * locker) {
+Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, RoomAdmin * owner, PathParameters p, RoomRecipient * locker, char direction) {
   if (!active) {
     throw "fatal: path inactive";
   }
 
-  
+  dir = direction;
   Path * ret = pamm.activate();
   if (ret == parent) {
     throw "fatal: building path circle";
@@ -61,11 +63,12 @@ void Path::setParent(Path * p) {
   parent = p;
 }
 
-void Path::approve() {
+void Path::approve(int id) {
   if (!active) {
     throw "fatal: path inactive";
   }
-  signaler->keep(room);
+  signaler->keep(room, dir, id);
+  id = room->getId();
   room = 0;
   set<Path *>::iterator i = children.begin();
   for(; i != children.end(); ++i) {
@@ -75,7 +78,7 @@ void Path::approve() {
   
   if (parent != 0) {
     parent->removeChild(this);
-    parent->approve();
+    parent->approve(id);
     parent = 0;
   }
   pamm.deactivate(this);
@@ -113,6 +116,7 @@ void Path::clear() {
   children.clear();
   parent = 0;
   signaler = 0;
+  dir = 0;
   probability = 1.0;
 }
 		

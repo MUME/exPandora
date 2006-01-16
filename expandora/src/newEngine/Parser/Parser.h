@@ -51,6 +51,7 @@ Q_OBJECT
 
  public:
   Parser();
+  void init();
   Coordinate * getExpectedCoordinate(Room * base);
   virtual Qt::ConnectionType requiredConnectionType(const QString &);
   
@@ -66,17 +67,14 @@ Q_OBJECT
   void approved();
   void evaluatePaths();
 
-  char state;
-  int matchingTolerance;
-  int remoteMapDelay;
   queue<ParseEvent *> playerEvents;
   queue<ParseEvent *> mudEvents;
   char activeTerrain;
-  list<Path *> * paths;
-  Room * mostLikelyRoom;
   RoomSignalHandler signaler;
-  
-  
+  Room * mostLikelyRoom;
+  char state;
+  int matchingTolerance;
+  list<Path *> * paths;
 
 
 };	

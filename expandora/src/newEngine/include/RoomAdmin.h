@@ -11,6 +11,7 @@ class RoomAdmin {
     // makes a lock on a room permanent and anonymous.
     // Like that the room can't be deleted via releaseRoom anymore.
     virtual void keepRoom(RoomRecipient *, int) = 0;
+    
     virtual ~RoomAdmin() {};
 };
 

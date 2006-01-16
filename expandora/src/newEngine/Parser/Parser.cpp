@@ -22,12 +22,17 @@ Initializer<Parser> parser("Parser");
 
 using namespace Qt;
 
-Parser::Parser() : Component(true) {
-  mostLikelyRoom = 0;
-  state = SYNCING;
-  matchingTolerance = 0;
-  remoteMapDelay = 0;
-  paths = new list<Path *>;
+Parser::Parser() : 
+  Component(true), 
+  signaler(this),
+  mostLikelyRoom(0),
+  state(SYNCING),
+  matchingTolerance(0),
+  paths(new list<Path *>)
+{}
+
+void Parser::init() {
+  QObject::connect(&signaler, SIGNAL(addExit(int, int, int)), this, SIGNAL(addExit(int, int, int)));
 }
 
 /**
@@ -244,7 +249,7 @@ void Parser::experimenting()
     return;
   }
 
-  Experimenting exp(this, paths);
+  Experimenting exp(this, paths, playerEvents.front()->type);
 
   for (list<Path *>::iterator i = paths->begin(); i != paths->end(); ++i)
   {
@@ -279,7 +284,7 @@ void Parser::evaluatePaths()
     state = APPROVED;
     mostLikelyRoom = paths->front()->getRoom();
     newCoord = mostLikelyRoom->getCoordinate();
-    paths->front()->approve();
+    paths->front()->approve(-1);
     paths->pop_front();
   }
   else

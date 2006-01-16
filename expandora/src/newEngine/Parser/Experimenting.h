@@ -14,16 +14,19 @@ class Parser;
 class Experimenting : public RoomRecipient {
  private:
   
-  list<Path *> * paths;
+  Parser * parent;
+  char direction;
   list<Path *> * shortPaths;
+  list<Path *> * paths;
   Path * best;
   Path * second;
   PathParameters params;
-  Parser * parent;
+  
   int numPaths;
+  
 
  public:
-  Experimenting(Parser * parent, list<Path *> * paths);
+  Experimenting(Parser * parent, list<Path *> * paths, char direction);
   list<Path *> * evaluate();
   void receiveRoom(RoomAdmin *, Room *);
 
