@@ -19,9 +19,11 @@ HEADERS += CharacterTable.h \
            Map.h \
            MapFrontend.h \
            RoomSearchNode.h \
+	   RoomCollection.h \
            SearchTreeNode.h
 SOURCES += CharacterTable.cpp \
            IntermediateNode.cpp \
+           RoomCollection.cpp \
            Map.cpp \
            MapFrontend.cpp \
            SearchTreeNode.cpp

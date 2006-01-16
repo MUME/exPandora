@@ -18,7 +18,6 @@
 #include "Approved.h"
 #include "Syncing.h"
 #include "Component.h"
-#include "RoomCollection.h"
 
 #define APPROVED 0
 #define EXPERIMENTING 1

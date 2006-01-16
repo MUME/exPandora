@@ -10,7 +10,6 @@
 
 #include "Terrain.h"
 #include "Display.h"
-#include "RoomCollection.h"
 #include "MainWindow.h"
 #include "CachedRoom.h"
 
