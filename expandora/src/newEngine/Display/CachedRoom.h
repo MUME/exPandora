@@ -1,9 +1,9 @@
 #ifndef CACHEDROOM
 #define CACHEDROOM
-#include "RoomSignalHandler.h"
 #include "Coordinate.h"
 #include "Room.h"
-
+#include "RoomAdmin.h"
+#include "RoomRecipient.h"
 
 class RendererWidget;
 

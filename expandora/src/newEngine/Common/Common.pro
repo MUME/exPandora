@@ -25,7 +25,7 @@ SOURCES += Frustum.cpp \
            Property.cpp \
            Room.cpp \
            RoomCollection.cpp \
-           SimpleString.cpp \
+           SimpleString.cpp 
 TEMPLATE = lib
 OBJECTS_DIR = obj
 MOC_DIR = moc
