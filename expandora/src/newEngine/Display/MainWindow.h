@@ -11,43 +11,8 @@
 #include <QMenu>
 #include <QDockWidget>
 
-#include "Display.h"
-
-class RoomInfo : public QWidget
-{
-  Q_OBJECT
-public:
-
-  RoomInfo(QWidget *parent);
-
-  QLabel*     id_label;
-  QLabel*     terrain_label;
-  QLabel*     coord_label;
-
-  QLabel*     name_label;
-  QLineEdit*  name_edit;
-
-  QLabel*     desc_label;
-  QLineEdit*  desc_edit;
-
-  QLabel*     note_label;
-  QLineEdit*  note_edit;
-
-  QLabel*     exits_label;
-  QLabel*     doors_label;
-
-  QPushButton* apply_button;
-
-  void update_info(Room * rr);
-
-private:
-  QHBoxLayout   *topLayout;
-  QHBoxLayout   *noteLayout;
-  QHBoxLayout   *nameLayout;
-  QHBoxLayout   *descLayout;
-  QVBoxLayout   *mainLayout;
-
-};
+#include "RendererWidget.h"
+#include "RoomInfo.h"
 
 
 class MainWindow : public QMainWindow
@@ -64,7 +29,10 @@ private slots:
   void hide_status();
   void hide_roominfo();
   void always_on_top();
-
+  void open();
+  
+signals:
+  void openMap(QString fileName);
 
 private:
   void mousePressEvent( QMouseEvent *);

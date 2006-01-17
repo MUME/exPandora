@@ -7,7 +7,7 @@ using namespace std;
 // this is really a lazy class ...
 class Terrain {	
 	public:
-  		QString desc;		/* name of this flag */
+  		QString desc;		/* name of this terrain */
   		QString filename;      	/* appropriate texture's filename */
   		char   pattern;    	/* appropriate pattern */
   		GLuint texture;		/* and texture handler for renderer */

@@ -16,12 +16,12 @@ void Coordinate::insertMoves(map<QString, Coordinate *> & moves) {
     QString name = i->first;
     Coordinate * value = i->second;
     if (moveCodes.find(name) == moveCodes.end()) {
-      moveCodes.insert(make_pair(name, pos = stdMoves.size()));
+      moveCodes[name] = (pos = stdMoves.size());
       stdMoves.resize(pos+1);
       stdMoves[pos] = value;
     }
     else {
-      pos = moveCodes.find(name)->second;
+      pos = moveCodes[name];
       delete (stdMoves[pos]);
       stdMoves[pos] = value; // overwriting ...
     }

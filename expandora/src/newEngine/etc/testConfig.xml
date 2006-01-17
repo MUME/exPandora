@@ -7,9 +7,9 @@
 		<option name="remoteHost" value="mume.org"/>
 		<option name="remotePort" value="4242"/>
 	</component>
-	<!--component id="Storage" type="Storage">
-		<option name="fileName" value="databases/example_mume.xml"/>
-	</component-->
+	<component id="Storage" type="Storage">
+		<!--option name="fileName" value="databases/example_mume.xml"/-->
+	</component>
 	<component id="Display" type="Display">
 	  <option name="terrains" value="[#.f(&lt;%~WU+:=O/>"/>
 	<option name="[" value="images/indoors.png"/>
@@ -37,7 +37,6 @@
 		    to="Parser" slot="setTerrain(Property *)"/>
 	<connection from="Lexer" signal="eventFound(ParseEvent *)"
 		    to="Parser" slot="event(ParseEvent *)"/>
-	
 	<connection from="Parser" signal="lookingForRooms(RoomRecipient *,ParseEvent *)"
 		    to="Map" slot="lookingForRooms(RoomRecipient *,ParseEvent *)"/>
 	<connection from="Parser" signal="lookingForRooms(RoomRecipient *,unsigned int)"
@@ -52,8 +51,10 @@
 		    to="Map" slot="addExit(int, int, int)"/>
 	<connection from="Parser" signal="createRoom(ParseEvent *, Coordinate *, char)"
 		    to="Map" slot="createRoom(ParseEvent *, Coordinate *, char)"/>
-	<!--connection from="Storage" signal="addRoom(ParseEvent *, Coordinate *, char, int)"
+	<connection from="Storage" signal="addRoom(ParseEvent *, Coordinate *, char, int)"
 		    to="Map" slot="createPredefinedRoom(ParseEvent *, Coordinate *, char, int)"/>
 	<connection from="Storage" signal="addExit(int, int, int)"
-		    to="Map" slot="addExit(int, int, int)"/-->
+		    to="Map" slot="addExit(int, int, int)"/>
+	<connection from="Display" signal="openMap(QString)" 
+		    to="Storage" slot="loadFromFile(QString)"/>
 </configuration>

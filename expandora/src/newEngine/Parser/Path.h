@@ -14,12 +14,12 @@ class Path {
   void removeChild(Path * p);
   void setParent(Path * p);
   bool hasChildren() {return (!children.empty());};
-  void init(Room * room, RoomAdmin * owner, RoomRecipient * locker, RoomSignalHandler * signaler);
+  void init(Room * room, RoomAdmin * owner, RoomRecipient * locker, RoomSignalHandler * signaler, char direction = 0);
   Room * getRoom() {return room;};
   Path * fork(Room * room, Coordinate * expectedCoordinate, RoomAdmin * owner, PathParameters params, RoomRecipient * locker, char dir); 
   //new Path is fetched from pamm, distance between rooms is calculated and probability is updated accordingly
   double getProb() {return probability;};	
-  void approve(int id);
+  void approve();
   void deny(); 	// removes this path and all parents up to the next branch 
   // and gives them back to the pamm 
   // and removes the respective rooms if experimental

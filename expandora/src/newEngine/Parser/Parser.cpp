@@ -284,7 +284,7 @@ void Parser::evaluatePaths()
     state = APPROVED;
     mostLikelyRoom = paths->front()->getRoom();
     newCoord = mostLikelyRoom->getCoordinate();
-    paths->front()->approve(-1);
+    paths->front()->approve();
     paths->pop_front();
   }
   else

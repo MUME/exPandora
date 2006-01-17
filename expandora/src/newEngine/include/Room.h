@@ -52,7 +52,7 @@ private:
   						   the user wants to know each time she enters */
   TinyList<SimpleString *> optionalProperties;	/* secret exit names for example - properties we can match if they are present */
 
-  TinyList<set<int> *> exits;	 	        /* we only match the defined standard exits and keep one field for "weird" exits */
+  TinyList<set<int> *> exits;	 	        
   TinyList<set<int> *> reverseExits;
   bool unique;
   Coordinate * c;		/* coordinates on our map */

@@ -72,17 +72,9 @@ class StructureParser: public QObject, public QXmlDefaultHandler {
 class XmlStorage: public Component {
 	private:
 		Q_OBJECT	
-	public:
-		XmlStorage() {}
 		
-		
-		void xml_readbase();
-		void init() {
-			xml_readbase();
-		}
 	public slots:
-		//void writeRoom( Room * room );
-		//void writeExit( int, int, int );
+		void loadFromFile(QString fileName);
 	
 		
 	signals:

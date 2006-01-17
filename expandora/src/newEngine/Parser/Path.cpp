@@ -13,11 +13,13 @@ Path::Path() :
   dir(0)
 {}
 
-void Path::init(Room * in_room, RoomAdmin * owner, RoomRecipient * locker, RoomSignalHandler * in_signaler) {
+void Path::init(Room * in_room, RoomAdmin * owner, RoomRecipient * locker, RoomSignalHandler * in_signaler, char direction) {
   if (active) {
     throw "fatal: path already active";
   }
   else active = true;
+  dir = direction;
+  
   
   signaler = in_signaler;
   room = in_room;
@@ -40,12 +42,12 @@ Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, RoomAdmin * o
     throw "fatal: path inactive";
   }
 
-  dir = direction;
+  
   Path * ret = pamm.activate();
   if (ret == parent) {
     throw "fatal: building path circle";
   }
-  ret->init(in_room, owner, locker, signaler);
+  ret->init(in_room, owner, locker, signaler, direction);
   ret->setParent(this);
   children.insert(ret);
   double dist = expectedCoordinate->distance(in_room->getCoordinate());
@@ -63,12 +65,19 @@ void Path::setParent(Path * p) {
   parent = p;
 }
 
-void Path::approve(int id) {
+void Path::approve() {
   if (!active) {
     throw "fatal: path inactive";
   }
+  int id = -1;
+  if (parent) {
+    id = parent->getRoom()->getId();
+    parent->removeChild(this);
+    parent->approve();
+    parent = 0;
+  }
   signaler->keep(room, dir, id);
-  id = room->getId();
+  
   room = 0;
   set<Path *>::iterator i = children.begin();
   for(; i != children.end(); ++i) {
@@ -76,11 +85,7 @@ void Path::approve(int id) {
   }
   children.clear();
   
-  if (parent != 0) {
-    parent->removeChild(this);
-    parent->approve(id);
-    parent = 0;
-  }
+  
   pamm.deactivate(this);
 }
 

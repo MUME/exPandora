@@ -17,10 +17,21 @@ Initializer<XmlStorage> xmlStorage("Storage");
 #endif
 
 
-void XmlStorage::xml_readbase()
+void XmlStorage::loadFromFile(QString fileName)
 {
 
-  QFile xmlFile( options["fileName"].toString() );
+  map<QString, Coordinate *> myMoves;
+  myMoves["n"] = new Coordinate(0,1,0);
+  myMoves["s"] = new Coordinate(0,-1,0);
+  myMoves["w"] = new Coordinate(-1,0,0);
+  myMoves["e"] = new Coordinate(1,0,0);
+  myMoves["u"] = new Coordinate(0,0,1);
+  myMoves["d"] = new Coordinate(0,0,-1);
+
+  Coordinate::insertMoves(myMoves);
+  
+  QFile xmlFile(fileName);
+  //QFile xmlFile( options["fileName"].toString() );
   QXmlInputSource source( &xmlFile );
 
   QXmlSimpleReader reader;
@@ -47,6 +58,9 @@ void XmlStorage::xml_readbase()
 
 void StructureParser::addExits()
 {
+  
+
+  
   Exit * e = 0;
   while ( !( exits.empty() ) )
   {
@@ -189,7 +203,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
     s = attributes.value( "dir" );
     strncpy( data,  s.toLatin1(), s.length() );
     data[ s.length() ] = 0;
-    char d = data[ 0 ];
+    char d = data[0];
 
 
     s = attributes.value( "to" );
@@ -223,7 +237,7 @@ bool StructureParser::startElement( const QString& , const QString& ,
     {
       Exit * e = new Exit;
       e->sourceId = id;
-      e->dir = d;
+      e->dir = Coordinate::moveCodes[QChar(d)];
       e->destId = to;
       exits.push( e );
     }

@@ -49,7 +49,7 @@ list<Path *> * Experimenting::evaluate()
 
   if (best != 0)
   {
-    if (second == 0 || best->getProb() > second->getProb()*params.acceptBest)
+    if (second == 0 || best->getProb() > second->getProb()*params.acceptBestRelative || best->getProb() > second->getProb()+params.acceptBestAbsolute)
     {
       for (list<Path *>::iterator i = paths->begin(); i != paths->end(); ++i)
       {

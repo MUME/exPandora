@@ -18,8 +18,8 @@
 class PathParameters{
 public:
     PathParameters();
-    double acceptBest;
-    double throwAway;
+    double acceptBestRelative;
+    double acceptBestAbsolute;
     double newRoomPenalty;
     double correctPositionBonus;
     double maxPaths;

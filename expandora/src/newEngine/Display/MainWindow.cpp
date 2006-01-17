@@ -3,9 +3,9 @@
 #include <qmenubar.h>
 #include <qstatusbar.h>
 #include <QKeyEvent>
+#include <QFileDialog>
 
 #include "MainWindow.h"
-#include "Display.h"
 #include "Room.h"
 #include "Coordinate.h"
 #include "Terrain.h"
@@ -15,97 +15,6 @@
 
 using namespace Qt;
 
-RoomInfo::RoomInfo(QWidget* parent)
-    : QWidget(parent)
-{
-  /* ------- */
-  id_label = new QLabel("ID: Out of sync");
-  terrain_label = new QLabel("T: NONE");
-  coord_label = new QLabel("COORD:");
-
-  topLayout = new QHBoxLayout;
-  topLayout->addWidget(id_label);
-  topLayout->addStretch(2);
-  topLayout->addWidget(terrain_label);
-  topLayout->addStretch(2);
-  topLayout->addWidget(coord_label);
-  /* ------- */
-
-  /* ------- */
-  name_label= new QLabel("RN ");
-  name_edit = new QLineEdit(this);
-
-  name_edit->setAlignment(Qt::AlignLeft);
-
-  nameLayout = new QHBoxLayout;
-  nameLayout->addWidget(name_label);
-  //  nameLayout->addStretch(1);
-  nameLayout->addWidget(name_edit);
-  /* ------- */
-  desc_label= new QLabel("D ");
-
-  desc_edit = new QLineEdit(this);
-
-  descLayout = new QHBoxLayout;
-  descLayout->addWidget(desc_label);
-  //  descLayout->addStretch(1);
-  descLayout->addWidget(desc_edit);
-
-  /* --- */
-  note_label= new QLabel("Note ");
-
-  note_edit = new QLineEdit(this);
-
-  noteLayout = new QHBoxLayout;
-  noteLayout->addWidget(note_label);
-  //  noteLayout->addStretch(1);
-  noteLayout->addWidget(note_edit);
-  /* --- */
-
-  exits_label = new QLabel("Exits:");
-  doors_label = new QLabel("Doors:");
-
-
-  mainLayout = new QVBoxLayout(this);
-  mainLayout->addLayout(topLayout);
-  mainLayout->addLayout(nameLayout);
-  mainLayout->addLayout(descLayout);
-  mainLayout->addLayout(noteLayout);
-  mainLayout->addWidget(doors_label);
-  mainLayout->addWidget(exits_label);
-
-
-  mainLayout->setMargin(11);
-  mainLayout->setSpacing(6);
-
-}
-
-void RoomInfo::update_info(Room * rr)
-{
-  char str[200];
-
-  Coordinate * r;
-
-  if (rr) r = rr->getCoordinate();
-  else r = new Coordinate(0,0,0);
-
-  sprintf(str, "Coord: X: %i, Y %i, Z: %i", r->x, r->y, r->z);
-  coord_label->setText( str );
-
-
-  if(rr)
-  {
-    sprintf(str, " %s ", (const char *)(Terrain::terrains[rr->getTerrain()]->desc).toLatin1());
-
-
-    terrain_label->setText( str );
-  }
-  else
-  {
-    terrain_label->setText(" T: NONE ");
-  }
-
-}
 
 
 
@@ -114,25 +23,26 @@ void RoomInfo::update_info(Room * rr)
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow( parent)
 {
-  
+
   resize(640, 480);
   renderer =  new RendererWidget( this );
   setCentralWidget( renderer );
-  
-  
+
+
   QMenu *fileMenu = new QMenu( "File", 0 );
   fileMenu->addAction( tr("&Exit"), qApp, SLOT( quit() ), Qt::CTRL+Qt::Key_Q );
+  fileMenu->addAction( tr("&Open..."), this, SLOT( open() ));
   menuBar()->addMenu( fileMenu );
 
 
   optionsMenu = new QMenu( "Options", 0 );
 
 
-/*  hide_status_id = optionsMenu->addAction( tr("Hide/Show Status"), this, SLOT( hide_status()), Qt::Key_F11 );
-  hide_status_id->setCheckable(true);
-  hide_roominfo_id = optionsMenu->addAction( tr("Hide/Show Room info"), this, SLOT( hide_roominfo()), Qt::Key_F10);
-  hide_roominfo_id->setCheckable(true);
-*/
+  /*  hide_status_id = optionsMenu->addAction( tr("Hide/Show Status"), this, SLOT( hide_status()), Qt::Key_F11 );
+    hide_status_id->setCheckable(true);
+    hide_roominfo_id = optionsMenu->addAction( tr("Hide/Show Room info"), this, SLOT( hide_roominfo()), Qt::Key_F10);
+    hide_roominfo_id->setCheckable(true);
+  */
 
   optionsMenu->addSeparator();
 
@@ -152,14 +62,14 @@ MainWindow::MainWindow(QWidget *parent)
   modLabel->setMinimumSize(modLabel->sizeHint());
   modLabel->clear();
 
-//  statusBar()->addWidget(locationLabel);
+  //  statusBar()->addWidget(locationLabel);
   statusBar()->addWidget(formulaLabel, 1);
   statusBar()->addWidget(modLabel);
 
 
 
-/*  hide_roominfo_id->setChecked(true);
-  hide_status_id->setChecked(true);*/
+  /*  hide_roominfo_id->setChecked(true);
+    hide_status_id->setChecked(true);*/
   always_on_top_id->setChecked(false);
 
 
@@ -170,7 +80,7 @@ MainWindow::MainWindow(QWidget *parent)
   //dock->setWidget(roominfo);
 
 
-  
+
 
   LeftButtonPressed = false;
   RightButtonPressed = false;
@@ -181,13 +91,24 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::update_status_bar(Room *)
 {
 
-//  locationLabel->setText("silly location bar");
+  //  locationLabel->setText("silly location bar");
 
-//  roominfo->update_info(rr);
+  //  roominfo->update_info(rr);
 }
 
 
-
+void MainWindow::open()
+{
+  QString s = QFileDialog::getOpenFileName(
+                0,
+                "Choose a map file",
+                QString(),
+                "Map (*.xml)");
+  if(!s.isNull())
+  {
+    emit openMap(s);
+  }
+}
 
 
 
@@ -214,29 +135,29 @@ void MainWindow::always_on_top()
 void MainWindow::hide_status()
 {
 
-/*  if (hide_status_id->isChecked())
-  {
-    statusBar()->show();
-  }
-  else
-  {
-    statusBar()->hide();
-  }
-*/
+  /*  if (hide_status_id->isChecked())
+    {
+      statusBar()->show();
+    }
+    else
+    {
+      statusBar()->hide();
+    }
+  */
 }
 
 
 void MainWindow::hide_roominfo()
 {
 
-/*  if (hide_roominfo_id->isChecked())
-  {
-    dock->show();
-  }
-  else
-  {
-    dock->hide();
-  }*/
+  /*  if (hide_roominfo_id->isChecked())
+    {
+      dock->show();
+    }
+    else
+    {
+      dock->hide();
+    }*/
 }
 
 
@@ -321,7 +242,7 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
     renderer->shiftView();
     break;
   }
-  
+
 
 }
 
@@ -369,10 +290,10 @@ void MainWindow::mouseMoveEvent( QMouseEvent *e)
     //if ( ((dist_x * dist_x) + (dist_y * dist_y)) >= 100)
     //{
 
-      renderer->userx += dist_x/10.0;
-      renderer->usery -= dist_y/10.0;
-      renderer->shiftView();
-      old_pos = pos;
+    renderer->userx += dist_x/10.0;
+    renderer->usery -= dist_y/10.0;
+    renderer->shiftView();
+    old_pos = pos;
     //}
 
   }

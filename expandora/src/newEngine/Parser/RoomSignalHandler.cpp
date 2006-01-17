@@ -6,7 +6,7 @@ void RoomSignalHandler::hold(Room * room, RoomAdmin * owner, RoomRecipient * loc
 {
   owners[room] = owner;
   if (lockers[room].empty()) holdCount[room] = 0;
-  if (locker) lockers[room].insert(locker);
+  lockers[room].insert(locker);
   ++holdCount[room];
 }
 
@@ -21,7 +21,7 @@ void RoomSignalHandler::release(Room * room)
     {
       for(set<RoomRecipient *>::iterator i = lockers[room].begin(); i != lockers[room].end(); ++i)
       {
-        rcv->releaseRoom(*i, room->getId());
+        if (*i) rcv->releaseRoom(*i, room->getId());
       }
       lockers[room].clear();
       owners[room] = 0;
@@ -29,7 +29,7 @@ void RoomSignalHandler::release(Room * room)
   }
 }
 
-void RoomSignalHandler::keep(Room * room, char dir, int toId)
+void RoomSignalHandler::keep(Room * room, char dir, int fromId)
 {
   if (holdCount.find(room) == holdCount.end())
     throw "room can't be kept because it isn't held";
@@ -37,15 +37,17 @@ void RoomSignalHandler::keep(Room * room, char dir, int toId)
   RoomAdmin * rcv = owners[room];
   if (rcv)
   {
-
-    rcv->keepRoom(*(lockers[room].begin()), room->getId());
-
-    if (toId >= 0)
+    if (fromId >= 0)
     {
       set<int> * neighbours = room->getNeighbours(dir);
       if (!neighbours || neighbours->find(dir) == neighbours->end())
-        emit addExit(room->getId(), toId, dir);
+        emit addExit(fromId, room->getId(), dir);
     }
+    RoomRecipient * locker = *(lockers[room].begin());
+    if (locker) // the locker is 0 if the room was found by approved - so no keep is needed
+      rcv->keepRoom(locker, room->getId());
+
+    
   }
   if (holdCount[room] == 0)
   {
