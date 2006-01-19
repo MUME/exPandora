@@ -171,36 +171,36 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
 
   case 'x':
     renderer->userz += 1;
-    renderer->shiftView();
+    
     break;
 
   case 'y':
     renderer->userz -= 1;
-    renderer->shiftView();
+    
     break;
 
   case 'q':
     renderer->userx -= 1;
-    renderer->shiftView();
+    
     break;
 
   case 'w':
     renderer->userx += 1;
-    renderer->shiftView();
+    
     break;
 
   case 'a':
     renderer->usery += 1;
-    renderer->shiftView();
+    
     break;
 
   case 's':
     renderer->usery -= 1;
-    renderer->shiftView();
+    
     break;
 
   case 'r':
-    renderer->shiftView();
+    
     break;
 
   }
@@ -209,27 +209,26 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
   {
   case Key_Up:
     renderer->anglex += 5;
-    renderer->shiftView();
+    
     break;
   case Key_Down:
     renderer->anglex -= 5;
-    renderer->shiftView();
+    
     break;
   case Key_Left:
     renderer->angley -= 5;
-    renderer->shiftView();
+    
     break;
   case Key_Right:
     renderer->angley += 5;
-    renderer->shiftView();
     break;
   case Key_PageUp:
     renderer->anglez += 5;
-    renderer->shiftView();
+    
     break;
   case Key_PageDown:
     renderer->anglez -= 5;
-    renderer->shiftView();
+    
     break;
 
   case Key_Escape:
@@ -239,10 +238,10 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
     renderer->userx = 0;
     renderer->usery = 0;
     renderer->userz = BASE_Z;
-    renderer->shiftView();
+    
     break;
   }
-
+  renderer->shiftView();
 
 }
 

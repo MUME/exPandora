@@ -11,7 +11,7 @@
 */
 CachedRoom::CachedRoom(Room * in_base, RoomAdmin * in_owner, RoomRecipient * in_locker, map<int, CachedRoom *> & in_cache) : base(in_base), owner(in_owner), locker(in_locker), cache(in_cache) {
   set<int> rawExits;
-  for (unsigned int i = 0; i < base->numExits(); ++i) {
+  for (uint i = 0; i < base->numExits(); ++i) {
     rawExits = base->getNeighbours(i);
     
     for (set<int>::iterator iter = rawExits.begin(); iter != rawExits.end(); ++iter) {
@@ -20,7 +20,7 @@ CachedRoom::CachedRoom(Room * in_base, RoomAdmin * in_owner, RoomRecipient * in_
     }
   }
 
-  for (unsigned int i = 0; i < base->numReverseExits(); ++i) {
+  for (uint i = 0; i < base->numReverseExits(); ++i) {
     rawExits = base->getReverseNeighbours(i);
     
     for (set<int>::iterator iter = rawExits.begin(); iter != rawExits.end(); ++iter) {
@@ -83,7 +83,7 @@ void CachedRoom::drawExits(RendererWidget * renderer) {
       if(other) {
 	other->drawExits(this, renderer);
 	drawExits(other, renderer);
-	other->removeReverse(mId);
+	if (other != this) other->removeReverse(mId);
 	removeReverse(oid);
       }
     }

@@ -15,12 +15,12 @@ bool Map::defined(Coordinate & in_c)
       segment[c.x][c.y].size() > (uint)c.z &&
       segment[c.x][c.y][c.z])
   {
-    
+
     return true;
   }
   else
   {
-    
+
     return false;
   }
 
@@ -85,32 +85,29 @@ Coordinate Map::getNearestFree(Coordinate & p)
   Coordinate c;
   int distance = 1;
   int x  = 0, y = 0, z = 0;
+  int temp = 0;
   while(1)
   {
-    for (x = 0; x < distance; x++)
+
+    for (; x+y+z < distance; temp=x,x=y,y=z,z=temp,++z)
     {
-      for (y = 0; x+y < distance; y++)
-      {
-        for (z = 0; x+y+z < distance; z++)
-        {
-          c.x=p.x+x, c.y=p.y+y, c.z=p.z+z;
-          if (!defined(c)) return c;
-          c.z=p.z-z;
-          if (!defined(c)) return c;
-          c.y=p.y-y, c.z=p.z+z;
-          if (!defined(c)) return c;
-          c.z=p.z-z;
-          if (!defined(c)) return c;
-          c.x=p.x-x, c.y=p.y+y;c.z=p.z+z;
-          if (!defined(c)) return c;
-          c.z=p.z-z;
-          if (!defined(c)) return c;
-          c.y=p.y-y, c.z=p.z+z;
-          if (!defined(c)) return c;
-          c.z=p.z-z;
-          if (!defined(c)) return c;
-        }
-      }
+      c.x=p.x+x, c.y=p.y+y, c.z=p.z+z;
+      if (!defined(c)) return c;
+      c.z=p.z-z;
+      if (!defined(c)) return c;
+      c.y=p.y-y, c.z=p.z+z;
+      if (!defined(c)) return c;
+      c.z=p.z-z;
+      if (!defined(c)) return c;
+      c.x=p.x-x, c.y=p.y+y;c.z=p.z+z;
+      if (!defined(c)) return c;
+      c.z=p.z-z;
+      if (!defined(c)) return c;
+      c.y=p.y-y, c.z=p.z+z;
+      if (!defined(c)) return c;
+      c.z=p.z-z;
+      if (!defined(c)) return c;
+
     }
     distance++;
   }

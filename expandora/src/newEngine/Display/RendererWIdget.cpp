@@ -126,11 +126,11 @@ void RendererWidget::resizeGL( int width, int height )
   shiftView();
 }
 
-void RendererWidget::moveMarker( Coordinate oldPos, Coordinate newPos )
+void RendererWidget::moveMarker( Coordinate, Coordinate newPos )
 {
-
-    glColor4f( 0, 0, 0, 0 );
-    drawMarker( oldPos );
+    position = newPos;
+    /*glColor4f( 0, 0, 0, 0 );
+    drawMarker( oldPos );*/
 
 
     
@@ -138,8 +138,10 @@ void RendererWidget::moveMarker( Coordinate oldPos, Coordinate newPos )
     usery = -newPos.y;
     userz = -newPos.z + BASE_Z;
     shiftView();
-    glColor4f( marker_colour[ 0 ], marker_colour[ 1 ], marker_colour[ 2 ], marker_colour[ 3 ] );
-    drawMarker( newPos );
+    //glColor4f( marker_colour[ 0 ], marker_colour[ 1 ], marker_colour[ 2 ], marker_colour[ 3 ] );
+    //drawMarker( position );
+    swapBuffers();
+    
   
   
 }
@@ -204,7 +206,7 @@ void RendererWidget::receiveRoom( RoomAdmin * owner, Room * pr )
   texture = 1;
 
   
-
+  
   int z = p.z;
 
   if ( z <= -14 )
@@ -263,7 +265,7 @@ void RendererWidget::receiveRoom( RoomAdmin * owner, Room * pr )
     colour[ 2 ] = 0.9;
     colour[ 3 ] = 0.1;
   }
-
+  
 
   distance = frustum.getDistance( d );
 
@@ -368,7 +370,7 @@ void RendererWidget::drawExit( Coordinate & from, Coordinate & to, unsigned int 
 
 void RendererWidget::shiftView()
 {
-
+  swapBuffers();
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
   glLoadIdentity();
@@ -397,7 +399,10 @@ void RendererWidget::shiftView()
 
 
   emit viewableAreaChanged( this, &frustum );
-  swapBuffers();
+  glColor4f( marker_colour[ 0 ], marker_colour[ 1 ], marker_colour[ 2 ], marker_colour[ 3 ] );
+  drawMarker( position );
+  
+  
 }
 
 
@@ -424,5 +429,6 @@ void RendererWidget::CalculateFrustum()
 }
 
 void RendererWidget::paintGL() {
-  emit viewableAreaChanged( this, &frustum );
+  shiftView();
+  
 }

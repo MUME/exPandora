@@ -11,33 +11,35 @@
 #define MARKER_SIZE           (ROOM_SIZE/2.0)
 
 
-class RendererWidget : public QGLWidget, public RoomRecipient {
-  Q_OBJECT 
- private:
-  
+class RendererWidget : public QGLWidget, public RoomRecipient
+{
+  Q_OBJECT
+private:
+
   static const GLfloat marker_colour[4];
   static const int texture_visibilit_range;
   static const int details_visibility_range;
 
   map<int, CachedRoom *> roomsCache;
+  Coordinate position;
   GLfloat       colour[4];
   Frustum	frustum;
   GLuint        basic_gllist;
   GLuint        global_list;
   int           curx;
   int           cury;
-  int           curz;			/* current rooms position */ 
-  
-    
-  void drawMarker(Coordinate & pos);
-  
-  
+  int           curz;			/* current rooms position */
 
- public slots:
+
+  void drawMarker(Coordinate & pos);
+
+
+
+public slots:
   void moveMarker(Coordinate, Coordinate);
-  
-  
- public:
+
+
+public:
   GLfloat       angley;
   GLfloat       anglex;
   GLfloat       anglez;
@@ -50,15 +52,15 @@ class RendererWidget : public QGLWidget, public RoomRecipient {
   void shiftView();
   void CalculateFrustum();
   void receiveRoom(RoomAdmin *,Room *);
-  
- protected:
+
+protected:
   void initializeGL();
   void resizeGL( int width, int height );
   void paintGL();
 
- signals:
-  void viewableAreaChanged(RoomRecipient *, Frustum *); 
-  
+signals:
+  void viewableAreaChanged(RoomRecipient *, Frustum *);
+
 };
 #endif
 
