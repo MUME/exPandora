@@ -28,13 +28,13 @@ void Frustum::NormalizePlane(int side)
   frustum[side][D] /= magnitude;
 }
 
-bool Frustum::PointInFrustum(Coordinate * c)
+bool Frustum::PointInFrustum(Coordinate & c)
 {
   // Go through all the sides of the frustum
   for(int i = 0; i < 6; ++i )
   {
     // Calculate the plane equation and check if the point is behind a side of the frustum
-    if(frustum[i][A] * (float)c->x + frustum[i][B] * (float)c->y + frustum[i][C] * (float)c->z + frustum[i][D] <= 0)
+    if(frustum[i][A] * (float)c.x + frustum[i][B] * (float)c.y + frustum[i][C] * (float)c.z + frustum[i][D] <= 0)
     {
       // The point was behind a side, so it ISN'T in the frustum
       return false;
@@ -114,7 +114,7 @@ void Frustum::rebuild(float * clip)
 }
 
 
-float Frustum::getDistance(Coordinate * c, int side)
+float Frustum::getDistance(Coordinate & c, int side)
 {
-  return frustum[side][A] * c->x + frustum[side][B] * c->y + frustum[side][C] * c->z + frustum[side][D];
+  return frustum[side][A] * c.x + frustum[side][B] * c.y + frustum[side][C] * c.z + frustum[side][D];
 }

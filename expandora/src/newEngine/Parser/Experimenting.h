@@ -15,7 +15,7 @@ class Experimenting : public RoomRecipient {
  private:
   
   Parser * parent;
-  char direction;
+  uint direction;
   list<Path *> * shortPaths;
   list<Path *> * paths;
   Path * best;
@@ -26,7 +26,7 @@ class Experimenting : public RoomRecipient {
   
 
  public:
-  Experimenting(Parser * parent, list<Path *> * paths, char direction);
+  Experimenting(Parser * parent, list<Path *> * paths, uint direction);
   list<Path *> * evaluate();
   void receiveRoom(RoomAdmin *, Room *);
 

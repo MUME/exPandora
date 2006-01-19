@@ -20,13 +20,13 @@ Initializer<XmlStorage> xmlStorage("Storage");
 void XmlStorage::loadFromFile(QString fileName)
 {
 
-  map<QString, Coordinate *> myMoves;
-  myMoves["n"] = new Coordinate(0,1,0);
-  myMoves["s"] = new Coordinate(0,-1,0);
-  myMoves["w"] = new Coordinate(-1,0,0);
-  myMoves["e"] = new Coordinate(1,0,0);
-  myMoves["u"] = new Coordinate(0,0,1);
-  myMoves["d"] = new Coordinate(0,0,-1);
+  map<QString, Coordinate> myMoves;
+  myMoves["n"] = Coordinate(0,1,0);
+  myMoves["s"] = Coordinate(0,-1,0);
+  myMoves["w"] = Coordinate(-1,0,0);
+  myMoves["e"] = Coordinate(1,0,0);
+  myMoves["u"] = Coordinate(0,0,1);
+  myMoves["d"] = Coordinate(0,0,-1);
 
   Coordinate::insertMoves(myMoves);
   
@@ -40,8 +40,8 @@ void XmlStorage::loadFromFile(QString fileName)
   StructureParser handler;
   reader.setContentHandler( &handler );
 
-  connect( &handler, SIGNAL( addExit( int, int, int ) ), this, SIGNAL( addExit( int, int, int ) ) );
-  connect( &handler, SIGNAL( addRoom( ParseEvent*, Coordinate*, char, int ) ), this, SIGNAL( addRoom( ParseEvent*, Coordinate*, char, int ) ) );
+  connect( &handler, SIGNAL( addExit( int, int, uint ) ), this, SIGNAL( addExit( int, int, uint ) ) );
+  connect( &handler, SIGNAL( addRoom( ParseEvent*, Coordinate, char, int ) ), this, SIGNAL( addRoom( ParseEvent*, Coordinate, char, int ) ) );
 
 
 
@@ -98,13 +98,10 @@ StructureParser::StructureParser()
     : QXmlDefaultHandler(),
     roomProps( 0 ),
     prop( 0 ),
-    c( cmm.activate() ),
     ts( 0 ),
     t( 0 ),
     id( 0 )
-{
-  c->clear();
-}
+{}
 
 
 bool StructureParser::endElement( const QString& , const QString& , const QString& qName )
@@ -120,7 +117,7 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
     
     pemm.deactivate( roomProps );
     roomProps = 0;
-    c->clear();
+    c.clear();
     id = 0;
 
 
@@ -272,17 +269,17 @@ bool StructureParser::startElement( const QString& , const QString& ,
       }
       if ( attributes.qName( i ) == "x" )
       {
-        c->x = atoi( data ) / 2;
+        c.x = atoi( data ) / 2;
         continue;
       }
       if ( attributes.qName( i ) == "y" )
       {
-        c->y = atoi( data ) / 2;
+        c.y = atoi( data ) / 2;
         continue;
       }
       if ( attributes.qName( i ) == "z" )
       {
-        c->z = atoi( data ) / 2;
+        c.z = atoi( data ) / 2;
         continue;
       }
 

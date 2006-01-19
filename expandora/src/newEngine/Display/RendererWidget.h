@@ -29,12 +29,12 @@ class RendererWidget : public QGLWidget, public RoomRecipient {
   int           curz;			/* current rooms position */ 
   
     
-  void drawMarker(Coordinate * pos);
+  void drawMarker(Coordinate & pos);
   
   
 
  public slots:
-  void moveMarker(Coordinate *, Coordinate *);
+  void moveMarker(Coordinate, Coordinate);
   
   
  public:
@@ -46,7 +46,7 @@ class RendererWidget : public QGLWidget, public RoomRecipient {
   float           userz;		/* additional shift added by user */
 
   RendererWidget( QWidget *parent);
-  void drawExit(Coordinate * from, Coordinate * to, unsigned int dir);
+  void drawExit(Coordinate & from, Coordinate & to, uint dir);
   void shiftView();
   void CalculateFrustum();
   void receiveRoom(RoomAdmin *,Room *);

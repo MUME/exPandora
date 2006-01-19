@@ -42,9 +42,9 @@ public:
   ~Frustum();
   
   
-  bool PointInFrustum(Coordinate * c);
+  bool PointInFrustum(Coordinate & c);
   void rebuild(float * clip);
-  float getDistance(Coordinate * c, int side = FRONT);
+  float getDistance(Coordinate & c, int side = FRONT);
 private:
   //Coordinate center;
   void NormalizePlane(int side);

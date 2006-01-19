@@ -19,7 +19,7 @@ class DisplayComponent : public Component {
   void openMap(QString);
   
  public slots:
-  void playerMoved(Coordinate *, Coordinate *);
+  void playerMoved(Coordinate, Coordinate);
   
  public:
   DisplayComponent();

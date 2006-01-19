@@ -37,13 +37,12 @@ private:
   vector<set<RoomRecipient *> > locks;
   vector<RoomCollection *> roomHomes;
   stack<int>  unusedIds;
-  unsigned int greatestUsedId;
+  uint greatestUsedId;
   QMutex mapLock;
 
 
   void removeRoom(int id);
   void assignId(Room * room, RoomCollection * roomHome);
-  unsigned int lastId() {return greatestUsedId;}
 
 public:
   MapFrontend();
@@ -62,19 +61,19 @@ public slots:
   // looking for rooms leads to a bunch of foundRoom() signals
   void lookingForRooms(RoomRecipient *,ParseEvent *);
   void lookingForRooms(RoomRecipient *,unsigned int); // by id
-  void lookingForRooms(RoomRecipient *,Coordinate *);
+  void lookingForRooms(RoomRecipient *,Coordinate);
   void lookingForRooms(RoomRecipient *,Frustum *);
 
   // createRoom creates a room without a lock
   // it will get deleted if no one looks for it for a certain time
-  void createRoom(ParseEvent *, Coordinate *, char);
+  void createRoom(ParseEvent *, Coordinate, char);
 
   // same as above, but creates an anonymous lock on the room
   // and tries to assign a special id
-  void createPredefinedRoom(ParseEvent *, Coordinate *, char, int);
+  void createPredefinedRoom(ParseEvent *, Coordinate, char, int);
 
   // addExit doesn't lock a room either
-  void addExit(int, int, int);
+  void addExit(int, int, uint);
 
 
 

@@ -126,37 +126,31 @@ void RendererWidget::resizeGL( int width, int height )
   shiftView();
 }
 
-void RendererWidget::moveMarker( Coordinate * oldPos, Coordinate * newPos )
+void RendererWidget::moveMarker( Coordinate oldPos, Coordinate newPos )
 {
-  if ( oldPos != 0 )
-  {
+
     glColor4f( 0, 0, 0, 0 );
     drawMarker( oldPos );
-  }
 
-  if ( newPos != 0 )
-  {
+
     
-    userx = -newPos->x;
-    usery = -newPos->y;
-    userz = -newPos->z + BASE_Z;
+    userx = -newPos.x;
+    usery = -newPos.y;
+    userz = -newPos.z + BASE_Z;
     shiftView();
     glColor4f( marker_colour[ 0 ], marker_colour[ 1 ], marker_colour[ 2 ], marker_colour[ 3 ] );
     drawMarker( newPos );
-    
-    
-  }
   
   
 }
 
 
-void RendererWidget::drawMarker( Coordinate * pos )
+void RendererWidget::drawMarker( Coordinate & pos )
 {
   int dx, dy, dz;
-  dx = pos->x - curx;
-  dy = pos->y - cury;
-  dz = ( pos->z - curz ) * DIST_Z;
+  dx = pos.x;
+  dy = pos.y ;
+  dz = ( pos.z ) * DIST_Z;
 
 
   /* upper */
@@ -196,14 +190,14 @@ void RendererWidget::receiveRoom( RoomAdmin * owner, Room * pr )
 
 
 
-  Coordinate * p = pr->getCoordinate();
+  Coordinate p = pr->getCoordinate();
 
   char lines, texture;
   float distance;
 
   CachedRoom * cr = new CachedRoom( pr, owner, this, roomsCache );
 
-  Coordinate d( p->x, p->y , ( p->z ) * DIST_Z );
+  Coordinate d( p.x, p.y , ( p.z ) * DIST_Z );
 
 
   lines = 1;
@@ -211,7 +205,7 @@ void RendererWidget::receiveRoom( RoomAdmin * owner, Room * pr )
 
   
 
-  int z = p->z;
+  int z = p.z;
 
   if ( z <= -14 )
   {
@@ -271,7 +265,7 @@ void RendererWidget::receiveRoom( RoomAdmin * owner, Room * pr )
   }
 
 
-  distance = frustum.getDistance( &d );
+  distance = frustum.getDistance( d );
 
   if ( distance >= details_visibility_range )
     lines = 0;
@@ -314,45 +308,46 @@ void RendererWidget::receiveRoom( RoomAdmin * owner, Room * pr )
   //owner->releaseRoom(this, pr->getId());
   
 
-  cr->drawExits( this );
+   cr->drawExits( this ); //this is only allowed because we are sure no one else called 
+			  //drawExits(RendererWidget *) on any CachedRoom since the 
+			  //Construction of this one
 
 }
 
 
-void RendererWidget::drawExit( Coordinate * from, Coordinate * to, unsigned int k )
+void RendererWidget::drawExit( Coordinate & from, Coordinate & to, unsigned int k )
 {
   GLfloat kx = 0.0;
   GLfloat ky = 0.0;
 
-  GLfloat dx = from->x;
-  GLfloat dy = from->y;
-  GLfloat dz = ( from->z ) * DIST_Z;
+  GLfloat dx = from.x;
+  GLfloat dy = from.y;
+  GLfloat dz = ( from.z ) * DIST_Z;
 
-  GLfloat dx2 = ( dx + ((float)to->x)) / 2.0;
-  GLfloat dy2 = ( dy + ((float)to->y)) / 2.0;
-  GLfloat dz2 = ( dz + ((float)to->z) * DIST_Z ) / 2.0;
+  GLfloat dx2 = ( dx + ((float)to.x)) / 2.0;
+  GLfloat dy2 = ( dy + ((float)to.y)) / 2.0;
+  GLfloat dz2 = ( dz + ((float)to.z) * DIST_Z ) / 2.0;
 
 
-  Coordinate null;
-  Coordinate * dir = 0;
+  
+  Coordinate dir;
   if ( k < Coordinate::stdMoves.size() )
     dir = Coordinate::stdMoves[ k ];
-  else 
-    dir = &null;
+  
 
-  if ( dir->y > 0 )
+  if ( dir.y > 0 )
   {
     ky = ROOM_SIZE;
   }
-  else if ( dir->y < 0 )
+  else if ( dir.y < 0 )
   {
     ky = -ROOM_SIZE;
   }
-  if ( dir->x > 0 )
+  if ( dir.x > 0 )
   {
     kx = ROOM_SIZE;
   }
-  else if ( dir->x < 0 )
+  else if ( dir.x < 0 )
   {
     kx = -ROOM_SIZE;
   }

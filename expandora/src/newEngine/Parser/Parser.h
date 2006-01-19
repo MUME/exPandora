@@ -42,17 +42,17 @@ Q_OBJECT
   // the map shoud keep track of them and only deliver results to 
   // the interested objects
   void lookingForRooms(RoomRecipient *,ParseEvent *);
-  void lookingForRooms(RoomRecipient *,unsigned int);
-  void lookingForRooms(RoomRecipient *,Coordinate *);
-  void playerMoved(Coordinate *, Coordinate *);
-  void createRoom(ParseEvent *, Coordinate *, char);
-  void addExit(int, int, int);
+  void lookingForRooms(RoomRecipient *,uint);
+  void lookingForRooms(RoomRecipient *,Coordinate);
+  void playerMoved(Coordinate, Coordinate);
+  void createRoom(ParseEvent *, Coordinate, char);
+  void addExit(int, int, uint);
   
 
  public:
   Parser();
   void init();
-  Coordinate * getExpectedCoordinate(Room * base);
+  Coordinate getExpectedCoordinate(Room * base);
   virtual Qt::ConnectionType requiredConnectionType(const QString &);
   
   

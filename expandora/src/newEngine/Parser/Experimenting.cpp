@@ -2,7 +2,7 @@
 #include "Experimenting.h"
 
 
-Experimenting::Experimenting(Parser * par, list<Path *> * pat, char dir) :
+Experimenting::Experimenting(Parser * par, list<Path *> * pat, uint dir) :
   parent(par), direction(dir), shortPaths(pat),
   paths(new list<Path *>), best(0), second(0), numPaths(0)
   {}
@@ -15,7 +15,7 @@ void Experimenting::receiveRoom(RoomAdmin * map, Room * room)
 
   for (list<Path *>::iterator i = shortPaths->begin(); i != shortPaths->end(); ++i)
   {
-    Coordinate * c = parent->getExpectedCoordinate((*i)->getRoom());
+    Coordinate c = parent->getExpectedCoordinate((*i)->getRoom());
     Path * working = (*i)->fork(room, c, map, params, this, direction);
     if (best == 0) best = working;
     else if (working->getProb() > best->getProb())
@@ -30,8 +30,6 @@ void Experimenting::receiveRoom(RoomAdmin * map, Room * room)
         second = working;
       paths->push_back(working);
     }
-
-    cmm.deactivate(c);
     numPaths++;
   }
 }

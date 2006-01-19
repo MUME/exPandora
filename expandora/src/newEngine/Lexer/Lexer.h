@@ -57,7 +57,8 @@ public:
 
 
 
-  void pushEvent(signed char type);
+  void pushEvent(uint type);
+  void subType(uint type);
   void pushProperty();
   void pushOptional();
   void skipProperty();
@@ -68,7 +69,7 @@ signals:
   void eventFound(ParseEvent *);
 
 protected:
-  long m_timestamp();
+  uint m_timestamp();
   void markTerrain() {emit terrainDetected(property);}
   ParseEvent * event;
   Property * property;

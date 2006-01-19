@@ -58,14 +58,14 @@ class StructureParser: public QObject, public QXmlDefaultHandler {
 		int i;
 		ParseEvent * roomProps;
 		Property * prop;
-		Coordinate * c;
+		Coordinate c;
 		double ts;
 		char t;
 		int id;
 
 	signals:
-		void addExit( int, int, int );
-		void addRoom( ParseEvent *, Coordinate *, char, int );
+		void addExit( int, int, uint );
+		void addRoom( ParseEvent *, Coordinate, char, int );
 };
 
 
@@ -78,8 +78,8 @@ class XmlStorage: public Component {
 	
 		
 	signals:
-		void addExit( int, int, int );
-		void addRoom( ParseEvent *, Coordinate *, char, int );
+		void addExit( int, int, uint );
+		void addRoom( ParseEvent *, Coordinate, char, int );
 };
 
 #ifdef DMALLOC

@@ -5,39 +5,36 @@
 /**
  * doesn't modify c
  */
-bool Map::defined(Coordinate * in_c)
+bool Map::defined(Coordinate & in_c)
 {
-  Coordinate * c = cmm.activate();
-  c->x = in_c->x, c->y = in_c->y, c->z = in_c->z;
+  Coordinate c = in_c;
   vector<vector<vector<Room *> > > & segment = getSegment(c);
 
-  if (segment.size() > (uint)c->x &&
-      segment[c->x].size() > (uint)c->y &&
-      segment[c->x][c->y].size() > (uint)c->z &&
-      segment[c->x][c->y][c->z])
+  if (segment.size() > (uint)c.x &&
+      segment[c.x].size() > (uint)c.y &&
+      segment[c.x][c.y].size() > (uint)c.z &&
+      segment[c.x][c.y][c.z])
   {
-    cmm.deactivate(c);
+    
     return true;
   }
   else
   {
-    cmm.deactivate(c);
+    
     return false;
   }
 
 }
 
 
-Room * Map::get(Coordinate *c)
+Room * Map::get(Coordinate &c)
 {
   if (!defined(c)) return 0;
   else
   {
-    Coordinate * cm = cmm.activate();
-    cm->add(c);
+    Coordinate cm = c;
     vector<vector<vector<Room *> > > & segment = getSegment(cm);
-    Room * ret = segment[cm->x][cm->y][cm->z];
-    cmm.deactivate(cm);
+    Room * ret = segment[cm.x][cm.y][cm.z];
     return ret;
   }
 }
@@ -45,14 +42,14 @@ Room * Map::get(Coordinate *c)
 /**
  * modifies c so that it fits the found segment
  */
-vector<vector<vector<Room *> > > & Map::getSegment(Coordinate * c)
+vector<vector<vector<Room *> > > & Map::getSegment(Coordinate & c)
 {
   int xs, ys, zs;
-  if(c->x < 0) xs = 0, c->x*=-1;
+  if(c.x < 0) xs = 0, c.x*=-1;
   else xs = 1;
-  if(c->y < 0) ys = 0, c->y*=-1;
+  if(c.y < 0) ys = 0, c.y*=-1;
   else ys = 1;
-  if(c->z < 0) zs = 0, c->z*=-1;
+  if(c.z < 0) zs = 0, c.z*=-1;
   else zs = 1;
   return map[xs][ys][zs];
 }
@@ -62,32 +59,30 @@ vector<vector<vector<Room *> > > & Map::getSegment(Coordinate * c)
 /**
  * doesn't modify c
  */
-void Map::set(Coordinate *cm, Room *room)
+void Map::set(Coordinate &cm, Room *room)
 {
-  Coordinate * c = cmm.activate();
-  c->add(cm);
+  Coordinate c = cm;
   vector<vector<vector<Room *> > > & segment = getSegment(c);
-  if (segment.size() <= (unsigned int)c->x) segment.resize((unsigned int)c->x + 1);
-  if (segment[(unsigned int)c->x].size() <= (unsigned int)c->y) segment[(unsigned int)c->x].resize((unsigned int)c->y + 1);
-  if (segment[(unsigned int)c->x][(unsigned int)c->y].size() <= (unsigned int)c->z) segment[(unsigned int)c->x][(unsigned int)c->y].resize((unsigned int)c->z + 1, 0);
-  segment[c->x][c->y][c->z] = room;
-  cmm.deactivate(c);
+  if (segment.size() <= (uint)c.x) segment.resize((uint)c.x + 1);
+  if (segment[(uint)c.x].size() <= (uint)c.y) segment[(uint)c.x].resize((uint)c.y + 1);
+  if (segment[(uint)c.x][(uint)c.y].size() <= (uint)c.z) segment[(uint)c.x][(uint)c.y].resize((uint)c.z + 1, 0);
+  segment[c.x][c.y][c.z] = room;
 }
 
 /**
  * gets a new coordinate but doesn't return the old one ... should probably be changed ...
  */
-Coordinate * Map::setNearest(Coordinate *_c, Room *room)
+Coordinate Map::setNearest(Coordinate & in_c, Room *room)
 {
-  Coordinate * c = getNearestFree(_c);
+  Coordinate c = getNearestFree(in_c);
   set(c, room);
   room->setCoordinate(c);
   return c;
 }
 
-Coordinate * Map::getNearestFree(Coordinate * p)
+Coordinate Map::getNearestFree(Coordinate & p)
 {
-  Coordinate * c = cmm.activate();
+  Coordinate c;
   int distance = 1;
   int x  = 0, y = 0, z = 0;
   while(1)
@@ -98,21 +93,21 @@ Coordinate * Map::getNearestFree(Coordinate * p)
       {
         for (z = 0; x+y+z < distance; z++)
         {
-          c->x=p->x+x, c->y=p->y+y, c->z=p->z+z;
+          c.x=p.x+x, c.y=p.y+y, c.z=p.z+z;
           if (!defined(c)) return c;
-          c->z=p->z-z;
+          c.z=p.z-z;
           if (!defined(c)) return c;
-          c->y=p->y-y, c->z=p->z+z;
+          c.y=p.y-y, c.z=p.z+z;
           if (!defined(c)) return c;
-          c->z=p->z-z;
+          c.z=p.z-z;
           if (!defined(c)) return c;
-          c->x=p->x-x, c->y=p->y+y;c->z=p->z+z;
+          c.x=p.x-x, c.y=p.y+y;c.z=p.z+z;
           if (!defined(c)) return c;
-          c->z=p->z-z;
+          c.z=p.z-z;
           if (!defined(c)) return c;
-          c->y=p->y-y, c->z=p->z+z;
+          c.y=p.y-y, c.z=p.z+z;
           if (!defined(c)) return c;
-          c->z=p->z-z;
+          c.z=p.z-z;
           if (!defined(c)) return c;
         }
       }

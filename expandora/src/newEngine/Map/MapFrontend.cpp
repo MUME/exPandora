@@ -31,7 +31,8 @@ void MapFrontend::removeRoom(int id)
   roomIndex[id] = 0;
   roomHomes[id]->removeRoom(room);
   roomHomes[id] = 0;
-  map.remove(room->getCoordinate());
+  Coordinate rc = room->getCoordinate();
+  map.remove(rc);
   delete room;
   unusedIds.push(id);
   emit deletedRoom(this, id);
@@ -42,45 +43,50 @@ void MapFrontend::lookingForRooms(RoomRecipient * recipient, Frustum * frustum)
 {
   Room * r = 0;
   mapLock.lock();
-  
+
   for(vector<Room *>::iterator i = roomIndex.begin(); i != roomIndex.end(); ++i)
   {
     r = *i;
-    if(r && frustum->PointInFrustum(r->getCoordinate()))
+    
+    if(r)
     {
-      locks[r->getId()].insert(recipient);
-      recipient->receiveRoom(this, r);
+      Coordinate rc = r->getCoordinate();
+      if(frustum->PointInFrustum(rc))
+      {
+        locks[r->getId()].insert(recipient);
+        recipient->receiveRoom(this, r);
+      }
     }
   }
-  
+
   mapLock.unlock();
 }
 
-void MapFrontend::lookingForRooms(RoomRecipient * recipient, Coordinate * pos)
+void MapFrontend::lookingForRooms(RoomRecipient * recipient, Coordinate pos)
 {
   mapLock.lock();
   Room * r = map.get(pos);
   if (r)
   {
-    
-    
+
+
     locks[r->getId()].insert(recipient);
     recipient->receiveRoom(this, r);
-    
+
   }
   mapLock.unlock();
 }
 
-void MapFrontend::lookingForRooms(RoomRecipient * recipient, unsigned int id)
+void MapFrontend::lookingForRooms(RoomRecipient * recipient, uint id)
 {
   mapLock.lock();
   if (greatestUsedId >= id)
   {
     Room * r = roomIndex[id];
-    
+
     locks[id].insert(recipient);
     recipient->receiveRoom(this, r);
-    
+
   }
   mapLock.unlock();
 }
@@ -112,7 +118,7 @@ void MapFrontend::assignId(Room * room, RoomCollection * roomHome)
   mapLock.unlock();
 }
 
-void MapFrontend::createPredefinedRoom(ParseEvent * event, Coordinate * c, char t, int id)
+void MapFrontend::createPredefinedRoom(ParseEvent * event, Coordinate c, char t, int id)
 {
   mapLock.lock();
   unusedIds.push(id);
@@ -123,12 +129,13 @@ void MapFrontend::createPredefinedRoom(ParseEvent * event, Coordinate * c, char 
 
 
 
-void MapFrontend::createRoom(ParseEvent * event, Coordinate * expectedPosition, char t)
+void MapFrontend::createRoom(ParseEvent * event, Coordinate expectedPosition, char t)
 {
   mapLock.lock();
   RoomCollection * roomHome = IntermediateNode::insertRoom(event);
-  
-  if (!roomHome) {
+
+  if (!roomHome)
+  {
     mapLock.unlock();
     return;
   }
@@ -136,7 +143,7 @@ void MapFrontend::createRoom(ParseEvent * event, Coordinate * expectedPosition, 
   room->setTerrain(t);
   map.setNearest(expectedPosition, room);
   assignId(room, roomHome);
-  
+
   event->reset();
   mapLock.unlock();
 }
@@ -144,9 +151,11 @@ void MapFrontend::createRoom(ParseEvent * event, Coordinate * expectedPosition, 
 void MapFrontend::lookingForRooms(RoomRecipient * recipient, ParseEvent * event)
 {
   mapLock.lock();
-  if (greatestUsedId == UINT_MAX) {
-    createRoom(event, new Coordinate(0,0,0), 0);
-    if (greatestUsedId != UINT_MAX) {
+  if (greatestUsedId == UINT_MAX)
+  {
+    createRoom(event, Coordinate(0,0,0), 0);
+    if (greatestUsedId != UINT_MAX)
+    {
       Room * room = roomIndex[greatestUsedId];
       locks[room->getId()].insert(0);
       room->addReverseExit(0,0);
@@ -155,19 +164,19 @@ void MapFrontend::lookingForRooms(RoomRecipient * recipient, ParseEvent * event)
 
   AbstractRoomContainer * ret;
   Room * r;
-  
+
   ret = IntermediateNode::getRooms(event);
   if (ret->numRooms() >= 0)
   {
 
-    
+
     for(set<Room *>::iterator i = ((RoomCollection*)ret)->begin(); i != ((RoomCollection*)ret)->end(); ++i)
     {
       r = *i;
       locks[r->getId()].insert(recipient);
       recipient->receiveRoom(this, r);
     }
-    
+
     delete ret;
   }
   mapLock.unlock();
@@ -175,7 +184,7 @@ void MapFrontend::lookingForRooms(RoomRecipient * recipient, ParseEvent * event)
 
 }
 
-void MapFrontend::addExit(int f, int t, int d)
+void MapFrontend::addExit(int f, int t, uint d)
 {
   mapLock.lock();
   Room * from = roomIndex[f];
@@ -189,7 +198,7 @@ void MapFrontend::addExit(int f, int t, int d)
 // after the last lock is removed, the room is deleted
 void MapFrontend::releaseRoom(RoomRecipient * sender, int id)
 {
-  if(!sender) 
+  if(!sender)
     throw "anonymous locks are permanent and can't be released";
   mapLock.lock();
   locks[id].erase(sender);
@@ -201,7 +210,7 @@ void MapFrontend::releaseRoom(RoomRecipient * sender, int id)
 // Like that the room can't be deleted via releaseRoom anymore.
 void MapFrontend::keepRoom(RoomRecipient * sender, int id)
 {
-  if(!sender) 
+  if(!sender)
     throw "anonymous locks are permanent and can't be kept twice";
   mapLock.lock();
   locks[id].insert(0);

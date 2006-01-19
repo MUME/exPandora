@@ -70,12 +70,11 @@ void RoomInfo::update_info(Room * rr)
 {
   char str[200];
 
-  Coordinate * r;
+  Coordinate r;
 
   if (rr) r = rr->getCoordinate();
-  else r = new Coordinate(0,0,0);
 
-  sprintf(str, "Coord: X: %i, Y %i, Z: %i", r->x, r->y, r->z);
+  sprintf(str, "Coord: X: %i, Y %i, Z: %i", r.x, r.y, r.z);
   coord_label->setText( str );
 
 

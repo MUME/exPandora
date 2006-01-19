@@ -39,22 +39,22 @@
 		    to="Parser" slot="event(ParseEvent *)"/>
 	<connection from="Parser" signal="lookingForRooms(RoomRecipient *,ParseEvent *)"
 		    to="Map" slot="lookingForRooms(RoomRecipient *,ParseEvent *)"/>
-	<connection from="Parser" signal="lookingForRooms(RoomRecipient *,unsigned int)"
-		    to="Map" slot="lookingForRooms(RoomRecipient *,unsigned int)"/>
-	<connection from="Parser" signal="playerMoved(Coordinate *, Coordinate *)"
-		    to="Display" slot="playerMoved(Coordinate *, Coordinate *)"/>
-	<connection from="Parser" signal="lookingForRooms(RoomRecipient *, Coordinate *)"
-		    to="Map" slot="lookingForRooms(RoomRecipient *, Coordinate *)"/>
+	<connection from="Parser" signal="lookingForRooms(RoomRecipient *,uint)"
+		    to="Map" slot="lookingForRooms(RoomRecipient *,uint)"/>
+	<connection from="Parser" signal="playerMoved(Coordinate, Coordinate)"
+		    to="Display" slot="playerMoved(Coordinate, Coordinate)"/>
+	<connection from="Parser" signal="lookingForRooms(RoomRecipient *, Coordinate)"
+		    to="Map" slot="lookingForRooms(RoomRecipient *, Coordinate)"/>
 	<connection from="Display" signal="lookingForRooms(RoomRecipient *,Frustum *)"
 		    to="Map" slot="lookingForRooms(RoomRecipient *,Frustum *)"/>
-	<connection from="Parser" signal="addExit(int, int, int)"
-		    to="Map" slot="addExit(int, int, int)"/>
-	<connection from="Parser" signal="createRoom(ParseEvent *, Coordinate *, char)"
-		    to="Map" slot="createRoom(ParseEvent *, Coordinate *, char)"/>
-	<connection from="Storage" signal="addRoom(ParseEvent *, Coordinate *, char, int)"
-		    to="Map" slot="createPredefinedRoom(ParseEvent *, Coordinate *, char, int)"/>
-	<connection from="Storage" signal="addExit(int, int, int)"
-		    to="Map" slot="addExit(int, int, int)"/>
+	<connection from="Parser" signal="addExit(int, int, uint)"
+		    to="Map" slot="addExit(int, int, uint)"/>
+	<connection from="Parser" signal="createRoom(ParseEvent *, Coordinate, char)"
+		    to="Map" slot="createRoom(ParseEvent *, Coordinate, char)"/>
+	<connection from="Storage" signal="addRoom(ParseEvent *, Coordinate, char, int)"
+		    to="Map" slot="createPredefinedRoom(ParseEvent *, Coordinate, char, int)"/>
+	<connection from="Storage" signal="addExit(int, int, uint)"
+		    to="Map" slot="addExit(int, int, uint)"/>
 	<connection from="Display" signal="openMap(QString)" 
 		    to="Storage" slot="loadFromFile(QString)"/>
 </configuration>

@@ -29,7 +29,7 @@ class CachedRoom {
   void drawExits(CachedRoom * other, RendererWidget * renderer);
   void drawExits(RendererWidget * renderer);
   int getId();
-  Coordinate * getCoordinate();
+  Coordinate getCoordinate();
 
 };
 #ifdef DMALLOC

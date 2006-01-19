@@ -2,10 +2,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#if defined Q_OX_MACX || defined Q_OS_LINUX
-#include <ctime>
-#include <sys/time.h>
-#endif
+#include <QDateTime>
 
 
 /**
@@ -56,13 +53,17 @@ GenericLexer::GenericLexer() {
 }
 
 
-void GenericLexer::pushEvent(signed char x_type) {
+void GenericLexer::pushEvent(uint x_type) {
   if (event->timestamp < 1) event->timestamp = m_timestamp();
   event->type = x_type;
   emit eventFound(event);
   event = pemm.activate();
 }
 	
+void GenericLexer::subType(uint type) {
+  event->subType = type;
+}
+
 void GenericLexer::pushProperty() {
   if (event->timestamp < 1) event->timestamp = m_timestamp();
   event->push(property);
@@ -90,17 +91,9 @@ void GenericLexer::skipSomeProperties() {
 }
 		
 
-long GenericLexer::m_timestamp()
+uint GenericLexer::m_timestamp()
 {
-#if defined Q_OS_LINUX || defined Q_OS_MACX
-  struct timeval tv;
-  struct timezone tz;
-
-  gettimeofday(&tv, &tz);
-  return (tv.tv_sec*1000000 + tv.tv_usec);
-#else
-  return 0;
-#endif
+return QDateTime::currentDateTime().toTime_t();
 }
 		
 

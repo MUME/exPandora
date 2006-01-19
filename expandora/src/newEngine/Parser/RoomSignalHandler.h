@@ -26,14 +26,14 @@ class RoomSignalHandler : public QObject {
   // room isn't needed anymore and can be deleted if no one else is holding it and no one else uncached it
   void release(Room * room);
   // keep the room but un-cache it - overrides both hold and release
-  void keep(Room * room, char dir, int toId);
+  void keep(Room * room, uint dir, int toId);
 
   /* Sending to the rooms' owners:
      keepRoom: keep the room, but we don't need it anymore for now
      releaseRoom: delete the room, if you like */
      
   signals:
-   void addExit(int, int, int);
+   void addExit(int, int, uint);
 };
 #ifdef DMALLOC
 #include <mpatrol.h>

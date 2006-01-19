@@ -28,7 +28,7 @@ ROOMCOL		\33\[32m
 
 
 {ROOMCOL}				BEGIN(ROOMNAME);
-"You flee head over heels"  pushEvent(UNKNOWN); /* drop the current room and flee in UNKOWN dir */
+"You flee head over heels"  subType(UNKNOWN);pushEvent(MOVE); /* drop the current room and flee in UNKOWN dir */
 
 <*>{OTHERCOL}[^\33]*{ENDCOL}			/* throw away some message in other colors*/
 <*>"You just see a dense fog around you..."                     |

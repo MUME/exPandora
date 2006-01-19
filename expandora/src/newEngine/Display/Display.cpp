@@ -108,7 +108,7 @@ QString DisplayComponent::extractDescription(QString & fileName)
 }
 
 
-void DisplayComponent::playerMoved(Coordinate * from, Coordinate * to)
+void DisplayComponent::playerMoved(Coordinate from, Coordinate to)
 {
   renderer->moveMarker(from, to);
 }

@@ -14,24 +14,24 @@
 #undef PLAYER
 
    // offsets in Coordinate::stdMoves to determine event types
-   char north;
-   char south;
-   char west;
-   char east;
-   char up;
-   char down;
-   char none;
+   uint north;
+   uint south;
+   uint west;
+   uint east;
+   uint up;
+   uint down;
+   uint none;
 %}
 
 %%
 
-^"south" pushEvent(south);
-^"north" pushEvent(north);
-^"west"  pushEvent(west);
-^"east"  pushEvent(east);
-^"up"    pushEvent(up);
-^"down"  pushEvent(down);
-^("look"|"examine")(" "|"\t")*("\r\n"|"\n\r") pushEvent(none);
+^"south" subType(south);pushEvent(MOVE);
+^"north" subType(north);pushEvent(MOVE);
+^"west"  subType(west);pushEvent(MOVE);
+^"east"  subType(east);pushEvent(MOVE);
+^"up"    subType(up);pushEvent(MOVE);
+^"down"  subType(down);pushEvent(MOVE);
+^("look"|"examine")(" "|"\t")*("\r\n"|"\n\r") subType(none);pushEvent(MOVE);
 
 %%
 
@@ -42,14 +42,14 @@
   * note that you can overwrite previously defined moves with Coordinate::insertMoves(...)
   */
 void Lexer::setMoves() {
-  map<QString, Coordinate *> myMoves;
-  myMoves.insert(make_pair("north", new Coordinate(0,1,0)));
-  myMoves.insert(make_pair("south", new Coordinate(0,-1,0)));
-  myMoves.insert(make_pair("west", new Coordinate(-1,0,0)));
-  myMoves.insert(make_pair("east", new Coordinate(1,0,0)));
-  myMoves.insert(make_pair("up", new Coordinate(0,0,1)));
-  myMoves.insert(make_pair("down", new Coordinate(0,0,-1)));
-  myMoves.insert(make_pair("none", new Coordinate(0,0,0)));
+  map<QString, Coordinate> myMoves;
+  myMoves.insert(make_pair("north", Coordinate(0,1,0)));
+  myMoves.insert(make_pair("south", Coordinate(0,-1,0)));
+  myMoves.insert(make_pair("west", Coordinate(-1,0,0)));
+  myMoves.insert(make_pair("east", Coordinate(1,0,0)));
+  myMoves.insert(make_pair("up", Coordinate(0,0,1)));
+  myMoves.insert(make_pair("down", Coordinate(0,0,-1)));
+  myMoves.insert(make_pair("none", Coordinate(0,0,0)));
 
   Coordinate::insertMoves(myMoves);
 

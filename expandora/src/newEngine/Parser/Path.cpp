@@ -37,7 +37,7 @@ void Path::init(Room * in_room, RoomAdmin * owner, RoomRecipient * locker, RoomS
  * distance between rooms is calculated 
  * and probability is updated accordingly
  */
-Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, RoomAdmin * owner, PathParameters p, RoomRecipient * locker, char direction) {
+Path * Path::fork(Room * in_room, Coordinate & expectedCoordinate, RoomAdmin * owner, PathParameters p, RoomRecipient * locker, uint direction) {
   if (!active) {
     throw "fatal: path inactive";
   }
@@ -50,7 +50,8 @@ Path * Path::fork(Room * in_room, Coordinate * expectedCoordinate, RoomAdmin * o
   ret->init(in_room, owner, locker, signaler, direction);
   ret->setParent(this);
   children.insert(ret);
-  double dist = expectedCoordinate->distance(in_room->getCoordinate());
+  Coordinate roomCoord = in_room->getCoordinate();
+  double dist = expectedCoordinate.distance(roomCoord);
   if (dist < 0.5) dist = 1.0/p.correctPositionBonus;
   if (in_room->isNew()) dist *= p.newRoomPenalty; 
   ret->setProb(probability / dist);

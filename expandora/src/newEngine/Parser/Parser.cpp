@@ -32,7 +32,7 @@ Parser::Parser() :
 {}
 
 void Parser::init() {
-  QObject::connect(&signaler, SIGNAL(addExit(int, int, int)), this, SIGNAL(addExit(int, int, int)));
+  QObject::connect(&signaler, SIGNAL(addExit(int, int, uint)), this, SIGNAL(addExit(int, int, uint)));
 }
 
 /**
@@ -70,7 +70,7 @@ void Parser::dropNote(ParseEvent * note)
 void Parser::event(ParseEvent * ev)
 {
   
-  if (ev->type >= 0)
+  if (ev->type == MOVE)
   {
     // a move event
     playerEvents.push(ev);
@@ -158,7 +158,7 @@ void Parser::approved()
 
   Room * perhaps = appr.oneMatch();
 
-  Coordinate * c = 0;
+  Coordinate c;
   if (perhaps == 0)
   { // try to match by coordinate
     appr.reset();
@@ -169,10 +169,9 @@ void Parser::approved()
     if (perhaps)
     {
 
-      emit addExit(mostLikelyRoom->getId(), perhaps->getId(), playerEvents.front()->type);
+      emit addExit(mostLikelyRoom->getId(), perhaps->getId(), playerEvents.front()->subType);
 
     }
-    cmm.deactivate(c);
   }
   if (perhaps)
   {
@@ -249,13 +248,11 @@ void Parser::experimenting()
     return;
   }
 
-  Experimenting exp(this, paths, playerEvents.front()->type);
+  Experimenting exp(this, paths, playerEvents.front()->subType);
 
   for (list<Path *>::iterator i = paths->begin(); i != paths->end(); ++i)
   {
-    Coordinate * c = getExpectedCoordinate((*i)->getRoom());
-    emit createRoom(mudEvents.front(), c, activeTerrain);
-    cmm.deactivate(c);
+    emit createRoom(mudEvents.front(), getExpectedCoordinate((*i)->getRoom()), activeTerrain);
   }
 
   emit lookingForRooms(&exp, mudEvents.front());
@@ -270,10 +267,10 @@ void Parser::experimenting()
 
 void Parser::evaluatePaths()
 {
-  Coordinate * oldCoord = 0;
+  Coordinate oldCoord;
   if (mostLikelyRoom)
     oldCoord = mostLikelyRoom->getCoordinate();
-  Coordinate * newCoord = 0;
+  Coordinate newCoord;
   if (paths->empty())
   {
     state = SYNCING;
@@ -299,11 +296,12 @@ void Parser::evaluatePaths()
 
 
 
-Coordinate * Parser::getExpectedCoordinate(Room * base)
+Coordinate Parser::getExpectedCoordinate(Room * base)
 {
-  Coordinate * c = cmm.activate();
-  if (!playerEvents.empty()) c->add(Coordinate::stdMoves[playerEvents.front()->type]);
-  if (base != 0) c->add(base->getCoordinate());
+  Coordinate c;
+  if (!playerEvents.empty()) c = Coordinate::stdMoves[playerEvents.front()->subType];
+  Coordinate prev = base->getCoordinate();
+  if (base != 0) c += prev;
   return c;
 }
 
