@@ -17,6 +17,7 @@ class DisplayComponent : public Component {
  signals:
   void lookingForRooms(RoomRecipient *, Frustum *);
   void openMap(QString);
+  void deleteRoom();
   
  public slots:
   void playerMoved(Coordinate, Coordinate);

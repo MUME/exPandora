@@ -33,6 +33,7 @@ private slots:
   
 signals:
   void openMap(QString fileName);
+  void deleteRoom();
 
 private:
   void mousePressEvent( QMouseEvent *);

@@ -22,16 +22,17 @@ Initializer<Parser> parser("Parser");
 
 using namespace Qt;
 
-Parser::Parser() : 
-  Component(true), 
-  signaler(this),
-  mostLikelyRoom(0),
-  state(SYNCING),
-  matchingTolerance(0),
-  paths(new list<Path *>)
+Parser::Parser() :
+    Component(true),
+    signaler(this),
+    mostLikelyRoom(0),
+    state(SYNCING),
+    matchingTolerance(0),
+    paths(new list<Path *>)
 {}
 
-void Parser::init() {
+void Parser::init()
+{
   QObject::connect(&signaler, SIGNAL(addExit(int, int, uint)), this, SIGNAL(addExit(int, int, uint)));
 }
 
@@ -42,13 +43,14 @@ void Parser::init() {
  * The slots need to be queued because we want to make sure all data is only accessed
  * from this thread
  */
-ConnectionType Parser::requiredConnectionType(const QString & str) {
-  
+ConnectionType Parser::requiredConnectionType(const QString & str)
+{
+
   if (str == SLOT(event(ParseEvent *)) || str == SLOT(setTerrain(Property *)))
     return QueuedConnection;
   else if (str == SIGNAL(playerMoved(Coordinate *, Coordinate *)))
     return AutoCompatConnection;
-  else 
+  else
     return DirectConnection;
 }
 
@@ -69,7 +71,7 @@ void Parser::dropNote(ParseEvent * note)
 
 void Parser::event(ParseEvent * ev)
 {
-  
+
   if (ev->type == MOVE)
   {
     // a move event
@@ -93,7 +95,7 @@ void Parser::event(ParseEvent * ev)
       return;
     }
   }
-  
+
   checkQueues();
 }
 
@@ -128,182 +130,209 @@ void Parser::checkQueues()
   }
 }
 
-
-
-
-void Parser::approved()
+void Parser::deleteMostLikelyRoom()
 {
-  if (playerEvents.front()->type == UNIQUE)
+
+  if (state == EXPERIMENTING)
   {
-    mostLikelyRoom->setUnique();
-    playerPop();
-    return;
-  }
-  if (mudEvents.front()->type == MOVE_FAIL)
-  {
-    mudPop();
-    playerPop();
-    return;
-  }
-
-
-  // now we have a move and a room on the event queues;
-
-  Approved appr(this, mudEvents.front(), matchingTolerance);
-  set<int> * possible = mostLikelyRoom->go(playerEvents.front());
-  for (set<int>::iterator i = possible->begin(); i != possible->end(); ++i)
-  {
-    emit lookingForRooms(&appr, *i);
-  }
-
-  Room * perhaps = appr.oneMatch();
-
-  Coordinate c;
-  if (perhaps == 0)
-  { // try to match by coordinate
-    appr.reset();
-    c = getExpectedCoordinate(mostLikelyRoom);
-    emit lookingForRooms(&appr, c); //needs to be synchronous
+    list<Path *> * newPaths = new list<Path *>;
+    Path * best = 0;
+    for (list<Path*>::iterator i = paths->begin(); i != paths->end(); ++i)
+    {
+      Path * working = *i;
+      if ((working)->getRoom() == mostLikelyRoom) working->deny();
+      else if (best == 0) best = working;
+      else if (working->getProb() > best->getProb())
+      {
+        newPaths->push_back(best);
+        best = working;
+      }
+      else newPaths->push_back(working);
+    }
+    if (best) newPaths->push_front(best);
+    delete paths;
+    paths = newPaths;
     
-    perhaps = appr.oneMatch();
+  }
+  else paths->clear(); // throw the parser into syncing
+  
+  evaluatePaths();
+}
+
+  void Parser::approved()
+  {
+    if (playerEvents.front()->type == UNIQUE)
+    {
+      mostLikelyRoom->setUnique();
+      playerPop();
+      return;
+    }
+    if (mudEvents.front()->type == MOVE_FAIL)
+    {
+      mudPop();
+      playerPop();
+      return;
+    }
+
+
+    // now we have a move and a room on the event queues;
+
+    Approved appr(this, mudEvents.front(), matchingTolerance);
+    set<int> * possible = mostLikelyRoom->go(playerEvents.front());
+    for (set<int>::iterator i = possible->begin(); i != possible->end(); ++i)
+    {
+      emit lookingForRooms(&appr, *i);
+    }
+
+    Room * perhaps = appr.oneMatch();
+
+    Coordinate c;
+    if (perhaps == 0)
+    { // try to match by coordinate
+      appr.reset();
+      c = getExpectedCoordinate(mostLikelyRoom);
+      emit lookingForRooms(&appr, c); //needs to be synchronous
+
+      perhaps = appr.oneMatch();
+      if (perhaps)
+      {
+
+        emit addExit(mostLikelyRoom->getId(), perhaps->getId(), playerEvents.front()->subType);
+
+      }
+    }
     if (perhaps)
     {
-
-      emit addExit(mostLikelyRoom->getId(), perhaps->getId(), playerEvents.front()->subType);
-
+      emit playerMoved(mostLikelyRoom->getCoordinate(), perhaps->getCoordinate());
+      mostLikelyRoom = perhaps;
+      mudPop();
+      playerPop();
+    }
+    else
+    {
+      state = EXPERIMENTING;
+      Path * root = pamm.activate();
+      root->init(mostLikelyRoom, 0, 0, &signaler);
+      paths->push_front(root);
+      experimenting();
     }
   }
-  if (perhaps)
+
+
+
+  void Parser::playerPop()
   {
-    emit playerMoved(mostLikelyRoom->getCoordinate(), perhaps->getCoordinate());
-    mostLikelyRoom = perhaps;
+    pemm.deactivate(playerEvents.front());
+    playerEvents.pop();
+  }
+
+  void Parser::mudPop()
+  {
+    pemm.deactivate(mudEvents.front());
+    mudEvents.pop();
+  }
+
+  void Parser::syncing()
+  {
+    if (mudEvents.empty()) return;
+    if (!(playerEvents.empty()) && (playerEvents.front()->type == UNIQUE))
+    {
+      // unique doesn't work when syncing ...
+      playerPop();
+      return;
+    }
+    if (mudEvents.front()->type == MOVE_FAIL)
+    {
+      mudPop();
+      if (!playerEvents.empty()) playerPop();
+      return;
+    }
+
+    // now we have a move and a room on the event queues;
+
+    Syncing sync(paths, &signaler);
+    emit lookingForRooms(&sync, mudEvents.front());
+
+    paths = sync.evaluate();
+    evaluatePaths();
+
+    if (!(playerEvents.empty())) playerPop();
     mudPop();
+  }
+
+
+  void Parser::experimenting()
+  {
+    if (playerEvents.front()->type == UNIQUE)
+    {
+      // do something ....
+      playerPop();
+      return;
+    }
+    if (mudEvents.front()->type == MOVE_FAIL)
+    {
+      mudPop();
+      playerPop();
+      return;
+    }
+
+    Experimenting exp(this, paths, playerEvents.front()->subType);
+
+    for (list<Path *>::iterator i = paths->begin(); i != paths->end(); ++i)
+    {
+      emit createRoom(mudEvents.front(), getExpectedCoordinate((*i)->getRoom()), activeTerrain);
+    }
+
+    emit lookingForRooms(&exp, mudEvents.front());
+
+    paths = exp.evaluate();
+
+
+    evaluatePaths();
     playerPop();
-  }
-  else
-  {
-    state = EXPERIMENTING;
-    Path * root = pamm.activate();
-    root->init(mostLikelyRoom, 0, 0, &signaler);
-    paths->push_front(root);
-    experimenting();
-  }
-}
-
-
-
-void Parser::playerPop()
-{
-  pemm.deactivate(playerEvents.front());
-  playerEvents.pop();
-}
-
-void Parser::mudPop()
-{
-  pemm.deactivate(mudEvents.front());
-  mudEvents.pop();
-}
-
-void Parser::syncing()
-{
-  if (mudEvents.empty()) return;
-  if (!(playerEvents.empty()) && (playerEvents.front()->type == UNIQUE))
-  {
-    // unique doesn't work when syncing ...
-    playerPop();
-    return;
-  }
-  if (mudEvents.front()->type == MOVE_FAIL)
-  {
     mudPop();
-    if (!playerEvents.empty()) playerPop();
-    return;
   }
 
-  // now we have a move and a room on the event queues;
-
-  Syncing sync(paths, &signaler);
-  emit lookingForRooms(&sync, mudEvents.front());
-
-  paths = sync.evaluate();
-  evaluatePaths();
-
-  if (!(playerEvents.empty())) playerPop();
-  mudPop();
-}
-
-
-void Parser::experimenting()
-{
-  if (playerEvents.front()->type == UNIQUE)
+  void Parser::evaluatePaths()
   {
-    // do something ....
-    playerPop();
-    return;
+    Coordinate oldCoord;
+    if (mostLikelyRoom)
+      oldCoord = mostLikelyRoom->getCoordinate();
+    Coordinate newCoord;
+    if (paths->empty())
+    {
+      state = SYNCING;
+      mostLikelyRoom = 0;
+    }
+    else if (++paths->begin() == paths->end())
+    {
+      state = APPROVED;
+      mostLikelyRoom = paths->front()->getRoom();
+      newCoord = mostLikelyRoom->getCoordinate();
+      paths->front()->approve();
+      paths->pop_front();
+    }
+    else
+    {
+      state = EXPERIMENTING;
+      mostLikelyRoom = paths->front()->getRoom();
+      newCoord = mostLikelyRoom->getCoordinate();
+    }
+
+    if (newCoord != oldCoord) emit playerMoved(oldCoord, newCoord);
+
   }
-  if (mudEvents.front()->type == MOVE_FAIL)
+
+
+
+  Coordinate Parser::getExpectedCoordinate(Room * base)
   {
-    mudPop();
-    playerPop();
-    return;
+    Coordinate c;
+    if (!playerEvents.empty()) c = Coordinate::stdMoves[playerEvents.front()->subType];
+    Coordinate prev = base->getCoordinate();
+    if (base != 0) c += prev;
+    return c;
   }
-
-  Experimenting exp(this, paths, playerEvents.front()->subType);
-
-  for (list<Path *>::iterator i = paths->begin(); i != paths->end(); ++i)
-  {
-    emit createRoom(mudEvents.front(), getExpectedCoordinate((*i)->getRoom()), activeTerrain);
-  }
-
-  emit lookingForRooms(&exp, mudEvents.front());
-
-  paths = exp.evaluate();
-  
-
-  evaluatePaths();
-  playerPop();
-  mudPop();
-}
-
-void Parser::evaluatePaths()
-{
-  Coordinate oldCoord;
-  if (mostLikelyRoom)
-    oldCoord = mostLikelyRoom->getCoordinate();
-  Coordinate newCoord;
-  if (paths->empty())
-  {
-    state = SYNCING;
-    mostLikelyRoom = 0;
-  }
-  else if (++paths->begin() == paths->end())
-  {
-    state = APPROVED;
-    mostLikelyRoom = paths->front()->getRoom();
-    newCoord = mostLikelyRoom->getCoordinate();
-    paths->front()->approve();
-    paths->pop_front();
-  }
-  else
-  {
-    mostLikelyRoom = paths->front()->getRoom();
-    newCoord = mostLikelyRoom->getCoordinate();
-  }
-
-  if (newCoord != oldCoord) emit playerMoved(oldCoord, newCoord);
-
-}
-
-
-
-Coordinate Parser::getExpectedCoordinate(Room * base)
-{
-  Coordinate c;
-  if (!playerEvents.empty()) c = Coordinate::stdMoves[playerEvents.front()->subType];
-  Coordinate prev = base->getCoordinate();
-  if (base != 0) c += prev;
-  return c;
-}
 
 
 

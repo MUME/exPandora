@@ -12,11 +12,11 @@
 #include "PathParameters.h"
 
 PathParameters::PathParameters() :
-  acceptBestRelative(3.0),
-  acceptBestAbsolute(1.0),
+  acceptBestRelative(10.0),
+  acceptBestAbsolute(3.0),
   newRoomPenalty(5.0),
-  correctPositionBonus(2.0),
-  maxPaths(100.0)
+  correctPositionBonus(5.1),
+  maxPaths(500.0)
 {
 }
 

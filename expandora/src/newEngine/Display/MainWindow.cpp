@@ -33,7 +33,10 @@ MainWindow::MainWindow(QWidget *parent)
   fileMenu->addAction( tr("&Exit"), qApp, SLOT( quit() ), Qt::CTRL+Qt::Key_Q );
   fileMenu->addAction( tr("&Open..."), this, SLOT( open() ));
   menuBar()->addMenu( fileMenu );
-
+  
+  QMenu *editMenu = new QMenu( "Edit", 0 );
+  editMenu->addAction( tr("&Delete Room"), this, SIGNAL(deleteRoom()), Qt::CTRL+Qt::Key_D);
+  menuBar()->addMenu( editMenu );
 
   optionsMenu = new QMenu( "Options", 0 );
 

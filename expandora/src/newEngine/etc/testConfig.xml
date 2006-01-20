@@ -57,4 +57,6 @@
 		    to="Map" slot="addExit(int, int, uint)"/>
 	<connection from="Display" signal="openMap(QString)" 
 		    to="Storage" slot="loadFromFile(QString)"/>
+	<connection from="Display" signal="deleteRoom()"
+		    to="Parser" slot="deleteMostLikelyRoom()"/>
 </configuration>

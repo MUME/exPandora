@@ -36,6 +36,7 @@ Q_OBJECT
   void event(ParseEvent *);
   /* the setTerrain signal should be replaced by some "hint" in the properties */
   void setTerrain(Property *);
+  void deleteMostLikelyRoom();
 
  signals:
   // the QObjects in the signals denote the recipient of the results

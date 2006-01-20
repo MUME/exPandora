@@ -68,6 +68,7 @@ void DisplayComponent::init()
 
   QObject::connect(renderer, SIGNAL(viewableAreaChanged(RoomRecipient *,Frustum *)), this, SIGNAL(lookingForRooms(RoomRecipient *,Frustum *)), DirectConnection);
   QObject::connect(renderer_window, SIGNAL(openMap(QString)), this, SIGNAL(openMap(QString)));
+  QObject::connect(renderer_window, SIGNAL(deleteRoom()), this, SIGNAL(deleteRoom()));
 
 }
 
