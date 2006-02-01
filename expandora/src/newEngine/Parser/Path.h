@@ -1,6 +1,7 @@
 #ifndef PATH
 #define PATH
 
+#include <set>
 #include "RoomSignalHandler.h"
 #include "Room.h"
 #include "RoomRecipient.h"
@@ -30,7 +31,7 @@ class Path {
  private:
   bool active;
   Path * parent;
-  set<Path *> children;
+  std::set<Path *> children;
   double probability;
   Room * room; // in fact a path only has one room, one parent and soem children(forks).
   RoomSignalHandler * signaler;

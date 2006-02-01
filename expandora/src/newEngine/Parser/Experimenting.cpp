@@ -1,6 +1,7 @@
 #include "Parser.h"
 #include "Experimenting.h"
 
+using namespace std;
 
 Experimenting::Experimenting(Parser * par, list<Path *> * pat, uint dir) :
   parent(par), direction(dir), shortPaths(pat),

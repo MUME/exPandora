@@ -7,7 +7,7 @@
 
 #include "Component.h"
 #include "ParseEvent.h"
-#include "Room.h"
+
 
 #include "Coordinate.h"
 #include "Property.h"
@@ -49,7 +49,7 @@ class StructureParser: public QObject, public QXmlDefaultHandler {
 		char terrainFromString(QLatin1String & terrain);
 		void buildProperties( char * roomDesc );
 
-		stack<Exit *> exits;
+		std::stack<Exit *> exits;
 
 		/* some flags */
 		int flag;

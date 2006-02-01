@@ -15,16 +15,16 @@ class CachedRoom;
 class CachedRoom {
  private:
 
-  map<int, set<int> > exits; //other's id->dirs
-  map<int, set<int> > reverseExits;
+  std::map<int, std::set<int> > exits; //other's id->dirs
+  std::map<int, std::set<int> > reverseExits;
   Room * base;
   RoomAdmin * owner;
   RoomRecipient * locker;
-  map<int, CachedRoom *> & cache;
+  std::map<int, CachedRoom *> & cache;
   void removeReverse(int id);
 
  public:
-  CachedRoom(Room * base, RoomAdmin * owner, RoomRecipient * locker, map<int, CachedRoom *> & cache);
+  CachedRoom(Room * base, RoomAdmin * owner, RoomRecipient * locker, std::map<int, CachedRoom *> & cache);
   ~CachedRoom();
   void drawExits(CachedRoom * other, RendererWidget * renderer);
   void drawExits(RendererWidget * renderer);

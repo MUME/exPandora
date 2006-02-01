@@ -2,7 +2,7 @@
 #include "Approved.h"
 
 void Approved::receiveRoom(RoomAdmin * sender, Room * perhaps) {  
-  if (matchedRoom == 0 && perhaps->fastCompare(myEvent, matchingTolerance)) {
+  if (matchedRoom == 0 && perhaps->matches(myEvent, matchingTolerance)) {
     matchedRoom = perhaps;
     owner = sender;
   }

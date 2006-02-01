@@ -3,7 +3,7 @@
 
 #include "Parser.h"
 
-
+using namespace std;
 
 
 /**
@@ -46,9 +46,11 @@ void Parser::init()
 ConnectionType Parser::requiredConnectionType(const QString & str)
 {
 
-  if (str == SLOT(event(ParseEvent *)) || str == SLOT(setTerrain(Property *)))
+  if (str == SLOT(event(ParseEvent *)) || 
+      str == SLOT(setTerrain(Property *)) ||
+      str == SLOT(deleteMostLikelyRoom()))
     return QueuedConnection;
-  else if (str == SIGNAL(playerMoved(Coordinate *, Coordinate *)))
+  else if (str == SIGNAL(playerMoved(Coordinate, Coordinate)))
     return AutoCompatConnection;
   else
     return DirectConnection;
@@ -60,14 +62,6 @@ void Parser::setTerrain(Property * ter)
   activeTerrain = ter->get(0); // the first character has to be the terrain id
 }
 
-void Parser::dropNote(ParseEvent * note)
-{
-  if (mostLikelyRoom)
-  {
-    while (note->next()) mostLikelyRoom->addOptional(note->current());
-  }
-  pemm.deactivate(note);
-}
 
 void Parser::event(ParseEvent * ev)
 {
@@ -87,12 +81,6 @@ void Parser::event(ParseEvent * ev)
     case MOVE_FAIL:
       mudEvents.push(ev);
       break;
-    case UNIQUE:
-      playerEvents.push(ev);
-      break;
-    case NOTE:
-      dropNote(ev);
-      return;
     }
   }
 
@@ -161,12 +149,7 @@ void Parser::deleteMostLikelyRoom()
 
   void Parser::approved()
   {
-    if (playerEvents.front()->type == UNIQUE)
-    {
-      mostLikelyRoom->setUnique();
-      playerPop();
-      return;
-    }
+    
     if (mudEvents.front()->type == MOVE_FAIL)
     {
       mudPop();
@@ -178,8 +161,8 @@ void Parser::deleteMostLikelyRoom()
     // now we have a move and a room on the event queues;
 
     Approved appr(this, mudEvents.front(), matchingTolerance);
-    set<int> * possible = mostLikelyRoom->go(playerEvents.front());
-    for (set<int>::iterator i = possible->begin(); i != possible->end(); ++i)
+    set<int> possible = mostLikelyRoom->getNeighbours(playerEvents.front());
+    for (set<int>::iterator i = possible.begin(); i != possible.end(); ++i)
     {
       emit lookingForRooms(&appr, *i);
     }

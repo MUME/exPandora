@@ -66,7 +66,7 @@ RoomInfo::RoomInfo(QWidget* parent)
 
 }
 
-void RoomInfo::update_info(Room * rr)
+void RoomInfo::update_info(MumeRoom * rr)
 {
   char str[200];
 

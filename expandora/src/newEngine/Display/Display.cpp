@@ -32,7 +32,8 @@ Initializer<DisplayComponent> display("Display");
 
 
 ConnectionType DisplayComponent::requiredConnectionType(const QString & str) {
-  if (str == SLOT(playerMoved(Coordinate *, Coordinate *)))
+  if (str == SLOT(playerMoved(Coordinate, Coordinate)) ||
+      str == SIGNAL(deleteRoom()))
     return QueuedConnection;
   else 
     return DirectConnection;

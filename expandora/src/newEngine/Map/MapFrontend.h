@@ -1,13 +1,10 @@
 #ifndef MAPFRONTEND
 #define MAPFRONTEND
 
-#include <qthread.h>
 #include <qmutex.h>
 #include <vector>
 #include <stack>
 #include <set>
-#include <map>
-#include <qmap.h>
 
 #include "RoomSearchNode.h"
 #include "IntermediateNode.h"
@@ -20,10 +17,6 @@
 
 
 
-
-using namespace std;
-
-
 /**
  * The MapFrontend organizes rooms and their relations to each other.
  */
@@ -33,10 +26,10 @@ private:
   Q_OBJECT
 
   Map map;
-  vector<Room *> roomIndex;
-  vector<set<RoomRecipient *> > locks;
-  vector<RoomCollection *> roomHomes;
-  stack<int>  unusedIds;
+  std::vector<Room *> roomIndex;
+  std::vector<std::set<RoomRecipient *> > locks;
+  std::vector<RoomCollection *> roomHomes;
+  std::stack<int>  unusedIds;
   uint greatestUsedId;
   QMutex mapLock;
 

@@ -6,7 +6,7 @@
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include "Room.h"
+#include "MumeRoom.h"
 
 class RoomInfo : public QWidget
 {
@@ -33,7 +33,7 @@ public:
 
   QPushButton* apply_button;
 
-  void update_info(Room * rr);
+  void update_info(MumeRoom * rr);
 
 private:
   QHBoxLayout   *topLayout;

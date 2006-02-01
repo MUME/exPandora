@@ -1,5 +1,6 @@
 #include "Syncing.h"
 
+using namespace std;
 
 Syncing::Syncing(list<Path *> * pa, RoomSignalHandler * in_signaler) :
   paths(pa),

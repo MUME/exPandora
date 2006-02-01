@@ -2,12 +2,8 @@
 #define PARSER
 #include <queue>
 #include <list>
-#include <stack>
+#include <queue>
 #include <qobject.h>
-#include <qmutex.h>
-#include <qthread.h>
-#include <QWaitCondition>
-#include <qmap.h>
 
 #include "ParseEvent.h"
 #include "Property.h"
@@ -62,21 +58,19 @@ Q_OBJECT
   void playerPop();
   void checkQueues();
   
-  void dropNote(ParseEvent * ev);
   void experimenting();
   void syncing();
   void approved();
   void evaluatePaths();
 
-  queue<ParseEvent *> playerEvents;
-  queue<ParseEvent *> mudEvents;
+  std::queue<ParseEvent *> playerEvents;
+  std::queue<ParseEvent *> mudEvents;
   char activeTerrain;
   RoomSignalHandler signaler;
   Room * mostLikelyRoom;
   char state;
   int matchingTolerance;
-  list<Path *> * paths;
-
+  std::list<Path *> * paths;
 
 };	
 

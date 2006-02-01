@@ -21,7 +21,7 @@ class MainWindow : public QMainWindow
 public:
   MainWindow(QWidget *parent);
 
-  void update_status_bar(Room * rr);
+  void update_status_bar(MumeRoom * rr);
   RendererWidget *renderer;
 
 private slots:

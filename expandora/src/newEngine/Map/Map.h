@@ -4,7 +4,7 @@
 #include "Coordinate.h"
 #include "Room.h"
 #include <vector>
-using namespace std;
+
 
 /**
  * The Map stores the geographic relations of rooms to each other
@@ -19,10 +19,10 @@ class Map {
 		void remove(Coordinate & c) {set(c, 0);}
 	private:
 		
-		vector<vector<vector<Room *> > > & getSegment(Coordinate & c);
+		std::vector<std::vector<std::vector<Room *> > > & getSegment(Coordinate & c);
 		void set(Coordinate &c, Room *room);
 		Coordinate getNearestFree(Coordinate & c);
-		vector<vector<vector<Room *> > > map [2][2][2]; 
+		std::vector<std::vector<std::vector<Room *> > > map [2][2][2]; 
 };
 #ifdef DMALLOC
 #include <mpatrol.h>

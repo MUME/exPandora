@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <vector>
 
+using namespace std;
+
 /**
  * doesn't modify c
  */
@@ -34,8 +36,7 @@ Room * Map::get(Coordinate &c)
   {
     Coordinate cm = c;
     vector<vector<vector<Room *> > > & segment = getSegment(cm);
-    Room * ret = segment[cm.x][cm.y][cm.z];
-    return ret;
+    return segment[cm.x][cm.y][cm.z];
   }
 }
 

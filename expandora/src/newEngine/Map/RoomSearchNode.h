@@ -1,7 +1,6 @@
 #ifndef ROOMSEARCHNODE
 #define ROOMSEARCHNODE
 #include "ParseEvent.h"
-#include "Room.h"
 #include "AbstractRoomContainer.h"
 
 

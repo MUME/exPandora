@@ -1,7 +1,7 @@
 #include "Display.h"
 #include "CachedRoom.h"
 
-
+using namespace std;
 
 
 /**

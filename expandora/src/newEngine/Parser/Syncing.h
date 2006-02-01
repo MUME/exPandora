@@ -9,13 +9,13 @@
 
 class Syncing : public RoomRecipient {
  private:
-   list<Path *> * paths;
+   std::list<Path *> * paths;
    RoomSignalHandler * signaler;
 
  public:
-   Syncing(list<Path *> * in, RoomSignalHandler * signaler);
+   Syncing(std::list<Path *> * in, RoomSignalHandler * signaler);
    void receiveRoom(RoomAdmin *, Room *);
-   list<Path *> * evaluate();
+   std::list<Path *> * evaluate();
 };
 #ifdef DMALLOC
 #include <mpatrol.h>

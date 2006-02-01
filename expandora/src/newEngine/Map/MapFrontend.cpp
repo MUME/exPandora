@@ -1,7 +1,7 @@
 #include "MapFrontend.h"
-#include "IntermediateNode.h"
 
 using namespace Qt;
+using namespace std;
 
 /**
  * this method is called when a component of this type should be
@@ -93,7 +93,7 @@ void MapFrontend::lookingForRooms(RoomRecipient * recipient, uint id)
 
 void MapFrontend::assignId(Room * room, RoomCollection * roomHome)
 {
-  unsigned int id;
+  uint id;
 
   mapLock.lock();
   if (unusedIds.empty()) id = ++greatestUsedId;
@@ -140,7 +140,6 @@ void MapFrontend::createRoom(ParseEvent * event, Coordinate expectedPosition, ch
     return;
   }
   Room * room = roomHome->createRoom(event);
-  room->setTerrain(t);
   map.setNearest(expectedPosition, room);
   assignId(room, roomHome);
 

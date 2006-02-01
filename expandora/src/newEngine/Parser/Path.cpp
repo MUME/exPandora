@@ -1,5 +1,6 @@
 #include "Path.h"
 
+using namespace std;
 
 ObjectRecycler<Path> pamm;
 

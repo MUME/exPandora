@@ -3,7 +3,7 @@
 
 #include <qgl.h>
 #include "Component.h"
-#include "Room.h"
+#include "MumeRoom.h"
 #include "CachedRoom.h"
 #include "Frustum.h"
 #include "RoomRecipient.h"

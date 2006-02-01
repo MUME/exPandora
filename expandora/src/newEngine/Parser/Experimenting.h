@@ -1,8 +1,6 @@
 #ifndef EXPERIMENTING_H
 #define EXPERIMENTING_H
 
-#include <qobject.h>
-#include <qmutex.h>
 #include "Room.h"
 #include "Path.h"
 #include "RoomAdmin.h"
@@ -16,8 +14,8 @@ class Experimenting : public RoomRecipient {
   
   Parser * parent;
   uint direction;
-  list<Path *> * shortPaths;
-  list<Path *> * paths;
+  std::list<Path *> * shortPaths;
+  std::list<Path *> * paths;
   Path * best;
   Path * second;
   PathParameters params;
@@ -26,8 +24,8 @@ class Experimenting : public RoomRecipient {
   
 
  public:
-  Experimenting(Parser * parent, list<Path *> * paths, uint direction);
-  list<Path *> * evaluate();
+  Experimenting(Parser * parent, std::list<Path *> * paths, uint direction);
+  std::list<Path *> * evaluate();
   void receiveRoom(RoomAdmin *, Room *);
 
 };

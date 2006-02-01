@@ -1,7 +1,6 @@
 #ifndef ABSTRACTROOMCONTAINER
 #define ABSTRACTROOMCONTAINER
 
-#include "Room.h"
 #include "ParseEvent.h"
 
 class RoomCollection;

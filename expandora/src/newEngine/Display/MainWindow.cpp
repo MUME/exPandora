@@ -6,7 +6,6 @@
 #include <QFileDialog>
 
 #include "MainWindow.h"
-#include "Room.h"
 #include "Coordinate.h"
 #include "Terrain.h"
 
@@ -91,7 +90,7 @@ MainWindow::MainWindow(QWidget *parent)
   show();
 }
 
-void MainWindow::update_status_bar(Room *)
+void MainWindow::update_status_bar(MumeRoom *)
 {
 
   //  locationLabel->setText("silly location bar");

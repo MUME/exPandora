@@ -67,7 +67,7 @@ ROOMCOL		\33\[32m
 <DESC>"Exits:"		clearProperty(); BEGIN(EXITS);
 
 
-<DESC,EXITS>{ROOMCOL}					skipSomeProperties(); pushEvent(ROOM); BEGIN(ROOMNAME);
+<DESC,EXITS>{ROOMCOL}					skipSomeProperties(); pushEvent(ROOM); BEGIN(ROOMNAME); // this is a bad idea ... rooms can be concatenated like this, imagine "look" -> no exits + walk one step into darkness -> no room color 
 
 
 <EXITS>"south"  |

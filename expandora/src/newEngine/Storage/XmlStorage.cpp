@@ -1,7 +1,7 @@
 #include "XmlStorage.h"
 #include <iostream>
-#include <QApplication>
 
+using namespace std;
 /**
  * this method is called when a component of this type should be
  * created from a library. MY_EXPORT is defined in Component.h

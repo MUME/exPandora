@@ -1,6 +1,7 @@
 #include "RoomSignalHandler.h"
 
 using namespace Qt;
+using namespace std;
 
 void RoomSignalHandler::hold(Room * room, RoomAdmin * owner, RoomRecipient * locker)
 {

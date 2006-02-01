@@ -1,6 +1,8 @@
 #include <QImage>
 #include "RendererWidget.h"
 #include "Terrain.h"
+#include "MumeRoom.h"
+
 const GLfloat RendererWidget::marker_colour[] =
   {
     1.0, 0.2, 0.0, 0.6
@@ -187,10 +189,11 @@ void RendererWidget::drawMarker( Coordinate & pos )
 
 
 
-void RendererWidget::receiveRoom( RoomAdmin * owner, Room * pr )
+void RendererWidget::receiveRoom( RoomAdmin * owner, Room * pa )
 {
 
-
+  MumeRoom * pr = dynamic_cast<MumeRoom *>(pa);
+  if (!pr) return;
 
   Coordinate p = pr->getCoordinate();
 
@@ -277,7 +280,7 @@ void RendererWidget::receiveRoom( RoomAdmin * owner, Room * pr )
 
 
   glTranslatef( d.x, d.y, d.z );
-  if ( ( pr->getTerrain() != 0 ) && texture )
+  if ( (pr->getTerrain() != 0 ) && texture )
   {
     glEnable( GL_TEXTURE_2D );
     glBindTexture( GL_TEXTURE_2D, ( Terrain::terrains[pr->getTerrain()] ->texture ));

@@ -20,7 +20,7 @@ private:
   static const int texture_visibilit_range;
   static const int details_visibility_range;
 
-  map<int, CachedRoom *> roomsCache;
+  std::map<int, CachedRoom *> roomsCache;
   Coordinate position;
   GLfloat       colour[4];
   Frustum	frustum;
@@ -51,7 +51,7 @@ public:
   void drawExit(Coordinate & from, Coordinate & to, uint dir);
   void shiftView();
   void CalculateFrustum();
-  void receiveRoom(RoomAdmin *,Room *);
+  void receiveRoom(RoomAdmin *, Room *);
 
 protected:
   void initializeGL();

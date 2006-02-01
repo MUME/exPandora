@@ -4,7 +4,6 @@
 #include <map>
 #include <set>
 #include <qobject.h>
-#include <qmutex.h>
 #include "Room.h"
 #include "RoomRecipient.h"
 #include "RoomAdmin.h"
@@ -13,10 +12,10 @@ class RoomSignalHandler : public QObject {
   Q_OBJECT
  private:
 
-  map<Room *, RoomAdmin *> owners;
-  map<Room *, set<RoomRecipient *> > lockers;
-  map<Room *, int> holdCount;
-  QMutex releaseMutex;
+  std::map<Room *, RoomAdmin *> owners;
+  std::map<Room *, std::set<RoomRecipient *> > lockers;
+  std::map<Room *, int> holdCount;
+  
 
  public:
   RoomSignalHandler(QObject * parent) : QObject(parent) {}

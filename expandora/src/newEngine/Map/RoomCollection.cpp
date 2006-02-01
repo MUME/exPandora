@@ -1,5 +1,5 @@
 #include "RoomCollection.h"
-
+#include "RoomFactory.h"
 #include <stack>
 
 using namespace std;
@@ -19,21 +19,13 @@ RoomCollection * RoomCollection::skipDown(ParseEvent *) {
 }
 
 Room * RoomCollection::createRoom(ParseEvent * event) {
-  Room * room = rmm.activate();
-  room->init(event);
+  Room * room = RoomFactory::createRoom(event);
 	
   rooms.insert(room);
   return room;
 }
 
 
-RoomCollection * RoomCollection::filterByOptionals(ParseEvent * event) {
-  RoomCollection * filtered = rcmm.activate();
-  for  (set<Room *>::iterator i = rooms.begin(); i != rooms.end(); i++)	
-    if ((*i)->containsOptionals(event->getOptionals())) filtered->addRoom(*i);
-	
-  return filtered;
-}
 
 
 void RoomCollection::addRoom(Room * room) {
@@ -52,20 +44,6 @@ void RoomCollection::clear() {
   rooms.clear();
 } 
 
-Room * RoomCollection::matchOne(ParseEvent * target, int tolerance) {
-  set<Room *>::iterator i = rooms.begin();
-  stack<Room *> deleteSchedule;
-  for (; i != rooms.end(); i++) {
-    if (!(*i)->fastCompare(target, tolerance)) deleteSchedule.push(*i);
-  }
-  while (!deleteSchedule.empty()) {
-    rooms.erase(deleteSchedule.top());
-    deleteSchedule.pop();
-  }
-  if (rooms.begin() == rooms.end()) return 0;
-  else if ((++(rooms.begin())) == rooms.end()) return *(rooms.begin());
-  else return 0;
-}
 
 RoomCollection * RoomCollection::merge(AbstractRoomContainer * other) {
   if (other != 0 && other->numRooms() > 0) {
