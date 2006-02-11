@@ -490,7 +490,7 @@ int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
   fprintf(f, "  <localport port=\"%i\">\r\n", get_local_port());
   fprintf(f, "  <remotehost hostname=\"%s\" port=\"%i\">\r\n", 
                   (const char *) get_remote_host(), 
-                  (const char *) get_remote_port() );
+                  get_remote_port() );
   fprintf(f, "  <basefile filename=\"%s\">\r\n", 
                   (const char *) get_base_file() );
   fprintf(f, "  <roomnamecolour>%s</roomnamecolour>\r\n", 

@@ -231,7 +231,7 @@ void xml_writebase(QString filename)
     for (z = 0; z < Map.size(); z++) {
         p = Map.rooms[z];
     
-        fprintf(f,  "  <room id=\"%li\" x=\"%li\" y=\"%li\" z=\"%li\" "
+        fprintf(f,  "  <room id=\"%i\" x=\"%i\" y=\"%i\" z=\"%i\" "
                 "terrain=\"%s\">\n",
                 p->id, p->x, p->y, p->z, 
                 (const char *) conf.sectors[p->sector].desc);
