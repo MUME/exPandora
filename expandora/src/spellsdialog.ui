@@ -175,105 +175,71 @@
      <string>Save</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2" >
+   <widget class="QWidget" name="" >
     <property name="geometry" >
      <rect>
-      <x>21</x>
-      <y>51</y>
-      <width>111</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>Up message</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3" >
-    <property name="geometry" >
-     <rect>
-      <x>21</x>
-      <y>82</y>
-      <width>111</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>Refresh message</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label" >
-    <property name="geometry" >
-     <rect>
-      <x>11</x>
-      <y>21</y>
-      <width>213</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>Spell name and pattern for Affect</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4" >
-    <property name="geometry" >
-     <rect>
-      <x>21</x>
-      <y>113</y>
-      <width>111</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>Down message</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_up_mes" >
-    <property name="geometry" >
-     <rect>
-      <x>138</x>
-      <y>52</y>
-      <width>522</width>
-      <height>23</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_refresh_mes" >
-    <property name="geometry" >
-     <rect>
-      <x>138</x>
-      <y>83</y>
-      <width>522</width>
-      <height>23</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_down_mes" >
-    <property name="geometry" >
-     <rect>
-      <x>138</x>
-      <y>114</y>
-      <width>522</width>
-      <height>23</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_name" >
-    <property name="geometry" >
-     <rect>
-      <x>230</x>
+      <x>12</x>
       <y>22</y>
-      <width>430</width>
-      <height>23</height>
+      <width>651</width>
+      <height>124</height>
      </rect>
     </property>
+    <layout class="QGridLayout" >
+     <property name="margin" >
+      <number>0</number>
+     </property>
+     <property name="spacing" >
+      <number>6</number>
+     </property>
+     <item row="2" column="0" colspan="3" >
+      <widget class="QLabel" name="label_3" >
+       <property name="text" >
+        <string>Refresh message</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0" colspan="2" >
+      <widget class="QLabel" name="label_4" >
+       <property name="text" >
+        <string>Down message</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="4" >
+      <widget class="QLineEdit" name="lineEdit_up_mes" />
+     </item>
+     <item row="2" column="3" colspan="2" >
+      <widget class="QLineEdit" name="lineEdit_refresh_mes" />
+     </item>
+     <item row="0" column="4" >
+      <widget class="QLineEdit" name="lineEdit_name" />
+     </item>
+     <item row="3" column="2" colspan="3" >
+      <widget class="QLineEdit" name="lineEdit_down_mes" />
+     </item>
+     <item row="0" column="0" colspan="4" >
+      <widget class="QLabel" name="label" >
+       <property name="text" >
+        <string>Spell name and pattern for Affect</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" >
+      <widget class="QLabel" name="label_2" >
+       <property name="text" >
+        <string>Up message</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
    <widget class="QCheckBox" name="checkBox_addon" >
     <property name="geometry" >
      <rect>
       <x>20</x>
       <y>150</y>
-      <width>223</width>
-      <height>24</height>
+      <width>253</width>
+      <height>25</height>
      </rect>
     </property>
     <property name="text" >

@@ -73,6 +73,38 @@ int Cdispatcher::check_roomname(char *line) {
     return 0;
 }
 
+int Cdispatcher::check_description(char *line) 
+{
+    QRegExp rx;
+    
+
+    rx = conf.get_description_exp();
+
+    if (rx.indexIn(line) >= 0) {
+        /* so we got a roomname in this line */
+            int rn_start;
+            int rn_end;
+            int rn_len;
+            
+            QByteArray s = conf.get_description_col();
+            rn_start = s.length();
+            
+            s = conf.get_end_col();
+            rn_end = s.length();
+            rn_len = strlen(line) - rn_start - rn_end;
+            
+            rn_end = strlen(roomdesc);
+            strncat(roomdesc, &line[rn_start], rn_len); 
+            roomdesc[ rn_end + rn_len ] = 0;
+            strcat(roomdesc, "|");
+            
+            return 1;
+    } 
+      
+    return 0;
+}
+
+
 int Cdispatcher::check_exits(char *line)
 {
     QRegExp rx;
@@ -344,22 +376,29 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
     for (i = 0; i< amount; i++) {
         if ( (buffer[i].type != IS_LFCR) && (strlen(roomdesc) != 0) && getting_desc) {
             /* some room ended */
-            Engine.add_event(R_DESC, roomdesc);
-//            notify_analyzer();
-            print_debug(DEBUG_DISPATCHER, "DESC: %s", roomdesc);
-            roomdesc[0] = 0;
-            getting_desc = 0;   /* no more descs incoming */
         }
         
+        
+        if (getting_desc) {
+            if (check_description(buffer[i].line)) {
+                if (conf.get_brief_mode())
+                    continue;
+            } else if (strlen(roomdesc) != 0) {
+                Engine.add_event(R_DESC, roomdesc);
+                print_debug(DEBUG_DISPATCHER, "DESC: %s", roomdesc);
+                roomdesc[0] = 0;
+                getting_desc = 0;   /* no more descs incoming */
+            }
+        } 
+        
+/*
         if ((buffer[i].type == IS_LFCR) && strlen(buffer[i].line) && getting_desc) {
-            
+                
             strcat(roomdesc, buffer[i].line);
             strcat(roomdesc, "|");
             
-            if (conf.get_brief_mode())
-                continue;
         }
-        
+*/        
         if (buffer[i].type == IS_CRLF) {
             /* before any checks cut away the "propeller chars */
             char a_line[MAX_DATA_LEN];
@@ -574,6 +613,28 @@ int Cdispatcher::check_failure(char *nline)
                         }
                 }
                 
+                
+                /* description colour */
+                for (i = colour_data.begin(); i != colour_data.end(); ++i)
+                    if (get_colour_name(*i) == "roomdescription") {
+                        conf.set_description_col( get_colour( *i) );
+                        printf("Description colour is now set to: %s Test. %s\r\n", (const char *) conf.get_description_col(), 
+                                                                             (const char *) conf.get_end_col() );
+                        i = colour_data.erase(i);
+                        break;
+                    }
+                    
+                    
+                if (conf.get_description_col() == "") {
+                    send_to_user("--[ !!!! WARNING. !!!! You do not have the description colour set! Mapper wont work properly!\r\n");    
+                } else {
+                    /* check if any other colour has the same ANSI seq */
+                    for (i = colour_data.begin(); i != colour_data.end(); ++i)
+                        if (get_colour(*i) == conf.get_description_col()) {
+                            send_to_user("--[ WARNING: You have roomdescription and %s colours set the same, this will most likely hurt movement analyzer.\r\n", (const char *)  get_colour_name(*i) );               
+                        }
+                }
+                
                 /* prompt colour */
                 for (i = colour_data.begin(); i != colour_data.end(); ++i)
                     if (get_colour_name(*i) == "prompt") {
@@ -583,7 +644,6 @@ int Cdispatcher::check_failure(char *nline)
                         i = colour_data.erase(i);
                         break;
                     }
-                    
                     
                 if (conf.get_prompt_col() != "") {
                     /* check if any other colour has the same ANSI seq */

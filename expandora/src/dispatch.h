@@ -51,6 +51,8 @@ class Cdispatcher
     QRegExp you_follow_exp;
     
     int check_roomname(char *line);
+    int check_description(char *line);
+    
     int check_exits(char *line);
     int check_failure(char *nline);
     

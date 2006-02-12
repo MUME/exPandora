@@ -48,6 +48,7 @@ Cconfigurator::Cconfigurator()
     
     /* colours */
     set_look_col("[32m");
+    set_description_col("[34m");
     set_prompt_col("");
     set_end_col("[0m");
     
@@ -193,11 +194,18 @@ void Cconfigurator::flush_all_exps()
 {
     refresh_roomname_exp();
     refresh_prompt_exp();
+    refresh_description_exp();
 }
 
 void Cconfigurator::refresh_roomname_exp()
 {
     roomname_exp.setPattern("^"+ QRegExp::escape(get_look_col()) + ".*" 
+                    + QRegExp::escape(get_end_col())+"$");
+}
+
+void Cconfigurator::refresh_description_exp()
+{
+    description_exp.setPattern("^"+ QRegExp::escape(get_description_col()) + ".*" 
                     + QRegExp::escape(get_end_col())+"$");
 }
 
@@ -231,6 +239,13 @@ void Cconfigurator::set_look_col(QByteArray str)
 { 
     look_col = str; 
     refresh_roomname_exp();
+    set_conf_mod(true);
+}
+
+void Cconfigurator::set_description_col(QByteArray str)
+{ 
+    description_col = str; 
+    refresh_description_exp();
     set_conf_mod(true);
 }
 
@@ -495,6 +510,8 @@ int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
                   (const char *) get_base_file() );
   fprintf(f, "  <roomnamecolour>%s</roomnamecolour>\r\n", 
                   (const char *) get_look_col() );
+  fprintf(f, "  <descriptioncolour>%s</descriptioncolour>\r\n", 
+                  (const char *) get_description_col() );
   fprintf(f, "  <promptcolour>%s</promptcolour>\r\n", 
                   (const char *) get_prompt_col() );
   fprintf(f, "  <prompt IAC=\"%s\" forwardIAC=\"%s\" forwardColour=\"%s\">\r\n", 
@@ -600,6 +617,8 @@ bool ConfigParser::characters( const QString& ch)
       conf.set_look_col(s.toAscii());
       printf("The room name colour : %s Test.%s\r\n", (const char *) conf.get_look_col(), (const char *)conf.get_end_col() );
       printf("And the received str : %s str %s.\r\n", qPrintable(ch), (const char *)conf.get_end_col() );
+  } else if (flag == DESCRIPTIONCOLOUR) {
+      conf.set_description_col(s.toAscii());
   } else if (flag == PROMPTCOLOUR) {
       conf.set_prompt_col(s.toAscii());
   } else /*if (flag == TEXTURE) {
@@ -661,6 +680,9 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         return TRUE;
     } else if (qName == "roomnamecolour") {
         flag = ROOMCOLOUR;
+        return TRUE;
+    } else if (qName == "descriptioncolour") {
+        flag = DESCRIPTIONCOLOUR;
         return TRUE;
     } else if (qName == "promptcolour") {
         flag = PROMPTCOLOUR;
