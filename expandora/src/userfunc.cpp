@@ -647,7 +647,8 @@ USERCMD(usercmd_maction)
       
     send_to_user("%s exit %s\r\n", arg, short_exits[dir]);
     
-    send_to_user( (const char *) Engine.get_prompt());
+    if (local)
+      send_to_user( (const char *) Engine.get_prompt());
     return USER_PARSE_DONE;
     
   }
