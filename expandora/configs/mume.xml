@@ -1,0 +1,82 @@
+<config>
+  <localport port="3000">
+  <remotehost hostname="129.241.210.221" port="4242">
+  <basefile filename="database/mume.xml">
+  <roomnamecolour>[32m</roomnamecolour>
+  <descriptioncolour>[34m</descriptioncolour>
+  <promptcolour></promptcolour>
+  <prompt IAC="ON" forwardIAC="ON" forwardColour="OFF">
+  <GLvisibility textures="100" details="100">
+  <analyzers desc="ON" exits="ON"  terrain="ON">
+  <engineflags briefmode="ON" automerge="ON"  angrylinker="ON">
+  <guisettings always_on_top="ON">
+  <refresh auto="ON" roomnamequote="10" descquote="10">
+  <texture handle="INDOORS" file="images/indoors.png" pattern="[">
+  <texture handle="CITY" file="images/city.png" pattern="#">
+  <texture handle="FIELD" file="images/field.png" pattern=".">
+  <texture handle="FOREST" file="images/forest.png" pattern="f">
+  <texture handle="HILLS" file="images/hills.png" pattern="(">
+  <texture handle="SHALLOWWATER" file="images/shwater.png" pattern="%">
+  <texture handle="WATER" file="images/river.png" pattern="~">
+  <texture handle="RAPIDS" file="images/rapids.png" pattern="W">
+  <texture handle="UNDERWATER" file="images/unwater.png" pattern="U">
+  <texture handle="ROAD" file="images/road.png" pattern="+">
+  <texture handle="BRUSH" file="images/brush.png" pattern=":">
+  <texture handle="TUNNEL" file="images/tunnel.png" pattern="=">
+  <texture handle="CAVERN" file="images/cavern.png" pattern="O">
+  <texture handle="DEATH" file="images/death.png" pattern="?">
+  <texture handle="MOUNTAINS" file="images/mountain.png" pattern="&lt;">
+  <pattern regexp="NO" type="R_FAIL" data="wall">Alas, you cannot go that way...</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="water">You need to swim to go there.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="water">You need to swim there.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="sleeping">In your dreams, or what?</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="climb">You failed to climb there and fall down, hurting yourself.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="ice">You unsuccessfully try to break through the ice.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="noride">Oops! You cannot go there riding!</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="mount">Your mount refuses to follow your orders!</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="deepwater">You can't go into deep water!</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="sitting">Nah... You feel too relaxed to do that..</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="fight">No way! You are fighting for your life!</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="mountexhausted">You are too exhausted*</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="mountcontrol">You don't control your mount!</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="mountsensible">Your mount is too sensible to attempt such a feat.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="climb">You need to climb to go there.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="climb">The *scent is too steep, you need to climb to go there.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="swimfail">You failed swimming there.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="sitting">Maybe you should get on your feet first?</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="boat">Your boat cannot enter this place.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="boat">ZBLAM! A * doesn't want you riding * anymore.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="prevent">* prevents you from going *.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="exhaustboat">A * is too exhausted.</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="doorbump">The * seems to be closed.</pattern>
+  <pattern regexp="NO" type="R_BLIND" data="fog">You just see a dense fog around you...</pattern>
+  <pattern regexp="NO" type="R_FAIL" data="">* steps in front of you.</pattern>
+  <pattern regexp="NO" type="C_SCOUT" data="scouting">You quietly scout *wards...</pattern>
+  <spell addon="NO" name="armour" up="A blue transparent wall slowly appears around you." refresh="Your magic armour is revitalized." down="You feel less protected.">
+  <spell addon="NO" name="shield" up="You feel protected." refresh="Your protection is revitalized." down="Your magical shield wears off.">
+  <spell addon="NO" name="strength" up="You feel stronger." refresh="The duration of the strength spell has been improved." down="You feel weaker.">
+  <spell addon="NO" name="bless" up="You begin to feel the light of Aman shine upon you." refresh="You feel a renewed light shine upon you." down="The light of Aman fades away from you.">
+  <spell addon="NO" name="sense life" up="You feel your awareness improve." refresh="Your awareness is refreshed." down="You feel less aware of your surroundings.">
+  <spell addon="NO" name="sanctuary" up="You start glowing." refresh="Your aura glows more intensely." down="The white aura around your body fades.">
+  <spell addon="NO" name="detect magic" up="You become sensitive of magical auras." refresh="Your awareness of magical auras is renewed." down="Your perception of magical auras wears off.">
+  <spell addon="NO" name="tiredness" up="You feel your muscles relax and your pulse slow as the strength that welled within you subsides." refresh="" down="You feel your muscles regain some of their former energy.">
+  <spell addon="NO" name="haggardness" up="You feel a sudden flash of dizziness causing you to pause before getting your directional bearings back." refresh="" down="You feel steadier now.">
+  <spell addon="NO" name="lethargy" up="You feel a sudden loss of energy as the power that once mingled with your own has now vanished." refresh="" down="You feel your magic energy coming back to you.">
+  <spell addon="NO" name="blindness" up="You have been blinded!" refresh="" down="You feel a cloak of blindness dissolve.">
+  <spell addon="NO" name="nightvision" up="Your eyes tingle." refresh="" down="Your vision blurs.">
+  <spell addon="NO" name="battleglory" up="Hearing the horn blow, you feel your urge to battle increase!" refresh="" down="You feel your newfound strength leaving you again.">
+  <spell addon="NO" name="breath of briskness" up="An energy begins to flow within your legs as your body becomes lighter." refresh="The energy in your legs is refreshed." down="Your legs feel heavier.">
+  <debug name="general"  state="ON">
+  <debug name="analyzer"  state="ON">
+  <debug name="system"  state="ON">
+  <debug name="config"  state="OFF">
+  <debug name="dispatcher"  state="ON">
+  <debug name="proxy"  state="OFF">
+  <debug name="renderer"  state="OFF">
+  <debug name="roommanager"  state="OFF">
+  <debug name="stacks"  state="OFF">
+  <debug name="tree"  state="OFF">
+  <debug name="userfunc"  state="OFF">
+  <debug name="xml"  state="OFF">
+  <debug name="interface"  state="OFF">
+</config>

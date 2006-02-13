@@ -114,7 +114,7 @@ void MainWindow::open()
   strcpy(data, qPrintable(s));
     
   if (!s.isEmpty()) { 
-    usercmd_mload(0, 0,  data);  
+    usercmd_mload(0, 0,  data, data);  
   }  
   QMessageBox::information(this, "Pandora", "Loaded!\n", QMessageBox::Ok);
 
@@ -122,7 +122,7 @@ void MainWindow::open()
 
 void MainWindow::reload()
 {
-    usercmd_mload(0, 0, "");    
+    userland_parser.parse_user_input_line("mload");
 }
 
 void MainWindow::quit()
@@ -172,7 +172,7 @@ void MainWindow::quit()
 
 void MainWindow::save()
 {
-    usercmd_msave(0, 0, "");
+    userland_parser.parse_user_input_line("msave");
     QMessageBox::information(this, "Saving...", "Saved!\n", QMessageBox::Ok);
                                     
 }
@@ -190,7 +190,7 @@ void MainWindow::saveAs()
   strcpy(data, qPrintable(s));
     
   if (!s.isEmpty()) { 
-    usercmd_msave(0, 0,  data);  
+    usercmd_msave(0, 0,  data, data);  
   }  
   
   QMessageBox::information(this, "Saving...", "Saved!\n", QMessageBox::Ok);

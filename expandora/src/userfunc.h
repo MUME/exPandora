@@ -2,7 +2,7 @@
 #define USERLAND_H 
 
 
-#define USERCMD(name)  int name(int cmd, int subcmd, char *line)
+#define USERCMD(name)  int name(int cmd, int subcmd, char *line, char *original)
 #include <deque>
 #include <QMutex>
 using namespace std;
@@ -47,7 +47,7 @@ USERCMD(usercmd_mcalibrate);
 
 struct user_command_type {
   const char *name;
-  int (*command_pointer) (int cmd, int subcmd, char *line);
+  int (*command_pointer) (int cmd, int subcmd, char *line, char *orig);
   int subcmd;           /* subcommand*/
   unsigned int flags;
   const char *desc;     /* short command description */
@@ -77,7 +77,8 @@ public:
 extern class Userland userland_parser;
 
 #define USER_PARSE_NONE 0 /* 0 - not my area - send the line futher */
-#define USER_PARSE_DONE 1 /* 1 - got the line, and taken care of it - gag it */
+#define USER_PARSE_SKIP 1 /* skip this line */
+#define USER_PARSE_DONE 2 /* parsed the line, pass corrected line futher */
 int parse_user_input_line(char *line);
 
 #endif
