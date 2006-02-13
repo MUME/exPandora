@@ -625,7 +625,7 @@ USERCMD(usercmd_maction)
     if (is_abbrev(arg, "all")) {
       dir = -1;
     } else {
-      send_to_user("--[ %s is not a dirrection.\r\n", arg);     
+      send_to_user("--[ %s is not a direction.\r\n", arg);
       send_to_user( (const char *) Engine.get_prompt()); 
       return USER_PARSE_DONE;             
     }
@@ -694,7 +694,8 @@ USERCMD(usercmd_maction)
     send_to_user("%s %s %s\r\n", arg, "exit", short_exits[dir]);
   }
   
-  send_to_user( (const char *) Engine.get_prompt());
+  if (local)
+    send_to_user( (const char *) Engine.get_prompt());
   return USER_PARSE_DONE;
 }
 
