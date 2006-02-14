@@ -198,7 +198,7 @@ void Cdispatcher::dispatch_buffer()
         rx = conf.get_prompt_exp();
 //        printf("IAC check RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
             
-        if (rx_pos = rx.indexIn(line) >= 0) {
+        if ((rx_pos = rx.indexIn(line)) >= 0) {
             buffer[amount].type = IS_PROMPT;
             buffer[amount].len = dispatch_prompt(line, buffer[amount].line, l, 1);
             printf("PROMPT(IAC): %s\r\n", buffer[amount].line);
@@ -250,7 +250,7 @@ void Cdispatcher::dispatch_buffer()
           rx = conf.get_prompt_exp();
           if ( conf.get_prompt_col() != "" && 
                (strncmp(line, (const char *) conf.get_prompt_col(), conf.get_prompt_col_len() ) == 0) )   
-            if (rx_pos = rx.indexIn(line) >= 0) {
+            if ((rx_pos = rx.indexIn(line)) >= 0) {
               rx_pos += rx.matchedLength();
                         /* here we assume we've found prompt */
               memcpy(buffer[amount].line, line, rx_pos);
@@ -320,7 +320,7 @@ void Cdispatcher::dispatch_buffer()
     rx = conf.get_prompt_exp();
 //    printf("RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
 
-    if (rx_pos = rx.indexIn(line) >= 0) {
+    if ((rx_pos = rx.indexIn(line)) >= 0) {
         buffer[amount].len = dispatch_prompt(line, buffer[amount].line, l, 0);
         buffer[amount].type = IS_PROMPT;
         printf("PROMPT: %s\r\n", buffer[amount].line);
