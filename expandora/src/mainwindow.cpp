@@ -27,9 +27,8 @@ int renderer_thread_main(int argc, char *argv[])
     return -1;
   }
   
-  renderer_window = new MainWindow( 0, "MainWindow" );
+  renderer_window = new MainWindow( 0 );
   renderer_window->setWindowTitle("Pandora");
-//  a.setMainWidget( renderer_window );
   
   QGLFormat f;
   f.setDoubleBuffer( TRUE );                 
@@ -391,10 +390,10 @@ void MainWindow::publish_map()
 }
 
 
-MainWindow::MainWindow(QWidget *parent, const char *name)
+MainWindow::MainWindow(QWidget *parent)
     : QMainWindow( parent)
 {
-  renderer =  new RendererWidget( this, name);
+  renderer =  new RendererWidget( this );
   setCentralWidget( renderer );
   resize(640, 480);
 

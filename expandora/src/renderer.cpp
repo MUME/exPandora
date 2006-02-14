@@ -55,12 +55,10 @@ enum PlaneData
     D = 3               // The distance the plane is from the origin
 };
 
-RendererWidget::RendererWidget( QWidget *parent, const char *name )
+RendererWidget::RendererWidget( QWidget *parent )
      : QGLWidget( parent )
 {
-    
-  QString shutupthewarning = name;
-    
+
   angley = 0;
   anglex = 0;
   anglez = 0;

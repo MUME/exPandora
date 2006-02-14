@@ -44,7 +44,7 @@ public:
   int           rooms_drawn_total;
   int           square_frustum_checks;
 
-  RendererWidget( QWidget *parent, const char *name=0 );
+  RendererWidget( QWidget *parent = 0);
 
   void display(void);
 

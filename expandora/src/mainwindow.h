@@ -77,7 +77,7 @@ private:
   SpellsDialog      *spells_dialog;
 
 public:
-    MainWindow(QWidget *parent, const char *name = 0);
+    MainWindow(QWidget *parent = 0);
 
     RendererWidget *renderer;
 
