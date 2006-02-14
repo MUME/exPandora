@@ -10,45 +10,8 @@
 #include "engine.h"
 #include "userfunc.h"
 
-extern class MainWindow *renderer_window;
-
 
 /* global classless */
-
-int renderer_thread_main(int argc, char *argv[])
-{
-  printf("Starting renderer ...\n");
-
-  QApplication::setColorSpec( QApplication::CustomColor );
-  QApplication a( argc, argv);
-
-  if ( !QGLFormat::hasOpenGL() ) {
-    qWarning( "This system has no OpenGL support. Exiting." );
-    return -1;
-  }
-  
-  renderer_window = new MainWindow( 0 );
-  renderer_window->setWindowTitle("Pandora");
-  
-  QGLFormat f;
-  f.setDoubleBuffer( TRUE );                 
-  f.setDirectRendering( TRUE );              
-  f.setRgba( TRUE );
-  f.setDepth( TRUE );
-
-  QGLFormat::setDefaultFormat( f );
-
-
-  renderer_window->show();
-
-  printf("Renderer: ready and awaiting for events...\r\n");
-  
-  a.exec();
-  
-  exit(1);
-  
-  return 0;
-}
 
 void toggle_renderer_reaction()
 {
@@ -393,6 +356,7 @@ void MainWindow::publish_map()
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow( parent)
 {
+  setWindowTitle("Pandora");
   renderer =  new RendererWidget( this );
   setCentralWidget( renderer );
   resize(640, 480);

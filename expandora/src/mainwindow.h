@@ -16,7 +16,6 @@
 #include "SpellsDialog.h"
 #include "renderer.h"
 
-int renderer_thread_main(int argc, char *argv[]);
 void toggle_renderer_reaction();
 void notify_analyzer();
 

@@ -38,21 +38,6 @@ int mud_emulation = 0;          /* we are in emulation mode */
 
 
 
-/* RENDERER THREAD MAIN DEFINES*/
-class RendererThread : public QThread {
-public:
-      virtual void run();
-} renderer_thread;
-
-void RendererThread::run()
-{
-  renderer_thread_main(0, NULL);
-  print_debug(DEBUG_RENDERER, "quiting child thread function"); 
-}
-/* RENDERER THREAD ENDS*/
-
-
-
 /* PROXY THREAD DEFINES */
 class ProxyThread : public QThread {
 public:
@@ -248,15 +233,33 @@ int main(int argc, char *argv[])
       stacker.put(1);
       stacker.swap();
     }
- 
+
+
+    printf("Starting renderer ...\n");
+
+    QApplication::setColorSpec( QApplication::CustomColor );
+    QApplication app( argc, argv );
+
+    if ( !QGLFormat::hasOpenGL() ) {
+        qWarning( "This system has no OpenGL support. Exiting." );
+        return -1;
+    }
+
+    renderer_window = new MainWindow( 0 );
+
+    QGLFormat f;
+    f.setDoubleBuffer( TRUE );
+    f.setDirectRendering( TRUE );
+    f.setRgba( TRUE );
+    f.setDepth( TRUE );
+
+    QGLFormat::setDefaultFormat( f );
+
+
+    renderer_window->show();
+
     proxy_init();
- 
-    renderer_thread.start();
     proxy_thread.start();
 
-    renderer_thread.wait();
-    proxy_thread.wait();
-
-    printf("Quiting !\n");
-    return 0;
+    return app.exec();
 }
