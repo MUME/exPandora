@@ -30,9 +30,6 @@ Cdispatcher::Cdispatcher()
     amount = 0;
     roomdesc[0]=0;
     getting_desc = 0;
-    leader[0] = 0;        /* no leader yet */
-    following_leader = false;
-    follow_leader_exp.setPattern("You now follow ");
 }
 
 int Cdispatcher::check_roomname(char *line) {
@@ -61,8 +58,8 @@ int Cdispatcher::check_roomname(char *line) {
                 (const char*) conf.get_look_col(),
                 roomname, (const char*) conf.get_end_col() );
             
-            Engine.add_event(R_ROOM, roomname);
-            notify_analyzer();
+//            Engine.add_event(R_ROOM, roomname);
+//            notify_analyzer();
         
             getting_desc = 1;   /* get desc if it will be there */
             
@@ -111,10 +108,10 @@ int Cdispatcher::check_exits(char *line)
 
     rx = conf.get_exits_exp();
     if (rx.indexIn(line) >= 0) {
-        Engine.add_event(R_EXITS, 
-                         &line[ strlen( (const char*) conf.get_exits_pat() ) ]);
-        print_debug(DEBUG_DISPATCHER, "EXITS: %s [%i]", &line[6], strlen(&line[6]) );
-        getting_desc = 0;   /* do not react on desc alike strings anymore */
+//        Engine.add_event(R_EXITS, 
+//                         &line[ strlen( (const char*) conf.get_exits_pat() ) ]);
+//        print_debug(DEBUG_DISPATCHER, "EXITS: %s [%i]", &line[6], strlen(&line[6]) );
+//        getting_desc = 0;   /* do not react on desc alike strings anymore */
 //        notify_analyzer();
         return 1;
     }
@@ -174,6 +171,146 @@ int Cdispatcher::dispatch_prompt(char *line, char *buf, int l, int mode)
     return len;
 }
 
+
+    
+/**
+ * 
+ */
+void Cdispatcher::parse_xml() 
+{
+        /* types without parameters here */
+        struct {
+            char    *name;
+            int        startType;
+            int        endType;
+        } TagTypes[] = {
+            {"propmp", XML_START_PROMPT, XML_END_PROMPT},
+            {"room", XML_START_ROOM, XML_END_ROOM},
+            {"name", XML_START_NAME, XML_END_NAME},
+            {"description", XML_START_DESC, XML_END_DESC},
+            {"exits", XML_START_EXITS, XML_END_EXITS},
+            {"", -1, -1}
+        };
+        
+        int p;
+        int i;
+        char    name[MAX_STR_LEN];
+        char    params[MAX_STR_LEN];
+        bool    endTag = false;
+        bool    endAfterTag = false;
+        int       endType = -1;
+        int       startType = -1;
+                    
+        name[0] = 0;
+        params[0] = 0;
+        
+        printf("XML TAG: ");
+        
+        p = o_pos+1;
+        if (o_buf[p] == '/') {
+            printf(" (END TAG) ");
+            endTag = true;
+            p++;
+        }
+        
+        /* get tags name */
+        i = 0;
+        while (p < o_len && o_buf[p] != '>' && o_buf[p] != ' ' && o_buf[p] != '/') {
+            name[i++] = o_buf[p];
+            p++;
+        }        
+        name[i] = 0;
+        
+        printf("name: ..%s.. ", name);
+        
+        if (o_buf[p] == ' ') {
+            /* params are coming */
+            i = 0;
+            while (p < o_len && o_buf[p] != '>' && o_buf[p] != '/') {
+                params[i++] = o_buf[p];
+                p++;
+            }        
+            params[i] = 0;
+        }
+        
+        printf("params: ..%s.. ", params);
+        
+        if (o_buf[p] == '/') {
+            printf("EndAfterTag ");
+            endAfterTag = true;
+            p++;
+        }
+        
+        if (o_buf[p] != '>') {
+            printf("Fault in XML parsing !\r\n");
+            while (p < o_len && o_buf[p] != '>')  {
+                printf("%c", o_buf[p]);
+                p++;
+            }        
+            params[0] = 0;
+            printf("\r\n");
+        }
+                
+        /* we are done with moving around the original buffer */
+        o_pos = p+1;
+        printf("new o_pos %i, next char %c\r\n", o_pos, o_buf[o_pos]);        
+        
+        /* now parse the tags ! */                    
+        
+        /* hard tags first */
+        if (strcmp(name, "movement") == 0) {
+            startType = XML_START_MOVEMENT;
+            endType = XML_END_MOVEMENT;
+            
+            /* parse parameters */
+            if (strlen(params) != 0) {
+                QByteArray param = params;
+                int index = param.indexOf("dir=");
+                index += 4;
+                switch (param[index]) {
+                    case 'n' :    strcpy(params, "north");
+                                        break;
+                    case 'e' :    strcpy(params, "east");
+                                        break;
+                    case 's' :    strcpy(params, "south");
+                                        break;
+                    case 'w' :    strcpy(params, "west");
+                                        break;
+                    case 'u' :    strcpy(params, "up");
+                                        break;
+                    case 'd' :    strcpy(params, "down");
+                                        break;
+                }
+            }
+        } else {
+            /* the easy ones */
+            for (p = 0; TagTypes[p].startType != -1; p++)
+                if (strcmp(TagTypes[p].name, name) == 0) {
+                    startType = TagTypes[p].startType;
+                    endType = TagTypes[p].endType;
+            }
+        }
+        
+        buffer[amount].type = IS_XML;
+        strcpy(buffer[amount].line, params);
+        buffer[amount].len = strlen(params);
+        if (endTag)
+            buffer[amount].xmlType = endType;
+        else    
+            buffer[amount].xmlType = startType;
+        amount++;
+        
+        if (endAfterTag) {
+            buffer[amount].type = IS_XML;
+            buffer[amount].len = 0;
+            buffer[amount].xmlType = endType;
+            amount++;
+        }
+        
+}
+    
+    
+    
 
 void Cdispatcher::dispatch_buffer() 
 {
@@ -238,6 +375,23 @@ void Cdispatcher::dispatch_buffer()
 
       l = 0;
       continue;
+    }
+    
+    /* XML sequences check */
+    if (o_buf[o_pos] == '<') {
+        parse_xml();
+        continue;
+    }
+    
+    if (o_buf[o_pos] == '&' && (o_len - o_pos) >= 4 && o_buf[o_pos+2] == 't' && o_buf[o_pos+3] == ';') {
+        if (o_buf[o_pos+1] == 'g') {
+                line[l++] = '>';
+                o_pos += 4;
+        } else   if (o_buf[o_pos+1] == 'l' ) {
+                line[l++] = '<';
+                o_pos += 4;
+        }
+        continue;
     }
     
     /* for forward check buf[i+1] */
@@ -323,7 +477,7 @@ void Cdispatcher::dispatch_buffer()
     if ((rx_pos = rx.indexIn(line)) >= 0) {
         buffer[amount].len = dispatch_prompt(line, buffer[amount].line, l, 0);
         buffer[amount].type = IS_PROMPT;
-        printf("PROMPT: %s\r\n", buffer[amount].line);
+        printf("PROMPT (outside of the cycle): %s\r\n", buffer[amount].line);
         amount++;
         return;
     } 
@@ -378,27 +532,26 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             /* some room ended */
         }
         
+        /* XML messages parser */
+        if (buffer[i].type == IS_XML) {
+            
+            continue;
+        }
+        
         
         if (getting_desc) {
             if (check_description(buffer[i].line)) {
                 if (conf.get_brief_mode())
                     continue;
             } else if (strlen(roomdesc) != 0) {
-                Engine.add_event(R_DESC, roomdesc);
-                print_debug(DEBUG_DISPATCHER, "DESC: %s", roomdesc);
-                roomdesc[0] = 0;
+//                Engine.add_event(R_DESC, roomdesc);
+//                print_debug(DEBUG_DISPATCHER, "DESC: %s", roomdesc);
+//                roomdesc[0] = 0;
                 getting_desc = 0;   /* no more descs incoming */
             }
         } 
         
-/*
-        if ((buffer[i].type == IS_LFCR) && strlen(buffer[i].line) && getting_desc) {
-                
-            strcat(roomdesc, buffer[i].line);
-            strcat(roomdesc, "|");
-            
-        }
-*/        
+        
         if (buffer[i].type == IS_CRLF) {
             /* before any checks cut away the "propeller chars */
             char a_line[MAX_DATA_LEN];
@@ -523,8 +676,8 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
         if (buffer[i].type == IS_PROMPT) {
             spells_print_mode = false;      /* do not analyze spells anymore */
             Engine.set_prompt(buffer[i].line);
-            Engine.add_event(R_PROMPT, buffer[i].line);
-            notify_analyzer();
+//            Engine.add_event(R_PROMPT, buffer[i].line);
+//            notify_analyzer();
         }
         
         /* recreating this line in buffer */
@@ -569,182 +722,6 @@ QByteArray Cdispatcher::get_colour(QByteArray str)
     end = str.indexOf("m", start);
     s = str.mid(start, end-start+1);
     return s;
-}
-
-
-int Cdispatcher::check_failure(char *nline)
-{
-    QRegExp rx;
-    vector<QByteArray>::iterator i;
-
-    if (getting_colour_scheme) {
-        rx.setPatternSyntax(QRegExp::Wildcard);
-	
-      	if (!collecting_colours) {
-            /* check if we shall start collecting colours */
-	    rx.setPattern("Use 'change colour <field> <attribute>' where <field>");
-            if (rx.indexIn(nline) >= 0) {
-	        collecting_colours = true;
-	        return 1;
-	    }
-        } else {
-            rx.setPattern("or 'change colour <field> default|monochrome|none' where <field>");
-            if (rx.indexIn(nline) >= 0) {
-                /* check for double colours */
-                
-                /* look's /roomname) colour */
-                for (i = colour_data.begin(); i != colour_data.end(); ++i)
-                    if (get_colour_name(*i) == "look") {
-                        conf.set_look_col( get_colour( *i) );
-                        printf("Look colour is now set to: %s Test. %s\r\n", (const char *) conf.get_look_col(), 
-                                                                             (const char *) conf.get_end_col() );
-                        i = colour_data.erase(i);
-                        break;
-                    }
-                    
-                    
-                if (conf.get_look_col() == "") {
-                    send_to_user("--[ WARNING. You do not have the look colour set! Mapper wont work properly!\r\n");    
-                } else {
-                    /* check if any other colour has the same ANSI seq */
-                    for (i = colour_data.begin(); i != colour_data.end(); ++i)
-                        if (get_colour(*i) == conf.get_look_col()) {
-                            send_to_user("--[ WARNING: You have look and %s colours set the same, this will most likely hurt movement analyzer.\r\n", (const char *)  get_colour_name(*i) );               
-                        }
-                }
-                
-                
-                /* description colour */
-                for (i = colour_data.begin(); i != colour_data.end(); ++i)
-                    if (get_colour_name(*i) == "roomdescription") {
-                        conf.set_description_col( get_colour( *i) );
-                        printf("Description colour is now set to: %s Test. %s\r\n", (const char *) conf.get_description_col(), 
-                                                                             (const char *) conf.get_end_col() );
-                        i = colour_data.erase(i);
-                        break;
-                    }
-                    
-                    
-                if (conf.get_description_col() == "") {
-                    send_to_user("--[ !!!! WARNING. !!!! You do not have the description colour set! Mapper wont work properly!\r\n");    
-                } else {
-                    /* check if any other colour has the same ANSI seq */
-                    for (i = colour_data.begin(); i != colour_data.end(); ++i)
-                        if (get_colour(*i) == conf.get_description_col()) {
-                            send_to_user("--[ WARNING: You have roomdescription and %s colours set the same, this will most likely hurt movement analyzer.\r\n", (const char *)  get_colour_name(*i) );               
-                        }
-                }
-                
-                /* prompt colour */
-                for (i = colour_data.begin(); i != colour_data.end(); ++i)
-                    if (get_colour_name(*i) == "prompt") {
-                        conf.set_prompt_col( get_colour( *i) );
-                        printf("Prompt colour is now set to: %s Test. %s\r\n", (const char *) conf.get_prompt_col(), 
-                                                                             (const char *) conf.get_end_col() );
-                        i = colour_data.erase(i);
-                        break;
-                    }
-                    
-                if (conf.get_prompt_col() != "") {
-                    /* check if any other colour has the same ANSI seq */
-                    for (i = colour_data.begin(); i != colour_data.end(); ++i)
-                        if (get_colour(*i) == conf.get_prompt_col()) {
-                            send_to_user("--[ WARNING: You have prompt and %s colours set the same, this will most likely hurt movement analyzer.\r\n", (const char *)  get_colour_name(*i) ); 
-                        }
-                }
-
-                
-                /* free the colorus list and unset all the flags */
-                collecting_colours = false;
-                getting_colour_scheme = false;
-                colour_data.clear();
-            } else {
-                /* collect the colour and add the item */
-                colour_data.push_back(nline);
-            }
-	}
-    }
-
-  for (unsigned int i = 0; i < conf.patterns.size(); i++) {
-    if (conf.patterns[i].rexp.indexIn(nline) >= 0 ) {
-        Engine.add_event(conf.patterns[i].event.type, (const char*) conf.patterns[i].event.data);
-      return 1;
-    }         
-  }
-
-
-  if (follow_leader_exp.indexIn(nline) >= 0) {
-    unsigned int j;
-        
-    for (j = follow_leader_exp.matchedLength(); j < MAX_STR_LEN; j++) {
-        if (nline[j] == '\0' || nline[j] == '.')
-            break;
-        if (nline[j] == '(') {
-            j--;
-           break;
-       }
-    }
-    leader = QByteArray(nline).mid(follow_leader_exp.matchedLength(), j - follow_leader_exp.matchedLength());
-        
-
-    you_follow_exp.setPattern("You follow (" + leader + "|Someone)");                                         
-
-    QByteArray r = "";
-    r.append( UPPER(leader[0]) );
-    leader.replace(0, 1, r);  /* capitalize the first letter */
-    
-    leader_moves_exp.setPattern(leader + ".* leaves (north|east|south|west|up|down)" );
-                                         
-    following_leader = 1;
-    send_to_user("-- [Pandora: Following leader : '%s'\r\n", (const char *) leader);
-    send_to_user("---[ Pattern: %s  Pattern: %s\r\n", qPrintable( leader_moves_exp.pattern() ), 
-                            qPrintable( you_follow_exp.pattern() )  );
-
-    return 1;
-  }
-
-  if (following_leader) {
-    
-    if (leader_moves_exp.indexIn(nline) >= 0) {
-        unsigned int j;
-        for (j = leader_moves_exp.matchedLength() - 1; j > 0; j--) 
-            if (nline[j] == ' ')
-                break;
-      
-        last_leaders_movement = nline[ j + 1 ];
-        print_debug(DEBUG_DISPATCHER, "Saved leaders movement %c.", last_leaders_movement);
-        return 1;
-    }
-    if (you_follow_exp.indexIn(nline) >= 0) {
-
-      print_debug(DEBUG_DISPATCHER, "Effective leaders movement %c.", last_leaders_movement);
-      if ( Engine.isMapping() ) {
-          Engine.setMapping(false);
-          send_to_user("--[Pandora: Mapping is now OFF!\r\n");
-      }
-      
-      switch (last_leaders_movement) {
-        case 'n' : Engine.add_event(C_MOVE, "north");
-                break;
-        case 'e' : Engine.add_event(C_MOVE, "east");
-                break;
-        case 's' : Engine.add_event(C_MOVE, "south");
-                break;
-        case 'w' : Engine.add_event(C_MOVE, "west");
-                break;
-        case 'u' : Engine.add_event(C_MOVE, "up");
-                break;
-        case 'd' : Engine.add_event(C_MOVE, "down");
-                break;
-      }
-      
-
-      return 1;
-    }
-
-  }
-  
-  return 0;
 }
 
 /* ======================= USER LAND ============================ */

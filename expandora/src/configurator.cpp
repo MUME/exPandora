@@ -101,7 +101,6 @@ Cconfigurator::Cconfigurator()
 
 void Cconfigurator::reset_current_config()
 {
-    patterns.clear();
     sectors.clear();
     spells.clear();
     
@@ -122,27 +121,6 @@ void Cconfigurator::set_exits_pat(QByteArray str)
     
     set_conf_mod(true);
 }
-
-
-void Cconfigurator::add_pattern(QByteArray pattern, QByteArray data, char marker, char type, bool is_regexp)
-{
-    TPattern p;
-    
-    p.is_regexp = is_regexp;
-    p.pattern = pattern;
-    p.event.data = data;
-    p.event.group = marker;
-    p.event.type = type;
-    if (is_regexp) 
-      p.rexp.setPatternSyntax(QRegExp::RegExp);
-    else 
-      p.rexp.setPatternSyntax(QRegExp::Wildcard);
-    p.rexp.setPattern(pattern);
-
-    patterns.push_back(p);
-    set_conf_mod(true);
-}
-
 
 /* --------------------------------------- spells ----------------------------------------- */
 void Cconfigurator::add_spell(QByteArray spellname, QByteArray up, QByteArray down, QByteArray refresh, bool addon)
@@ -554,14 +532,6 @@ int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
                   (const char *) sectors[i].filename, qPrintable(ch));
   }
   
-  for (i = 0; i < patterns.size(); i++) {
-        fprintf(f, "  <pattern regexp=\"%s\" type=\"%s\" data=\"%s\">%s</pattern>\r\n",
-                  YES_NO(patterns[i].is_regexp), 
-                  (const char *) Events[patterns[i].event.type].data, 
-                  (const char *) patterns[i].event.data, 
-                  (const char *) patterns[i].pattern );
-  }
-  
   for (i = 0; i < spells.size(); i++) {
         fprintf(f, "  <spell addon=\"%s\" name=\"%s\" up=\"%s\" refresh=\"%s\" down=\"%s\">\r\n",
                     YES_NO(spells[i].addon), 
@@ -597,14 +567,10 @@ ConfigParser::ConfigParser()
 }
 
 
-bool ConfigParser::endElement( const QString& , const QString& , const QString& qName)
+bool ConfigParser::endElement( const QString& , const QString& , const QString&)
 {
-  if (qName == "pattern" && flag == PATTERN) {
-    conf.add_pattern(pattern.pattern, pattern.event.data, pattern.event.group, 
-                                      pattern.event.type, pattern.is_regexp);          
-  }
-  flag = 0;    
-  return TRUE;
+    flag = 0;    
+    return TRUE;
 }
 
 bool ConfigParser::characters( const QString& ch)
@@ -621,14 +587,7 @@ bool ConfigParser::characters( const QString& ch)
       conf.set_description_col(s.toAscii());
   } else if (flag == PROMPTCOLOUR) {
       conf.set_prompt_col(s.toAscii());
-  } else /*if (flag == TEXTURE) {
-      texture.pattern = ch[0].toAscii();  
-  } else */
-  if (flag == PATTERN) {
-      ch.toUpper();
-      pattern.pattern = ch.toAscii();
-      
-  }
+  } 
 
   return TRUE;
 } 
@@ -638,9 +597,6 @@ bool ConfigParser::startElement( const QString& , const QString& ,
                                     const QString& qName, 
                                     const QXmlAttributes& attributes)
 {
-    unsigned int i;
-
-
     if (qName == "localport") {
         if (attributes.length() < 1) {
             printf("(localport token) Not enough attributes in XML file!");
@@ -848,38 +804,6 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         
 //        flag = TEXTURE;         /* get the inner data ! */
         return TRUE;
-    } else if (qName == "pattern") {
-        if (attributes.length() < 2) {
-            printf("(pattern token) Not enough attributes in XML file!");
-            exit(1);
-        }        
-
-        s = attributes.value("regexp");
-        s = s.toLower();
-        pattern.is_regexp = false;
-        if (s == "yes") 
-          pattern.is_regexp = true;
-        
-        
-        s = attributes.value("type");
-        pattern.event.type = 0;
-        for (i = 0; i < Events.size(); i++) 
-            if ( s == Events[i].data) {
-                pattern.event.type = Events[i].type;
-                pattern.event.group = Events[i].group;
-                break;
-            }
-        
-        if (pattern.event.type == -1) {
-            printf("Bad type descriptor.\r\n");
-            return TRUE;                                     
-        } 
-
-        s = attributes.value("data");
-        pattern.event.data = s.toAscii();
-        
-        flag = PATTERN;         /* get the inner data ! */
-        return TRUE;
     } else if (qName == "spell") {
         if (attributes.length() < 4) {
             printf("(pattern token) Not enough attributes in XML file!");
@@ -940,254 +864,3 @@ bool ConfigParser::startElement( const QString& , const QString& ,
   return TRUE;
 }
 
-/************************************************/
-/*                                              */
-/*                                              */
-/*       OLD config reader for engine.cfg file  */
-/*                                              */
-/*                                              */
-/************************************************/
-
-#define BUFFER_SIZE 4096
-
-
-class buffered_file {
-  FILE *f; 
-
-  char filename[MAX_STR_LEN];
-  char buffered_buffer[BUFFER_SIZE];
-  int buffered_amount;
-  int buffered_pos; /* current position in buffer */
-
-  int line_number;
-
-public:
-  buffered_file();    
-
-  int open(const char *fname);
-  int readln(char *line, int maxlen);
-  int get_linenum();
-
-  void close() { fclose(f); };
-  int eof();
-  char *get_filename();
-
-};
-
-buffered_file::buffered_file()
-{
-  f = NULL;
-  filename[0] = 0;
-  buffered_pos = 0;
-  buffered_amount = 0;
-  line_number = 0;
-}
-
-char * buffered_file::get_filename()
-{
-  return filename;
-}
-
-int buffered_file::eof()
-{
-  if (feof(f) && (buffered_pos==buffered_amount))
-    return 1;
-  return 0;
-}
-
-
-int buffered_file::readln(char *line, int maxlen)
-{
-  int i, j;
-  
-  i = buffered_pos;
-  if (buffered_pos == buffered_amount) {
-    if ( feof(f) ) {
-      line[0]=0;
-      return 0;
-    }
-    buffered_amount = fread(buffered_buffer, 1, BUFFER_SIZE, f);
-    buffered_pos=0;
-    i=0;
-  }
-  j=0;
-  while (buffered_buffer[i] != 0x0a) {
-    line[j++]=buffered_buffer[i++];
-    if (j==maxlen) 
-      break;
-    if (i==buffered_amount) {
-      if (feof(f))
-        break;
-      buffered_amount=fread(buffered_buffer, 1, BUFFER_SIZE, f);
-      buffered_pos=0;
-      i=0;
-    }
-  }
-  buffered_pos=++i;
-  line[j]=0;
-  
-  line_number++;
-  return j;
-}
-
-int buffered_file::get_linenum()
-{
-  return line_number;
-}
-
-int buffered_file::open(const char *fname)
-{
-  f = fopen(fname, "r");
-  strcpy(filename, fname);
-  if (!f)
-    return -1;
-  else 
-    return 0;
-  
-  buffered_amount=fread(buffered_buffer, 1, BUFFER_SIZE, f);
-  buffered_pos = 0;
-  line_number = 0;
-  
-}
-
-
-class buffered_file *current_buffered_reader = NULL;
-
-#define CONFIG_ERROR(message) \
-  printf("-!!- %s:%i: Error : %s.\r\n", \
-        current_buffered_reader->get_filename(),        \
-        current_buffered_reader->get_linenum(),         \
-        message); 
-
-
-
-#define GET_NEXT_ARGUMENT(p, line, argument, mode)	\
-  p = skip_spaces(line);                        \
-  if (!*p) {                                    \
-    CONFIG_ERROR("missing argument")            \
-    return;                                     \
-  }                                             \
-  p = one_argument(p, arg, mode); 
-
-
-void Cconfigurator::parse_engine(char *line)
-{
-  char *p;
-  char arg[MAX_STR_LEN];
-  unsigned int i;
-  char cause_type, result_type;
-  
-  
-  
-  p = skip_spaces(line);                        
-  if (!*p) {                                    
-    CONFIG_ERROR("missing cause entry");
-    return;                                     
-  }                                             
-  p = one_argument(p, arg, 2);         /* to upper case */
-
-  
-  cause_type = -1;
-  for (i = 0; i < Events.size(); i++) 
-    if ( (Events[i].group == E_CAUSE) &&               
-         (Events[i].data == arg) ) 
-    {
-      cause_type = Events[i].type;
-      break;
-    }
-    
-  if (cause_type == -1) {
-    CONFIG_ERROR("bad cause type");
-    return;                                     
-  } 
-  
-    
-
-  p = skip_spaces(p);                        
-  if (!*p) {                                    
-    CONFIG_ERROR("missing result entry in engine config line");
-    return;                                     
-  }                                             
-  p = one_argument(p, arg, 2);  /* to upper case */          
-  
-  result_type = -1;
-  for (i = 0; i < Events.size(); i++) 
-    if ( (Events[i].group == E_RESULT) &&               
-         (Events[i].data == arg) ) 
-    {
-      result_type = Events[i].type;
-      break;
-    }
-
-  if (result_type == -1) {
-    CONFIG_ERROR("bad result type");
-    return;                                     
-  } 
-  
-  p = skip_spaces(p);                        
-  if (!*p) {                                    
-    CONFIG_ERROR("missing command line");
-    return;                                     
-  }                       
-
-  if (Engine.parse_command_line(cause_type, result_type, p) != 0) 
-    CONFIG_ERROR("cant parse command");
-}
-
-int Cconfigurator::load_engine_config(QByteArray path, QByteArray fn)
-{
-  char line[MAX_STR_LEN];
-  class buffered_file *buffered;
-  
-  
-  buffered = new class buffered_file;
-
-  QByteArray filename = path + fn;
-  printf("Loading the engine script file %s\r\n", (const char*) filename);
-
-  current_buffered_reader = buffered;
-  
-  if (buffered->open((const char *) filename) != 0) 
-  {
-    printf("ERROR: Cant read config file %s!\r\n", (const char *) filename);
-    return -1;
-  }
-  
-  /* buffered reading and line parsing cycle */
-  do {
-    buffered->readln(line, MAX_STR_LEN);
-    parse_line(line);
-  } while (!buffered->eof());
-  
-  
-  buffered->close();
-  delete buffered;
-  
-  return 0;
-}
-
-void Cconfigurator::parse_line(char *line)
-{
-  char *p;
-  char arg[MAX_STR_LEN];
-  
-  p = skip_spaces(line);
-
-  /* empty line */
-  if (strlen(p) == 0)
-    return;
-
-  /* comment */
-  if (p[0] == '#')
-    return;
-  
-  arg[0] = 0;
-  p = one_argument(p, arg, 0);
-  
-  if (!*arg)
-    return;
-  
-  if (strcmp(arg, "engine") == 0 ) {
-      parse_engine(p);
-  }
-}

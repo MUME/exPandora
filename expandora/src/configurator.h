@@ -20,13 +20,6 @@
 
 using namespace std;
 
-typedef struct {
-  QByteArray pattern;                /* pattern */
-  QRegExp rexp;                   /* expression to match the pattern/WILDCAD */
-  bool    is_regexp;            /* is it regexp or wildcard ? */
-  TEvent  event;
-} TPattern;
-
 struct room_sectors_data {
   QByteArray desc;             /* name of this flag */
   QByteArray filename;         /* appropriate texture's filename */
@@ -111,13 +104,6 @@ public:
     void add_spell(QByteArray spellname, QByteArray up, QByteArray down, QByteArray refresh, bool addon);
     void add_spell(TSpell s);
     QString spell_up_for(unsigned int p);
-
-    /* this patterns data should be public for easier read access, write access
-        will be implemented via functions anyway */
-    vector<TPattern> patterns;
-    void add_pattern(QByteArray pattern, QByteArray data, char grp, char type, bool is_regexp);
-
-
 
     /* texture and sectors stuff */
     vector<struct room_sectors_data> sectors;
@@ -237,7 +223,7 @@ public:
 		     const QXmlAttributes& );
   bool endElement( const QString&, const QString&, const QString& );
 private:
-  enum {ROOMCOLOUR = 1, DESCRIPTIONCOLOUR, PROMPTCOLOUR, TEXTURE, PATTERN };
+  enum {ROOMCOLOUR = 1, DESCRIPTIONCOLOUR, PROMPTCOLOUR, TEXTURE };
   /* some flags */
   int flag;
   QString s;

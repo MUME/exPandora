@@ -14,12 +14,13 @@ using namespace std;
 #define IS_SKIP         6       
 #define IS_TELNET       7       /* telnet protocol commands */
 #define IS_NONE         8       /* is not an ascii line */
-
+#define IS_XML          9
 
 struct Tincoming_lines {
     char line[MAX_DATA_LEN];
-    unsigned short int type;
-    unsigned short int len;
+    unsigned short int  type;
+    short                        xmlType;
+    unsigned short int  len;
 };
 
 
@@ -29,26 +30,13 @@ class Cdispatcher
     int o_len;
     int o_pos;
 	
-    struct Tincoming_lines buffer[300];
+    struct Tincoming_lines buffer[600];
     int amount;
 
     char roomdesc[PROXY_BUFFER_SIZE];
     char getting_desc;          /* desc shall be incoming - just got roomname */
-
-
-    void analyze_colours();
-
-    bool collecting_colours;
-    vector<QByteArray> colour_data;
     QByteArray get_colour(QByteArray str);      
     QByteArray get_colour_name(QByteArray str);
-    
-    char last_leaders_movement;
-    QByteArray leader;
-    bool following_leader;
-    QRegExp follow_leader_exp;
-    QRegExp leader_moves_exp;
-    QRegExp you_follow_exp;
     
     int check_roomname(char *line);
     int check_description(char *line);
@@ -60,15 +48,16 @@ class Cdispatcher
     
     bool spells_print_mode; /* After "Affected by:" until next prompt */
 	
-public:
-    bool getting_colour_scheme;
+    enum XmlTypes { XML_START_ROOM, XML_START_NAME, XML_START_DESC,  XML_START_PROMPT, XML_START_EXITS, 
+                                   XML_START_MOVEMENT,                                      
+                                   XML_END_ROOM, XML_END_NAME, XML_END_DESC,  XML_END_PROMPT, XML_END_EXITS, 
+                                   XML_END_MOVEMENT};
 
-    
-    void set_leaderpatter(char *line);
-    
+
+    void parse_xml();
+public:
     void  analyze_mud_stream(char *buf, int *n);
     void analyze_user_stream(char *buf, int *n);
-    QByteArray get_leader() {return leader; }
     
     void dispatch_buffer(); 
 	

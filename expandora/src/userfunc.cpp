@@ -160,7 +160,7 @@ const struct user_command_type user_commands[] = {
    "    Examples: minfo / minfo 120\r\n\r\n"
    "    This command displays everything know about current room. Roomname, id, flags,\r\n"
    "room description, exits, connections and last update date.\r\n"},
-  {"north",         usercmd_move,         NORTH,          USERCMD_FLAG_INSTANT,   NULL, NULL},
+/*  {"north",         usercmd_move,         NORTH,          USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"east",          usercmd_move,         EAST,           USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"south",         usercmd_move,         SOUTH,          USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"west",          usercmd_move,         WEST,           USERCMD_FLAG_INSTANT,   NULL, NULL},
@@ -168,6 +168,7 @@ const struct user_command_type user_commands[] = {
   {"down",          usercmd_move,         DOWN,           USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"look",          usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"examine",       usercmd_move,         USER_MOVE_EXAMINE, USERCMD_FLAG_INSTANT,   NULL, NULL},
+*/  
   {"mmerge",        usercmd_mmerge,       0,    USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
     "Merge twin rooms - manual launch.",
    "    Usage: mmerge [id] [force]\r\n"
@@ -298,16 +299,6 @@ const struct user_command_type user_commands[] = {
     "   Puts given event in appropriate stack - use together with client actions, but with care.\r\n"
     "This might corrupt events order and thus cause false sync or malfunction. See manual for event\r\n"
     "types (or type mevent list) and additional information.\r\n"},
-    
-  {"mcalibrate",        usercmd_mcalibrate, 0, USERCMD_FLAG_INSTANT,
-      "Calibrates the used colour scheme",
-    "   Usage: mcalibrate\r\n\r\n"
-    "  This command sends 'change colour' command to mume and then parses the output.\r\n"
-    "It reads the following lines: look, prompt. It also checks if you are using those\r\n"
-    "colours for more then one line - you have to change that if you want a stable mappers\r\n"
-    "behaviour.\r\n"},
-    
-    
     
   {NULL, NULL, 0, 0, NULL, NULL}
 };
@@ -1566,19 +1557,6 @@ USERCMD(usercmd_mmerge)
 }
 
 
-
-USERCMD(usercmd_mcalibrate)
-{
-  userfunc_print_debug;
-  skip_spaces(line);
-
-  send_to_mud("change colour\n");
-  dispatcher.getting_colour_scheme = true;
-  
-  send_to_user( (const char *) Engine.get_prompt());
-  return USER_PARSE_SKIP;
-}
-
 USERCMD(usercmd_mstat)
 {
   userfunc_print_debug;
@@ -1589,8 +1567,6 @@ USERCMD(usercmd_mstat)
   send_to_user( (const char *) Engine.get_prompt());
   return USER_PARSE_SKIP;
 }
-
-
 
 USERCMD(usercmd_minfo)
 {

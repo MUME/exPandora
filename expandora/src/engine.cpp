@@ -54,7 +54,8 @@ void CEngine::command_applyroomname()
   /* set the environment flags and variables */
   setMgoto( false );    /* if we get a new roomname incoming, mgoto has to go away */
   redraw  = 1;
-  set_roomname(r_event.data);
+  
+  set_roomname(event.name);
 
   /* clear desc, exits and terrain info in engine state variables */
   set_desc("");
@@ -77,7 +78,7 @@ void CEngine::command_applyroomname()
     if (room->name == NULL) {
       printf("ERROR - room without a roomname!\r\n");
     }
-    if ( (match = room->roomname_cmp(r_event.data)) >= 0) {
+    if ( (match = room->roomname_cmp(event.name)) >= 0) {
       stacker.put(room);
     }
   }
@@ -98,10 +99,10 @@ void CEngine::command_applydesc()
   
   print_debug(DEBUG_ANALYZER, "in apply_desc");
 
-  set_desc(r_event.data);
+  set_desc(event.desc);
 
   if (addingroom) {
-    addedroom->desc = qstrdup((const char *) r_event.data);
+    addedroom->desc = qstrdup((const char *) event.desc);
     
     stacker.put(addedroom);
     return;
@@ -118,7 +119,7 @@ void CEngine::command_applydesc()
 	    /* this room has no roomdesc, so we just skip it. */
 	    continue;
 	  }
-          if ( (match = room->desc_cmp(r_event.data)) >= 0) {
+          if ( (match = room->desc_cmp(event.desc)) >= 0) {
 //              print_debug(DEBUG_ANALYZER, "found matching room");
               stacker.put(room);
           }
@@ -129,7 +130,7 @@ void CEngine::command_applydesc()
     /* this means we have exactly one match */
     if (conf.get_autorefresh()) {
       send_to_user("--[ (AutoRefreshed) not exact room desc match: %i errors.\r\n", match);
-      stacker.next_first()->refresh_desc(r_event.data);  
+      stacker.next_first()->refresh_desc(event.desc);  
     } else {
       send_to_user("--[ not exact room desc match: %i errors.\r\n", match);
     }
@@ -143,9 +144,9 @@ void CEngine::command_applyexits()
 {
   print_debug(DEBUG_ANALYZER, "in apply_exits");
 
-  set_exits(r_event.data);
+  set_exits(event.exits);
   
-  do_exits((const char *)r_event.data);
+  do_exits((const char *) event.desc);
 }
 /*---------------- * APPLY_EXITS --------------------------- */
 
@@ -154,7 +155,7 @@ void CEngine::command_applyprompt()
 {
   char terrain;
   unsigned int i;
-  int col_pos;
+//  int col_pos;
   CRoom *room;
 
   if (mgoto) 
@@ -164,13 +165,14 @@ void CEngine::command_applyprompt()
   if (redraw) redraw++;
   
   
-  
+/*  
   col_pos = r_event.data.indexOf(conf.get_prompt_col());
   if (col_pos == 0) {
-    terrain = r_event.data[1 + conf.get_prompt_col_len()];  /*second charecter is terrain*/
+    terrain = r_event.data[1 + conf.get_prompt_col_len()];  
   } else {
-    terrain = r_event.data[1];  /* no prompt colour in there !*/
+    terrain = r_event.data[1];  
   } 
+*/
   
   if (conf.get_sector_by_pattern(terrain) == 0) 
      terrain = 0;
@@ -265,19 +267,6 @@ void CEngine::command_resync()
 
 }
 
-/*---------------- * RESYNC * ------------------------- */
-void CEngine::command_rremove()
-{
-     RPipe.pop();
-}
-
-void CEngine::command_cremove()
-{
-     CPipe.pop();
-}
-
-/* ------------------------------------ */
-
 void CEngine::command_trydir()
 {
   int dir;
@@ -285,7 +274,7 @@ void CEngine::command_trydir()
   CRoom *room;
   
   print_debug(DEBUG_ANALYZER, "in try_dir");
-  dir = numbydir(c_event.data[0]);
+  dir = numbydir(event.dir[0]);
   
   if (stacker.amount() == 0) 
     return;
@@ -295,7 +284,7 @@ void CEngine::command_trydir()
       if (room->is_connected(dir)) {
           stacker.put(room->exits[dir]);
       } else {
-        if (stacker.amount() == 1 && mapping && r_event.type == R_ROOM) {
+        if (stacker.amount() == 1 && mapping && event.name != "") {
           /* if we got there we have only one element in possibility */
           /* stack - check the if statement above */
 
@@ -306,7 +295,7 @@ void CEngine::command_trydir()
           addedroom = new CRoom;
 
           addedroom->id = Map.next_free;
-          addedroom->name = strdup(r_event.data);
+          addedroom->name = strdup((const char *)event.name);
           room->exits[dir] = addedroom->id;
           addedroom->exits[reversenum(dir)] = room->id;
 
@@ -362,57 +351,6 @@ void CEngine::command_tryalldirs()
 
 CEngine::CEngine()
 {
-    unsigned int i, j;
-
-    engine_init();
-    populate_events();    
-    TCode code;
-    
-    code.name = "redraw"; code.func = &CEngine::command_redraw;
-    codes.push_back(code);
-
-    code.name = "mappingoff"; code.func = &CEngine::command_mappingoff;
-    codes.push_back(code);
-
-    code.name = "resync"; code.func = &CEngine::command_resync;
-    codes.push_back(code);
-
-    code.name = "swap"; code.func = &CEngine::command_swap;
-    codes.push_back(code);
-
-    code.name = "rremove"; code.func = &CEngine::command_rremove;
-    codes.push_back(code);
-
-    code.name = "cremove"; code.func = &CEngine::command_cremove;
-    codes.push_back(code);
-
-    code.name = "try_dir"; code.func = &CEngine::command_trydir;
-    codes.push_back(code);
-
-    code.name = "try_all_dirs"; code.func = &CEngine::command_tryalldirs;
-    codes.push_back(code);
-
-    code.name = "apply_roomname"; code.func = &CEngine::command_applyroomname;
-    codes.push_back(code);
-
-    code.name = "apply_desc"; code.func = &CEngine::command_applydesc;
-    codes.push_back(code);
-
-    code.name = "apply_exits"; code.func = &CEngine::command_applyexits;
-    codes.push_back(code);
-
-    code.name = "apply_prompt"; code.func = &CEngine::command_applyprompt;
-    codes.push_back(code);
-
-    code.name = "done"; code.func = &CEngine::command_done;
-    codes.push_back(code);
-
-
-    for (i = 0; i < EVENTS_NUM; i++)
-        for (j = 0; j < EVENTS_NUM; j++)
-            code_field[i][j] = -1;
-            
-    printf("Done.\r\n");        
 }
 
 CEngine::~CEngine()
@@ -441,37 +379,22 @@ void CEngine::exec()
 
 void CEngine::run()
 {
-    TScript script;
-    int code;
-    unsigned int i;
-
 
 //    printf("In Engune run().\r\n");
-    if (RPipe.empty() && CPipe.empty()) {
+    if (Pipe.empty()) {
         done = true;
         return;
     }
 
     
-    r_event = RPipe.get();
-    c_event = CPipe.get();
+    event = Pipe.get();
 /*
     printf("Got events : R: type %s, data %s, C: type %s, data %s.\r\n", 
             (const char *) Events[r_event.type].data, (const char *) r_event.data,
             (const char *) Events[c_event.type].data, (const char *) c_event.data );
 */
-    if (code_field[(int)c_event.type][(int)r_event.type] != -1) {
-       script = programs[ code_field[(int)c_event.type][(int)r_event.type] ];
-/*       printf("Code field is not empty! Script index %i. \r\n", code_field[(int)c_event.type][(int)r_event.type] );
-*/
-       for (i = 0; i < script.size(); i++) {
-           code = script[i];
-           (*this.*(codes[code].func))();
-       }   
-    } else {
-        done = true;
-        return;        
-    }
+    done = true;
+    return;        
 }
 
 /* load config and init engine */
@@ -492,71 +415,6 @@ void CEngine::engine_init()
   last_desc.clear();
   last_terrain = 0;
   last_prompt.clear();
-}
-
-int CEngine::parse_command_line(char cause, char result, char *line)
-{
-  char *k;
-  int j;
-  unsigned int len, i;
-  char command[MAX_STR_LEN];
-  TScript script;
-  
-  print_debug(DEBUG_ANALYZER, "Engine. Parsing command: %s, %s, %s.", 
-                    (const char *) Events[(int) cause].data , 
-                    (const char *) Events[(int)result].data, line);
-  
-  /* check if scriplet for this combo of cause-result already exists */
-  if (code_field[(int)cause][(int)result] != -1 ) {
-      printf("Combo already exits. %s command line is not used.", line);
-      return 1;
-  }
-  
-  /* start commands parsing cycle */
-  k = line;
-  len = 0;
-  while (*k) {
-    /* go till next ';' char or end of line */
-    for (j = 0; *k; k++) {
-      if (isspace(*k))
-        continue;
-
-      if (*k == ';') {
-        k++;
-        break;
-      }
-      command[j++] = LOWER(*k);
-    }
-    command[j] = 0; /* terminate the line */
-    
-    if (strlen(command) == 0)
-      continue;
-    
-    /* now find fitting command and translate it in interpreter code */
-    for (i = 0; i < codes.size(); i++) 
-        if (codes[i].name == command) {
-           script.push_back( i );
-           len++;
-           break;
-      }
-    
-    /* we've found the match, right ? else ...*/
-    if (i == codes.size() ) {
-      printf("%s is not a command!\r\n", command);
-      return 1;
-    }
-    
-  }
-
-  if (len == 0) {
-    printf("No commands in line!\r\n");
-    return 1;
-  }
- 
-  /* else link the new command */
-  code_field[(int)cause][(int)result] = programs.size();
-  programs.push_back(script);
-  return 0;  
 }
 
 int CEngine::check_roomdesc()
@@ -803,93 +661,33 @@ void CEngine::printstacks()
     sprintf(line,
 	    "Conf: Mapping %s, AutoChecks [Desc %s, Exits %s, Terrain %s],\r\n"
             "      AutoRefresh settings %s (RName/Desc quotes %i/%i), \r\n"
-            "      AngryLinker %s\r\n"
-            " Current leader: %s\r\n", 
+            "      AngryLinker %s\r\n", 
             ON_OFF(mapping), ON_OFF(conf.get_automerge()), 
             ON_OFF(conf.get_exits_check() ), ON_OFF(conf.get_terrain_check() ),
             ON_OFF(conf.get_autorefresh() ), conf.get_name_quote(), conf.get_desc_quote(),
-            ON_OFF(conf.get_angrylinker() ), (const char *) dispatcher.get_leader()
-            );
+            ON_OFF(conf.get_angrylinker() )             );
     
     send_to_user(line);
-    send_to_user(" Cause events queue:\n");
-    s = CPipe.print();
+    send_to_user(" Data Pipe:\n");
+    s = Pipe.print();
     send_to_user((const char *)s);
-    send_to_user("\n");
-
-    send_to_user(" Result/Effect events queue:\n");
-    s = RPipe.print();
-    send_to_user((const char *) s);
     send_to_user("\n");
 
     stacker.printstacks();
 }
 
-void CEngine::add_event(char type, QByteArray data)
+void CEngine::add_event(TEvent e)
 {
-    TEvent e; 
-    e.group = Events[type].group;
-    e.type = type;
-    e.data = data;
-
-/*    print_debug(DEBUG_ANALYZER, "sending event: type %s, data %s.\r\n", 
-            (const char *) Events[type].data, (const char *) data);
-*/
-    if (Events[type].group == E_CAUSE) 
-        CPipe.push(e); 
-    else if (Events[type].group == E_RESULT) 
-        RPipe.push(e); 
+    Pipe.push(e); 
 }
 
 bool CEngine::empty()                      /* are pipes empty? */
 {
-    return RPipe.empty() && CPipe.empty();
+    return Pipe.empty();
 }
 
 void CEngine::clear()
 {
-    RPipe.clear();
-    CPipe.clear();     
+    Pipe.clear();
 }
 
-void CEngine::populate_events()
-{
-  TEvent event;
-  
-  event.data = "EMPTY";           event.type = C_EMPTY;         
-  event.group = E_CAUSE;
-  Events.push_back(event);  
-  event.data = "EMPTY";           event.type = R_EMPTY;         
-  event.group = E_RESULT;
-  Events.push_back(event);  
-  event.data = "C_MOVE";          event.type = C_MOVE;         
-  event.group = E_CAUSE;        
-  Events.push_back(event);  
-  event.data = "C_LOOK";          event.type = C_LOOK;         
-  event.group = E_CAUSE;        
-  Events.push_back(event);  
-  event.data = "C_SCOUT";         event.type = C_SCOUT;        
-  event.group = E_CAUSE;        
-  Events.push_back(event);  
-  event.data = "R_ROOM";          event.type = R_ROOM;         
-  event.group = E_RESULT;        
-  Events.push_back(event);  
-  event.data = "R_EXITS";         event.type = R_EXITS;        
-  event.group = E_RESULT;        
-  Events.push_back(event);  
-  event.data = "R_BLIND";         event.type = R_BLIND;        
-  event.group = E_RESULT;        
-  Events.push_back(event);  
-  event.data = "R_PROMPT";        event.type = R_PROMPT;       
-  event.group = E_RESULT;        
-  Events.push_back(event);  
-  event.data = "R_FAIL";          event.type = R_FAIL;         
-  event.group = E_RESULT;        
-  Events.push_back(event);  
-  event.data = "R_DESC";          event.type = R_DESC;         
-  event.group = E_RESULT;        
-  Events.push_back(event);  
-  event.data = "R_BLIND";         event.type = R_BLIND;        
-  event.group = E_RESULT;        
-  Events.push_back(event);  
-}

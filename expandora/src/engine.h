@@ -1,20 +1,25 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include <QMutex>
-#include <vector>
+#include <QQueue>
 
 #include "CRoom.h"
 #include "event.h"
 
-class CEngine;
+class Event   {
+    public:
+        Event() {}
+        Event(const Event &other);
 
-typedef struct {
-  QByteArray name;
-  void (CEngine::*func)();
-} TCode;
+        Event &operator=(const Event &other);
 
-typedef std::vector<int> TScript;
+    private:
+        QByteArray dir;
+        QByteArray name;
+        QByteArray desc;
+        QByteArray exits;
+        QByteArray terrain;
+};
 
 class CEngine {
   /* flags */
@@ -27,40 +32,18 @@ class CEngine {
     char redraw;                  
 
 
-  QByteArray last_roomname;
-  QByteArray last_desc;
-  QByteArray last_exits;
-  QByteArray last_prompt;
-  char last_terrain;
+    QByteArray last_roomname;
+    QByteArray last_desc;
+    QByteArray last_exits;
+    QByteArray last_prompt;
+    char last_terrain;
   
-  CEventPipe CPipe;
-  CEventPipe RPipe;      
+    QQueue<Event> Pipe;
 
-  std::vector<TCode>          codes;   /* single codes of the script */
-  std::vector<TScript>        programs;    /* set of scripts */
+    Event        event;
 
-  int code_field[EVENTS_NUM][EVENTS_NUM];
-
-  TEvent r_event;     /* last events */
-  TEvent c_event;
-
-  void run();
-  void engine_init(); /* init flags */
-  void populate_events();
-/*  
-    void engine_command_swap(void);
-    void engine_command_resync(void);
-    void engine_command_rremove(void);
-    void engine_command_cremove(void);
-    void engine_command_try_dir(void);
-    void engine_command_try_all_dirs(void);
-    void engine_command_done(void);
-    void engine_command_apply_roomname(void);
-    void engine_command_apply_desc(void);
-    void engine_command_apply_exits(void);
-    void engine_command_apply_prompt(void);
-    void engine_command_mappingoff(void);
-*/
+    void run();
+    void engine_init(); /* init flags */
     void command_mappingoff();
     void command_resync();
     void command_swap();
@@ -79,11 +62,9 @@ public:
     CEngine();
     ~CEngine();
 
-
-
     CRoom *addedroom;	/* new room, contains new data is addinrroom==1 */
     
-    void add_event(char type, QByteArray data);
+    void add_event(Event e);
 
     int parse_command_line(char cause, char result, char *line);
 
