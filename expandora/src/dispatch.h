@@ -33,8 +33,10 @@ class Cdispatcher
     struct Tincoming_lines buffer[600];
     int amount;
     
-    bool      awaitingRoom;
-    int         state;          /* desc shall be incoming - just got roomname */
+    bool    xmlMode;
+    bool    awaitingRoom;
+    int       state;          /* desc shall be incoming - just got roomname */
+    int       mbrief_state;
     enum dispatcherStates { STATE_NORMAL, STATE_ROOM, STATE_DESC, STATE_NAME, STATE_PROMPT, 
                                               STATE_EXITS };
     
@@ -61,6 +63,12 @@ public:
     QByteArray get_colour_name(QByteArray str);
 
     void dispatch_buffer(); 
+    
+    void setXmlMode(bool b)     {xmlMode = b; }
+    bool getXmlMode()               { return xmlMode; }
+
+    void setAwaitingRoom(bool b)    { awaitingRoom = b; }
+    
 	
     Cdispatcher();
 };

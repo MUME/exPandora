@@ -1607,6 +1607,18 @@ USERCMD(usercmd_move)
     
     return USER_PARSE_SKIP;
     
+  } else {
+  
+        switch (subcmd)
+        {
+            case USER_MOVE_LOOK:
+            case USER_MOVE_EXAMINE:
+                    printf("Setting awaitingRoom to true!\r\n");
+                    dispatcher.setAwaitingRoom(true);
+                    break;
+        }      
+  
+  
   }
   
   return USER_PARSE_DONE;   /* leave the line as it is */

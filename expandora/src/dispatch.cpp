@@ -27,6 +27,8 @@ class Cdispatcher dispatcher;
 Cdispatcher::Cdispatcher() 
 {
     amount = 0;
+    xmlMode = false;
+    awaitingRoom = false;
 }
 
 
@@ -304,23 +306,35 @@ void Cdispatcher::dispatch_buffer()
       continue;
     }
     
-    /* XML sequences check */
-    if (o_buf[o_pos] == '<') {
-        parse_xml();
-        continue;
-    }
-    
-    if (o_buf[o_pos] == '&' && (o_len - o_pos) >= 4 && o_buf[o_pos+2] == 't' && o_buf[o_pos+3] == ';') {
-        if (o_buf[o_pos+1] == 'g') {
-                line[l++] = '>';
-                o_pos += 4;
-        } else   if (o_buf[o_pos+1] == 'l' ) {
-                line[l++] = '<';
-                o_pos += 4;
+    if (xmlMode) {
+        /* XML sequences check */
+        if (o_buf[o_pos] == '<') {
+            parse_xml();
+            continue;
         }
-        continue;
+        
+        if (o_buf[o_pos] == '&' && (o_len - o_pos) >= 4 ) {
+            if (o_buf[o_pos+1] == 'g' && o_buf[o_pos+2] == 't' && o_buf[o_pos+3] == ';') {
+                    line[l++] = '>';
+                    o_pos += 4;
+            } else   if (o_buf[o_pos+1] == 'l' && o_buf[o_pos+2] == 't' && o_buf[o_pos+3] == ';') {
+                    line[l++] = '<';
+                    o_pos += 4;
+            } else if (o_buf[o_pos+1] == 'a' && o_buf[o_pos+2] == 'm'  && o_buf[o_pos+3] == 'p' && o_buf[o_pos+4] == ';') {
+                    line[l++] = '&';
+                    o_pos += 4;
+            } /*else if (o_buf[o_pos+1] == 'a' && o_buf[o_pos+2] == 'p'  && o_buf[o_pos+3] == 'o' && o_buf[o_pos+4] == 's' && o_buf[o_pos+5] == ';') {
+                    line[l++] = '\\';
+                    o_pos += 4;
+            }else if (o_buf[o_pos+1] == 'q' && o_buf[o_pos+2] == 'u'  && o_buf[o_pos+3] == 'o' && o_buf[o_pos+4] == 't' && o_buf[o_pos+5] == ';') {
+                    line[l++] = '"';
+                    o_pos += 4;
+            }*/
+            continue;
+        }
     }
-    
+        
+        
     /* for forward check buf[i+1] */
     if (o_pos <= (o_len - 1)) {
       if ((o_buf[o_pos] == 0xd) && (o_buf[o_pos + 1] == 0xa)) {
@@ -434,6 +448,11 @@ QByteArray Cdispatcher::cutColours(char *line)
     bool skip = false;
     
     for (i =0; i < strlen(line); i++) {
+        if (line[i+1] == 0x8 && (line[i] == '|' || line[i] == '-' || line[i] == '\\' || line[i] == '/')) {
+            i += 1; /*properller char*/
+            continue;   /* and the next one and move on with the same check */
+        }    
+    
         if (line[i] == 0x6d && skip) {
             skip = false;
             continue;
@@ -474,8 +493,8 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
   
     buf[*n] = 0;
     state = STATE_NORMAL;
-    awaitingRoom = false;
-
+    mbrief_state = STATE_NORMAL;
+    
     dispatch_buffer();
   
     /* broken code */
@@ -491,8 +510,21 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
     buf[0]=0;
     /* else we simply recreate our buffer and parse lines */
     for (i = 0; i< amount; i++) {
+        /* preset flags for m-brief mode */
+    
+    
         /* XML messages parser */
         if (buffer[i].type == IS_XML) {
+            if (buffer[i].xmlType == XML_START_ROOM) 
+                mbrief_state = STATE_ROOM;
+            else if (buffer[i].xmlType == XML_START_DESC)  {
+                mbrief_state = STATE_DESC;
+            }  if (buffer[i].xmlType == XML_END_ROOM) 
+                mbrief_state = STATE_NORMAL;
+            else if (buffer[i].xmlType == XML_END_DESC)  {
+                mbrief_state = STATE_ROOM;
+            }  
+            
             if (buffer[i].xmlType == XML_START_MOVEMENT) {
                 event.dir = buffer[i].line;
                 awaitingRoom = true;
@@ -555,29 +587,22 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                                                 break;
         };
         
+        /* mbrief additional check (for look/scout and similar) */
+        if (mbrief_state == STATE_DESC && conf.get_brief_mode()) 
+            continue;
         
         if (buffer[i].type == IS_CRLF) {
-            /* before any checks cut away the "propeller chars */
-            char a_line[MAX_DATA_LEN];
-            char *k, *j;
-            
-            a_line[0] = 0;
-            for (k = buffer[i].line, j = a_line; *k; k++) {
-              if (*(k+1) && *(k+1) == 0x8 && 
-                    (*k == '|' || *k == '-' || *k == '\\' || *k == '/') ) {
-                print_debug(DEBUG_DISPATCHER, "Fixing propeller chars in line %s", k);
-                k += 2;
-              }
-              
-              *(j++) = *k;
-            }
-            
-            *j = 0;
-            
             /*
             print_debug(DEBUG_DISPATCHER, "line after fixing: %s", a_line);
             */
+            QByteArray a_line = cutColours( buffer[i].line );          
           
+            if (!xmlMode) {
+                if (a_line == "Reconnecting." || a_line =="Never forget! Try to role-play...") {
+                    printf( "XML MODE IS NOW ON!\r\n");
+                    xmlMode = true;
+                }
+            }
           
             /* now do all necessary spells checks */
             {
@@ -607,8 +632,8 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                 if (spells_print_mode && (strlen(a_line) > 3)) {
                     /* we are somewhere between the lines "Affected by:" and prompt */
                     for (p = 0; p < conf.spells.size(); p++) {
-                        printf("Spell name %s, line %s\r\n", (const char *) conf.spells[p].name, &a_line[2] );    
-                        if (conf.spells[p].name == &a_line[2]) {
+//                        printf("Spell name %s, line %s\r\n", (const char *) conf.spells[p].name, (const char*) a_line );    
+                        if (a_line.indexOf(conf.spells[p].name)>=0) {
                             QString s;
                             
                             if (conf.spells[p].up)
