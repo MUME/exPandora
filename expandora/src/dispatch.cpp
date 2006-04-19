@@ -474,6 +474,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
   
     buf[*n] = 0;
     state = STATE_NORMAL;
+    awaitingRoom = false;
 
     dispatch_buffer();
   
@@ -494,9 +495,11 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
         if (buffer[i].type == IS_XML) {
             if (buffer[i].xmlType == XML_START_MOVEMENT) {
                 event.dir = buffer[i].line;
+                awaitingRoom = true;
                 continue;
-            } else if (buffer[i].xmlType == XML_START_ROOM) {
+            } else if (buffer[i].xmlType == XML_START_ROOM && awaitingRoom) {
                 state = STATE_ROOM;                
+                awaitingRoom = false;
                 continue;
             } else if ((buffer[i].xmlType == XML_START_NAME) && (state == STATE_ROOM)) {
                 state = STATE_NAME;
@@ -513,18 +516,18 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             } else if (buffer[i].xmlType == XML_END_MOVEMENT) {
                 /* nada */
                 continue;
-            } else if (buffer[i].xmlType == XML_END_ROOM) {
+            } else if (buffer[i].xmlType == XML_END_ROOM && state == STATE_ROOM) {
                 SEND_EVENT_TO_ENGINE;
                 state = STATE_NORMAL;
                 continue;
-            } else if (buffer[i].xmlType == XML_END_NAME) {
+            } else if (buffer[i].xmlType == XML_END_NAME && state == STATE_NAME) {
                 state = STATE_ROOM;
                 continue;
-            } else if (buffer[i].xmlType == XML_END_DESC) {
+            } else if (buffer[i].xmlType == XML_END_DESC && state == STATE_DESC) {
                 state = STATE_ROOM;
                 continue;
-            } else if (buffer[i].xmlType == XML_END_EXITS) {
-                state = STATE_ROOM;
+            } else if (buffer[i].xmlType == XML_END_EXITS && state == STATE_NORMAL) {
+                state = STATE_NORMAL;
                 continue;
             } else if (buffer[i].xmlType == XML_END_PROMPT) {
                 state = STATE_NORMAL;

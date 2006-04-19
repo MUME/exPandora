@@ -33,7 +33,8 @@ class Cdispatcher
     struct Tincoming_lines buffer[600];
     int amount;
     
-    int     state;          /* desc shall be incoming - just got roomname */
+    bool      awaitingRoom;
+    int         state;          /* desc shall be incoming - just got roomname */
     enum dispatcherStates { STATE_NORMAL, STATE_ROOM, STATE_DESC, STATE_NAME, STATE_PROMPT, 
                                               STATE_EXITS };
     
