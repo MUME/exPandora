@@ -5,7 +5,6 @@
 
 
 #include "SpellsDialog.h"
-#include "event.h"
          
 /* --------------------------- SpellsDialog  ------------------------------ */
 

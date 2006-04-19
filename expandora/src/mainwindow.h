@@ -12,7 +12,6 @@
 
 #include "RoomEditDialog.h"
 #include "ConfigWidget.h"
-#include "PatternEditDialog.h"
 #include "SpellsDialog.h"
 #include "renderer.h"
 
@@ -55,7 +54,6 @@ class MainWindow : public QMainWindow
   QAction       *saveConfigAct;
   QAction       *saveConfigAsAct;
   QAction       *loadConfigAct;
-  QAction       *patternEditAct;  
   QAction       *setupGeneralAct;
   QAction       *spellsAct;
   
@@ -71,7 +69,6 @@ class MainWindow : public QMainWindow
 
 private:
   ConfigWidget      *generalSettingsDialog;
-  PatternEditDialog *pattern_dialog;
   RoomEditDialog    *edit_dialog;
   SpellsDialog      *spells_dialog;
 
@@ -108,7 +105,6 @@ private slots:
   void delete_room(); 
   void merge_room(); 
   void generalSetting();
-  void editPatterns();
   void emulation_mode();  
   void edit_current_room();
   void publish_map();

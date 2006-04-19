@@ -8,7 +8,6 @@
 
 #include "configurator.h"
 #include "defines.h"
-#include "event.h"
 #include "stacks.h"
 #include "dispatch.h"
 #include "exits.h"
@@ -22,28 +21,19 @@
 class CEngine Engine;
 
 
-/*---------------- * REDRAW ---------------------------- */
-void CEngine::command_redraw()
-{
-    toggle_renderer_reaction();
-    redraw = 0;
-}
-/*---------------- * REDRAW ---------------------------- */
-
 /*---------------- * MAPPING OFF ---------------------------- */
-void CEngine::command_mappingoff()
+void CEngine::mappingoff()
 {
-  if (mapping) {
-//    print_debug(DEBUG_ANALYZER, "in mappingoff");
-    send_to_user("--[ Mapping is now OFF!\r\n");
-    mapping = 0;
-    addingroom = 0;
-  }    
+    if (mapping) {
+        send_to_user("--[ Mapping is now OFF!\r\n");
+        mapping = 0;
+        addingroom = 0;
+    }    
 }
 /*---------------- * MAPPING OFF ---------------------------- */
 
 /*---------------- * APPLY_ROOMNAME ---------------------------- */
-void CEngine::command_applyroomname()
+void CEngine::applyName()
 {
   CRoom *room;
   unsigned int i;
@@ -53,7 +43,7 @@ void CEngine::command_applyroomname()
 
   /* set the environment flags and variables */
   setMgoto( false );    /* if we get a new roomname incoming, mgoto has to go away */
-  redraw  = 1;
+//  redraw  = 1;
   
   set_roomname(event.name);
 
@@ -91,7 +81,7 @@ void CEngine::command_applyroomname()
 
 
 /*---------------- * APPLY_DESC ---------------------------- */
-void CEngine::command_applydesc()
+void CEngine::applyDesc()
 {
   CRoom *room;
   unsigned int i;
@@ -139,212 +129,165 @@ void CEngine::command_applydesc()
 }
 /*---------------- * APPLY_DESC ---------------------------- */
 
+
+
+
 /*---------------- * APPLY_EXITS ------------------------ */
-void CEngine::command_applyexits()
+void CEngine::applyExits()
 {
   print_debug(DEBUG_ANALYZER, "in apply_exits");
-
   set_exits(event.exits);
-  
   do_exits((const char *) event.desc);
 }
 /*---------------- * APPLY_EXITS --------------------------- */
 
-/*---------------- * APPLY_PROMPT  ------------------------- */
-void CEngine::command_applyprompt()
+
+/*---------------- * SWAP  ------------------------- */
+void CEngine::swap()
 {
-  char terrain;
-  unsigned int i;
-//  int col_pos;
-  CRoom *room;
-
-  if (mgoto) 
-      return;
-  
-  print_debug(DEBUG_ANALYZER, "in apply_prompt");
-  if (redraw) redraw++;
-  
-  
-/*  
-  col_pos = r_event.data.indexOf(conf.get_prompt_col());
-  if (col_pos == 0) {
-    terrain = r_event.data[1 + conf.get_prompt_col_len()];  
-  } else {
-    terrain = r_event.data[1];  
-  } 
-*/
-  
-  if (conf.get_sector_by_pattern(terrain) == 0) 
-     terrain = 0;
-
-  set_terrain(terrain);
-  if (addingroom) {
-    addingroom = 0;
-      
-    addedroom->refresh_terrain(terrain);
+    print_debug(DEBUG_ANALYZER, "in swap");
+    stacker.swap();
     
-    if ( check_roomdesc() != 1) 
-      angrylinker(addedroom);
-
-    return;
-  }
-
-  
-  if (stacker.amount() == 0 || terrain == 0) {
-    return;
-  }
-  
-  for (i = 0; i < stacker.amount(); i++) {
-      room = stacker.get(i);
-      if (!conf.get_terrain_check()) {
-        stacker.put(room);
-        continue;
-      }
-
-      if (conf.get_pattern_by_room(room) == terrain) 
-        stacker.put(room);
-  }
-  
-  
-}
-
-
-
-/*---------------- * APPLY_PROMPT  ------------------------- */
-
-
-/*---------------- * SWAP  ------------------------- */
-void CEngine::command_swap()
-{
-  print_debug(DEBUG_ANALYZER, "in swap");
-  if (!mgoto)
-      stacker.swap();
-
-  if (stacker.amount() == 0 && resync) 
-    command_resync();
-  
-  if (mapping && stacker.amount() != 1)
-    command_mappingoff();
-  
-  
-  if (redraw >= 2) { 
-//    print_debug(DEBUG_ANALYZER, "[ in REDRAW ]");
-    toggle_renderer_reaction();
-    redraw  = 0;
-  }
+    if (mapping && stacker.amount() != 1)
+        mappingoff();
 }
 /*---------------- * SWAP  ------------------------- */
-
-
-/*---------------- * DONE  * ------------------------- */
-void CEngine::command_done()
-{
-    done = true;     
-}
-
-/*---------------- * DONE * ------------------------- */
 
 
 /*---------------- * RESYNC * ------------------------- */
-void CEngine::command_resync()
+void CEngine::resync()
 {
   unsigned int j;
   TTree *n;
   
-  command_mappingoff();
+  mappingoff();
   
   print_debug(DEBUG_ANALYZER, "FULL RESYNC");
-  n = NameMap.find_by_name(last_roomname);
+  n = NameMap.find_by_name(last_name);
   if (n != NULL)
     for (j = 0; j < n->ids.size(); j++) {
-      if (last_roomname == Map.getname( n->ids[j] )) {
+      if (last_name == Map.getname( n->ids[j] )) {
 //        print_debug(DEBUG_ANALYZER, "Adding matches");
         stacker.put( n->ids[j] );
       } 
     }
 
   stacker.swap();
-
 }
 
-void CEngine::command_trydir()
+void CEngine::tryDir()
 {
-  int dir;
-  unsigned int i;
-  CRoom *room;
+    int dir;
+    unsigned int i;
+    CRoom *room;
+    CRoom *candidate;
+    
+    print_debug(DEBUG_ANALYZER, "in try_dir");
+    dir = numbydir(event.dir[0]);
+    if (dir == -1) {
+        printf("Error in try_dir - faulty DIR given as input!\r\n");
+        return;
+    }
+            
+    if (stacker.amount() == 0) 
+        return;
   
-  print_debug(DEBUG_ANALYZER, "in try_dir");
-  dir = numbydir(event.dir[0]);
-  
-  if (stacker.amount() == 0) 
-    return;
-  
-  for (i = 0; i < stacker.amount(); i++) {
-      room = stacker.get(i);
-      if (room->is_connected(dir)) {
-          stacker.put(room->exits[dir]);
-      } else {
-        if (stacker.amount() == 1 && mapping && event.name != "") {
-          /* if we got there we have only one element in possibility */
-          /* stack - check the if statement above */
-
-          send_to_user("--[ Adding new room!\n");
-          
-          Map.fixfree();	/* making this call just for more safety - might remove */
-
-          addedroom = new CRoom;
-
-          addedroom->id = Map.next_free;
-          addedroom->name = strdup((const char *)event.name);
-          room->exits[dir] = addedroom->id;
-          addedroom->exits[reversenum(dir)] = room->id;
-
-          addedroom->x = room->x;
-          addedroom->y = room->y;
-          addedroom->z = room->z;
-          if (dir == NORTH)	    addedroom->y += 2;
-          if (dir == SOUTH)     addedroom->y -= 2;
-          if (dir == EAST)      addedroom->x += 2;
-          if (dir == WEST)      addedroom->x -= 2;
-          if (dir == UP)	    addedroom->z += 2;
-          if (dir == DOWN)      addedroom->z -= 2;
-
-
-          addingroom = 1;	/* for exits, decription and prompt, ends in prompt check */
-          Map.addroom(addedroom);
-          
-          stacker.put(addedroom);
-
-          return;
-        }	
+    for (i = 0; i < stacker.amount(); i++) {
+        room = stacker.get(i);
+        if (room->is_connected(dir)) {
+            candidate = Map.getroom(room->exits[dir]);
+            if ( (candidate->roomname_cmp(event.name) >= 0) &&  ( candidate->desc_cmp(event.desc) >= 0) ) 
+                stacker.put(candidate);
+        } /*
+        else {
+            if (stacker.amount() == 1 && mapping && event.name != "") {
+        
+                send_to_user("--[ Adding new room!\n");
+                
+                Map.fixfree();	// making this call just for more safety - might remove 
+        
+                addedroom = new CRoom;
+        
+                addedroom->id = Map.next_free;
+                addedroom->name = strdup((const char *)event.name);
+                room->exits[dir] = addedroom->id;
+                addedroom->exits[reversenum(dir)] = room->id;
+        
+                addedroom->x = room->x;
+                addedroom->y = room->y;
+                addedroom->z = room->z;
+                if (dir == NORTH)	    addedroom->y += 2;
+                if (dir == SOUTH)     addedroom->y -= 2;
+                if (dir == EAST)      addedroom->x += 2;
+                if (dir == WEST)      addedroom->x -= 2;
+                if (dir == UP)	    addedroom->z += 2;
+                if (dir == DOWN)      addedroom->z -= 2;
         
         
-      }
-  }
+                addingroom = 1;	// for exits, decription and prompt, ends in prompt check 
+                Map.addroom(addedroom);
+                
+                stacker.put(addedroom);
+        
+                return;
+            }	
+        
+        }
+            */
+    }
   
   
   
 }
 
-void CEngine::command_tryalldirs()
+void CEngine::tryAllDirs()
 {
-  CRoom *room;
-  unsigned int i, j;
+    CRoom *room;
+    CRoom *candidate;
+    unsigned int i, j;
+    
+    print_debug(DEBUG_ANALYZER, "in try_all_dirs");
+    mappingoff();
+    
+    if (stacker.amount() == 0) {
+        return;
+    }
+    
+    /* exits check if simply ignored for now */
+    for (i = 0; i < stacker.amount(); i++) {
+        room = stacker.get(i);
+        for (j = 0; j <=5; j++) 
+            if (room->is_connected(j) ) {
+                /* test this room if it fits */
+                candidate = Map.getroom(room->exits[j]);
+                if ( (candidate->roomname_cmp(event.name) >= 0) &&  ( candidate->desc_cmp(event.desc) >= 0) ) 
+                    stacker.put(candidate);
+            }
+        /* check the room itself -> scout/look/examine support  */
+        if ( (room->roomname_cmp(event.name) >= 0) &&  ( room->desc_cmp(event.desc) >= 0) ) 
+            stacker.put(room);
+            
+    }
+}
 
-  print_debug(DEBUG_ANALYZER, "in try_all_dirs");
-  command_mappingoff();
 
-  if (stacker.amount() == 0) {
-    return;
-  }
-  
-  for (i = 0; i < stacker.amount(); i++) {
-      room = stacker.get(i);
-      for (j = 0; j <=5; j++) 
-        if (room->is_connected(j) ) 
-          stacker.put(room->exits[j]);
-  }
-  
+void CEngine::parse_event()
+{
+    last_name = event.name;
+    last_desc = event.desc;
+    last_exits = event.exits;
+    
+    if (event.dir =="")
+        tryAllDirs();
+    else 
+        tryDir();        
+        
+    swap();
+    
+    if (stacker.amount() == 0)
+        resync();
+        
+    toggle_renderer_reaction();
 }
 
 
@@ -380,19 +323,23 @@ void CEngine::exec()
 void CEngine::run()
 {
 
-//    printf("In Engune run().\r\n");
+    printf("In Engune run().\r\n");
     if (Pipe.empty()) {
         done = true;
         return;
     }
 
     
-    event = Pipe.get();
-/*
-    printf("Got events : R: type %s, data %s, C: type %s, data %s.\r\n", 
-            (const char *) Events[r_event.type].data, (const char *) r_event.data,
-            (const char *) Events[c_event.type].data, (const char *) c_event.data );
-*/
+    event = Pipe.dequeue();
+    printf("----------------------------------\r\n");
+    printf("Engine - event in queue (analyzing)\r\n");
+    printf("Movement dir: %s\r\n", (const char *) event.dir);
+    printf("Name: %s\r\n", (const char *) event.name);
+    printf("Desc: %s\r\n", (const char *) event.desc);
+    printf("Exits: %s\r\n", (const char *) event.exits);
+    printf("----------------------------------\r\n");
+    parse_event();
+    
     done = true;
     return;        
 }
@@ -404,14 +351,11 @@ void CEngine::engine_init()
   /* setting defaults */
   done =                   1;            
   addingroom =             0;
-  resync =                 1;
   mapping =                0;
   gettingfirstroom =       0;
   mgoto             =      0;
 
-  redraw = 0;
-  
-  last_roomname.clear();
+  last_name.clear();
   last_desc.clear();
   last_terrain = 0;
   last_prompt.clear();
@@ -668,17 +612,12 @@ void CEngine::printstacks()
             ON_OFF(conf.get_angrylinker() )             );
     
     send_to_user(line);
-    send_to_user(" Data Pipe:\n");
-    s = Pipe.print();
-    send_to_user((const char *)s);
-    send_to_user("\n");
-
     stacker.printstacks();
 }
 
-void CEngine::add_event(TEvent e)
+void CEngine::add_event(Event e)
 {
-    Pipe.push(e); 
+    Pipe.enqueue(e); 
 }
 
 bool CEngine::empty()                      /* are pipes empty? */

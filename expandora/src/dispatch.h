@@ -32,17 +32,15 @@ class Cdispatcher
 	
     struct Tincoming_lines buffer[600];
     int amount;
-
-    char roomdesc[PROXY_BUFFER_SIZE];
-    char getting_desc;          /* desc shall be incoming - just got roomname */
-    QByteArray get_colour(QByteArray str);      
-    QByteArray get_colour_name(QByteArray str);
+    
+    int     state;          /* desc shall be incoming - just got roomname */
+    enum dispatcherStates { STATE_NORMAL, STATE_ROOM, STATE_DESC, STATE_NAME, STATE_PROMPT, 
+                                              STATE_EXITS };
     
     int check_roomname(char *line);
     int check_description(char *line);
     
     int check_exits(char *line);
-    int check_failure(char *nline);
     
     int dispatch_prompt(char *line, char *buf, int l, int mode);
     
@@ -53,12 +51,14 @@ class Cdispatcher
                                    XML_END_ROOM, XML_END_NAME, XML_END_DESC,  XML_END_PROMPT, XML_END_EXITS, 
                                    XML_END_MOVEMENT};
 
-
     void parse_xml();
 public:
     void  analyze_mud_stream(char *buf, int *n);
     void analyze_user_stream(char *buf, int *n);
-    
+    QByteArray cutColours(char *line);
+    QByteArray get_colour(QByteArray str);      
+    QByteArray get_colour_name(QByteArray str);
+
     void dispatch_buffer(); 
 	
     Cdispatcher();

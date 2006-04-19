@@ -16,7 +16,6 @@
 #include "tree.h"
 #include "stacks.h"
 #include "xml2.h"
-#include "event.h"
 #include "dispatch.h"
 #include "engine.h"
 
@@ -28,77 +27,6 @@ class Cdispatcher dispatcher;
 Cdispatcher::Cdispatcher() 
 {
     amount = 0;
-    roomdesc[0]=0;
-    getting_desc = 0;
-}
-
-int Cdispatcher::check_roomname(char *line) {
-    char roomname[MAX_STR_LEN];
-    QRegExp rx;
-    
-
-    rx = conf.get_roomname_exp();
-
-    if (rx.indexIn(line) >= 0) {
-        /* so we got a roomname in this line */
-            int rn_start;
-            int rn_end;
-            int rn_len;
-            
-            QByteArray s = conf.get_look_col();
-            rn_start = s.length();
-            
-            s = conf.get_end_col();
-            rn_end = s.length();
-            rn_len = strlen(line) - rn_start - rn_end;
-            
-            strncpy(roomname, &line[rn_start], rn_len); 
-            roomname[ rn_len] = 0;
-            print_debug(DEBUG_DISPATCHER, "ROOMNAME:..%s..%s..%s..", 
-                (const char*) conf.get_look_col(),
-                roomname, (const char*) conf.get_end_col() );
-            
-//            Engine.add_event(R_ROOM, roomname);
-//            notify_analyzer();
-        
-            getting_desc = 1;   /* get desc if it will be there */
-            
-            return 1;
-        
-    } 
-      
-    return 0;
-}
-
-int Cdispatcher::check_description(char *line) 
-{
-    QRegExp rx;
-    
-
-    rx = conf.get_description_exp();
-
-    if (rx.indexIn(line) >= 0) {
-        /* so we got a roomname in this line */
-            int rn_start;
-            int rn_end;
-            int rn_len;
-            
-            QByteArray s = conf.get_description_col();
-            rn_start = s.length();
-            
-            s = conf.get_end_col();
-            rn_end = s.length();
-            rn_len = strlen(line) - rn_start - rn_end;
-            
-            rn_end = strlen(roomdesc);
-            strncat(roomdesc, &line[rn_start], rn_len); 
-            roomdesc[ rn_end + rn_len ] = 0;
-            strcat(roomdesc, "|");
-            
-            return 1;
-    } 
-      
-    return 0;
 }
 
 
@@ -166,8 +94,6 @@ int Cdispatcher::dispatch_prompt(char *line, char *buf, int l, int mode)
         
     buf[len] = 0;
             
-//    printf("Resulting line ..%s..\r\n", buf);        
-    getting_desc = 0;   /* if we miss exits, then prompt turns this off */ 
     return len;
 }
 
@@ -284,10 +210,11 @@ void Cdispatcher::parse_xml()
             }
         } else {
             /* the easy ones */
-            for (p = 0; TagTypes[p].startType != -1; p++)
+            for (p = 0; TagTypes[p].startType != -1; p++) {
                 if (strcmp(TagTypes[p].name, name) == 0) {
                     startType = TagTypes[p].startType;
                     endType = TagTypes[p].endType;
+                }
             }
         }
         
@@ -500,6 +427,39 @@ void Cdispatcher::dispatch_buffer()
   return;	/* warning awaiting routine that buffer is over */
 }
 
+QByteArray Cdispatcher::cutColours(char *line)
+{
+    QByteArray res;
+    unsigned int i;
+    bool skip = false;
+    
+    for (i =0; i < strlen(line); i++) {
+        if (line[i] == 0x6d && skip) {
+            skip = false;
+            continue;
+        } 
+        if (skip) 
+            continue;
+        if (line[i] == 0x1b && line[i+1] == 0x5b) {
+            skip = true;
+            continue;
+        }
+        res.append(line[i]);
+    }
+    
+    return res;
+}
+
+#define SEND_EVENT_TO_ENGINE \
+                    {   \
+                    printf("SENDING event to analyzer!\r\n");   \
+                    Engine.add_event(event);                            \
+                    event.clear();                  \
+                    notify_analyzer();      \
+                    state = STATE_NORMAL;                       \
+                    }
+        
+
 void Cdispatcher::analyze_mud_stream(char *buf, int *n) 
 {
     int i;
@@ -509,9 +469,11 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
     o_len = *n;
     o_pos = 0;
     new_len = 0;
+    Event event;
     
   
     buf[*n] = 0;
+    state = STATE_NORMAL;
 
     dispatch_buffer();
   
@@ -528,28 +490,67 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
     buf[0]=0;
     /* else we simply recreate our buffer and parse lines */
     for (i = 0; i< amount; i++) {
-        if ( (buffer[i].type != IS_LFCR) && (strlen(roomdesc) != 0) && getting_desc) {
-            /* some room ended */
-        }
-        
         /* XML messages parser */
         if (buffer[i].type == IS_XML) {
-            
+            if (buffer[i].xmlType == XML_START_MOVEMENT) {
+                event.dir = buffer[i].line;
+                continue;
+            } else if (buffer[i].xmlType == XML_START_ROOM) {
+                state = STATE_ROOM;                
+                continue;
+            } else if ((buffer[i].xmlType == XML_START_NAME) && (state == STATE_ROOM)) {
+                state = STATE_NAME;
+                continue;
+            } else if ((buffer[i].xmlType == XML_START_DESC)  && (state == STATE_ROOM)) {
+                state = STATE_DESC;
+                continue;
+            } else if (buffer[i].xmlType == XML_START_EXITS) {
+                state = STATE_EXITS;
+                continue;
+            } else if (buffer[i].xmlType == XML_START_PROMPT) {
+                state = STATE_PROMPT;
+                continue;
+            } else if (buffer[i].xmlType == XML_END_MOVEMENT) {
+                /* nada */
+                continue;
+            } else if (buffer[i].xmlType == XML_END_ROOM) {
+                SEND_EVENT_TO_ENGINE;
+                state = STATE_NORMAL;
+                continue;
+            } else if (buffer[i].xmlType == XML_END_NAME) {
+                state = STATE_ROOM;
+                continue;
+            } else if (buffer[i].xmlType == XML_END_DESC) {
+                state = STATE_ROOM;
+                continue;
+            } else if (buffer[i].xmlType == XML_END_EXITS) {
+                state = STATE_ROOM;
+                continue;
+            } else if (buffer[i].xmlType == XML_END_PROMPT) {
+                state = STATE_NORMAL;
+                continue;
+            } 
+                    
             continue;
         }
         
-        
-        if (getting_desc) {
-            if (check_description(buffer[i].line)) {
-                if (conf.get_brief_mode())
-                    continue;
-            } else if (strlen(roomdesc) != 0) {
-//                Engine.add_event(R_DESC, roomdesc);
-//                print_debug(DEBUG_DISPATCHER, "DESC: %s", roomdesc);
-//                roomdesc[0] = 0;
-                getting_desc = 0;   /* no more descs incoming */
-            }
-        } 
+        /* necessary stuff */        
+        switch (state) {
+            case STATE_NAME : 
+                                                event.name = cutColours( buffer[i].line );
+                                                break;
+            case STATE_DESC :
+                                                event.desc.append( cutColours(buffer[i].line) + "|");        
+                                                if (conf.get_brief_mode())
+                                                    continue;
+                                                break;
+            case STATE_EXITS:
+//                                                event.exits = cutColours( buffer[i].line );
+                                                break;
+            case STATE_PROMPT:
+                                                Engine.set_prompt(cutColours( buffer[i].line ));
+                                                break;
+        };
         
         
         if (buffer[i].type == IS_CRLF) {
@@ -660,17 +661,6 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             
             }
 		
-             		
-            
-            if (check_roomname(a_line) == 0) 
-                if (check_exits(a_line) == 0)
-                    if (check_failure(a_line) == 0)
-                        {
-                            /* none */
-                        }
-                        
-                        
-                        
         }            
 
         if (buffer[i].type == IS_PROMPT) {

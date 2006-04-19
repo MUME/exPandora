@@ -4,35 +4,54 @@
 #include <QQueue>
 
 #include "CRoom.h"
-#include "event.h"
+
+
 
 class Event   {
     public:
         Event() {}
-        Event(const Event &other);
+        Event(const Event &other) 
+        {
+            dir = other.dir;
+            name = other.name;
+            desc = other.desc;
+            exits = other.exits;
+        }
 
-        Event &operator=(const Event &other);
+        Event &operator=(const Event &other) 
+        {
+            if (this != &other) {  // make sure not same object
+                dir = other.dir;
+                name = other.name;
+                desc = other.desc;
+                exits = other.exits;
+            }
+            return *this;    // Return ref for multiple assignment            
+        }
 
-    private:
+        void clear()    {
+            dir = "";
+            name = "";
+            desc = "";
+            exits = "";
+        }
+
         QByteArray dir;
         QByteArray name;
         QByteArray desc;
         QByteArray exits;
-        QByteArray terrain;
 };
 
 class CEngine {
   /* flags */
     bool done;                    /* finish */       
     bool addingroom;              /* adding room right now */
-    bool resync;                  /* do full resync */
     bool mapping;                 /* mapping is On/OFF */
     bool gettingfirstroom;        /* getting the very first room in base */
     bool mgoto;
-    char redraw;                  
 
 
-    QByteArray last_roomname;
+    QByteArray last_name;
     QByteArray last_desc;
     QByteArray last_exits;
     QByteArray last_prompt;
@@ -44,20 +63,20 @@ class CEngine {
 
     void run();
     void engine_init(); /* init flags */
-    void command_mappingoff();
-    void command_resync();
-    void command_swap();
-    void command_rremove();
-    void command_cremove();
-    void command_redraw();
-    void command_trydir();
-    void command_tryalldirs();
-    void command_applyroomname();
-    void command_applydesc();
-    void command_applyexits();
-    void command_applyprompt();
-    void command_done();
 
+    void parse_event();
+    void tryAllDirs();
+    void tryDir();
+    void swap();
+    void resync();
+    void applyExits();
+    void applyDesc();
+    void applyName();
+    void mappingoff();
+    
+    
+    int nameCheck(unsigned int id);
+    int descCheck(unsigned int id);
 public:
     CEngine();
     ~CEngine();
@@ -74,13 +93,13 @@ public:
     void angrylinker(CRoom *r);
     void printstacks();
     
-    QByteArray get_roomname() { return last_roomname; }
+    QByteArray get_roomname() { return last_name; }
     QByteArray get_desc() { return last_desc; }
     QByteArray get_exits() { return last_exits; }
     QByteArray get_prompt() { return last_prompt; }
     char get_terrain() { return last_terrain; }
 
-    void set_roomname(QByteArray s) { last_roomname = s; }
+    void set_roomname(QByteArray s) { last_name = s; }
     void set_desc(QByteArray s) { last_desc = s; }
     void set_exits(QByteArray s) { last_exits = s; }
     void set_prompt(QByteArray s) { last_prompt = s; }

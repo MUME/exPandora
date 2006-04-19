@@ -265,14 +265,6 @@ void MainWindow::emulation_mode()
 }
 
 
-void MainWindow::editPatterns()
-{
-    if (!pattern_dialog) {
-        pattern_dialog = new PatternEditDialog(this);
-    }
-
-    pattern_dialog->run();
-}
 
 
 void MainWindow::spellsSettings()
@@ -501,13 +493,6 @@ MainWindow::MainWindow(QWidget *parent)
   setupGeneralAct->setStatusTip(tr("Edit general settings"));
   connect(setupGeneralAct, SIGNAL(triggered()), this, SLOT(generalSetting()) );    
   
-  
-  pattern_dialog = NULL;
-  patternEditAct= new QAction(tr("Edit Patterns"), this);
-  patternEditAct->setStatusTip(tr("Edit Patterns"));
-  connect(patternEditAct, SIGNAL(triggered()), this, SLOT(editPatterns()) );    
-
-  
   spells_dialog = NULL;
   spellsAct= new QAction(tr("Spells Settings"), this);
   spellsAct->setStatusTip(tr("Spells Settings"));
@@ -536,7 +521,6 @@ MainWindow::MainWindow(QWidget *parent)
   optionsMenu->addAction(calibrateColoursAct);  
   optionsMenu->addSeparator();
   optionsMenu->addAction(setupGeneralAct);  
-  optionsMenu->addAction(patternEditAct);  
   optionsMenu->addAction(spellsAct);  
   optionsMenu->addSeparator();
   optionsMenu->addAction(saveConfigAct);

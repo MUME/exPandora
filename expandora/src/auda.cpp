@@ -20,7 +20,6 @@
 
 #include "dispatch.h"
 #include "mainwindow.h"
-#include "event.h"
 #include "stacks.h"
 #include "forwarder.h"
 #include "utils.h"
@@ -183,7 +182,6 @@ int main(int argc, char *argv[])
     
     printf("Using config file : %s.\r\n", configfile);
     conf.load_config(resPath, configfile);
-    conf.load_engine_config(resPath, "configs/engine.cfg");
     
     
     if (override_base_file[0] != 0) {

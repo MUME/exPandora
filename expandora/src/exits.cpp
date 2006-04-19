@@ -10,7 +10,6 @@
 #include "exits.h"
 #include "dispatch.h"
 #include "stacks.h"
-#include "event.h"
 #include "forwarder.h"
 #include "utils.h"
 #include "engine.h"

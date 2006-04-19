@@ -14,7 +14,6 @@
 #include "configurator.h"
 #include "utils.h"
 #include "engine.h"
-#include "event.h"
 //#include "renderer.h"
 
 class Cconfigurator conf;

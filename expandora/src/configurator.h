@@ -11,7 +11,6 @@
 #include <QTime>
 
 #include "CRoom.h"
-#include "event.h"
 
 #define ACMD(name)  void Cconfigurator::name(char *line)
 #define DEF_ACMD(name) void name(char *line)
@@ -90,8 +89,7 @@ class Cconfigurator {
     int desc_quote;        /* quote for description - in percents */
     int name_quote;        /* quote for roomname - in percents */
     
-    void parse_engine(char *line);
-    void parse_line(char *line);
+//    void parse_line(char *line);
     
     void reset_current_config();
     
@@ -229,7 +227,6 @@ private:
   QString s;
 
   struct room_sectors_data texture;
-  TPattern pattern;
   TSpell   spell;
   
   int i;

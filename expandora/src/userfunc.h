@@ -41,8 +41,6 @@ USERCMD(usercmd_mrefresh);
 USERCMD(usercmd_mtreestats);
 USERCMD(usercmd_mquit);
 USERCMD(usercmd_maddroom);
-USERCMD(usercmd_mevent);
-USERCMD(usercmd_mcalibrate);
 
 
 struct user_command_type {

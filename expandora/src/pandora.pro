@@ -13,7 +13,6 @@ win32 {
 }
 
 FORMS +=	configedit.ui
-FORMS +=	patterndialog.ui
 FORMS +=        roomedit.ui
 FORMS +=	spellsdialog.ui
 
@@ -22,7 +21,6 @@ HEADERS		+=CRoom.h
 HEADERS		+=defines.h
 HEADERS		+=dispatch.h
 HEADERS		+=engine.h
-HEADERS		+=event.h
 HEADERS		+=exits.h
 HEADERS		+=forwarder.h
 HEADERS		+=renderer.h
@@ -34,7 +32,6 @@ HEADERS		+=utils.h
 HEADERS		+=xml2.h
 HEADERS		+=RoomEditDialog.h
 HEADERS		+=ConfigWidget.h
-HEADERS		+=PatternEditDialog.h
 HEADERS		+=SpellsDialog.h
 HEADERS		+=mainwindow.h
 
@@ -44,7 +41,6 @@ SOURCES		+=CRoom.cpp
 SOURCES		+=configurator.cpp
 SOURCES		+=dispatch.cpp
 SOURCES		+=engine.cpp
-SOURCES		+=event.cpp
 SOURCES		+=exits.cpp
 SOURCES		+=forwarder.cpp
 SOURCES		+=renderer.cpp
@@ -58,7 +54,6 @@ SOURCES		+=mainwindow.cpp
 SOURCES		+=RoomEditDialog.cpp
 SOURCES		+=ConfigWidget.cpp
 SOURCES		+=SpellsDialog.cpp
-SOURCES		+=PatternEditDialog.cpp
 
 
 TARGET		= ../pandora

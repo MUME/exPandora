@@ -12,7 +12,6 @@
 #include "utils.h"
 #include "userfunc.h"
 #include "xml2.h"
-#include "event.h"
 #include "engine.h"
 #include "tree.h"
 #include "mainwindow.h"
@@ -160,7 +159,7 @@ const struct user_command_type user_commands[] = {
    "    Examples: minfo / minfo 120\r\n\r\n"
    "    This command displays everything know about current room. Roomname, id, flags,\r\n"
    "room description, exits, connections and last update date.\r\n"},
-/*  {"north",         usercmd_move,         NORTH,          USERCMD_FLAG_INSTANT,   NULL, NULL},
+  {"north",         usercmd_move,         NORTH,          USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"east",          usercmd_move,         EAST,           USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"south",         usercmd_move,         SOUTH,          USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"west",          usercmd_move,         WEST,           USERCMD_FLAG_INSTANT,   NULL, NULL},
@@ -168,7 +167,6 @@ const struct user_command_type user_commands[] = {
   {"down",          usercmd_move,         DOWN,           USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"look",          usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"examine",       usercmd_move,         USER_MOVE_EXAMINE, USERCMD_FLAG_INSTANT,   NULL, NULL},
-*/  
   {"mmerge",        usercmd_mmerge,       0,    USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
     "Merge twin rooms - manual launch.",
    "    Usage: mmerge [id] [force]\r\n"
@@ -293,13 +291,6 @@ const struct user_command_type user_commands[] = {
     "    Usage: mquit \r\n\r\n"
     "   Just zaps the link and quits all threads.\r\n"},
 
-  {"mevent",              usercmd_mevent,        0,      USERCMD_FLAG_INSTANT,
-    "Raise an internal event",
-    "    Usage: m_event <event|list> [data]\r\n\r\n"
-    "   Puts given event in appropriate stack - use together with client actions, but with care.\r\n"
-    "This might corrupt events order and thus cause false sync or malfunction. See manual for event\r\n"
-    "types (or type mevent list) and additional information.\r\n"},
-    
   {NULL, NULL, 0, 0, NULL, NULL}
 };
 
@@ -397,70 +388,6 @@ void display_debug_settings()
   send_to_user("\r\n");
 }
 
-USERCMD(usercmd_mevent)
-{
-  char *p;
-  char arg[MAX_STR_LEN];
-  unsigned int i;
-  int event;
-  
-  userfunc_print_debug;
-
-
-  p = skip_spaces(line);
-  if (!*p) {
-    send_to_user("--[ Missing event for mevent command. (type 'mevent list' for possible events list)\r\n");
-
-    send_to_user( (const char *) Engine.get_prompt());
-    return USER_PARSE_SKIP;
-  }
-  
-  p = one_argument(p, arg, 2);
-
-  if (strcmp(arg, "LIST") == 0) {
-    send_to_user("--[ Possible events for mevent command: \r\n\r\n");
-    
-    
-    for (i = 0; i < Events.size(); i++) 
-      send_to_user("  Event %-10s Group/Type %-10s\r\n", (const char *) Events[i].data, 
-            Events[i].group == E_CAUSE ? "CAUSE" : "RESULT" );
-    
-    send_to_user( (const char *) Engine.get_prompt());
-    return USER_PARSE_SKIP;
-  }    
-
-  
-  
-  event = -1;
-  for (i = 0; i < Events.size(); i++) 
-    if (arg == Events[i].data) 
-    {
-      event = Events[i].type;
-      break;
-    }
-    
-  if (event == -1) {
-    send_to_user("--[ %s is not an event.\r\n", arg);
-
-    send_to_user( (const char *) Engine.get_prompt());
-    return USER_PARSE_SKIP;
-  }
-
-  p = skip_spaces(p);
-  if (!*p) {
-    send_to_user("--[ Missing data for mevent command.\r\n");
-    
-    send_to_user( (const char *) Engine.get_prompt());
-    return USER_PARSE_SKIP;
-  }
-  
-  p = one_argument(p, arg, 0);
-
-  Engine.add_event(event, arg);
-    
-  send_to_user( (const char *) Engine.get_prompt());
-  return USER_PARSE_SKIP;
-}
 
 
 USERCMD(usercmd_mdebug)
@@ -1618,7 +1545,6 @@ USERCMD(usercmd_minfo)
 
 USERCMD(usercmd_move)
 {
-  char *p;
   CRoom *r;
   int dir;
 
@@ -1627,42 +1553,7 @@ USERCMD(usercmd_move)
   /*firstly - send the command futher to mud, as if it matches */
   /* used commands - it wont be automatically send futher */
   
-  if (!mud_emulation) {
-    
-  
-    switch (subcmd)
-    {
-          case  NORTH:
-                  Engine.add_event(C_MOVE, "north");
-                  break;
-          case  EAST:
-                  Engine.add_event(C_MOVE, "east");
-                  break;
-          case  SOUTH:
-                  Engine.add_event(C_MOVE, "south");
-                  break;
-          case  WEST:
-                  Engine.add_event(C_MOVE, "west");
-                  break;
-          case  UP:
-                  Engine.add_event(C_MOVE, "up");
-                  break;
-          case  DOWN:
-                  Engine.add_event(C_MOVE, "down");
-                  break;
-          case USER_MOVE_LOOK:
-                  p = skip_spaces(line);
-                  if (!*p) 
-                    Engine.add_event(C_LOOK, NULL);
-                  break;
-          case USER_MOVE_EXAMINE:
-                  p = skip_spaces(line);
-                  if (!*p)
-                    Engine.add_event(C_LOOK, NULL);
-                  
-                  break;
-    }      
-  } else {
+  if (mud_emulation) {
     r = stacker.first();
 
     dir = -1;
