@@ -196,8 +196,10 @@ void CEngine::tryDir()
         room = stacker.get(i);
         if (room->is_connected(dir)) {
             candidate = Map.getroom(room->exits[dir]);
-            if ( (candidate->roomname_cmp(event.name) >= 0) &&  ( candidate->desc_cmp(event.desc) >= 0) ) 
+            if  (testRoom(candidate) )
                 stacker.put(candidate);
+                
+        
         } /*
         else {
             if (stacker.amount() == 1 && mapping && event.name != "") {
@@ -240,6 +242,17 @@ void CEngine::tryDir()
   
 }
 
+bool CEngine::testRoom(CRoom *room) 
+{
+    
+    if  (room->roomname_cmp(event.name) >= 0) 
+        if (event.desc == "")
+            return true;
+        else if ( room->desc_cmp(event.desc) >= 0 ) 
+            return true;    
+    return false;
+}
+
 void CEngine::tryAllDirs()
 {
     CRoom *room;
@@ -260,13 +273,13 @@ void CEngine::tryAllDirs()
             if (room->is_connected(j) ) {
                 /* test this room if it fits */
                 candidate = Map.getroom(room->exits[j]);
-                if ( (candidate->roomname_cmp(event.name) >= 0) &&  ( candidate->desc_cmp(event.desc) >= 0) ) 
+                if (testRoom(candidate))
                     stacker.put(candidate);
             }
         /* check the room itself -> scout/look/examine support  */
-        if ( (room->roomname_cmp(event.name) >= 0) &&  ( room->desc_cmp(event.desc) >= 0) ) 
+        if  (testRoom(room))             
             stacker.put(room);
-            
+                            
     }
 }
 

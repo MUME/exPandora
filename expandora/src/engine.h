@@ -74,9 +74,7 @@ class CEngine {
     void applyName();
     void mappingoff();
     
-    
-    int nameCheck(unsigned int id);
-    int descCheck(unsigned int id);
+    bool testRoom(CRoom *room);
 public:
     CEngine();
     ~CEngine();
