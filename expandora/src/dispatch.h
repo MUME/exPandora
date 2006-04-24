@@ -62,7 +62,7 @@ public:
     QByteArray get_colour(QByteArray str);      
     QByteArray get_colour_name(QByteArray str);
 
-    void dispatch_buffer(); 
+    void dispatch_buffer(bool Xml); 
     
     void setXmlMode(bool b)     {xmlMode = b; }
     bool getXmlMode()               { return xmlMode; }

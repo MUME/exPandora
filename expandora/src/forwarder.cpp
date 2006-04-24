@@ -159,6 +159,7 @@ void userdel(int sock)
           closesocket (juzer[i].sout);
         }
         renderer_window->disable_online_actions();
+        dispatcher.setXmlMode( false );
         juzer[i].sock = 0;
       }
 }

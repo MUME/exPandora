@@ -241,7 +241,7 @@ void Cdispatcher::parse_xml()
     
     
 
-void Cdispatcher::dispatch_buffer() 
+void Cdispatcher::dispatch_buffer(bool Xml) 
 {
   int l;
   char line[MAX_DATA_LEN];
@@ -306,7 +306,7 @@ void Cdispatcher::dispatch_buffer()
       continue;
     }
     
-    if (xmlMode) {
+    if (xmlMode && Xml) {
         /* XML sequences check */
         if (o_buf[o_pos] == '<') {
             parse_xml();
@@ -495,7 +495,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
     state = STATE_NORMAL;
     mbrief_state = STATE_NORMAL;
     
-    dispatch_buffer();
+    dispatch_buffer(true);
   
     /* broken code */
     if (buffer[amount-1].type == IS_SPLIT) {
@@ -633,7 +633,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                     /* we are somewhere between the lines "Affected by:" and prompt */
                     for (p = 0; p < conf.spells.size(); p++) {
 //                        printf("Spell name %s, line %s\r\n", (const char *) conf.spells[p].name, (const char*) a_line );    
-                        if (a_line.indexOf(conf.spells[p].name)>=0) {
+                        if (a_line.indexOf(conf.spells[p].name)==2) {
                             QString s;
                             
                             if (conf.spells[p].up)
@@ -758,7 +758,7 @@ void Cdispatcher::analyze_user_stream(char *buf, int *n)
     
     buf[*n] = 0;
 
-    dispatch_buffer();
+    dispatch_buffer(false);
   
     buf[0]=0;
     for (i = 0; i< amount; i++) {
