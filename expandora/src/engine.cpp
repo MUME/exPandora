@@ -27,7 +27,6 @@ void CEngine::mappingoff()
     if (mapping) {
         send_to_user("--[ Mapping is now OFF!\r\n");
         mapping = 0;
-        addingroom = 0;
     }    
 }
 /*---------------- * MAPPING OFF ---------------------------- */
@@ -248,45 +247,22 @@ CEngine::~CEngine()
 }
 
 
-
 void CEngine::exec()
 {
-  print_debug(DEBUG_ANALYZER, "in main cycle");
-  QTime t;
-  
-  if (mud_emulation)
-    return;
 
-  t.start();
-  
-  done = false;
-  while (!done) 
-    run();
-  
-  print_debug(DEBUG_ANALYZER, "done. Time elapsed %d ms", t.elapsed());
-}
-
-void CEngine::run()
-{
-
-    printf("In Engune run().\r\n");
-    if (Pipe.empty()) {
-        done = true;
+    print_debug(DEBUG_ANALYZER, "in main cycle");
+    QTime t;
+    t.start();
+    
+    
+    if (Pipe.empty()) 
         return;
-    }
 
     
     event = Pipe.dequeue();
-    printf("----------------------------------\r\n");
-    printf("Engine - event in queue (analyzing)\r\n");
-    printf("Movement dir: %s\r\n", (const char *) event.dir);
-    printf("Name: %s\r\n", (const char *) event.name);
-    printf("Desc: %s\r\n", (const char *) event.desc);
-    printf("Exits: %s\r\n", (const char *) event.exits);
-    printf("----------------------------------\r\n");
     parse_event();
     
-    done = true;
+    print_debug(DEBUG_ANALYZER, "done. Time elapsed %d ms", t.elapsed());
     return;        
 }
 
@@ -295,14 +271,12 @@ void CEngine::engine_init()
 {
      
   /* setting defaults */
-  done =                   1;            
-  addingroom =             0;
   mapping =                0;
-  gettingfirstroom =       0;
   mgoto             =      0;
 
   last_name.clear();
   last_desc.clear();
+  last_exits.clear();
   last_terrain = 0;
   last_prompt.clear();
 }

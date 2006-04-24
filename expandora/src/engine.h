@@ -52,10 +52,7 @@ class Event   {
 
 class CEngine {
   /* flags */
-    bool done;                    /* finish */       
-    bool addingroom;              /* adding room right now */
     bool mapping;                 /* mapping is On/OFF */
-    bool gettingfirstroom;        /* getting the very first room in base */
     bool mgoto;
     int   nameMatch;
     int   descMatch;
@@ -70,7 +67,6 @@ class CEngine {
 
     Event        event;
 
-    void run();
     void engine_init(); /* init flags */
 
     void parse_event();
@@ -78,9 +74,6 @@ class CEngine {
     void tryDir();
     void swap();
     void resync();
-    void applyExits();
-    void applyDesc();
-    void applyName();
     void mappingoff();
     
     bool testRoom(CRoom *room);
@@ -114,8 +107,6 @@ public:
 
     bool isMapping() { return mapping; }
     void setMapping(bool b) { mapping = b; }
-    bool isAddingroom() { return addingroom; }
-    void setAddingroom(bool b) { addingroom = b; }
     
     void setMgoto(bool b) { mgoto = b; }
     bool isMgoto() { return mgoto; }

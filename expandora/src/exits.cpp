@@ -23,43 +23,41 @@ void do_exits(const char *exits_line)
 
     parse_exits(exits_line, exits);
 
-    if (Engine.isAddingroom()) {
-	   r = Engine.addedroom;
-
+    r = Engine.addedroom;
+    if (r == NULL)
+        return;
         
-       print_debug(DEBUG_ANALYZER /*& DEBUG_TOUSER*/, 
+    print_debug(DEBUG_ANALYZER /*& DEBUG_TOUSER*/, 
                     "Exits: Adding exits information to the new room.");
 
-       for (i = 0; i <= 5; i++) {
-            if (r->exits[i] > 0) {
-                if (exits[i] == 0) {	/* oneway case */
-                    Map.oneway_room_id = r->exits[i];
-                    r->exits[i] = 0;
-                }
-                
-                if (exits[i] == E_CLOSEDDOOR) 
-                    r->doors[i] = strdup("exit");
-                
-                
-                continue;
+    for (i = 0; i <= 5; i++) {
+        if (r->exits[i] > 0) {
+            if (exits[i] == 0) {	/* oneway case */
+                Map.oneway_room_id = r->exits[i];
+                r->exits[i] = 0;
             }
-            if (exits[i] == E_CLOSEDDOOR) {
+                
+            if (exits[i] == E_CLOSEDDOOR) 
                 r->doors[i] = strdup("exit");
-            }
+                
+                
+            continue;
+        }
+        if (exits[i] == E_CLOSEDDOOR) {
+            r->doors[i] = strdup("exit");
+        }
             
-            if (exits[i] == E_PORTAL) {
-                send_to_user("--[AUDA: attention PORTAL was in room as you entered it. Fix existing exits if needed\r\n");
-            }
+        if (exits[i] == E_PORTAL) {
+            send_to_user("--[AUDA: attention PORTAL was in room as you entered it. Fix existing exits if needed\r\n");
+        }
             
-            if ((exits[i] > 0) && (exits[i] != E_PORTAL))
-                r->exits[i] = EXIT_UNDEFINED;
-            }
+        if ((exits[i] > 0) && (exits[i] != E_PORTAL))
+            r->exits[i] = EXIT_UNDEFINED;
+        }
 
         stacker.put(Engine.addedroom);
             
         return;
-    }
-
 }
 
 int compare_exits(CRoom *p, int exits[])

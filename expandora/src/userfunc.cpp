@@ -173,12 +173,6 @@ const struct user_command_type user_commands[] = {
    "    Examples: mmerge / mmerge 120 / mmerge 120 force\r\n\r\n"
    "    Without arguments this command will try to merge the last added room with either\r\n"
    "found twin room or given (by id) room. Force argument disables the roomname and desc checks.\r\n"},
-   {"mnewmap",        usercmd_mnewmap,       0,           0,   
-    "Start new map (loads current room as base room).",
-   "    Usage: mnewmap\r\n"
-   "    Examples: mnewmap\r\n\r\n"
-   "    Uses the current room as new base room for a new map by sending examine\r\n"
-   "command to the game.\r\n"},
   {"mdecx",             usercmd_mdec,        USER_DEC_X,   USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
     "Decrease the X coordinate.",
    "    Usage: mdecx [integer]\r\n"
@@ -486,10 +480,7 @@ USERCMD(usercmd_maddroom)
   
   
   Engine.addedroom = r;
-  Engine.setAddingroom(true);
   do_exits(Engine.get_exits());
-  Engine.addedroom = NULL;
-  Engine.setAddingroom(false);
   
   r->x = 100;
   r->y = 100;
@@ -1090,39 +1081,6 @@ USERCMD(usercmd_mdec)
   return USER_PARSE_SKIP;
 }
 
-
-USERCMD(usercmd_mnewmap)
-{
-  userfunc_print_debug;
-  skip_spaces(line);
-
-  send_to_user("--[ Disabled. Use maddroom instead.\r\n");
-  send_to_user( (const char *) Engine.get_prompt());
-  return USER_PARSE_SKIP;
-
-  
-  
-  if (mud_emulation) {
-    send_to_user("Disabled in MUD emulation.\r\n");
-    send_to_user( (const char *) Engine.get_prompt());
-    return USER_PARSE_SKIP;
-  }
-  
-  
-  if (Map.size() == 0) {
-    //Engine.gettingfirstroom = 1;
-    
-    send_to_mud("examine\n");
-  } else {
-    send_to_user("Current database is not empty!\n");
-  }
-
-
-  
-  send_to_user( (const char *) Engine.get_prompt());
-  return USER_PARSE_SKIP;
-}
-
 /* print brief help if no arguments given, or detailed help for given argument*/
 USERCMD(usercmd_mhelp)
 {
@@ -1331,7 +1289,6 @@ USERCMD(usercmd_mload)
   Engine.clear();
   
   Engine.addedroom = NULL;       /* possible memory leak, but who cares ... */
-  Engine.setAddingroom(false);       /* possible memory leak, but who cares ... */
   Engine.setMapping(false);
   
 

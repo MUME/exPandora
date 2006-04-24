@@ -26,7 +26,6 @@ USERCMD(usercmd_mstat);
 USERCMD(usercmd_minfo);
 USERCMD(usercmd_move);
 USERCMD(usercmd_mmerge);
-USERCMD(usercmd_mnewmap);
 USERCMD(usercmd_mdec);
 USERCMD(usercmd_mcoord);
 USERCMD(usercmd_mdoor);
