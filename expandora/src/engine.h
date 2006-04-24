@@ -49,7 +49,7 @@ class CEngine {
     bool mapping;                 /* mapping is On/OFF */
     bool gettingfirstroom;        /* getting the very first room in base */
     bool mgoto;
-
+    bool blind;                         
 
     QByteArray last_name;
     QByteArray last_desc;

@@ -583,6 +583,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
 //                                                event.exits = cutColours( buffer[i].line );
                                                 break;
             case STATE_PROMPT:
+                                                spells_print_mode = false;      /* do not analyze spells anymore */
                                                 Engine.set_prompt(cutColours( buffer[i].line ));
                                                 break;
         };
@@ -601,6 +602,11 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                 if (a_line == "Reconnecting." || a_line =="Never forget! Try to role-play...") {
                     printf( "XML MODE IS NOW ON!\r\n");
                     xmlMode = true;
+                }
+            } else {
+                if (a_line == "</xml>") {
+                    printf( "XML MODE IS NOW OFF!\r\n");
+                    xmlMode = false;
                 }
             }
           
@@ -633,7 +639,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                     /* we are somewhere between the lines "Affected by:" and prompt */
                     for (p = 0; p < conf.spells.size(); p++) {
 //                        printf("Spell name %s, line %s\r\n", (const char *) conf.spells[p].name, (const char*) a_line );    
-                        if (a_line.indexOf(conf.spells[p].name)==2) {
+                        if (a_line.indexOf(conf.spells[p].name) == 2) {
                             QString s;
                             
                             if (conf.spells[p].up)
@@ -690,12 +696,11 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             }
 		
         }            
-
+        
+        /* this is for normal prompt detection */
         if (buffer[i].type == IS_PROMPT) {
             spells_print_mode = false;      /* do not analyze spells anymore */
             Engine.set_prompt(buffer[i].line);
-//            Engine.add_event(R_PROMPT, buffer[i].line);
-//            notify_analyzer();
         }
         
         /* recreating this line in buffer */
