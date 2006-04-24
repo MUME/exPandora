@@ -244,7 +244,7 @@ void CEngine::tryDir()
 
 bool CEngine::testRoom(CRoom *room) 
 {
-    if (blind)
+    if (event.blind)
         return true;
     if  (room->roomname_cmp(event.name) >= 0) 
         if (event.desc == "")
@@ -291,11 +291,8 @@ void CEngine::parse_event()
     last_desc = event.desc;
     last_exits = event.exits;
     
-    if (event.name.indexOf("You are ") == 0 || 
-        event.name.indexOf("It is pitch black...") == 0)
-        blind = true;
-    else 
-        blind = false;
+    if (event.name.indexOf("It is pitch black...") == 0)
+        event.blind = true;
     if (event.dir =="")
         tryAllDirs();
     else 

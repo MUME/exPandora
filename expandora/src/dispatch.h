@@ -50,9 +50,9 @@ class Cdispatcher
     bool spells_print_mode; /* After "Affected by:" until next prompt */
 	
     enum XmlTypes { XML_START_ROOM, XML_START_NAME, XML_START_DESC,  XML_START_PROMPT, XML_START_EXITS, 
-                                   XML_START_MOVEMENT,                                      
+                                   XML_START_MOVEMENT, XML_START_TERRAIN,                                       
                                    XML_END_ROOM, XML_END_NAME, XML_END_DESC,  XML_END_PROMPT, XML_END_EXITS, 
-                                   XML_END_MOVEMENT};
+                                   XML_END_MOVEMENT, XML_END_TERRAIN};
 
     void parse_xml();
 public:

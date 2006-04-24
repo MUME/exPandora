@@ -117,6 +117,7 @@ void Cdispatcher::parse_xml()
             {"name", XML_START_NAME, XML_END_NAME},
             {"description", XML_START_DESC, XML_END_DESC},
             {"exits", XML_START_EXITS, XML_END_EXITS},
+            {"terrain", XML_START_TERRAIN, XML_END_TERRAIN},
             {"", -1, -1}
         };
         
@@ -538,6 +539,9 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                 continue;
             } else if ((buffer[i].xmlType == XML_START_DESC)  && (state == STATE_ROOM)) {
                 state = STATE_DESC;
+                continue;
+            } else if ((buffer[i].xmlType == XML_START_TERRAIN)  && (state == STATE_ROOM)) {
+                event.blind = true;                 /* BLIND detection */
                 continue;
             } else if (buffer[i].xmlType == XML_START_EXITS) {
                 state = STATE_EXITS;
