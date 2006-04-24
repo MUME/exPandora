@@ -32,116 +32,6 @@ void CEngine::mappingoff()
 }
 /*---------------- * MAPPING OFF ---------------------------- */
 
-/*---------------- * APPLY_ROOMNAME ---------------------------- */
-void CEngine::applyName()
-{
-  CRoom *room;
-  unsigned int i;
-  int match;
-  
-  print_debug(DEBUG_ANALYZER, "in apply_roomname");
-
-  /* set the environment flags and variables */
-  setMgoto( false );    /* if we get a new roomname incoming, mgoto has to go away */
-//  redraw  = 1;
-  
-  set_roomname(event.name);
-
-  /* clear desc, exits and terrain info in engine state variables */
-  set_desc("");
-  set_exits("");
-  set_terrain(0);
-  
-  if (addingroom) {
-    // addedroom->name = strdup(r->data); /* doing this in try_dir */
-    stacker.put(addedroom);
-    return;
-  }
-
-  if (stacker.amount() == 0) 
-    return;
-  
-  match = 0;
-  
-  for (i = 0; i < stacker.amount(); i++) {
-    room = stacker.get(i);
-    if (room->name == NULL) {
-      printf("ERROR - room without a roomname!\r\n");
-    }
-    if ( (match = room->roomname_cmp(event.name)) >= 0) {
-      stacker.put(room);
-    }
-  }
-  
-  if (stacker.next() == 1 && match > 0) {
-    send_to_user("--[ not exact room match: %i errors.\r\n", match);
-  }
-}
-/*---------------- * APPLY_ROOMNAME ---------------------------- */
-
-
-/*---------------- * APPLY_DESC ---------------------------- */
-void CEngine::applyDesc()
-{
-  CRoom *room;
-  unsigned int i;
-  int match;
-  
-  print_debug(DEBUG_ANALYZER, "in apply_desc");
-
-  set_desc(event.desc);
-
-  if (addingroom) {
-    addedroom->desc = qstrdup((const char *) event.desc);
-    
-    stacker.put(addedroom);
-    return;
-  }
-
-  match = 0;
-  
-  if (stacker.amount() == 0) {
-      return;
-  } else {
-      for (i = 0; i < stacker.amount(); i++) {
-          room = stacker.get(i);
-	  if (room->desc == NULL) {
-	    /* this room has no roomdesc, so we just skip it. */
-	    continue;
-	  }
-          if ( (match = room->desc_cmp(event.desc)) >= 0) {
-//              print_debug(DEBUG_ANALYZER, "found matching room");
-              stacker.put(room);
-          }
-      }
-  }
-  
-  if (stacker.next() == 1 && match > 0) {
-    /* this means we have exactly one match */
-    if (conf.get_autorefresh()) {
-      send_to_user("--[ (AutoRefreshed) not exact room desc match: %i errors.\r\n", match);
-      stacker.next_first()->refresh_desc(event.desc);  
-    } else {
-      send_to_user("--[ not exact room desc match: %i errors.\r\n", match);
-    }
-    
-  }
-}
-/*---------------- * APPLY_DESC ---------------------------- */
-
-
-
-
-/*---------------- * APPLY_EXITS ------------------------ */
-void CEngine::applyExits()
-{
-  print_debug(DEBUG_ANALYZER, "in apply_exits");
-  set_exits(event.exits);
-  do_exits((const char *) event.desc);
-}
-/*---------------- * APPLY_EXITS --------------------------- */
-
-
 /*---------------- * SWAP  ------------------------- */
 void CEngine::swap()
 {
@@ -175,12 +65,30 @@ void CEngine::resync()
   stacker.swap();
 }
 
+bool CEngine::testRoom(CRoom *room) 
+{
+    if (event.blind)
+        return true;
+    if  (nameMatch = room->roomname_cmp(event.name) >= 0) 
+        if (event.desc == "")
+            return true;
+        else if ( descMatch = room->desc_cmp(event.desc) >= 0 ) 
+            return true;    
+    return false;
+}
+
+
 void CEngine::tryDir()
 {
     int dir;
     unsigned int i;
     CRoom *room;
     CRoom *candidate;
+    
+    nameMatch = 0;
+    descMatch = 0;
+
+    
     
     print_debug(DEBUG_ANALYZER, "in try_dir");
     dir = numbydir(event.dir[0]);
@@ -200,10 +108,31 @@ void CEngine::tryDir()
                 stacker.put(candidate);
                 
         
-        } /*
+        } 
         else {
-            if (stacker.amount() == 1 && mapping && event.name != "") {
-        
+            if (stacker.amount() == 1 && mapping)  {
+                /* casual checks for data */
+                if (event.blind) {
+                    send_to_user( "--[Pandora: Failed to add new room. Blind !\r\n");                
+                    mappingoff();
+                    return;
+                } else if (event.name == "") {
+                    send_to_user( "--[Pandora: Failed to add new room. Missing roomname!\r\n");                
+                    mappingoff();
+                    return;
+                } else if (event.desc == "") {
+                    send_to_user( "--[Pandora: Failed to add new room. Missing description!\r\n");                
+                    mappingoff();
+                    return;
+                } else if (event.exits == "") {
+                    send_to_user( "--[Pandora: Failed to add new room. Missing exits data!\r\n");                
+                    mappingoff();
+                    return;
+                } else if (event.terrain == -1) {
+                    send_to_user( "--[Pandora: Failed to add new room. Missing terrain data!\r\n");                
+                    mappingoff();
+                    return;
+                } 
                 send_to_user("--[ Adding new room!\n");
                 
                 Map.fixfree();	// making this call just for more safety - might remove 
@@ -212,8 +141,13 @@ void CEngine::tryDir()
         
                 addedroom->id = Map.next_free;
                 addedroom->name = strdup((const char *)event.name);
+                addedroom->desc = strdup((const char *)event.desc);
                 room->exits[dir] = addedroom->id;
                 addedroom->exits[reversenum(dir)] = room->id;
+                
+                set_exits(event.exits);
+                do_exits((const char *) event.desc);
+                
         
                 addedroom->x = room->x;
                 addedroom->y = room->y;
@@ -224,34 +158,28 @@ void CEngine::tryDir()
                 if (dir == WEST)      addedroom->x -= 2;
                 if (dir == UP)	    addedroom->z += 2;
                 if (dir == DOWN)      addedroom->z -= 2;
-        
-        
-                addingroom = 1;	// for exits, decription and prompt, ends in prompt check 
                 Map.addroom(addedroom);
-                
                 stacker.put(addedroom);
-        
                 return;
             }	
         
         }
-            */
+           
     }
   
-  
-  
-}
-
-bool CEngine::testRoom(CRoom *room) 
-{
-    if (event.blind)
-        return true;
-    if  (room->roomname_cmp(event.name) >= 0) 
-        if (event.desc == "")
-            return true;
-        else if ( room->desc_cmp(event.desc) >= 0 ) 
-            return true;    
-    return false;
+    /* roomname update */
+    if (stacker.next() == 1) {
+        /* this means we have exactly one match */
+        if (nameMatch > 0) {
+            send_to_user("--[ not exact room match: %i errors.\r\n", nameMatch);
+        }
+        if (conf.get_autorefresh() && descMatch > 0) {
+            send_to_user("--[ (AutoRefreshed) not exact room desc match: %i errors.\r\n", descMatch);
+            stacker.next_first()->refresh_desc(event.desc);  
+        } else {
+            send_to_user("--[ not exact room desc match: %i errors.\r\n", descMatch);
+        }
+    }
 }
 
 void CEngine::tryAllDirs()
@@ -291,6 +219,8 @@ void CEngine::parse_event()
     last_desc = event.desc;
     last_exits = event.exits;
     
+    setMgoto( false );    /* if we get a new room data incoming, mgoto has to go away */
+
     if (event.name.indexOf("It is pitch black...") == 0)
         event.blind = true;
     if (event.dir =="")

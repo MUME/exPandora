@@ -17,6 +17,7 @@ class Event   {
             desc = other.desc;
             exits = other.exits;
             blind = other.blind;
+            terrain = other.terrain;
         }
 
         Event &operator=(const Event &other) 
@@ -27,6 +28,7 @@ class Event   {
                 desc = other.desc;
                 exits = other.exits;
                 blind = other.blind;
+                terrain = other.terrain;
             }
             return *this;    // Return ref for multiple assignment            
         }
@@ -37,6 +39,7 @@ class Event   {
             desc = "";
             exits = "";
             blind = false;
+            terrain = -1;
         }
 
         QByteArray dir;
@@ -44,6 +47,7 @@ class Event   {
         QByteArray desc;
         QByteArray exits;
         bool             blind;         /* fog, no light, blind flag */
+        int               terrain;
 };
 
 class CEngine {
@@ -53,7 +57,9 @@ class CEngine {
     bool mapping;                 /* mapping is On/OFF */
     bool gettingfirstroom;        /* getting the very first room in base */
     bool mgoto;
-
+    int   nameMatch;
+    int   descMatch;
+    
     QByteArray last_name;
     QByteArray last_desc;
     QByteArray last_exits;

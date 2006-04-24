@@ -122,12 +122,18 @@ void CRoom::refresh_terrain(char terrain)
 
 int CRoom::desc_cmp(QByteArray d)
 { 
-  return comparator.strcmp_desc(d, desc);
+    if (desc)
+        return comparator.strcmp_desc(d, desc);
+    else
+        return 0;
 }
 
 int CRoom::roomname_cmp(QByteArray n)
 { 
-  return comparator.strcmp_roomname(n, name);
+    if (name)
+        return comparator.strcmp_roomname(n, name);
+    else
+        return 0;
 }
 
 /* --------------- check if exit in room is connected --------------- */

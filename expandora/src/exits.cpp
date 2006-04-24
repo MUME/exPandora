@@ -60,22 +60,6 @@ void do_exits(const char *exits_line)
         return;
     }
 
-    if (conf.get_exits_check() ) 
-      print_debug(DEBUG_ANALYZER, "Autochecking exits");
-      
-    for (i = 0; i < stacker.amount(); i++) {
-      r = stacker.get(i);
-      if (conf.get_exits_check() ) {
-        if (compare_exits(r, exits)) {
-          stacker.put(r);
-//          print_debug(DEBUG_ANALYZER, "adding match");
-        }
-      } else {
-//        print_debug(DEBUG_ANALYZER, "adding all matches without check. its off");
-        stacker.put(r);
-      }
-    }
-    
 }
 
 int compare_exits(CRoom *p, int exits[])
@@ -182,7 +166,7 @@ void parse_exits(const char *p, int exits[])
                 exits[dir] = E_CLOSEDDOOR;
                 continue;
             }
-            if (p[i - 1] == '<') {
+            if (p[i - 1] == '{') {
                 exits[dir] = E_PORTAL;
                 continue;
             }
