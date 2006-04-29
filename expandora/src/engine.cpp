@@ -138,13 +138,15 @@ void CEngine::tryDir()
                 addedroom = new CRoom;
         
                 addedroom->id = Map.next_free;
-                addedroom->name = strdup((const char *)event.name);
-                addedroom->desc = strdup((const char *)event.desc);
+                addedroom->name = strdup((const char *) event.name);
+                addedroom->desc = strdup((const char *) event.desc);
+                addedroom->refresh_terrain(event.terrain);
+                
                 room->exits[dir] = addedroom->id;
                 addedroom->exits[reversenum(dir)] = room->id;
                 
                 set_exits(event.exits);
-                do_exits((const char *) event.desc);
+                do_exits((const char *) event.exits);
                 
         
                 addedroom->x = room->x;
@@ -158,6 +160,10 @@ void CEngine::tryDir()
                 if (dir == DOWN)      addedroom->z -= 2;
                 Map.addroom(addedroom);
                 stacker.put(addedroom);
+                
+                if (check_roomdesc() != 1)
+                    angrylinker(addedroom);
+                
                 return;
             }	
         
@@ -180,39 +186,6 @@ void CEngine::tryDir()
         }
     }
 }
-
-
-/* The old and real movement TryAllDirs */
-/*void CEngine::tryAllDirs()
-{
-    CRoom *room;
-    CRoom *candidate;
-    unsigned int i, j;
-    
-    print_debug(DEBUG_ANALYZER, "in try_all_dirs");
-    mappingoff();
-    
-    if (stacker.amount() == 0) {
-        return;
-    }
-    
-//    exits check if simply ignored for now 
-    for (i = 0; i < stacker.amount(); i++) {
-        room = stacker.get(i);
-        for (j = 0; j <=5; j++) 
-            if (room->is_connected(j) ) {
-//                test this room if it fits 
-                candidate = Map.getroom(room->exits[j]);
-                if (testRoom(candidate))
-                    stacker.put(candidate);
-            }
-//      check the room itself -> scout/look/examine support  
-        if  (testRoom(room))             
-            stacker.put(room);
-                            
-    }
-}
-*/
 
 
 /* new try all dirs, only removes other rooms, if there is a full 100% fit for new data */
@@ -255,6 +228,7 @@ void CEngine::parse_event()
     last_name = event.name;
     last_desc = event.desc;
     last_exits = event.exits;
+    last_terrain = event.terrain;
     
     setMgoto( false );    /* if we get a new room data incoming, mgoto has to go away */
 

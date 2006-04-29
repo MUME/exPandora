@@ -76,6 +76,8 @@ class Cdispatcher
 
     int telnetSeqLength();
     int process_message(char *buf, int len);
+    
+    char parse_terrain(QByteArray prompt);
 
 
     void parse_xml();

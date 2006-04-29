@@ -47,7 +47,7 @@ class Event   {
         QByteArray desc;
         QByteArray exits;
         bool             blind;         /* fog, no light, blind flag */
-        int               terrain;
+        char             terrain;
 };
 
 class CEngine {

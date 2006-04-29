@@ -41,15 +41,10 @@ Cdispatcher::Cdispatcher()
 */
 int Cdispatcher::telnetSeqLength()
 {
-//int tcp_read __P3 (int,fd, char *,buffer, int,maxsize)
-//    char state = ;
     int i;
     unsigned char *s, *start;
     char state = T_GOTIAC;
-    /*
-     * scan through the buffer,
-     * interpret telnet protocol escapes and MUME MPI messages
-     */
+    
     i = o_len - o_pos + 1;
     start = (unsigned char *) &o_buf[o_pos];
     for (s = start;  i; s++, i--) {
@@ -440,6 +435,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
 {
     int i;
     int new_len;
+    bool awaitingData;
     
     o_buf = buf;
     o_len = *n;
@@ -451,7 +447,8 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
     buf[*n] = 0;
     state = STATE_NORMAL;
     mbrief_state = STATE_NORMAL;
-    
+    awaitingData = false;
+        
     dispatch_buffer(true);
   
     /* broken code */
@@ -472,20 +469,15 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
     
         /* XML messages parser */
         if (buffer[i].type == IS_XML) {
-            if (buffer[i].xmlType == XML_START_ROOM) 
-                mbrief_state = STATE_ROOM;
-            else if (buffer[i].xmlType == XML_START_DESC)  {
-                mbrief_state = STATE_DESC;
-            }  if (buffer[i].xmlType == XML_END_ROOM) 
-                mbrief_state = STATE_NORMAL;
-            else if (buffer[i].xmlType == XML_END_DESC)  {
-                mbrief_state = STATE_ROOM;
-            }  
             
             if (buffer[i].xmlType == XML_START_MOVEMENT) {
+                if (awaitingData) 
+                    SEND_EVENT_TO_ENGINE;
                 event.dir = buffer[i].line;
                 continue;
             } else if (buffer[i].xmlType == XML_START_ROOM) {
+                if (awaitingData) 
+                    SEND_EVENT_TO_ENGINE;
                 state = STATE_ROOM;                
                 continue;
             } else if ((buffer[i].xmlType == XML_START_NAME) && (state == STATE_ROOM)) {
@@ -507,7 +499,7 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                 /* nada */
                 continue;
             } else if (buffer[i].xmlType == XML_END_ROOM && state == STATE_ROOM) {
-                SEND_EVENT_TO_ENGINE;
+                awaitingData = true;
                 state = STATE_NORMAL;
                 continue;
             } else if (buffer[i].xmlType == XML_END_NAME && state == STATE_NAME) {
@@ -516,10 +508,12 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             } else if (buffer[i].xmlType == XML_END_DESC && state == STATE_DESC) {
                 state = STATE_ROOM;
                 continue;
-            } else if (buffer[i].xmlType == XML_END_EXITS && state == STATE_NORMAL) {
+            } else if (buffer[i].xmlType == XML_END_EXITS && state == STATE_EXITS) {
                 state = STATE_NORMAL;
                 continue;
             } else if (buffer[i].xmlType == XML_END_PROMPT) {
+                SEND_EVENT_TO_ENGINE;
+                awaitingData = false;
                 state = STATE_NORMAL;
                 continue;
             } 
@@ -539,11 +533,19 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                                                 break;
             case STATE_EXITS:
                                                 event.exits = cutColours( buffer[i].line );
+                                                int index = event.exits.indexOf("Exits: ");
+                                                if (index == -1) {
+                                                    event.exits = "";
+                                                    break;
+                                                }
+                                                event.exits.replace("Exits: ", "");
+                                                printf("XML exits data: %s\r\n", (const char *) event.exits);
                                                 break;
             case STATE_PROMPT:
                                                 spells_print_mode = false;      /* do not analyze spells anymore */
                                                 printf("XML prompt: %s\r\n", (const char *) cutColours( buffer[i].line ) );
                                                 Engine.set_prompt(cutColours( buffer[i].line ));
+                                                event.terrain = parse_terrain(cutColours( buffer[i].line ));
                                                 break;
         };
         
@@ -682,6 +684,18 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
   
     amount = 0;
     *n=new_len;
+}
+
+
+char Cdispatcher::parse_terrain(QByteArray prompt)
+{
+    char terrain;
+        
+    terrain = prompt[1];  /*second charecter is terrain*/
+    if (conf.get_sector_by_pattern(terrain) == 0) 
+        return -1;
+    
+    return terrain;
 }
 
 
