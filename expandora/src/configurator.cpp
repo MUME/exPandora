@@ -46,46 +46,10 @@ Cconfigurator::Cconfigurator()
     
     
     /* colours */
-    set_look_col("[32m");
-    set_description_col("[34m");
-    set_prompt_col("");
-    set_end_col("[0m");
     
     /* patterns */
     set_exits_pat("Exits:");
     
-    set_prompt_IAC(true);
-    set_forward_IAC(true);
-    set_forwardPromptColour(true);
-    /* regexps - the working pony */
-    flush_all_exps();
-
-    /* setup the config readers table */
-/*
-    add_command("localport",         parse_localport,        update_localport);
-    add_command("remoteport",        parse_remoteport,       update_remoteport);
-    add_command("remotehost",        parse_remotehost,       update_remotehost);
-    add_command("basefile",          parse_basefile,         update_basefile);
-    add_command("roomcolour",        parse_roomcolour,       update_roomcolour);
-    add_command("autocheckexits",    parse_autocheckexits,   update_autocheckexits);
-    add_command("autocheckterrain",  parse_autocheckterrain, update_autocheckterrain);
-    add_command("pattern",           parse_pattern,          update_pattern);
-    add_command("mapperbriefmode",   parse_mapperbriefmode,  update_mapperbriefmode);
-    add_command("exitspattern",      parse_exitspattern,     update_exitspattern);
-    add_command("terraintype",       parse_terraintype,      update_terraintype);
-    add_command("leadersetup",       parse_leadersetup,      update_leadersetup);
-    add_command("debug",             parse_debug,            update_debug);
-    add_command("include",           parse_include,          update_include);
-    add_command("engine",            parse_engine,           update_engine);
-    add_command("roomnamesimilarityquote",parse_roomnamequote,update_roomnamequote);
-    add_command("descsimilarityquote",parse_descquote,       update_descquote);
-    add_command("autorefresh",       parse_autorefresh,      update_autorefresh);
-    add_command("automerge",		parse_automerge,        update_automerge);
-    add_command("texturesvisibilityrange", parse_texturesvisibility, update_texturesvisibility);
-    add_command("detailsvisibilityrange",  parse_detailsvisibility, update_detailsvisibility);
-    add_command("angrylinker",       parse_angrylinker,      update_angrylinker);
-*/
-
     struct room_sectors_data first;
         
     first.pattern = 0;
@@ -167,80 +131,6 @@ QString Cconfigurator::spell_up_for(unsigned int p)
 
 
 /* ----------------- REGULAR EXPRESSIONS SECTION ---------------- */
-void Cconfigurator::flush_all_exps()
-{
-    refresh_roomname_exp();
-    refresh_prompt_exp();
-    refresh_description_exp();
-}
-
-void Cconfigurator::refresh_roomname_exp()
-{
-    roomname_exp.setPattern("^"+ QRegExp::escape(get_look_col()) + ".*" 
-                    + QRegExp::escape(get_end_col())+"$");
-}
-
-void Cconfigurator::refresh_description_exp()
-{
-    description_exp.setPattern("^"+ QRegExp::escape(get_description_col()) + ".*" 
-                    + QRegExp::escape(get_end_col())+"$");
-}
-
-void Cconfigurator::refresh_prompt_exp()
-{
-    if (get_prompt_col() != "") {
-        prompt_exp.setPattern("^"+ QRegExp::escape(get_prompt_col()) + ".*" +  QRegExp::escape(">") 
-                     + QRegExp::escape(get_end_col()));
-    } else {
-        prompt_exp.setPattern("^.*" +  QRegExp::escape(">"));
-    }
-}
-
-void Cconfigurator::set_prompt_IAC(bool b) 
-{ 
-    request_prompt = b; 
-    refresh_prompt_exp();
-    if (b)
-        send_IAC_prompt_request();
-    set_conf_mod(true);
-}
-
-void Cconfigurator::send_IAC_prompt_request()
-{
-    char *idprompt = "~$#EP2\nG\n";
-    send_to_mud(idprompt);
-}
-
-/* ----------- COLOURS SECTION ---------------*/
-void Cconfigurator::set_look_col(QByteArray str)
-{ 
-    look_col = str; 
-    refresh_roomname_exp();
-    set_conf_mod(true);
-}
-
-void Cconfigurator::set_description_col(QByteArray str)
-{ 
-    description_col = str; 
-    refresh_description_exp();
-    set_conf_mod(true);
-}
-
-void Cconfigurator::set_prompt_col(QByteArray str) 
-{ 
-    prompt_col = str; 
-    refresh_prompt_exp();
-    set_conf_mod(true);
-}
-
-void Cconfigurator::set_end_col(QByteArray str) 
-{ 
-    /* I cant imagine this happening, but hell ... */
-    end_col = str; 
-    flush_all_exps();
-    set_conf_mod(true);
-}
-
 /* ------------------- DATA ------------------- */
 char Cconfigurator::get_pattern_by_room(CRoom *r)
 {
@@ -485,16 +375,7 @@ int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
                   get_remote_port() );
   fprintf(f, "  <basefile filename=\"%s\">\r\n", 
                   (const char *) get_base_file() );
-  fprintf(f, "  <roomnamecolour>%s</roomnamecolour>\r\n", 
-                  (const char *) get_look_col() );
-  fprintf(f, "  <descriptioncolour>%s</descriptioncolour>\r\n", 
-                  (const char *) get_description_col() );
-  fprintf(f, "  <promptcolour>%s</promptcolour>\r\n", 
-                  (const char *) get_prompt_col() );
-  fprintf(f, "  <prompt IAC=\"%s\" forwardIAC=\"%s\" forwardColour=\"%s\">\r\n", 
-                  ON_OFF(is_prompt_IAC()), ON_OFF( is_forward_IAC() ) , 
-                  ON_OFF( is_forwardPromptColour() )  );
-                  
+  
   fprintf(f, "  <GLvisibility textures=\"%i\" details=\"%i\">\r\n", 
                   get_texture_vis(),  get_details_vis() );
   
@@ -566,31 +447,16 @@ ConfigParser::ConfigParser()
 }
 
 
-bool ConfigParser::endElement( const QString& , const QString& , const QString&)
+/*bool ConfigParser::endElement( const QString& , const QString& , const QString&)
 {
-    flag = 0;    
     return TRUE;
 }
-
-bool ConfigParser::characters( const QString& ch)
+*/
+/*bool ConfigParser::characters( const QString& ch)
 {
-  s = ch;  
-  if (ch == NULL || ch == "")
-    return TRUE;
-    
-  if (flag == ROOMCOLOUR) {
-      conf.set_look_col(s.toAscii());
-      printf("The room name colour : %s Test.%s\r\n", (const char *) conf.get_look_col(), (const char *)conf.get_end_col() );
-      printf("And the received str : %s str %s.\r\n", qPrintable(ch), (const char *)conf.get_end_col() );
-  } else if (flag == DESCRIPTIONCOLOUR) {
-      conf.set_description_col(s.toAscii());
-  } else if (flag == PROMPTCOLOUR) {
-      conf.set_prompt_col(s.toAscii());
-  } 
-
   return TRUE;
 } 
-
+*/
 
 bool ConfigParser::startElement( const QString& , const QString& , 
                                     const QString& qName, 
@@ -631,42 +497,6 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         s = attributes.value("filename");
         conf.set_base_file(s.toAscii() );
         printf("Using the database file: %s\r\n", qPrintable(s) );
-        
-        return TRUE;
-    } else if (qName == "roomnamecolour") {
-        flag = ROOMCOLOUR;
-        return TRUE;
-    } else if (qName == "descriptioncolour") {
-        flag = DESCRIPTIONCOLOUR;
-        return TRUE;
-    } else if (qName == "promptcolour") {
-        flag = PROMPTCOLOUR;
-        return TRUE;
-    } else if (qName == "prompt") {
-        s = attributes.value("IAC");
-        s = s.toLower();
-        printf("Prompt IAC requesting/usage : %s\r\n", qPrintable(s) );
-        if (s == "on") 
-            conf.set_prompt_IAC(true);
-        else 
-            conf.set_prompt_IAC(false);
-        
-        s = attributes.value("forwardIAC");
-        s = s.toLower();
-        printf("Prompt IAC forwarding (to client) : %s\r\n", qPrintable(s) );
-        if (s == "on") 
-            conf.set_forward_IAC(true);
-        else 
-            conf.set_forward_IAC(false);
-
-        s = attributes.value("forwardColour");
-        s = s.toLower();
-        printf("Prompt Colour forwarding (to client) : %s\r\n", qPrintable(s) );
-        if (s == "on") 
-            conf.set_forwardPromptColour(true);
-        else 
-            conf.set_forwardPromptColour(false);
-
         
         return TRUE;
     } else if (qName == "GLvisibility") {

@@ -34,25 +34,49 @@ class Cdispatcher
     int amount;
     
     bool    xmlMode;
-    bool    awaitingRoom;
     int       state;          /* desc shall be incoming - just got roomname */
     int       mbrief_state;
-    enum dispatcherStates { STATE_NORMAL, STATE_ROOM, STATE_DESC, STATE_NAME, STATE_PROMPT, 
-                                              STATE_EXITS };
-    
-    int check_roomname(char *line);
-    int check_description(char *line);
-    
-    int check_exits(char *line);
-    
-    int dispatch_prompt(char *line, char *buf, int l, int mode);
+    enum dispatcherStates { STATE_NORMAL = 0, 
+                                               STATE_ROOM, 
+                                               STATE_DESC, 
+                                               STATE_NAME, 
+                                               STATE_PROMPT, 
+                                               STATE_EXITS };
     
     bool spells_print_mode; /* After "Affected by:" until next prompt */
 	
-    enum XmlTypes { XML_START_ROOM, XML_START_NAME, XML_START_DESC,  XML_START_PROMPT, XML_START_EXITS, 
-                                   XML_START_MOVEMENT, XML_START_TERRAIN,                                       
-                                   XML_END_ROOM, XML_END_NAME, XML_END_DESC,  XML_END_PROMPT, XML_END_EXITS, 
-                                   XML_END_MOVEMENT, XML_END_TERRAIN};
+    enum XmlTypes { XML_START_ROOM = 1, 
+                                   XML_START_NAME = 2, 
+                                   XML_START_DESC = 3,  
+                                   XML_START_PROMPT = 4, 
+                                   XML_START_EXITS = 5, 
+                                   XML_START_MOVEMENT = 6, 
+                                   XML_START_TERRAIN = 7,                                       
+                                   XML_END_ROOM = 11, 
+                                   XML_END_NAME = 12, 
+                                   XML_END_DESC = 13,  
+                                   XML_END_PROMPT = 14, 
+                                   XML_END_EXITS = 15, 
+                                   XML_END_MOVEMENT = 16, 
+                                   XML_END_TERRAIN = 17
+                                   };
+
+    enum telnetStates {T_NORMAL, 
+                                       T_ALTNORMAL, 
+                                       T_GOT_N, 
+                                       T_GOT_R, 
+                                       T_GOTIAC, 
+                                       T_GOTWILL, 
+                                       T_GOTWONT, 
+                                       T_GOTDO, 
+                                       T_GOTDONT, 
+                                       T_GOTSB, 
+                                       T_GOTSBIAC,
+                                       T_SKIP};
+
+    int telnetSeqLength();
+    int process_message(char *buf, int len);
+
 
     void parse_xml();
 public:
@@ -67,7 +91,6 @@ public:
     void setXmlMode(bool b)     {xmlMode = b; }
     bool getXmlMode()               { return xmlMode; }
 
-    void setAwaitingRoom(bool b)    { awaitingRoom = b; }
     
 	
     Cdispatcher();

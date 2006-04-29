@@ -44,24 +44,9 @@ class Cconfigurator {
     QByteArray  config_file;
     QByteArray  config_path;
     
-    /* colours */
-    QByteArray     look_col;
-    QByteArray     prompt_col;
-    QByteArray     end_col;
-    QByteArray     description_col;
-    
     /* patterns/regexps */
     QByteArray exits_pat;
-    
-    
-    /* regexps */
-    QRegExp     roomname_exp;
-    QRegExp     description_exp;
     QRegExp     exits_exp;
-    QRegExp     prompt_exp;
-    bool        request_prompt;     /* IAC check */
-    bool        forward_IAC;
-    bool        forwardPromptColour;
     
     /* data */
     QByteArray  database_path;
@@ -125,35 +110,13 @@ public:
     int save_config() { return save_config_as(config_path, config_file); }
     
 
-    void set_look_col(QByteArray str);
-    void set_description_col(QByteArray str);
-    void set_prompt_col(QByteArray str);
     void set_end_col(QByteArray str);
-    
-    QByteArray get_look_col() { return look_col; }
-    QByteArray get_description_col() { return description_col; }
-    QByteArray get_prompt_col() { return prompt_col; }
-    QByteArray get_end_col() { return end_col; }
-    int get_prompt_col_len() { return prompt_col.length(); }
-    
     /* patterns */
     QByteArray get_exits_pat() { return exits_pat; }
     void set_exits_pat(QByteArray str);
     
     
-    
-    /* regexps */
-    void refresh_roomname_exp();
-    void refresh_prompt_exp();
-    void refresh_description_exp();
-    
-    QRegExp get_roomname_exp() { return roomname_exp; }
-    QRegExp get_description_exp() { return description_exp; }
-    QRegExp get_prompt_exp() { return prompt_exp; }
     QRegExp get_exits_exp() { return exits_exp; }
-    
-    void flush_all_exps();
-    
     
     /* data / global flags */
     void set_base_file(QByteArray str); 
@@ -198,15 +161,6 @@ public:
     
     int get_desc_quote() { return desc_quote; }
     int get_name_quote() { return name_quote; }
-    
-    bool is_prompt_IAC() { return request_prompt;}
-    void set_prompt_IAC(bool b);
-    void send_IAC_prompt_request();
-    bool is_forward_IAC()   { return forward_IAC; }
-    void set_forward_IAC(bool b) { forward_IAC = b; set_conf_mod(true); }
-    bool is_forwardPromptColour()   { return forwardPromptColour; }
-    void set_forwardPromptColour(bool b) { forwardPromptColour = b; set_conf_mod(true); }
-    
 };
 
 extern class Cconfigurator conf;
@@ -215,15 +169,15 @@ extern class Cconfigurator conf;
 class ConfigParser : public QXmlDefaultHandler {
 public:
   ConfigParser();
-  bool characters(const QString& ch);
+//  bool characters(const QString& ch);
     
   bool startElement( const QString&, const QString&, const QString& ,
 		     const QXmlAttributes& );
-  bool endElement( const QString&, const QString&, const QString& );
+//  bool endElement( const QString&, const QString&, const QString& );
 private:
-  enum {ROOMCOLOUR = 1, DESCRIPTIONCOLOUR, PROMPTCOLOUR, TEXTURE };
+//  enum { TEXTURE };
   /* some flags */
-  int flag;
+  //int flag;
   QString s;
 
   struct room_sectors_data texture;

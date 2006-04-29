@@ -1565,7 +1565,7 @@ USERCMD(usercmd_move)
     return USER_PARSE_SKIP;
     
   } else {
-  
+  /*
         switch (subcmd)
         {
             case USER_MOVE_LOOK:
@@ -1574,7 +1574,7 @@ USERCMD(usercmd_move)
                     dispatcher.setAwaitingRoom(true);
                     break;
         }      
-  
+  */
   
   }
   

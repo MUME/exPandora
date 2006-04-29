@@ -68,10 +68,10 @@ bool CEngine::testRoom(CRoom *room)
 {
     if (event.blind)
         return true;
-    if  (nameMatch = room->roomname_cmp(event.name) >= 0) 
+    if  ((nameMatch = room->roomname_cmp(event.name)) >= 0) 
         if (event.desc == "")
             return true;
-        else if ( descMatch = room->desc_cmp(event.desc) >= 0 ) 
+        else if ( (descMatch = room->desc_cmp(event.desc)) >= 0 ) 
             return true;    
     return false;
 }
@@ -107,8 +107,7 @@ void CEngine::tryDir()
                 stacker.put(candidate);
                 
         
-        } 
-        else {
+        } else {
             if (stacker.amount() == 1 && mapping)  {
                 /* casual checks for data */
                 if (event.blind) {
@@ -169,19 +168,22 @@ void CEngine::tryDir()
     /* roomname update */
     if (stacker.next() == 1) {
         /* this means we have exactly one match */
+//        printf("nameMatch %i, descMatch %i\r\n", nameMatch, descMatch);
         if (nameMatch > 0) {
             send_to_user("--[ not exact room match: %i errors.\r\n", nameMatch);
         }
         if (conf.get_autorefresh() && descMatch > 0) {
             send_to_user("--[ (AutoRefreshed) not exact room desc match: %i errors.\r\n", descMatch);
             stacker.next_first()->refresh_desc(event.desc);  
-        } else {
+        } else if (!conf.get_autorefresh() && descMatch > 0) {
             send_to_user("--[ not exact room desc match: %i errors.\r\n", descMatch);
         }
     }
 }
 
-void CEngine::tryAllDirs()
+
+/* The old and real movement TryAllDirs */
+/*void CEngine::tryAllDirs()
 {
     CRoom *room;
     CRoom *candidate;
@@ -194,21 +196,57 @@ void CEngine::tryAllDirs()
         return;
     }
     
-    /* exits check if simply ignored for now */
+//    exits check if simply ignored for now 
     for (i = 0; i < stacker.amount(); i++) {
         room = stacker.get(i);
         for (j = 0; j <=5; j++) 
             if (room->is_connected(j) ) {
-                /* test this room if it fits */
+//                test this room if it fits 
                 candidate = Map.getroom(room->exits[j]);
                 if (testRoom(candidate))
                     stacker.put(candidate);
             }
-        /* check the room itself -> scout/look/examine support  */
+//      check the room itself -> scout/look/examine support  
         if  (testRoom(room))             
             stacker.put(room);
                             
     }
+}
+*/
+
+
+/* new try all dirs, only removes other rooms, if there is a full 100% fit for new data */
+/* resyncs only if the stacks are empty */
+void CEngine::tryAllDirs()
+{
+    CRoom *room;
+    CRoom *fittingRoom;
+    int fits;
+    unsigned int i;
+    
+    print_debug(DEBUG_ANALYZER, "in try_all_dirs");
+//    mappingoff();
+    if (stacker.amount() == 0) {
+        return;
+    }
+    
+    fits = 0;
+    fittingRoom = NULL;
+//    exits check if simply ignored for now 
+    for (i = 0; i < stacker.amount(); i++) {
+        room = stacker.get(i);
+        if (testRoom(room)) {
+            fits++;
+            fittingRoom = room;
+        }
+    }
+    
+    if (fits == 1)
+            stacker.put(fittingRoom);
+    else 
+        for (i = 0; i < stacker.amount(); i++)  // due to instant swap after this function ends, we have to rotate the 
+            stacker.put(stacker.get(i));               // stacks 
+    
 }
 
 

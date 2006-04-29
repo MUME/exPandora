@@ -204,8 +204,7 @@ void CRoom::send_room()
     
     send_to_user(" Id: %i, Flags: %s, Coord: %i,%i,%i\r\n", id,
 	    (const char *) conf.sectors[sector].desc, x, y, z);
-    send_to_user(" %s%s%s\n", (const char *) conf.get_look_col() , name, 
-                              (const char *) conf.get_end_col() );
+    send_to_user(" [32m%s[0m\n",name);
 
     line[0] = 0;
     pos = 0;

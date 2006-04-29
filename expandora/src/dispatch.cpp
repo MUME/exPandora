@@ -1,9 +1,13 @@
+#define MPI		"~$#E"	/* MUME protocol introducer */
+#define MPILEN		4	/* strlen(MPI) */
+
+
 #include <cstdio>
 #include <cstring>
 #include <qregexp.h>
 
-//#include <arpa/telnet.h>
-#define IAC 255
+#include <arpa/telnet.h>
+//#define IAC 255
 
 #include "defines.h"
 
@@ -28,79 +32,79 @@ Cdispatcher::Cdispatcher()
 {
     amount = 0;
     xmlMode = false;
-    awaitingRoom = false;
 }
 
 
-int Cdispatcher::check_exits(char *line)
+
+/**
+*   This function was adopted from powwow code Copyright (C) 1998 by Massimiliano Ghilardi
+*/
+int Cdispatcher::telnetSeqLength()
 {
-    QRegExp rx;
-
-    rx = conf.get_exits_exp();
-    if (rx.indexIn(line) >= 0) {
-//        Engine.add_event(R_EXITS, 
-//                         &line[ strlen( (const char*) conf.get_exits_pat() ) ]);
-//        print_debug(DEBUG_DISPATCHER, "EXITS: %s [%i]", &line[6], strlen(&line[6]) );
-//        getting_desc = 0;   /* do not react on desc alike strings anymore */
-//        notify_analyzer();
-        return 1;
+//int tcp_read __P3 (int,fd, char *,buffer, int,maxsize)
+//    char state = ;
+    int i;
+    unsigned char *s, *start;
+    char state = T_GOTIAC;
+    /*
+     * scan through the buffer,
+     * interpret telnet protocol escapes and MUME MPI messages
+     */
+    i = o_len - o_pos + 1;
+    start = (unsigned char *) &o_buf[o_pos];
+    for (s = start;  i; s++, i--) {
+	switch (state) {
+	 case T_NORMAL:
+	    return (s - start);
+	    break;
+	    
+	 case T_GOTIAC:
+	    switch (*s) {
+	     case WILL:
+	     case WONT:
+	     case DO:
+	     case DONT:
+		state = T_SKIP; 
+		break;
+	     case SB:		/* BUG (multiple connections):	*/
+		state = T_GOTSB;	/* there is only one subopt buffer */
+		break;
+	     case IAC:
+	     case GA:
+	     default:
+		state = T_NORMAL;
+		break;
+	    }
+	    break;
+	    
+	 case T_SKIP:
+	    state = T_NORMAL;
+	    break;
+	    
+	 case T_GOTSB:
+	    if (*s == IAC) {
+		state = T_GOTSBIAC;
+	    } 
+	    break;
+	    
+	 case T_GOTSBIAC:
+	    if (*s == IAC) {
+		state = T_GOTSB;
+	    } else if (*s == SE) {
+		state = T_NORMAL;
+	    } else {
+		/* problem! I haven't the foggiest idea of what to do here.
+		 * I'll just ignore it and hope it goes away. */
+		state = T_NORMAL;
+	    }
+	    break;
+	}
     }
     
-    return 0;
+     return (s - start);
 }
 
 
-/* we know we have prompt in line and want to put the resulting, patched prompt in buf, returning the */
-/* length of the dispatched prompt */
-/* mode == 1 means handle the IAC ending too, rest means ignore it */
-int Cdispatcher::dispatch_prompt(char *line, char *buf, int l, int mode)
-{
-    int rn_start;
-    int rn_end;
-    int len;
-    QByteArray s;
-
-//    printf("investigating the line ..%s..\r\n", line);
-
-//    printf("Flags: IAC %i, forwardIAC %i, forwardColour %i, mode %i\r\n", 
-//            conf.is_prompt_IAC(), conf.is_forward_IAC(), conf.is_forwardPromptColour(), mode);
-    /* zap the prompt colour, if needed */
-    if (!conf.is_forwardPromptColour() && conf.get_prompt_col() != "") {
-        s = conf.get_prompt_col();
-        rn_start = s.length();
-                        
-        if (strncmp(line, (const char *) s, rn_start) == 0) {
-            s = conf.get_end_col();
-            rn_end = s.length();
-            len = l - rn_start - rn_end;
-                        
-            memcpy(buf, &line[rn_start], len);
-        } else {
-            memcpy(buf, line, l);
-            len = l;
-        }
-    } else {
-        memcpy(buf, line, l);
-        len = l;
-    }
-    
-    if (mode == 1) {
-        if (conf.is_forward_IAC() && conf.is_prompt_IAC()) {
-            buf[len] = (unsigned char) IAC ;
-            buf[len+1] = (unsigned char) 0xf9;
-            len = len + 2;
-        } else {
-            len = l;
-        }
-    }
-        
-    buf[len] = 0;
-            
-    return len;
-}
-
-
-    
 /**
  * 
  */
@@ -112,7 +116,7 @@ void Cdispatcher::parse_xml()
             int        startType;
             int        endType;
         } TagTypes[] = {
-            {"propmp", XML_START_PROMPT, XML_END_PROMPT},
+            {"prompt", XML_START_PROMPT, XML_END_PROMPT},
             {"room", XML_START_ROOM, XML_END_ROOM},
             {"name", XML_START_NAME, XML_END_NAME},
             {"description", XML_START_DESC, XML_END_DESC},
@@ -133,11 +137,8 @@ void Cdispatcher::parse_xml()
         name[0] = 0;
         params[0] = 0;
         
-        printf("XML TAG: ");
-        
         p = o_pos+1;
         if (o_buf[p] == '/') {
-            printf(" (END TAG) ");
             endTag = true;
             p++;
         }
@@ -150,8 +151,6 @@ void Cdispatcher::parse_xml()
         }        
         name[i] = 0;
         
-        printf("name: ..%s.. ", name);
-        
         if (o_buf[p] == ' ') {
             /* params are coming */
             i = 0;
@@ -162,10 +161,9 @@ void Cdispatcher::parse_xml()
             params[i] = 0;
         }
         
-        printf("params: ..%s.. ", params);
+//        printf("params: ..%s.. ", params);
         
         if (o_buf[p] == '/') {
-            printf("EndAfterTag ");
             endAfterTag = true;
             p++;
         }
@@ -182,12 +180,13 @@ void Cdispatcher::parse_xml()
                 
         /* we are done with moving around the original buffer */
         o_pos = p+1;
-        printf("new o_pos %i, next char %c\r\n", o_pos, o_buf[o_pos]);        
+//        printf("new o_pos %i, next char %c\r\n", o_pos, o_buf[o_pos]);        
         
         /* now parse the tags ! */                    
         
         /* hard tags first */
         if (strcmp(name, "movement") == 0) {
+  //          printf("XML TAG: %s\r\n", TagTypes[p].name);
             startType = XML_START_MOVEMENT;
             endType = XML_END_MOVEMENT;
             
@@ -215,6 +214,7 @@ void Cdispatcher::parse_xml()
             /* the easy ones */
             for (p = 0; TagTypes[p].startType != -1; p++) {
                 if (strcmp(TagTypes[p].name, name) == 0) {
+//                    printf("XML TAG: %s\r\n", TagTypes[p].name);
                     startType = TagTypes[p].startType;
                     endType = TagTypes[p].endType;
                 }
@@ -240,14 +240,12 @@ void Cdispatcher::parse_xml()
 }
     
     
-    
 
 void Cdispatcher::dispatch_buffer(bool Xml) 
 {
   int l;
   char line[MAX_DATA_LEN];
   QRegExp rx;
-  int rx_pos;
   
   
   line[0] = 0;  /* set first terminator */
@@ -256,52 +254,26 @@ void Cdispatcher::dispatch_buffer(bool Xml)
 
   while (o_pos < o_len) {
     
-    
-    if ((unsigned char)o_buf[o_pos] == (unsigned char) IAC && 
-        (unsigned char)o_buf[o_pos + 1] == (unsigned char)0xf9 &&
-        conf.is_prompt_IAC() ) 
-    {
-        line[l] = 0;
-        rx = conf.get_prompt_exp();
-//        printf("IAC check RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
-            
-        if ((rx_pos = rx.indexIn(line)) >= 0) {
-            buffer[amount].type = IS_PROMPT;
-            buffer[amount].len = dispatch_prompt(line, buffer[amount].line, l, 1);
-            printf("PROMPT(IAC): %s\r\n", buffer[amount].line);
-            
-            o_pos += 2;    /* its a match, so move the pointer futher */
-            amount++;
-            l = 0;
-            continue;
-        }
-    }
-    
-    
     /* telnet sequences filter (or rather anti-filer, we let them go as they are */
     if ((unsigned char)o_buf[o_pos] == (unsigned char) IAC) {
       if (l != 0) {
-        /* in case we met this damn telnet sequence right in the middle */
-        /* of some other line. (which looks pretty much impossible) */
+        /* in case we met this telnet sequence right in the middle */
         line[l] = 0;
         memcpy(buffer[amount].line, line, l);
         buffer[amount].len = l;   
         buffer[amount].type = IS_NONE;  /* line without end - will be just coppied as is */
-//        printf("Telnet seq ..%s..!\r\n", buffer[amount].line );
           
         amount++;
         l = 0;
       }
+      int seqLen = telnetSeqLength();
       /* ok, go on with the telnet sequence */  
-      memcpy(buffer[amount].line, &o_buf[o_pos], 3);
-      buffer[amount].line[3] = 0;
-      buffer[amount].len = 3;
-      o_pos+=3;
+      memcpy(buffer[amount].line, &o_buf[o_pos], seqLen);
+      buffer[amount].line[seqLen] = 0;
+      buffer[amount].len = seqLen;
+      o_pos += seqLen;
       buffer[amount].type = IS_TELNET;
       amount++;
-
-//      printf("The continuing line ..%s..!\r\n", buffer[amount].line);
-
 
       l = 0;
       continue;
@@ -310,20 +282,38 @@ void Cdispatcher::dispatch_buffer(bool Xml)
     if (xmlMode && Xml) {
         /* XML sequences check */
         if (o_buf[o_pos] == '<') {
+            if ( l !=0 ) {      // the tag stands as ending for a line without new-line breaks, so ... 
+                line[l] = 0;
+                memcpy(buffer[amount].line, line, l);
+                buffer[amount].type = IS_NONE;
+                buffer[amount].line[l] = 0;
+                buffer[amount].len = l;
+                amount++;
+        
+                l = 0;
+            }        
+            
             parse_xml();
             continue;
         }
         
-        if (o_buf[o_pos] == '&' && (o_len - o_pos) >= 4 ) {
+        if (o_buf[o_pos] == '&' && (o_pos <= (o_len-3)) ) {
             if (o_buf[o_pos+1] == 'g' && o_buf[o_pos+2] == 't' && o_buf[o_pos+3] == ';') {
                     line[l++] = '>';
                     o_pos += 4;
+                    continue;
             } else   if (o_buf[o_pos+1] == 'l' && o_buf[o_pos+2] == 't' && o_buf[o_pos+3] == ';') {
                     line[l++] = '<';
                     o_pos += 4;
-            } else if (o_buf[o_pos+1] == 'a' && o_buf[o_pos+2] == 'm'  && o_buf[o_pos+3] == 'p' && o_buf[o_pos+4] == ';') {
+                    continue;
+            } 
+        }    
+            
+        if (o_buf[o_pos] == '&' && (o_pos <= (o_len-4)) ) {
+            if (o_buf[o_pos+1] == 'a' && o_buf[o_pos+2] == 'm'  && o_buf[o_pos+3] == 'p' && o_buf[o_pos+4] == ';') {
                     line[l++] = '&';
                     o_pos += 4;
+                    continue;
             } /*else if (o_buf[o_pos+1] == 'a' && o_buf[o_pos+2] == 'p'  && o_buf[o_pos+3] == 'o' && o_buf[o_pos+4] == 's' && o_buf[o_pos+5] == ';') {
                     line[l++] = '\\';
                     o_pos += 4;
@@ -341,31 +331,6 @@ void Cdispatcher::dispatch_buffer(bool Xml)
       if ((o_buf[o_pos] == 0xd) && (o_buf[o_pos + 1] == 0xa)) {
           line[l] = 0;
           o_pos += 2;
-          
-    
-          rx = conf.get_prompt_exp();
-          if ( conf.get_prompt_col() != "" && 
-               (strncmp(line, (const char *) conf.get_prompt_col(), conf.get_prompt_col_len() ) == 0) )   
-            if ((rx_pos = rx.indexIn(line)) >= 0) {
-              rx_pos += rx.matchedLength();
-                        /* here we assume we've found prompt */
-              memcpy(buffer[amount].line, line, rx_pos);
-              buffer[amount].len = dispatch_prompt(line, buffer[amount].line, rx_pos, 0);
-              buffer[amount].type = IS_CRLF;
-              printf(" fixed prompt is : ..%s..\r\n", buffer[amount].line);
-                
-              amount++;
-                                    
-              strcpy(buffer[amount].line, line + rx_pos);
-              buffer[amount].len = strlen(buffer[amount].line);
-              buffer[amount].type = IS_CRLF;
-              printf(" fixed line is : ..%s..\r\n", buffer[amount].line);
-              amount++;
-                                    
-              printf("------------------Fixed bug with prompt in line!\r\n");
-              l = 0;
-              continue;
-            }
           
           memcpy(buffer[amount].line, line, l);
           buffer[amount].type = IS_CRLF;
@@ -412,28 +377,15 @@ void Cdispatcher::dispatch_buffer(bool Xml)
   if (l == 0)
       return;
 
-
-    rx = conf.get_prompt_exp();
-//    printf("RegExp: %s LINE: ..%s..\r\n", qPrintable( rx.pattern() ), line);
-
-    if ((rx_pos = rx.indexIn(line)) >= 0) {
-        buffer[amount].len = dispatch_prompt(line, buffer[amount].line, l, 0);
-        buffer[amount].type = IS_PROMPT;
-        printf("PROMPT (outside of the cycle): %s\r\n", buffer[amount].line);
-        amount++;
-        return;
-    } 
-      
-  /* else its splitted line */
+  buffer[amount].type = IS_PROMPT;
   memcpy(buffer[amount].line, line, l);
   buffer[amount].len = l;
   buffer[amount].line[l] = 0;
-                
-      
+  
   /* ???? this is some silly attempt to catch splitted lines */
   /* just some hack, i assume it works only with certain MTU, */
   /* most likely normal TCP mtu though */
-  if (o_len == 1400) {
+  if (o_len == 1440) {
       buffer[amount].type = IS_SKIP;
   } else {
       buffer[amount].type = IS_SKIP;
@@ -466,6 +418,10 @@ QByteArray Cdispatcher::cutColours(char *line)
         }
         res.append(line[i]);
     }
+    
+//    res.append('/0');
+//    printf("Line: %s\r\n", line);
+//    printf("
     
     return res;
 }
@@ -528,11 +484,9 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             
             if (buffer[i].xmlType == XML_START_MOVEMENT) {
                 event.dir = buffer[i].line;
-                awaitingRoom = true;
                 continue;
-            } else if (buffer[i].xmlType == XML_START_ROOM && awaitingRoom) {
+            } else if (buffer[i].xmlType == XML_START_ROOM) {
                 state = STATE_ROOM;                
-                awaitingRoom = false;
                 continue;
             } else if ((buffer[i].xmlType == XML_START_NAME) && (state == STATE_ROOM)) {
                 state = STATE_NAME;
@@ -584,10 +538,11 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                                                     continue;
                                                 break;
             case STATE_EXITS:
-//                                                event.exits = cutColours( buffer[i].line );
+                                                event.exits = cutColours( buffer[i].line );
                                                 break;
             case STATE_PROMPT:
                                                 spells_print_mode = false;      /* do not analyze spells anymore */
+                                                printf("XML prompt: %s\r\n", (const char *) cutColours( buffer[i].line ) );
                                                 Engine.set_prompt(cutColours( buffer[i].line ));
                                                 break;
         };
@@ -708,7 +663,6 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
         }
         
         /* recreating this line in buffer */
-        
         memcpy(buf + new_len, buffer[i].line, buffer[i].len);
         new_len += buffer[i].len;
         
