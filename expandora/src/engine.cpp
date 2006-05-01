@@ -126,10 +126,6 @@ void CEngine::tryDir()
                     send_to_user( "--[Pandora: Failed to add new room. Missing exits data!\r\n");                
                     mappingoff();
                     return;
-                } else if (event.terrain == -1) {
-                    send_to_user( "--[Pandora: Failed to add new room. Missing terrain data!\r\n");                
-                    mappingoff();
-                    return;
                 } 
                 send_to_user("--[ Adding new room!\n");
                 
@@ -140,7 +136,6 @@ void CEngine::tryDir()
                 addedroom->id = Map.next_free;
                 addedroom->name = strdup((const char *) event.name);
                 addedroom->desc = strdup((const char *) event.desc);
-                addedroom->refresh_terrain(event.terrain);
                 
                 room->exits[dir] = addedroom->id;
                 addedroom->exits[reversenum(dir)] = room->id;
@@ -231,6 +226,12 @@ void CEngine::parse_event()
     last_terrain = event.terrain;
     
     setMgoto( false );    /* if we get a new room data incoming, mgoto has to go away */
+
+    if (event.name == "") {
+        if (addedroom)
+            addedroom->refresh_terrain(last_terrain);
+        return;            
+    }
 
     if (event.name.indexOf("It is pitch black...") == 0)
         event.blind = true;

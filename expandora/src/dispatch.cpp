@@ -509,11 +509,13 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                 state = STATE_ROOM;
                 continue;
             } else if (buffer[i].xmlType == XML_END_EXITS && state == STATE_EXITS) {
+                SEND_EVENT_TO_ENGINE;
+                awaitingData = false;
                 state = STATE_NORMAL;
                 continue;
             } else if (buffer[i].xmlType == XML_END_PROMPT) {
                 SEND_EVENT_TO_ENGINE;
-                awaitingData = false;
+//                awaitingData = false;
                 state = STATE_NORMAL;
                 continue;
             } 
