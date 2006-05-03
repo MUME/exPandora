@@ -94,8 +94,8 @@ void Cdispatcher::parse_xml(QByteArray tag)
             param = s.right(s.length() - i);        
         }
         
-        printf("XML tag name : ...%s..., params : ...%s..., EndTag %s, endAfterTag %s\r\n", 
-                    (const char *) name,  (const char *) param, ON_OFF(endTag), ON_OFF(endAfterTag) );
+//        printf("XML tag name : ...%s..., params : ...%s..., EndTag %s, endAfterTag %s\r\n", 
+ //                   (const char *) name,  (const char *) param, ON_OFF(endTag), ON_OFF(endAfterTag) );
         
         // now parse the tags !                     
         
@@ -172,7 +172,7 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
 
     /* put back the leftovers */
     if (c.fragment != "") {
-        printf("Adding lost fragment, ...%s...", (const char *) c.fragment);
+//        printf("Adding lost fragment, ...%s...", (const char *) c.fragment);
         line = c.fragment;
     }        
 //    printf("Subchars : ...%s...\r\n", (const char*) c.subchars);
@@ -450,7 +450,7 @@ int Cdispatcher::analyze_mud_stream(ProxySocket &c)
     char *buf;
     
     
-    printf("---------- mud input -----------\r\n");
+//    printf("---------- mud input -----------\r\n");
 //    printf("Buffer size %i\r\n", c.length);
 
     dispatch_buffer(c);

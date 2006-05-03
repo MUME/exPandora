@@ -231,8 +231,8 @@ void CEngine::parse_event()
     
     setMgoto( false );    /* if we get a new room data incoming, mgoto has to go away */
 
-    printf("ANALYZER Event. NAME %s\r\nDESC %s\r\nEXITS %s\r\n", 
-        (const char *) event.name, (const char *) event.desc, (const char *) event.exits);
+//    printf("ANALYZER Event. NAME %s\r\nDESC %s\r\nEXITS %s\r\n", 
+//        (const char *) event.name, (const char *) event.desc, (const char *) event.exits);
 
     if (event.name == "") {
         if (addedroom)
