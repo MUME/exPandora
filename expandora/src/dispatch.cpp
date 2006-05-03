@@ -174,7 +174,7 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
 
     stop = (unsigned char *) (c.buffer + c.length);
     for (s = (unsigned char *) c.buffer;  s != stop; s++) {
-        printf("[ amount %i - m %i, s %i,  s %i, left %i ] \r\n", amount, c.mainState, c.subState, s, stop - s);
+//        printf("[ amount %i - m %i, s %i,  s %i, left %i ] \r\n", amount, c.mainState, c.subState, s, stop - s);
 	switch (c.mainState) {
 	   case NORMAL :
 	                            switch (*s) {
@@ -376,9 +376,10 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
                     if (c.subState == NORMAL) {
                         buffer[amount].type = IS_DATA;
                         buffer[amount].line = line;
+                        printf("Normal telnet finishing line.\r\n");
                     } else {
                         buffer[amount].line = "";
-                        printf("SPLIT detected!\r\n");
+                        printf("Telnet seq SPLIT  detected!\r\n");
                         c.fragment = line;
                     }                                                                                        
                     break;
@@ -707,8 +708,6 @@ int Cdispatcher::analyze_user_stream(ProxySocket &c)
     
     printf("---------- user input -----------\r\n");
     printf("Buffer size %i\r\n", c.length);
-    printf("the buffer. %s\r\n", c.buffer);
-    printf("        MainState %i, subState %i   \r\n", c.mainState, c.subState);
     dispatch_buffer(c);
     
     for (i = 0; i< amount; i++) {
