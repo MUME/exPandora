@@ -4,6 +4,30 @@
 #define PROXY_BUFFER_SIZE 8192
 
 
+#define IAC 255
+#define DONT 254
+#define DO 253
+#define WONT 252
+#define WILL 251
+#define SB 250
+#define TN_GA 249
+#define TN_EL 248
+#define TN_EC 247
+#define TN_AYT 246
+#define TN_AO 245
+#define TN_IP 244
+#define BREAK 243
+#define TN_DM 242
+#define TN_NOP 241
+#define SE 240
+#define TN_EOR 239
+#define TN_ABORT 238
+#define TN_SUSP 237
+#define TN_EOF 236
+#define LAST_TN_CMD 236
+
+
+
 #include <QMutex>
 #include <QThread>
 

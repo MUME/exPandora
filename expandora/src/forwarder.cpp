@@ -66,7 +66,9 @@ int Proxy::init()
         {
             printf("Failed to initialise Windows Sockets.\n");
             exit(1);
-        }
+        } else {
+	    printf("Started windows sockets.\r\n");
+	}	
     #endif
 
     #ifdef DEBUG
@@ -136,6 +138,7 @@ int Proxy::loop(void)
     
     select (max+1 , &input, NULL, &exc, NULL);
         
+    printf("Selected!\r\n");
     if (FD_ISSET(proxy_hangsock, &input)) 
         if (!user.isConnected())
             incomingConnection();
@@ -148,11 +151,15 @@ int Proxy::loop(void)
             /* user stream */
             int size;
             
+            printf("Reading from user\r\n");
             size = user.read();
             if (size > 0) {
+                printf("Parsing ....\r\n");
                 size = dispatcher.analyze_user_stream(user);
-                if (!mudEmulation) 
+                if (!mudEmulation) {
+                    printf("Writing to mud\r\n");
                     mud.write(user.buffer, size);
+                }
             } else {
                 if (WSAGetLastError() == WSAEWOULDBLOCK) 
                     continue;
@@ -166,10 +173,12 @@ int Proxy::loop(void)
         if (FD_ISSET(mud.getSocket(),&input)) {
             int size;
             
-            
+            printf("Reading from mud\r\n");
             size = mud.read();
             if (size>0) {
+                printf("Parsing\r\n");
                 size = dispatcher.analyze_mud_stream(mud);
+                printf("Writing to user\r\n");
                 user.write( mud.buffer, size );               
             } else { 
                 if (WSAGetLastError() == WSAEWOULDBLOCK) 
@@ -209,12 +218,15 @@ void Proxy::sendMudEmulationGreeting()
 
 bool Proxy::connectToMud()
 {
+    printf("Trying to connect to MUD...\r\n");
+
     if (mud.openConnection(conf.get_remote_host(), conf.get_remote_port()) != true) {
         user.send_line( "----[ Pandora: Failed to connect to remote host. See terminal log for details.\r\n");
         return false;
-    } else 
+    } else {
+        printf("Connected!\r\n");
         return true;        
-        
+    }    
 }
 
 
@@ -223,11 +235,12 @@ void Proxy::incomingConnection()
     int newsock, size;
     struct sockaddr_in networkName;
     
+    printf("Incoming connection!\r\n");
     
     newsock = accept(proxy_hangsock, (struct sockaddr *)&networkName, (socklen_t *) &size);
-    if (newsock > 0) {
+    if (newsock != INVALID_SOCKET) {
         user.setConnection( newsock );
-        user.nonblock();                
+//        user.nonblock();                
                 
         if (mudEmulation) 
             sendMudEmulationGreeting();
@@ -237,18 +250,26 @@ void Proxy::incomingConnection()
 
         renderer_window->enable_online_actions();
         Engine.clear(); /* clear event pipes */   
+    } else {
+        printf("Connection to user failed! newsocked is not > 0!\r\n");
     }
 }
 
 
 void Proxy::shutdown()
 {
+    printf("Proxy is shutting down.\r\n");
+
     user.close();
     user.clear();
     if (!mudEmulation) {
         mud.close();
         mud.clear();
     }
+    
+    #ifdef Q_OS_WIN32
+        WSACleanup();
+    #endif
 }
 
 // ----------------------------------  ProxySocket ------------------------------------------
@@ -324,6 +345,7 @@ bool ProxySocket::openConnection(QByteArray name, int port)
     struct sockaddr_in networkName;
     struct hostent *h;
 
+    printf("Trying to resolve %s\r\n", (const char*) name);
     if (!(h = gethostbyname ( (const char*) name) ) ) {
         fprintf(stderr, "Can't resolve host: %s.\n", (const char*) name);
         return false;
@@ -338,6 +360,8 @@ bool ProxySocket::openConnection(QByteArray name, int port)
         printf("Cannot create new socket!\r\n");
         return false;
     }
+    
+    printf("Connecting ....\r\n");
     if (!connect(snew, (struct sockaddr *)&networkName, sizeof(struct sockaddr_in))  )  {
         sock = snew;
     } else {
@@ -345,7 +369,7 @@ bool ProxySocket::openConnection(QByteArray name, int port)
         return false;
     }
 
-    nonblock();                
+//    nonblock();                
 
     return true;
 }

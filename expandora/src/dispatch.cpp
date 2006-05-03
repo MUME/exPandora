@@ -6,7 +6,7 @@
 #include <cstring>
 #include <qregexp.h>
 
-#include <arpa/telnet.h>
+//#include <arpa/telnet.h>
 //#define IAC 255
 
 #include "defines.h"
@@ -329,7 +329,7 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
                                                     c.subState = T_GOTSB;	// there is only one subopt buffer 
                                                     break;
                                                 case IAC:
-                                                case GA:
+                                                case TN_GA:
                                                 default:
                                                     c.subState = T_NORMAL;
                                                     break;
@@ -450,8 +450,8 @@ int Cdispatcher::analyze_mud_stream(ProxySocket &c)
     char *buf;
     
     
-//    printf("---------- mud input -----------\r\n");
-//    printf("Buffer size %i\r\n", c.length);
+    printf("---------- mud input -----------\r\n");
+    printf("Buffer size %i\r\n", c.length);
 
     dispatch_buffer(c);
     
@@ -698,9 +698,6 @@ int Cdispatcher::analyze_user_stream(ProxySocket &c)
             memcpy(commandBuffer, buffer[i].line.constData(), buffer[i].line.length());
             len = buffer[i].line.length();
             commandBuffer[len] = 0;
-            
-            if (len == 0)
-                continue;
         
             result = userland_parser.parse_user_input_line(commandBuffer);
             if (result == USER_PARSE_SKIP) 
