@@ -137,7 +137,8 @@ int Proxy::loop(void)
     select (max+1 , &input, NULL, &exc, NULL);
         
     if (FD_ISSET(proxy_hangsock, &input)) 
-        incomingConnection();
+        if (!user.isConnected())
+            incomingConnection();
                 
     if (user.isConnected()) {
         if (FD_ISSET(user.getSocket(), &exc) || FD_ISSET(mud.getSocket(), &exc))
@@ -148,7 +149,7 @@ int Proxy::loop(void)
             int size;
             
             size = user.read();
-            if (size >= 0) {
+            if (size > 0) {
                 size = dispatcher.analyze_user_stream(user);
                 if (!mudEmulation) 
                     mud.write(user.buffer, size);

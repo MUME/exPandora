@@ -220,12 +220,19 @@ void CEngine::tryAllDirs()
 
 void CEngine::parse_event()
 {
-    last_name = event.name;
-    last_desc = event.desc;
-    last_exits = event.exits;
-    last_terrain = event.terrain;
+    if (event.name != "")
+        last_name = event.name;
+    if (event.desc != "")
+        last_desc = event.desc;
+    if (event.exits != "")
+        last_exits = event.exits;
+    if (event.terrain != -1)
+        last_terrain = event.terrain;
     
     setMgoto( false );    /* if we get a new room data incoming, mgoto has to go away */
+
+    printf("ANALYZER Event. NAME %s\r\nDESC %s\r\nEXITS %s\r\n", 
+        (const char *) event.name, (const char *) event.desc, (const char *) event.exits);
 
     if (event.name == "") {
         if (addedroom)

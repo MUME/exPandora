@@ -1,7 +1,8 @@
 #ifndef FORWARDER_H 
 #define FORWARDER_H 
 
-#define PROXY_BUFFER_SIZE 1024
+#define PROXY_BUFFER_SIZE 8192
+
 
 #include <QMutex>
 #include <QThread>

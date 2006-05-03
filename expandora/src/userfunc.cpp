@@ -325,7 +325,7 @@ int Userland::parse_user_input_line(char *line)
 
   
   p = one_argument(p, arg, 0);
-  printf("One argument : line ..%s..,  arg ...%s...\r\n", p, arg);
+//  printf("One argument : line ..%s..,  arg ...%s...\r\n", p, arg);
     
   for (i=0; user_commands[i].name != NULL; i++) 
     if (strcmp(user_commands[i].name, arg) == 0) {

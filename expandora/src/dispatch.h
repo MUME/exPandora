@@ -5,6 +5,7 @@
 #include <vector>
 #include <QString>
 #include "forwarder.h"
+#include "engine.h"
 
 using namespace std;
 
@@ -23,6 +24,9 @@ class Cdispatcher
     
     int       xmlState;          /* desc shall be incoming - just got roomname */
     int       mbrief_state;
+    bool     awaitingData;
+    Event  event;
+
     enum dispatcherStates { STATE_NORMAL = 0, 
                                                STATE_ROOM, 
                                                STATE_DESC, 

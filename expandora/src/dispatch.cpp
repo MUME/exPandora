@@ -30,6 +30,10 @@ class Cdispatcher dispatcher;
 
 Cdispatcher::Cdispatcher() 
 {
+    xmlState = STATE_NORMAL;
+    mbrief_state = STATE_NORMAL;
+    awaitingData = false;
+    event.clear();
 }
 
 /**
@@ -89,6 +93,7 @@ void Cdispatcher::parse_xml(QByteArray tag)
             name = s.left(i);
             param = s.right(s.length() - i);        
         }
+        
         printf("XML tag name : ...%s..., params : ...%s..., EndTag %s, endAfterTag %s\r\n", 
                     (const char *) name,  (const char *) param, ON_OFF(endTag), ON_OFF(endAfterTag) );
         
@@ -167,10 +172,10 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
 
     /* put back the leftovers */
     if (c.fragment != "") {
-        printf("Adding lost fragment!\r\n");
+        printf("Adding lost fragment, ...%s...", (const char *) c.fragment);
         line = c.fragment;
-        amount++;
     }        
+//    printf("Subchars : ...%s...\r\n", (const char*) c.subchars);
 
     stop = (unsigned char *) (c.buffer + c.length);
     for (s = (unsigned char *) c.buffer;  s != stop; s++) {
@@ -204,8 +209,10 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
                                                                 }
                                                                 c.subchars.append('<');
                                                                 c.mainState = XML;
+                                                                continue;
+                                                            } else {
+                                                                break;
                                                             }
-                                                            continue;
                                                                                                       
                                         case '&'      :
                                                             if (c.isXmlMode()) {
@@ -365,21 +372,21 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
                 case STUFFING:
                     buffer[amount].type = IS_NORMAL;
                     buffer[amount].line = line;
-                    printf("Normal finishing line: %s\r\n", (const char *) line);
+//                    printf("Normal finishing line: %s\r\n", (const char *) line);
                     break;
                 case XML:
                     buffer[amount].type = IS_NORMAL;
                     buffer[amount].line = line;
-                    printf("** XML split detected, subchars saved for futher proceeding. Saved line : %s\r\n", (const char *) line);
+//                    printf("** XML split detected, subchars saved for futher proceeding. Saved line : %s\r\n", (const char *) line);
                     break;
                 case TELNET:
                     if (c.subState == NORMAL) {
                         buffer[amount].type = IS_DATA;
                         buffer[amount].line = line;
-                        printf("Normal telnet finishing line.\r\n");
+//                        printf("Normal telnet finishing line.\r\n");
                     } else {
                         buffer[amount].line = "";
-                        printf("Telnet seq SPLIT  detected!\r\n");
+//                        printf("Telnet seq SPLIT  detected!\r\n");
                         c.fragment = line;
                     }                                                                                        
                     break;
@@ -387,11 +394,11 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
         amount++;
     } 
     
-    printf("Dispatched buffer:\r\n");
+/*    printf("Dispatched buffer:\r\n");
     for (int i = 0; i < amount; i++) 
         printf("Line type: %i, line len %i,  Line: %s\r\n", buffer[i].type, buffer[i].line.length(), 
                         (const char *) buffer[i].line);
-    
+ */   
 }
 
 QByteArray Cdispatcher::cutColours(QByteArray line)
@@ -428,6 +435,7 @@ QByteArray Cdispatcher::cutColours(QByteArray line)
 #define SEND_EVENT_TO_ENGINE \
                     {   \
                     printf("SENDING event to analyzer!\r\n");   \
+                    awaitingData = false;               \
                     Engine.add_event(event);                            \
                     event.clear();                  \
                     notify_analyzer();      \
@@ -438,21 +446,13 @@ QByteArray Cdispatcher::cutColours(QByteArray line)
 int Cdispatcher::analyze_mud_stream(ProxySocket &c) 
 {
     int i;
-    bool awaitingData;
     int new_len;
     char *buf;
     
     
-    Event event;
-    
-    xmlState = STATE_NORMAL;
-    mbrief_state = STATE_NORMAL;
-    awaitingData = false;
-    
     printf("---------- mud input -----------\r\n");
-        
-        
-    printf("Buffer size %i\r\n", c.length);
+//    printf("Buffer size %i\r\n", c.length);
+
     dispatch_buffer(c);
     
     buf = c.buffer;
@@ -498,19 +498,28 @@ int Cdispatcher::analyze_mud_stream(ProxySocket &c)
                 xmlState = STATE_NORMAL;
                 continue;
             } else if (buffer[i].xmlType == XML_END_NAME && xmlState == STATE_NAME) {
+                event.name = cutColours(event.name);
                 xmlState = STATE_ROOM;
                 continue;
             } else if (buffer[i].xmlType == XML_END_DESC && xmlState == STATE_DESC) {
+                event.desc.replace("\r\n", "|");
+                event.desc = cutColours(event.desc);
                 xmlState = STATE_ROOM;
                 continue;
             } else if (buffer[i].xmlType == XML_END_EXITS && xmlState == STATE_EXITS) {
-                SEND_EVENT_TO_ENGINE;
-                awaitingData = false;
                 xmlState = STATE_NORMAL;
+                awaitingData = false;
+                event.exits = cutColours(event.exits);
+                if (event.exits.indexOf("Exits: ") == -1)
+                    continue;
+                event.exits.replace("Exits: ", "");
+                SEND_EVENT_TO_ENGINE;
                 continue;
             } else if (buffer[i].xmlType == XML_END_PROMPT) {
+                event.prompt = cutColours(event.prompt);
+                Engine.set_prompt(event.prompt);
+                event.terrain = parse_terrain(event.prompt);
                 SEND_EVENT_TO_ENGINE;
-//                awaitingData = false;
                 xmlState = STATE_NORMAL;
                 continue;
             } 
@@ -520,27 +529,19 @@ int Cdispatcher::analyze_mud_stream(ProxySocket &c)
         
         switch (xmlState) {
             case STATE_NAME : 
-                                                event.name = cutColours( buffer[i].line );
+                                                event.name.append(buffer[i].line);
                                                 break;
             case STATE_DESC :
-                                                event.desc.append( cutColours(buffer[i].line) + "|");        
+                                                event.desc.append(buffer[i].line);
                                                 if (conf.get_brief_mode())
                                                     continue;
                                                 break;
             case STATE_EXITS:
-                                                event.exits = cutColours( buffer[i].line );
-                                                int index = event.exits.indexOf("Exits: ");
-                                                if (index == -1) {
-                                                    break;
-                                                }
-                                                event.exits.replace("Exits: ", "");
-                                                printf("XML exits data: %s\r\n", (const char *) event.exits);
+                                                event.exits.append(buffer[i].line);
                                                 break;
             case STATE_PROMPT:
+                                                event.prompt.append(buffer[i].line);
                                                 spells_print_mode = false;      // do not analyze spells anymore 
-                                                printf("XML prompt: %s\r\n", (const char *) cutColours( buffer[i].line ) );
-                                                Engine.set_prompt(cutColours( buffer[i].line ));
-                                                event.terrain = parse_terrain(cutColours( buffer[i].line ));
                                                 break;
         };
         
@@ -548,11 +549,11 @@ int Cdispatcher::analyze_mud_stream(ProxySocket &c)
         if (mbrief_state == STATE_DESC && conf.get_brief_mode()) 
             continue;
         
-        if (buffer[i].type == IS_NORMAL) {
+        if (buffer[i].type == IS_NORMAL && buffer[i].line.indexOf("\r\n") != -1) {
             QByteArray a_line = cutColours( buffer[i].line );          
           
             if (!c.isXmlMode()) {
-                if (a_line == "Reconnecting." || a_line =="Never forget! Try to role-play...") {
+                if (a_line == "Reconnecting." || a_line =="Never forget! Try to role-play..." || a_line == "<xml>") {
                     printf( "XML MODE IS NOW ON!\r\n");
                     c.setXmlMode( true );
                 }
@@ -656,10 +657,70 @@ int Cdispatcher::analyze_mud_stream(ProxySocket &c)
         new_len += buffer[i].line.length();
     }
   
-    printf("New length: %i\r\n", new_len);
+//    printf("New length: %i\r\n", new_len);
     return new_len;
 }
 
+
+/* ======================= USER LAND ============================ */
+
+
+/* new user input analyzer */
+int Cdispatcher::analyze_user_stream(ProxySocket &c) 
+{
+    int i, result;
+    int new_len, len;
+    char *buf;
+    
+    buf = c.buffer;
+    new_len = 0;
+    
+
+//    printf("---------- user input -----------\r\n");
+//    printf("Buffer size %i\r\n", c.length);
+
+    dispatch_buffer(c);
+    
+    for (i = 0; i< amount; i++) {
+        if (buffer[i].type == IS_NORMAL) {
+            
+            if (buffer[i].line.indexOf('\n') == -1) {
+                if (i != (amount -1)) 
+                    printf("NOT LAST LINE HAD NO ENDING !\r\n, MIGHT BE A BUG!\r\n");
+                // the input line got splitted somehow 
+//                printf("Adding fragment of the line to connection\r\n");
+                c.fragment = buffer[i].line;
+                continue;
+            }
+                
+            buffer[i].line.replace("\r", "");
+            buffer[i].line.replace("\n", "");
+            memcpy(commandBuffer, buffer[i].line.constData(), buffer[i].line.length());
+            len = buffer[i].line.length();
+            commandBuffer[len] = 0;
+            
+            if (len == 0)
+                continue;
+        
+            result = userland_parser.parse_user_input_line(commandBuffer);
+            if (result == USER_PARSE_SKIP) 
+                continue;
+               
+            strcat(commandBuffer, "\r\n");
+               
+            memcpy(buf + new_len, commandBuffer, strlen(commandBuffer));
+            new_len += strlen(commandBuffer);
+        } else {
+            // No parsing, just put the line in buffer. recreating this line in buffer 
+            memcpy(buf + new_len, buffer[i].line, buffer[i].line.length());
+            new_len += buffer[i].line.length();
+        }
+    }
+        
+//    printf("Resulting buffer length: %i\r\n", new_len);
+        
+    return new_len;
+}
 
 char Cdispatcher::parse_terrain(QByteArray prompt)
 {
@@ -693,51 +754,3 @@ QByteArray Cdispatcher::get_colour(QByteArray str)
     return s;
 }
 
-/* ======================= USER LAND ============================ */
-
-
-/* new user input analyzer */
-int Cdispatcher::analyze_user_stream(ProxySocket &c) 
-{
-    int i, result;
-    int new_len, len;
-    char *buf;
-    
-    buf = c.buffer;
-    new_len = 0;
-    
-    printf("---------- user input -----------\r\n");
-    printf("Buffer size %i\r\n", c.length);
-    dispatch_buffer(c);
-    
-    for (i = 0; i< amount; i++) {
-        if (buffer[i].type == IS_NORMAL) {
-            memcpy(commandBuffer, buffer[i].line.constData(), buffer[i].line.length());
-            len = buffer[i].line.length();
-            commandBuffer[len] = 0;
-            printf("Parsing this line: %s\r\n", commandBuffer);
-            
-            if (len == 0)
-                continue;
-        
-            // cut away the trailing newline 
-            for (; commandBuffer[len-1] == '\n'; len--)
-                commandBuffer[len] = 0;                        
-        
-            result = userland_parser.parse_user_input_line(commandBuffer);
-            if (result == USER_PARSE_SKIP) 
-                continue;
-               
-            memcpy(buf + new_len, commandBuffer, strlen(commandBuffer));
-            new_len += strlen(commandBuffer);
-        } else {
-            // No parsing, just put the line in buffer. recreating this line in buffer 
-            memcpy(buf + new_len, buffer[i].line, buffer[i].line.length());
-            new_len += buffer[i].line.length();
-        }
-    }
-        
-    printf("Resulting buffer length: %i\r\n", new_len);
-        
-    return new_len;
-}

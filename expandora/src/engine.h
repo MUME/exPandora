@@ -18,6 +18,7 @@ class Event   {
             exits = other.exits;
             blind = other.blind;
             terrain = other.terrain;
+            prompt = other.prompt;
         }
 
         Event &operator=(const Event &other) 
@@ -29,6 +30,7 @@ class Event   {
                 exits = other.exits;
                 blind = other.blind;
                 terrain = other.terrain;
+                prompt = other.prompt;
             }
             return *this;    // Return ref for multiple assignment            
         }
@@ -38,6 +40,7 @@ class Event   {
             name = "";
             desc = "";
             exits = "";
+            prompt = "";
             blind = false;
             terrain = -1;
         }
@@ -48,6 +51,7 @@ class Event   {
         QByteArray exits;
         bool             blind;         /* fog, no light, blind flag */
         char             terrain;
+        QByteArray prompt;
 };
 
 class CEngine {
