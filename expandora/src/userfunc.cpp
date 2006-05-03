@@ -276,14 +276,6 @@ const struct user_command_type user_commands[] = {
     "    Usage: mrefresh \r\n\r\n"
     "    Uses last seen roomdesc and all other information (e.g terrain flags).\r\n"
     "Use together with mgoto.\r\n"},
-  {"mtreestats",              usercmd_mtreestats,        0,      0,
-    "Print tree search engine statistics.",
-    "    Usage: mtreestats \r\n\r\n"
-    "   Prints tree statistics in terminal window.\r\n"},
-  {"mquit",              usercmd_mquit,        0,      0,
-    "[DEBUG] quits the analyzer. halts the link etc.",
-    "    Usage: mquit \r\n\r\n"
-    "   Just zaps the link and quits all threads.\r\n"},
 
   {NULL, NULL, 0, 0, NULL, NULL}
 };
@@ -333,7 +325,7 @@ int Userland::parse_user_input_line(char *line)
 
   
   p = one_argument(p, arg, 0);
-    
+  printf("One argument : line ..%s..,  arg ...%s...\r\n", p, arg);
     
   for (i=0; user_commands[i].name != NULL; i++) 
     if (strcmp(user_commands[i].name, arg) == 0) {
@@ -360,7 +352,7 @@ int Userland::parse_user_input_line(char *line)
       return result;
     }
   
-  if (mud_emulation) {
+  if (proxy.isMudEmulation()) {
     send_to_user("Arglebargle...No such command\r\n");
     send_to_user( (const char *) Engine.get_prompt());
     return USER_PARSE_SKIP;
@@ -435,7 +427,7 @@ USERCMD(usercmd_maddroom)
 {
   CRoom *r;
 
-  if (mud_emulation) {
+  if (proxy.isMudEmulation()) {
     send_to_user("Disabled in MUD emulation.\r\n");
     send_to_user( (const char *) Engine.get_prompt());
     return USER_PARSE_SKIP;
@@ -1099,7 +1091,7 @@ USERCMD(usercmd_mhelp)
       {
         send_to_user("---[Help file : %s.\r\n", user_commands[i].name);
         
-        send_line_to_user((char *)user_commands[i].help);
+        proxy.send_line_to_user((char *)user_commands[i].help);
         
         send_to_user("\r\n");
         
@@ -1510,7 +1502,7 @@ USERCMD(usercmd_move)
   /*firstly - send the command futher to mud, as if it matches */
   /* used commands - it wont be automatically send futher */
   
-  if (mud_emulation) {
+  if (proxy.isMudEmulation()) {
     r = stacker.first();
 
     dir = -1;
@@ -1582,15 +1574,3 @@ USERCMD(usercmd_move)
 }
 
 
-USERCMD(usercmd_mquit)
-{
-  userfunc_print_debug;
-  skip_spaces(line);
-
-  proxy_shutdown();
-  
-  exit(1);    
-  
-    
-  return USER_PARSE_NONE;
-}

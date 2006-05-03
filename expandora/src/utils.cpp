@@ -310,9 +310,9 @@ size_t write_to_channel(int mode, const char *format, va_list args)
 
   size = vsnprintf(txt, sizeof(txt), format, args);
   if (mode == 0)
-    send_line_to_user(txt);
+    proxy.send_line_to_user(txt);
   else if (mode == 1)
-    send_line_to_mud(txt);
+    proxy.send_line_to_mud(txt);
   
   return size;
 }

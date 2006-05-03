@@ -37,8 +37,6 @@ USERCMD(usercmd_maction);
 USERCMD(usercmd_mdebug);
 USERCMD(usercmd_mdelete);
 USERCMD(usercmd_mrefresh);
-USERCMD(usercmd_mtreestats);
-USERCMD(usercmd_mquit);
 USERCMD(usercmd_maddroom);
 
 

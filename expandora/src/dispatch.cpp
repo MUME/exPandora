@@ -38,7 +38,6 @@ Cdispatcher::Cdispatcher()
 void Cdispatcher::parse_xml(QByteArray tag) 
 {
         /* types without parameters here */
-        /*
         struct {
             char    *name;
             int        startType;
@@ -55,93 +54,74 @@ void Cdispatcher::parse_xml(QByteArray tag)
         
         int p;
         int i;
-        char    name[MAX_STR_LEN];
-        char    params[MAX_STR_LEN];
+        QByteArray name, param;
         bool    endTag = false;
         bool    endAfterTag = false;
         int       endType = -1;
         int       startType = -1;
+        QByteArray s;
+                            
+        s = tag.simplified();                            
                     
-        name[0] = 0;
-        params[0] = 0;
+        name.clear();
+        param.clear();
         
-        p = o_pos+1;
-        if (o_buf[p] == '/') {
+        p = 1;
+        if (s.startsWith("</")) {
             endTag = true;
-            p++;
-        }
-        
-        // get tags name 
-        i = 0;
-        while (p < o_len && o_buf[p] != '>' && o_buf[p] != ' ' && o_buf[p] != '/') {
-            name[i++] = o_buf[p];
-            p++;
-        }        
-        name[i] = 0;
-        
-        if (o_buf[p] == ' ') {
-            // params are coming 
-            i = 0;
-            while (p < o_len && o_buf[p] != '>' && o_buf[p] != '/') {
-                params[i++] = o_buf[p];
-                p++;
-            }        
-            params[i] = 0;
-        }
-        
-//        printf("params: ..%s.. ", params);
-        
-        if (o_buf[p] == '/') {
+            p = 2;
+        }    
+        s = s.right ( s.length() - p);  // cut left 1-2 chars, depending of < or </ 
+            
+        p = 1;
+        if (s.endsWith("/>")) {
             endAfterTag = true;
-            p++;
+            p = 2;
+        }    
+        s = s.left ( s.length() - p);  // cut right 1-2 chars, depending of < or </ 
+            
+        // Look for arguments
+        i = s.indexOf(" ");
+        if (i == -1)  {
+            // no arguments
+            name = s;
+        } else {
+            name = s.left(i);
+            param = s.right(s.length() - i);        
         }
-        
-        if (o_buf[p] != '>') {
-            printf("Fault in XML parsing !\r\n");
-            while (p < o_len && o_buf[p] != '>')  {
-                printf("%c", o_buf[p]);
-                p++;
-            }        
-            params[0] = 0;
-            printf("\r\n");
-        }
-                
-        // we are done with moving around the original buffer 
-        o_pos = p+1;
-//        printf("new o_pos %i, next char %c\r\n", o_pos, o_buf[o_pos]);        
+        printf("XML tag name : ...%s..., params : ...%s..., EndTag %s, endAfterTag %s\r\n", 
+                    (const char *) name,  (const char *) param, ON_OFF(endTag), ON_OFF(endAfterTag) );
         
         // now parse the tags !                     
         
         // hard tags first 
-        if (strcmp(name, "movement") == 0) {
+        if (name == "movement") {
   //          printf("XML TAG: %s\r\n", TagTypes[p].name);
             startType = XML_START_MOVEMENT;
             endType = XML_END_MOVEMENT;
             
-            // parse parameters 
-            if (strlen(params) != 0) {
-                QByteArray param = params;
+            if (param != "") {
                 int index = param.indexOf("dir=");
                 index += 4;
                 switch (param[index]) {
-                    case 'n' :    strcpy(params, "north");
+                    case 'n' :    param = "north";
                                         break;
-                    case 'e' :    strcpy(params, "east");
+                    case 'e' :    param = "east";
                                         break;
-                    case 's' :    strcpy(params, "south");
+                    case 's' :    param = "south";
                                         break;
-                    case 'w' :    strcpy(params, "west");
+                    case 'w' :    param = "west";
                                         break;
-                    case 'u' :    strcpy(params, "up");
+                    case 'u' :    param = "up";
                                         break;
-                    case 'd' :    strcpy(params, "down");
+                    case 'd' :    param = "down";
                                         break;
                 }
             }
         } else {
             // the easy ones 
             for (p = 0; TagTypes[p].startType != -1; p++) {
-                if (strcmp(TagTypes[p].name, name) == 0) {
+                if (name == TagTypes[p].name) {
 //                    printf("XML TAG: %s\r\n", TagTypes[p].name);
                     startType = TagTypes[p].startType;
                     endType = TagTypes[p].endType;
@@ -149,16 +129,20 @@ void Cdispatcher::parse_xml(QByteArray tag)
             }
         }
         
-        buffer[amount].line = params;
+        buffer[amount].line = param;
+        buffer[amount].type = IS_XML;
         if (endTag)
-            buffer[amount].type = endType;
+            buffer[amount].xmlType = endType;
         else    
-            buffer[amount].type = startType;
+            buffer[amount].xmlType = startType;
         amount++;
         
-        if (endAfterTag) 
-            buffer[amount++].type = endType;
-*/        
+        if (endAfterTag) {
+            buffer[amount].line.clear();
+            buffer[amount].type = IS_XML;
+            buffer[amount].xmlType = endType;
+            amount++;
+        }    
 }
     
     
@@ -190,12 +174,13 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
 
     stop = (unsigned char *) (c.buffer + c.length);
     for (s = (unsigned char *) c.buffer;  s != stop; s++) {
-        printf("[ amount %i - m %i, s %i,  s %i, left %i ] ", amount, c.mainState, c.subState, s, stop - s);
+        printf("[ amount %i - m %i, s %i,  s %i, left %i ] \r\n", amount, c.mainState, c.subState, s, stop - s);
 	switch (c.mainState) {
 	   case NORMAL :
 	                            switch (*s) {
 	                               case IAC:
                                                             if (line != "") {
+                                                                buffer[amount].type = IS_NORMAL;
                                                                 buffer[amount++].line = line;
                                                                 line.clear();
                                                             }
@@ -204,15 +189,16 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
                                                             break;                                                                
 	                                       
                                         case 0x0a :  // LF 
-                                                            printf("Appending %i : %c [newline] \r\n", s, *s);
+//                                                            printf("Appending %i : %c [newline] \r\n", s, *s);
                                                             line.append(*s);
-                                                            buffer[amount++].line = line;
                                                             buffer[amount].type = IS_NORMAL;
+                                                            buffer[amount++].line = line;
                                                             line.clear();
                                                             continue;
                                       case '<'      :  // turns XML tag mode on 
                                                             if (c.isXmlMode()) {
                                                                 if (line != "") {
+                                                                    buffer[amount].type = IS_NORMAL;
                                                                     buffer[amount++].line = line;
                                                                     line.clear();
                                                                 }
@@ -248,7 +234,7 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
            
            
            case STUFFING :
-                                        printf("STUFFING state %i, char : %c, subchars %s \r\n", c.subState, *s, (const char *) c.subchars );
+//                                        printf("STUFFING state %i, char : %c, subchars %s \r\n", c.subState, *s, (const char *) c.subchars );
                                         switch (c.subState) {
                                             case                AMP:
                                                                         switch (*s) {
@@ -315,8 +301,8 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
                                 switch (c.subState) {
                                     case T_NORMAL:
                                         if (line != "") {
+                                            buffer[amount].type = IS_DATA;
                                             buffer[amount++].line = line;
-                                            buffer[amount].type = IS_NORMAL;
                                             line.clear();
                                         }
                                         s--;        // return to the same char we are standing at, but in proper mode
@@ -325,7 +311,6 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
                                         continue;
                                         
                                     case T_GOTIAC:
-                                        buffer[amount].type = IS_DATA;
                                         switch (*s) {
                                                 case WILL:
                                                 case WONT:
@@ -368,18 +353,44 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
                                     
                                     break;                        	                           
         }	
-        printf("Appending %i : %c\r\n", s, *s);
+//        printf("Appending %i : %c\r\n", s, *s);
         line.append(*s);
     }
     
-    printf("Amount : %i.\r\n", amount);
-    buffer[amount++].line = line;
-    
-    for (int i = 0; i < amount; i++) 
-        printf("Line: %s", (const char *) buffer[i].line);
-    
     c.fragment.clear();
-    c.subchars.clear();
+//  printf("Amount : %i.\r\n", amount);
+    if (line != "") {
+        switch (c.mainState) {
+                case NORMAL:
+                case STUFFING:
+                    buffer[amount].type = IS_NORMAL;
+                    buffer[amount].line = line;
+                    printf("Normal finishing line: %s\r\n", (const char *) line);
+                    break;
+                case XML:
+                    buffer[amount].type = IS_NORMAL;
+                    buffer[amount].line = line;
+                    printf("** XML split detected, subchars saved for futher proceeding. Saved line : %s\r\n", (const char *) line);
+                    break;
+                case TELNET:
+                    if (c.subState == NORMAL) {
+                        buffer[amount].type = IS_DATA;
+                        buffer[amount].line = line;
+                    } else {
+                        buffer[amount].line = "";
+                        printf("SPLIT detected!\r\n");
+                        c.fragment = line;
+                    }                                                                                        
+                    break;
+        }
+        amount++;
+    } 
+    
+    printf("Dispatched buffer:\r\n");
+    for (int i = 0; i < amount; i++) 
+        printf("Line type: %i, line len %i,  Line: %s\r\n", buffer[i].type, buffer[i].line.length(), 
+                        (const char *) buffer[i].line);
+    
 }
 
 QByteArray Cdispatcher::cutColours(QByteArray line)
@@ -688,7 +699,7 @@ QByteArray Cdispatcher::get_colour(QByteArray str)
 int Cdispatcher::analyze_user_stream(ProxySocket &c) 
 {
     int i, result;
-    int new_len;
+    int new_len, len;
     char *buf;
     
     buf = c.buffer;
@@ -702,14 +713,29 @@ int Cdispatcher::analyze_user_stream(ProxySocket &c)
     
     for (i = 0; i< amount; i++) {
         if (buffer[i].type == IS_NORMAL) {
-            result = userland_parser.parse_user_input_line(buffer[i].line);
+            memcpy(commandBuffer, buffer[i].line.constData(), buffer[i].line.length());
+            len = buffer[i].line.length();
+            commandBuffer[len] = 0;
+            printf("Parsing this line: %s\r\n", commandBuffer);
+            
+            if (len == 0)
+                continue;
+        
+            // cut away the trailing newline 
+            for (; commandBuffer[len-1] == '\n'; len--)
+                commandBuffer[len] = 0;                        
+        
+            result = userland_parser.parse_user_input_line(commandBuffer);
             if (result == USER_PARSE_SKIP) 
                 continue;
+               
+            memcpy(buf + new_len, commandBuffer, strlen(commandBuffer));
+            new_len += strlen(commandBuffer);
+        } else {
+            // No parsing, just put the line in buffer. recreating this line in buffer 
+            memcpy(buf + new_len, buffer[i].line, buffer[i].line.length());
+            new_len += buffer[i].line.length();
         }
-            
-        // recreating this line in buffer 
-        memcpy(buf + new_len, buffer[i].line, buffer[i].line.length());
-        new_len += buffer[i].line.length();
     }
         
     printf("Resulting buffer length: %i\r\n", new_len);

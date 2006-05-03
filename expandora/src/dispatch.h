@@ -19,6 +19,7 @@ class Cdispatcher
 {
     struct Tincoming_lines buffer[1024];
     int amount;
+    char    commandBuffer[MAX_DATA_LEN];
     
     int       xmlState;          /* desc shall be incoming - just got roomname */
     int       mbrief_state;
