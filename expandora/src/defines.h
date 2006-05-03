@@ -14,8 +14,6 @@
 #define BASE_Z  -12	/* the distance to the "camera" */
 #define ROOM_SIZE 0.4f	/* the size of the rooms walls */
 
-#define PROXY_BUFFER_SIZE 4096
-
 #define NORTH           0         
 #define EAST            1
 #define SOUTH           2         
@@ -30,8 +28,6 @@
 
 /* global flags */
 extern int glredraw;		/* redraw is needed */
-extern int glquit;			/* quiting ... */
-extern int mud_emulation;          /* we are in emulation mode */
 
 void toggle_renderer_reaction();
 void notify_analyzer();

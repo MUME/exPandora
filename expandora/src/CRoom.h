@@ -77,6 +77,8 @@ public:
     void refresh_terrain(char terrain);
     void refresh_note(QByteArray note);
     void refresh_door(char dir, QByteArray door);
+    
+    char dirbynum(int dir);
 };
 
 #endif

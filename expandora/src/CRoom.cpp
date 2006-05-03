@@ -12,6 +12,7 @@
 #include <QByteArray>
 #include <QString>
 
+#include "forwarder.h"
 #include "CRoom.h"
 #include "Map.h"
 #include "configurator.h"
@@ -175,6 +176,34 @@ void CRoom::remove_door(int dir)
   modified();
 }
 
+char CRoom::dirbynum(int dir)
+{
+  switch (dir) {
+	case  NORTH : 
+                return 'n';
+		break;
+	case  SOUTH :
+                return 's';
+		break;
+	case  EAST :
+                return 'e';
+		break;
+	case  WEST :
+                return 'w';
+		break;
+	case  UP :
+                return 'u';
+		break;
+	case  DOWN :
+                return 'd';
+		break;
+  }
+
+
+  return -1;
+}
+
+
 void CRoom::setx(int nx)
 {
   x = nx;
@@ -208,7 +237,7 @@ void CRoom::send_room()
 
     line[0] = 0;
     pos = 0;
-    if (!(mud_emulation && conf.get_brief_mode() ) ) {
+    if (!(proxy.isMudEmulation() && conf.get_brief_mode() ) ) {
       for (i = 0; i <= strlen(desc); i++)
 	if (desc[i] == '|') {
 	    line[pos] = 0;
@@ -232,7 +261,7 @@ void CRoom::send_room()
     send_to_user("%s\r\n", line);
 
     
-    if (conf.get_brief_mode() && mud_emulation) {
+    if (conf.get_brief_mode() && proxy.isMudEmulation()) {
       sprintf(line, "Exits: ");
       for (i = 0; i <= 5; i++)
           if (exits[i] > 0) {

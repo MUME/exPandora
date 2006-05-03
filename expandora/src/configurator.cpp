@@ -278,7 +278,8 @@ int Cconfigurator::load_texture(struct room_sectors_data *p)
 
     glGenTextures(1, &p->texture);
     print_debug(DEBUG_RENDERER, "loading texture %s", (const char *) p->filename);
-    
+    if (p->filename == "")
+        return -1;
     if (!buf1.load( p->filename )) {
         printf("Failed to load the %s!\r\n", (const char *) p->filename);
         return -1;
@@ -470,7 +471,7 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         
         s = attributes.value("port");
         conf.set_local_port(s.toInt() );
-        printf("Using local port %i. \r\n", conf.get_local_port() );
+//        printf("Using local port %i. \r\n", conf.get_local_port() );
 
         return TRUE;
     } else if (qName == "remotehost") {
@@ -484,8 +485,8 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         
         s = attributes.value("port");
         conf.set_remote_port(s.toInt() );
-        printf("Using remote host %s:%i\r\n", (const char *)conf.get_remote_host(), 
-                                            conf.get_remote_port() );
+//        printf("Using remote host %s:%i\r\n", (const char *)conf.get_remote_host(), 
+//                                            conf.get_remote_port() );
 
         return TRUE;
     } else if (qName == "basefile") {
@@ -496,7 +497,7 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         
         s = attributes.value("filename");
         conf.set_base_file(s.toAscii() );
-        printf("Using the database file: %s\r\n", qPrintable(s) );
+//        printf("Using the database file: %s\r\n", qPrintable(s) );
         
         return TRUE;
     } else if (qName == "GLvisibility") {
@@ -563,7 +564,7 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         
         s = attributes.value("briefmode");
         s = s.toLower();
-        printf("The brief mode setting : %s\r\n", qPrintable(s) );
+//        printf("The brief mode setting : %s\r\n", qPrintable(s) );
         if (s == "on") 
             conf.set_brief_mode(true);
         else 

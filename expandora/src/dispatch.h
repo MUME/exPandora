@@ -4,37 +4,23 @@
 
 #include <vector>
 #include <QString>
+#include "forwarder.h"
+
 using namespace std;
 
-#define IS_PROMPT       1
-#define IS_CRLF         2
-#define IS_LFCR         3
-#define IS_LF           4       /* only linefeed lines */
-#define IS_SPLIT        5
-#define IS_SKIP         6       
-#define IS_TELNET       7       /* telnet protocol commands */
-#define IS_NONE         8       /* is not an ascii line */
-#define IS_XML          9
-
 struct Tincoming_lines {
-    char line[MAX_DATA_LEN];
-    unsigned short int  type;
-    short                        xmlType;
-    unsigned short int  len;
+    QByteArray              line;
+    unsigned short int   type;
+    unsigned short int   xmlType;
 };
 
 
 class Cdispatcher
 {
-    char *o_buf;
-    int o_len;
-    int o_pos;
-	
-    struct Tincoming_lines buffer[600];
+    struct Tincoming_lines buffer[1024];
     int amount;
     
-    bool    xmlMode;
-    int       state;          /* desc shall be incoming - just got roomname */
+    int       xmlState;          /* desc shall be incoming - just got roomname */
     int       mbrief_state;
     enum dispatcherStates { STATE_NORMAL = 0, 
                                                STATE_ROOM, 
@@ -45,7 +31,15 @@ class Cdispatcher
     
     bool spells_print_mode; /* After "Affected by:" until next prompt */
 	
-    enum XmlTypes { XML_START_ROOM = 1, 
+    enum LineTypes {IS_NORMAL    = 0,
+                                   IS_XML,
+                                   IS_SKIP,
+                                   IS_DATA,
+                                   IS_PROMPT,
+                                   };
+
+    enum XmlTypes {
+                                   XML_START_ROOM = 1, 
                                    XML_START_NAME = 2, 
                                    XML_START_DESC = 3,  
                                    XML_START_PROMPT = 4, 
@@ -59,42 +53,63 @@ class Cdispatcher
                                    XML_END_EXITS = 15, 
                                    XML_END_MOVEMENT = 16, 
                                    XML_END_TERRAIN = 17
-                                   };
+                                 };
 
-    enum telnetStates {T_NORMAL, 
-                                       T_ALTNORMAL, 
-                                       T_GOT_N, 
-                                       T_GOT_R, 
-                                       T_GOTIAC, 
-                                       T_GOTWILL, 
-                                       T_GOTWONT, 
-                                       T_GOTDO, 
-                                       T_GOTDONT, 
-                                       T_GOTSB, 
-                                       T_GOTSBIAC,
-                                       T_SKIP};
-
-    int telnetSeqLength();
-    int process_message(char *buf, int len);
+    enum MainStates {
+        NORMAL = 0,
+        XML, 
+        TELNET,
+        STUFFING
+    };
     
+    
+    
+    enum SubStatesNormal {
+        CR,
+        LF,
+    };
+    
+    enum StuffingStates {
+        AMP,
+        G,
+        L,
+        A,
+        A_M,
+        Q,
+        Q_U,
+        Q_U_O,
+        LASTCHAR
+     };
+     
+     
+     enum SubStatesTelnet {
+        T_NORMAL, 
+        T_GOTIAC, 
+        T_GOTWILL, 
+        T_GOTWONT, 
+        T_GOTDO, 
+        T_GOTDONT, 
+        T_GOTSB, 
+        T_GOTSBIAC,
+        T_SKIP,
+     };
+
     char parse_terrain(QByteArray prompt);
 
 
-    void parse_xml();
+    void parse_xml(QByteArray tag);
 public:
-    void  analyze_mud_stream(char *buf, int *n);
-    void analyze_user_stream(char *buf, int *n);
-    QByteArray cutColours(char *line);
+    
+    int  analyze_mud_stream(ProxySocket &c);
+    int  analyze_user_stream(ProxySocket &c);
+    
+    QByteArray cutColours(QByteArray line);
     QByteArray get_colour(QByteArray str);      
     QByteArray get_colour_name(QByteArray str);
 
-    void dispatch_buffer(bool Xml); 
-    
-    void setXmlMode(bool b)     {xmlMode = b; }
-    bool getXmlMode()               { return xmlMode; }
+    void  dispatch_buffer(ProxySocket &c);
 
     
-	
     Cdispatcher();
 };
 

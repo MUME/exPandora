@@ -9,6 +9,7 @@
 #include "stacks.h"
 #include "engine.h"
 #include "userfunc.h"
+#include "forwarder.h"
 
 
 /* global classless */
@@ -253,12 +254,12 @@ void MainWindow::emulation_mode()
                               QString("You have to disconnect from the game first!"));
             return;        
         }
-        mud_emulation = true;
+        proxy.setMudEmulation( true );
         Engine.set_prompt("-->");
         stacker.put(1);
         stacker.swap();
     } else {
-        mud_emulation = false;
+        proxy.setMudEmulation( false );
     
     }
 
@@ -530,13 +531,13 @@ MainWindow::MainWindow(QWidget *parent)
   
 
   /* status bar magicz */
-  locationLabel = new QLabel("NO_SYNC", this); 
+  locationLabel = new QLabel("NO_SYNC"); 
   locationLabel->setAlignment(Qt::AlignHCenter); 
   locationLabel->setMinimumSize(locationLabel->sizeHint()); 
 
-  formulaLabel = new QLabel(this); 
+  formulaLabel = new QLabel(); 
   
-  modLabel = new QLabel(tr("     "), this); 
+  modLabel = new QLabel(tr("     ")); 
   modLabel->setAlignment(Qt::AlignHCenter); 
   modLabel->setMinimumSize(modLabel->sizeHint());      
   modLabel->clear(); 

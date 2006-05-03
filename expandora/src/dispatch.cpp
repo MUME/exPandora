@@ -30,82 +30,15 @@ class Cdispatcher dispatcher;
 
 Cdispatcher::Cdispatcher() 
 {
-    amount = 0;
-    xmlMode = false;
 }
-
-
-
-/**
-*   This function was adopted from powwow code Copyright (C) 1998 by Massimiliano Ghilardi
-*/
-int Cdispatcher::telnetSeqLength()
-{
-    int i;
-    unsigned char *s, *start;
-    char state = T_GOTIAC;
-    
-    i = o_len - o_pos + 1;
-    start = (unsigned char *) &o_buf[o_pos];
-    for (s = start;  i; s++, i--) {
-	switch (state) {
-	 case T_NORMAL:
-	    return (s - start);
-	    break;
-	    
-	 case T_GOTIAC:
-	    switch (*s) {
-	     case WILL:
-	     case WONT:
-	     case DO:
-	     case DONT:
-		state = T_SKIP; 
-		break;
-	     case SB:		/* BUG (multiple connections):	*/
-		state = T_GOTSB;	/* there is only one subopt buffer */
-		break;
-	     case IAC:
-	     case GA:
-	     default:
-		state = T_NORMAL;
-		break;
-	    }
-	    break;
-	    
-	 case T_SKIP:
-	    state = T_NORMAL;
-	    break;
-	    
-	 case T_GOTSB:
-	    if (*s == IAC) {
-		state = T_GOTSBIAC;
-	    } 
-	    break;
-	    
-	 case T_GOTSBIAC:
-	    if (*s == IAC) {
-		state = T_GOTSB;
-	    } else if (*s == SE) {
-		state = T_NORMAL;
-	    } else {
-		/* problem! I haven't the foggiest idea of what to do here.
-		 * I'll just ignore it and hope it goes away. */
-		state = T_NORMAL;
-	    }
-	    break;
-	}
-    }
-    
-     return (s - start);
-}
-
 
 /**
  * 
  */
-void Cdispatcher::parse_xml() 
+void Cdispatcher::parse_xml(QByteArray tag) 
 {
         /* types without parameters here */
+        /*
         struct {
             char    *name;
             int        startType;
@@ -138,7 +71,7 @@ void Cdispatcher::parse_xml()
             p++;
         }
         
-        /* get tags name */
+        // get tags name 
         i = 0;
         while (p < o_len && o_buf[p] != '>' && o_buf[p] != ' ' && o_buf[p] != '/') {
             name[i++] = o_buf[p];
@@ -147,7 +80,7 @@ void Cdispatcher::parse_xml()
         name[i] = 0;
         
         if (o_buf[p] == ' ') {
-            /* params are coming */
+            // params are coming 
             i = 0;
             while (p < o_len && o_buf[p] != '>' && o_buf[p] != '/') {
                 params[i++] = o_buf[p];
@@ -173,19 +106,19 @@ void Cdispatcher::parse_xml()
             printf("\r\n");
         }
                 
-        /* we are done with moving around the original buffer */
+        // we are done with moving around the original buffer 
         o_pos = p+1;
 //        printf("new o_pos %i, next char %c\r\n", o_pos, o_buf[o_pos]);        
         
-        /* now parse the tags ! */                    
+        // now parse the tags !                     
         
-        /* hard tags first */
+        // hard tags first 
         if (strcmp(name, "movement") == 0) {
   //          printf("XML TAG: %s\r\n", TagTypes[p].name);
             startType = XML_START_MOVEMENT;
             endType = XML_END_MOVEMENT;
             
-            /* parse parameters */
+            // parse parameters 
             if (strlen(params) != 0) {
                 QByteArray param = params;
                 int index = param.indexOf("dir=");
@@ -206,7 +139,7 @@ void Cdispatcher::parse_xml()
                 }
             }
         } else {
-            /* the easy ones */
+            // the easy ones 
             for (p = 0; TagTypes[p].startType != -1; p++) {
                 if (strcmp(TagTypes[p].name, name) == 0) {
 //                    printf("XML TAG: %s\r\n", TagTypes[p].name);
@@ -216,207 +149,266 @@ void Cdispatcher::parse_xml()
             }
         }
         
-        buffer[amount].type = IS_XML;
-        strcpy(buffer[amount].line, params);
-        buffer[amount].len = strlen(params);
+        buffer[amount].line = params;
         if (endTag)
-            buffer[amount].xmlType = endType;
+            buffer[amount].type = endType;
         else    
-            buffer[amount].xmlType = startType;
+            buffer[amount].type = startType;
         amount++;
         
-        if (endAfterTag) {
-            buffer[amount].type = IS_XML;
-            buffer[amount].len = 0;
-            buffer[amount].xmlType = endType;
-            amount++;
-        }
-        
+        if (endAfterTag) 
+            buffer[amount++].type = endType;
+*/        
 }
     
     
-
-void Cdispatcher::dispatch_buffer(bool Xml) 
+#define STUFFING_CLEANUP  \
+            {   \
+                printf("Stuffing cleanup!\r\n"); \
+                line.append(c.subchars);  \
+                c.subchars.clear(); \
+                line.append(*s);    \
+                c.mainState = NORMAL; \
+                c.subState = NORMAL; \
+            }   
+    
+void Cdispatcher::dispatch_buffer(ProxySocket &c) 
 {
-  int l;
-  char line[MAX_DATA_LEN];
-  QRegExp rx;
+    QByteArray line;
+    unsigned char *s;
+    unsigned char *stop;
   
-  
-  line[0] = 0;  /* set first terminator */
-  amount = 0;
-  l = 0;
+    line.clear();
+    amount = 0;
 
-  while (o_pos < o_len) {
-    
-    /* telnet sequences filter (or rather anti-filer, we let them go as they are */
-    if ((unsigned char)o_buf[o_pos] == (unsigned char) IAC) {
-      if (l != 0) {
-        /* in case we met this telnet sequence right in the middle */
-        line[l] = 0;
-        memcpy(buffer[amount].line, line, l);
-        buffer[amount].len = l;   
-        buffer[amount].type = IS_NONE;  /* line without end - will be just coppied as is */
-          
+    /* put back the leftovers */
+    if (c.fragment != "") {
+        printf("Adding lost fragment!\r\n");
+        line = c.fragment;
         amount++;
-        l = 0;
-      }
-      int seqLen = telnetSeqLength();
-      /* ok, go on with the telnet sequence */  
-      memcpy(buffer[amount].line, &o_buf[o_pos], seqLen);
-      buffer[amount].line[seqLen] = 0;
-      buffer[amount].len = seqLen;
-      o_pos += seqLen;
-      buffer[amount].type = IS_TELNET;
-      amount++;
+    }        
 
-      l = 0;
-      continue;
+    stop = (unsigned char *) (c.buffer + c.length);
+    for (s = (unsigned char *) c.buffer;  s != stop; s++) {
+        printf("[ amount %i - m %i, s %i,  s %i, left %i ] ", amount, c.mainState, c.subState, s, stop - s);
+	switch (c.mainState) {
+	   case NORMAL :
+	                            switch (*s) {
+	                               case IAC:
+                                                            if (line != "") {
+                                                                buffer[amount++].line = line;
+                                                                line.clear();
+                                                            }
+                                                            c.mainState = TELNET;
+                                                            c.subState = T_GOTIAC;
+                                                            break;                                                                
+	                                       
+                                        case 0x0a :  // LF 
+                                                            printf("Appending %i : %c [newline] \r\n", s, *s);
+                                                            line.append(*s);
+                                                            buffer[amount++].line = line;
+                                                            buffer[amount].type = IS_NORMAL;
+                                                            line.clear();
+                                                            continue;
+                                      case '<'      :  // turns XML tag mode on 
+                                                            if (c.isXmlMode()) {
+                                                                if (line != "") {
+                                                                    buffer[amount++].line = line;
+                                                                    line.clear();
+                                                                }
+                                                                c.subchars.append('<');
+                                                                c.mainState = XML;
+                                                            }
+                                                            continue;
+                                                                                                      
+                                        case '&'      :
+                                                            if (c.isXmlMode()) {
+                                                                c.subchars.append('&');
+                                                                c.subState = AMP;
+                                                                c.mainState = STUFFING;
+                                                            }
+                                                            continue;
+	                            }
+	
+	                            break;
+           case  XML : 
+                                    switch (*s) {
+                                        case '>' : 
+                                                        c.subchars.append('>');
+                                                        parse_xml(c.subchars);
+                                                        c.mainState = NORMAL;
+                                                        c.subState = NORMAL;
+                                                        c.subchars.clear();
+                                                        continue;
+                                        default:
+                                                        c.subchars.append(*s);
+                                                        continue;                                                        
+                                    }
+                                    break;
+           
+           
+           case STUFFING :
+                                        printf("STUFFING state %i, char : %c, subchars %s \r\n", c.subState, *s, (const char *) c.subchars );
+                                        switch (c.subState) {
+                                            case                AMP:
+                                                                        switch (*s) {
+                                                                            case 'l' :
+                                                                                c.subchars.append('l');
+                                                                                c.subState = L;                                                                         
+                                                                                continue;
+                                                                            case 'g' :
+                                                                                c.subchars.append('g');
+                                                                                c.subState = G;                                                                         
+                                                                                continue;
+                                                                            case 'a' :
+                                                                                c.subchars.append('a');
+                                                                                c.subState = A;                                                                         
+                                                                                continue;
+                                                                            case 'q' :
+                                                                                c.subchars.append('q');
+                                                                                c.subState = Q;                                                                         
+                                                                                continue;
+                                                                            
+                                                                            default:
+                                                                                STUFFING_CLEANUP;
+                                                                                continue;
+                                                                        }
+                                            case                 G:
+                                                                        if (*s == 't') {
+                                                                            c.subchars.append('t');
+                                                                            c.subState = LASTCHAR;
+                                                                        }  else STUFFING_CLEANUP;
+                                                                        continue;
+                                            case                 L:
+                                                                        if (*s == 't') {
+                                                                            c.subchars.append('t');
+                                                                            c.subState = LASTCHAR;
+                                                                        } else STUFFING_CLEANUP;
+                                                                        continue;
+                                            case                 A:
+                                                                        if (*s == 'm') {
+                                                                            c.subchars.append('m');
+                                                                            c.subState = A_M;
+                                                                        } else STUFFING_CLEANUP;
+                                                                        continue;
+                                            case                 A_M:
+                                                                        if (*s == 'p') {
+                                                                            c.subchars.append('p');
+                                                                            c.subState = LASTCHAR;
+                                                                        } else STUFFING_CLEANUP;
+                                                                        continue;
+                                            case                 LASTCHAR:
+                                                                        if (*s == ';') {
+                                                                            if (c.subchars == "&gt") 
+                                                                                line.append('>');
+                                                                            else if (c.subchars == "&lt") 
+                                                                                line.append('<');
+                                                                            else if (c.subchars == "&amp") 
+                                                                                line.append('&'); 
+                                                                             c.subState = NORMAL;
+                                                                             c.mainState = NORMAL;
+                                                                             c.subchars.clear();
+                                                                        } else STUFFING_CLEANUP;
+                                                                        continue;
+                                        }
+           case TELNET:
+                                switch (c.subState) {
+                                    case T_NORMAL:
+                                        if (line != "") {
+                                            buffer[amount++].line = line;
+                                            buffer[amount].type = IS_NORMAL;
+                                            line.clear();
+                                        }
+                                        s--;        // return to the same char we are standing at, but in proper mode
+                                        c.mainState = NORMAL;
+                                        c.subState = NORMAL;
+                                        continue;
+                                        
+                                    case T_GOTIAC:
+                                        buffer[amount].type = IS_DATA;
+                                        switch (*s) {
+                                                case WILL:
+                                                case WONT:
+                                                case DO:
+                                                case DONT:
+                                                    c.subState = T_SKIP; 
+                                                    break;
+                                                case SB:		// BUG (multiple connections):	
+                                                    c.subState = T_GOTSB;	// there is only one subopt buffer 
+                                                    break;
+                                                case IAC:
+                                                case GA:
+                                                default:
+                                                    c.subState = T_NORMAL;
+                                                    break;
+                                        }
+                                        break;
+                                        
+                                    case T_SKIP:
+                                        c.subState = T_NORMAL;
+                                        break;
+                                        
+                                    case T_GOTSB:
+                                        if (*s == IAC) {
+                                            c.subState = T_GOTSBIAC;
+                                        } 
+                                        break;
+                                        
+                                    case T_GOTSBIAC:
+                                        if (*s == IAC) {
+                                            c.subState = T_GOTSB;
+                                        } else if (*s == SE) {
+                                            c.subState = T_NORMAL;
+                                            break;
+                                        } else {
+                                            c.subState = T_NORMAL;
+                                        }
+                                        break;
+                                 }
+                                    
+                                    break;                        	                           
+        }	
+        printf("Appending %i : %c\r\n", s, *s);
+        line.append(*s);
     }
     
-    if (xmlMode && Xml) {
-        /* XML sequences check */
-        if (o_buf[o_pos] == '<') {
-            if ( l !=0 ) {      // the tag stands as ending for a line without new-line breaks, so ... 
-                line[l] = 0;
-                memcpy(buffer[amount].line, line, l);
-                buffer[amount].type = IS_NONE;
-                buffer[amount].line[l] = 0;
-                buffer[amount].len = l;
-                amount++;
-        
-                l = 0;
-            }        
-            
-            parse_xml();
-            continue;
-        }
-        
-        if (o_buf[o_pos] == '&' && (o_pos <= (o_len-3)) ) {
-            if (o_buf[o_pos+1] == 'g' && o_buf[o_pos+2] == 't' && o_buf[o_pos+3] == ';') {
-                    line[l++] = '>';
-                    o_pos += 4;
-                    continue;
-            } else   if (o_buf[o_pos+1] == 'l' && o_buf[o_pos+2] == 't' && o_buf[o_pos+3] == ';') {
-                    line[l++] = '<';
-                    o_pos += 4;
-                    continue;
-            } 
-        }    
-            
-        if (o_buf[o_pos] == '&' && (o_pos <= (o_len-4)) ) {
-            if (o_buf[o_pos+1] == 'a' && o_buf[o_pos+2] == 'm'  && o_buf[o_pos+3] == 'p' && o_buf[o_pos+4] == ';') {
-                    line[l++] = '&';
-                    o_pos += 4;
-                    continue;
-            } /*else if (o_buf[o_pos+1] == 'a' && o_buf[o_pos+2] == 'p'  && o_buf[o_pos+3] == 'o' && o_buf[o_pos+4] == 's' && o_buf[o_pos+5] == ';') {
-                    line[l++] = '\\';
-                    o_pos += 4;
-            }else if (o_buf[o_pos+1] == 'q' && o_buf[o_pos+2] == 'u'  && o_buf[o_pos+3] == 'o' && o_buf[o_pos+4] == 't' && o_buf[o_pos+5] == ';') {
-                    line[l++] = '"';
-                    o_pos += 4;
-            }*/
-            continue;
-        }
-    }
-        
-        
-    /* for forward check buf[i+1] */
-    if (o_pos <= (o_len - 1)) {
-      if ((o_buf[o_pos] == 0xd) && (o_buf[o_pos + 1] == 0xa)) {
-          line[l] = 0;
-          o_pos += 2;
-          
-          memcpy(buffer[amount].line, line, l);
-          buffer[amount].type = IS_CRLF;
-          buffer[amount].line[l] = 0;
-          buffer[amount].len = l;
-          amount++;
-
-          l = 0;
-          continue;
-      }        
+    printf("Amount : %i.\r\n", amount);
+    buffer[amount++].line = line;
     
-      if ((o_buf[o_pos] == 0xa) && (o_buf[o_pos + 1] == 0xd)) {
-          o_pos+=2;
-          memcpy(buffer[amount].line, line, l);
-          buffer[amount].line[l] = 0;
-          buffer[amount].type = IS_LFCR;
-          buffer[amount].len = l;
-          amount++;
-
-          l = 0;
-          continue;
-      }
-    }
+    for (int i = 0; i < amount; i++) 
+        printf("Line: %s", (const char *) buffer[i].line);
     
-    if (o_buf[o_pos] == 0xa) {
-      o_pos+=1;
-      memcpy(buffer[amount].line, line, l);
-      buffer[amount].line[l] = 0;
-      buffer[amount].type = IS_LF;
-      buffer[amount].len = l;
-      amount++;
-      
-      l = 0;
-      continue;
-    }
-      
-      
-    
-    line[l++] = o_buf[o_pos++];
-  }
-  /* if we are there .. then its either prompt or password line, or */
-  /* or splitted packet */
-  line[l] = 0;
-  if (l == 0)
-      return;
-
-  buffer[amount].type = IS_PROMPT;
-  memcpy(buffer[amount].line, line, l);
-  buffer[amount].len = l;
-  buffer[amount].line[l] = 0;
-  
-  /* ???? this is some silly attempt to catch splitted lines */
-  /* just some hack, i assume it works only with certain MTU, */
-  /* most likely normal TCP mtu though */
-  if (o_len == 1440) {
-      buffer[amount].type = IS_SKIP;
-  } else {
-      buffer[amount].type = IS_SKIP;
-  }
-  amount++;
-  return;	/* warning awaiting routine that buffer is over */
+    c.fragment.clear();
+    c.subchars.clear();
 }
 
-QByteArray Cdispatcher::cutColours(char *line)
+QByteArray Cdispatcher::cutColours(QByteArray line)
 {
     QByteArray res;
     unsigned int i;
     bool skip = false;
     
     for (i =0; i < strlen(line); i++) {
-        if (line[i+1] == 0x8 && (line[i] == '|' || line[i] == '-' || line[i] == '\\' || line[i] == '/')) {
+        if (line.at(i+1) == 0x8 && (line.at(i) == '|' || line.at(i) == '-' || line.at(i) == '\\' || line.at(i) == '/')) {
             i += 1; /*properller char*/
             continue;   /* and the next one and move on with the same check */
         }    
+        
+        if (line.at(i) == 0xa || line.at(i) == 0xd)
+            continue;                                       /* skip newlines */
     
-        if (line[i] == 0x6d && skip) {
+        if (line.at(i) == 0x6d && skip) {
             skip = false;
             continue;
         } 
         if (skip) 
             continue;
-        if (line[i] == 0x1b && line[i+1] == 0x5b) {
+        if (line.at(i) == 0x1b && line.at( i+1 ) == 0x5b) {
             skip = true;
             continue;
         }
-        res.append(line[i]);
+        res.append(line.at(i));
     }
-    
-//    res.append('/0');
-//    printf("Line: %s\r\n", line);
-//    printf("
     
     return res;
 }
@@ -427,47 +419,38 @@ QByteArray Cdispatcher::cutColours(char *line)
                     Engine.add_event(event);                            \
                     event.clear();                  \
                     notify_analyzer();      \
-                    state = STATE_NORMAL;                       \
+                    xmlState = STATE_NORMAL;                       \
                     }
         
 
-void Cdispatcher::analyze_mud_stream(char *buf, int *n) 
+int Cdispatcher::analyze_mud_stream(ProxySocket &c) 
 {
     int i;
-    int new_len;
     bool awaitingData;
+    int new_len;
+    char *buf;
     
-    o_buf = buf;
-    o_len = *n;
-    o_pos = 0;
-    new_len = 0;
+    
     Event event;
     
-  
-    buf[*n] = 0;
-    state = STATE_NORMAL;
+    xmlState = STATE_NORMAL;
     mbrief_state = STATE_NORMAL;
     awaitingData = false;
+    
+    printf("---------- mud input -----------\r\n");
         
-    dispatch_buffer(true);
-  
-    /* broken code */
-    if (buffer[amount-1].type == IS_SPLIT) {
-        printf("Dispatcher : PACKET SPLIT NOTICED. Awaiting for continue.\r\n");
-        send_to_user("\r\n --[Pandora: PACKET SPLIT DETECTED\r\n");
-        if (amount != 1) 
-            *n=0;   
-            
-        return;
-    }
+        
+    printf("Buffer size %i\r\n", c.length);
+    dispatch_buffer(c);
     
-    buf[0]=0;
-    /* else we simply recreate our buffer and parse lines */
+    buf = c.buffer;
+    new_len = 0;
+    
+    // else we simply recreate our buffer and parse lines 
     for (i = 0; i< amount; i++) {
-        /* preset flags for m-brief mode */
     
     
-        /* XML messages parser */
+        //XML messages parser 
         if (buffer[i].type == IS_XML) {
             
             if (buffer[i].xmlType == XML_START_MOVEMENT) {
@@ -478,53 +461,52 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
             } else if (buffer[i].xmlType == XML_START_ROOM) {
                 if (awaitingData) 
                     SEND_EVENT_TO_ENGINE;
-                state = STATE_ROOM;                
+                xmlState = STATE_ROOM;                
                 continue;
-            } else if ((buffer[i].xmlType == XML_START_NAME) && (state == STATE_ROOM)) {
-                state = STATE_NAME;
+            } else if ((buffer[i].xmlType == XML_START_NAME) && (xmlState == STATE_ROOM)) {
+                xmlState = STATE_NAME;
                 continue;
-            } else if ((buffer[i].xmlType == XML_START_DESC)  && (state == STATE_ROOM)) {
-                state = STATE_DESC;
+            } else if ((buffer[i].xmlType == XML_START_DESC)  && (xmlState == STATE_ROOM)) {
+                xmlState = STATE_DESC;
                 continue;
-            } else if ((buffer[i].xmlType == XML_START_TERRAIN)  && (state == STATE_ROOM)) {
-                event.blind = true;                 /* BLIND detection */
+            } else if ((buffer[i].xmlType == XML_START_TERRAIN)  && (xmlState == STATE_ROOM)) {
+                event.blind = true;                 // BLIND detection 
                 continue;
             } else if (buffer[i].xmlType == XML_START_EXITS) {
-                state = STATE_EXITS;
+                xmlState = STATE_EXITS;
                 continue;
             } else if (buffer[i].xmlType == XML_START_PROMPT) {
-                state = STATE_PROMPT;
+                xmlState = STATE_PROMPT;
                 continue;
             } else if (buffer[i].xmlType == XML_END_MOVEMENT) {
-                /* nada */
+                // nada 
                 continue;
-            } else if (buffer[i].xmlType == XML_END_ROOM && state == STATE_ROOM) {
+            } else if (buffer[i].xmlType == XML_END_ROOM && xmlState == STATE_ROOM) {
                 awaitingData = true;
-                state = STATE_NORMAL;
+                xmlState = STATE_NORMAL;
                 continue;
-            } else if (buffer[i].xmlType == XML_END_NAME && state == STATE_NAME) {
-                state = STATE_ROOM;
+            } else if (buffer[i].xmlType == XML_END_NAME && xmlState == STATE_NAME) {
+                xmlState = STATE_ROOM;
                 continue;
-            } else if (buffer[i].xmlType == XML_END_DESC && state == STATE_DESC) {
-                state = STATE_ROOM;
+            } else if (buffer[i].xmlType == XML_END_DESC && xmlState == STATE_DESC) {
+                xmlState = STATE_ROOM;
                 continue;
-            } else if (buffer[i].xmlType == XML_END_EXITS && state == STATE_EXITS) {
+            } else if (buffer[i].xmlType == XML_END_EXITS && xmlState == STATE_EXITS) {
                 SEND_EVENT_TO_ENGINE;
                 awaitingData = false;
-                state = STATE_NORMAL;
+                xmlState = STATE_NORMAL;
                 continue;
             } else if (buffer[i].xmlType == XML_END_PROMPT) {
                 SEND_EVENT_TO_ENGINE;
 //                awaitingData = false;
-                state = STATE_NORMAL;
+                xmlState = STATE_NORMAL;
                 continue;
             } 
                     
             continue;
         }
         
-        /* necessary stuff */        
-        switch (state) {
+        switch (xmlState) {
             case STATE_NAME : 
                                                 event.name = cutColours( buffer[i].line );
                                                 break;
@@ -537,43 +519,39 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                                                 event.exits = cutColours( buffer[i].line );
                                                 int index = event.exits.indexOf("Exits: ");
                                                 if (index == -1) {
-                                                    event.exits = "";
                                                     break;
                                                 }
                                                 event.exits.replace("Exits: ", "");
                                                 printf("XML exits data: %s\r\n", (const char *) event.exits);
                                                 break;
             case STATE_PROMPT:
-                                                spells_print_mode = false;      /* do not analyze spells anymore */
+                                                spells_print_mode = false;      // do not analyze spells anymore 
                                                 printf("XML prompt: %s\r\n", (const char *) cutColours( buffer[i].line ) );
                                                 Engine.set_prompt(cutColours( buffer[i].line ));
                                                 event.terrain = parse_terrain(cutColours( buffer[i].line ));
                                                 break;
         };
         
-        /* mbrief additional check (for look/scout and similar) */
+        // mbrief additional check (for look/scout and similar) 
         if (mbrief_state == STATE_DESC && conf.get_brief_mode()) 
             continue;
         
-        if (buffer[i].type == IS_CRLF) {
-            /*
-            print_debug(DEBUG_DISPATCHER, "line after fixing: %s", a_line);
-            */
+        if (buffer[i].type == IS_NORMAL) {
             QByteArray a_line = cutColours( buffer[i].line );          
           
-            if (!xmlMode) {
+            if (!c.isXmlMode()) {
                 if (a_line == "Reconnecting." || a_line =="Never forget! Try to role-play...") {
                     printf( "XML MODE IS NOW ON!\r\n");
-                    xmlMode = true;
+                    c.setXmlMode( true );
                 }
             } else {
                 if (a_line == "</xml>") {
                     printf( "XML MODE IS NOW OFF!\r\n");
-                    xmlMode = false;
+                    c.setXmlMode( false );
                 }
             }
           
-            /* now do all necessary spells checks */
+            // now do all necessary spells checks 
             {
                 unsigned int p;
             
@@ -582,12 +560,12 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                     if ( (conf.spells[p].up_mes != "" && conf.spells[p].up_mes == a_line) || 
                          (conf.spells[p].refresh_mes != "" && conf.spells[p].refresh_mes == a_line )) {
                         printf("SPELL %s Starting/Restaring timer.\r\n",  (const char *) conf.spells[p].name);
-                        conf.spells[p].timer.start();   /* start counting */
+                        conf.spells[p].timer.start();   // start counting 
                         conf.spells[p].up = true;        
                         break;
                     }
                     
-                    /* if some spell is up - only then we check if its down */
+                    // if some spell is up - only then we check if its down 
                     if (conf.spells[p].up && conf.spells[p].down_mes != "" && conf.spells[p].down_mes == a_line) {
                         conf.spells[p].up = false;
                         printf("SPELL: %s is DOWN. Uptime: %s.\r\n", (const char *) conf.spells[p].name, 
@@ -599,30 +577,28 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                             
                             
                 if (spells_print_mode && (strlen(a_line) > 3)) {
-                    /* we are somewhere between the lines "Affected by:" and prompt */
+                    // we are somewhere between the lines "Affected by:" and prompt 
                     for (p = 0; p < conf.spells.size(); p++) {
 //                        printf("Spell name %s, line %s\r\n", (const char *) conf.spells[p].name, (const char*) a_line );    
                         if (a_line.indexOf(conf.spells[p].name) == 2) {
                             QString s;
                             
                             if (conf.spells[p].up)
-                                s = QString("- %1 (up for %2)")
+                                s = QString("- %1 (up for %2)\r\n")
                                     .arg( (const char *)conf.spells[p].name )
                                     .arg( conf.spell_up_for(p) );
                             else 
-                                s = QString("- %1 (unknown time)")
+                                s = QString("- %1 (unknown time)\r\n")
                                     .arg( (const char *)conf.spells[p].name );
  
                             memcpy(buf + new_len, qPrintable(s), s.length());
                             new_len += s.length();
-                            memcpy(buf + new_len, "\r\n", 2);
-                            new_len += 2;
                             
                             break;    
                         }
                     }
                     if (p != conf.spells.size())
-                        continue; /* dont print this line if we got a match for it */
+                        continue; // dont print this line if we got a match for it 
                         
                         
                 }
@@ -633,8 +609,8 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
                 unsigned int spell;
                 QByteArray message = "Timers:";
                 
-                spells_print_mode = true;   /* print the spells data */
-                /* addon timers first */
+                spells_print_mode = true;   // print the spells data 
+                // addon timers first 
                 memcpy(buf + new_len, (const char *) message, message.length());
                 new_len += message.length();
                 memcpy(buf + new_len, "\r\n", 2);
@@ -642,17 +618,15 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
 
                 for (spell = 0; spell < conf.spells.size(); spell++) 
                     if (conf.spells[spell].addon && conf.spells[spell].up) {
-                        /* there is a timer ticking */
+                        // there is a timer ticking 
                         QString s;
                            
-                        s = QString("- %1 (up for %2)")
+                        s = QString("- %1 (up for %2)\r\n")
                             .arg( (const char *)conf.spells[spell].name )
                             .arg( conf.spell_up_for(spell) );
 
                         memcpy(buf + new_len, qPrintable(s), s.length());
                         new_len += s.length();
-                        memcpy(buf + new_len, "\r\n", 2);
-                        new_len += 2;
                         break;
                     }
             
@@ -660,32 +634,18 @@ void Cdispatcher::analyze_mud_stream(char *buf, int *n)
 		
         }            
         
-        /* this is for normal prompt detection */
         if (buffer[i].type == IS_PROMPT) {
-            spells_print_mode = false;      /* do not analyze spells anymore */
+            spells_print_mode = false;      // 
             Engine.set_prompt(buffer[i].line);
         }
         
-        /* recreating this line in buffer */
-        memcpy(buf + new_len, buffer[i].line, buffer[i].len);
-        new_len += buffer[i].len;
-        
-        if (buffer[i].type == IS_CRLF) {
-            memcpy(buf + new_len, "\r\n", 2);
-            new_len += 2;
-        } else if (buffer[i].type == IS_LFCR) {
-            memcpy(buf + new_len, "\n\r", 2);
-            new_len += 2;
-        } else if (buffer[i].type == IS_LF) {
-            memcpy(buf + new_len, "\n", 1);
-            new_len += 1;
-        }
-        
-        
+        // recreating this line in buffer 
+        memcpy(buf + new_len, buffer[i].line, buffer[i].line.length());
+        new_len += buffer[i].line.length();
     }
   
-    amount = 0;
-    *n=new_len;
+    printf("New length: %i\r\n", new_len);
+    return new_len;
 }
 
 
@@ -725,54 +685,34 @@ QByteArray Cdispatcher::get_colour(QByteArray str)
 
 
 /* new user input analyzer */
-void Cdispatcher::analyze_user_stream(char *buf, int *n) 
+int Cdispatcher::analyze_user_stream(ProxySocket &c) 
 {
     int i, result;
     int new_len;
+    char *buf;
     
-    o_buf = buf;
-    o_len = *n;
-    o_pos = 0;
+    buf = c.buffer;
     new_len = 0;
     
-    buf[*n] = 0;
-
-    dispatch_buffer(false);
-  
-    buf[0]=0;
+    printf("---------- user input -----------\r\n");
+    printf("Buffer size %i\r\n", c.length);
+    printf("the buffer. %s\r\n", c.buffer);
+    printf("        MainState %i, subState %i   \r\n", c.mainState, c.subState);
+    dispatch_buffer(c);
+    
     for (i = 0; i< amount; i++) {
-
-      if (buffer[i].type == IS_CRLF || buffer[i].type == IS_LFCR ||
-          buffer[i].type == IS_LF) {
-        result = userland_parser.parse_user_input_line(buffer[i].line);
-        if (result == USER_PARSE_SKIP) 
-          continue;
-        if (result == USER_PARSE_DONE) {
-
-          buffer[i].len = strlen(buffer[i].line);
+        if (buffer[i].type == IS_NORMAL) {
+            result = userland_parser.parse_user_input_line(buffer[i].line);
+            if (result == USER_PARSE_SKIP) 
+                continue;
         }
-      }
-
-      /* recreating this line in buffer */
-      
-      memcpy(buf + new_len, buffer[i].line, buffer[i].len);
-      new_len += buffer[i].len;
-        
-      if (buffer[i].type == IS_CRLF) {
-          memcpy(buf + new_len, "\r\n", 2);
-          new_len += 2;
-      } else if (buffer[i].type == IS_LFCR) {
-          memcpy(buf + new_len, "\n\r", 2);
-          new_len += 2;
-      } else if (buffer[i].type == IS_LF) {
-          memcpy(buf + new_len, "\n", 1);
-          new_len += 1;
-      }
-
-        
+            
+        // recreating this line in buffer 
+        memcpy(buf + new_len, buffer[i].line, buffer[i].line.length());
+        new_len += buffer[i].line.length();
     }
-  
-    amount = 0;
-    *n=new_len;
-
+        
+    printf("Resulting buffer length: %i\r\n", new_len);
+        
+    return new_len;
 }

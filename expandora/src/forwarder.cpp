@@ -1,38 +1,33 @@
-/* Packet forwarder by WWW <www@cyber-wizard.com>
- * Proxy with ssl protocol support by Glip <glip@cyber-wizard.com>
- *
- * for solaris: gcc forwarder.c -lsocket -lnsl
- *
- */
- 
 #define DEBUG
-
 
 #include <csignal>
 #include <qglobal.h>
 
 #if defined Q_OS_LINUX || defined Q_OS_MACX || defined Q_OS_FREEBSD
-
-#include <unistd.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-
-#define WSAEWOULDBLOCK EWOULDBLOCK
-#define WSAEINPROGRESS EINPROGRESS
-#define WSAGetLastError() errno
-#define INVALID_SOCKET (-1)
-#define closesocket close
-#define SOCKET int
-#define ioctlsocket ioctl
-
-
-
+    #include <unistd.h>
+    #include <netdb.h>
+    #include <sys/types.h>
+    //#include <sys/time.h>
+    #include <netinet/in.h>
+    #include <sys/socket.h>
+    #include <arpa/inet.h>
+    #include <netdb.h>
+    #include <sys/ioctl.h>
+    
+    
+    
+    #define WSAEWOULDBLOCK EWOULDBLOCK
+    #define WSAEINPROGRESS EINPROGRESS
+    #define WSAGetLastError() errno
+    #define WSACleanup
+    #define INVALID_SOCKET (-1)
+    #define closesocket close
+    #define SOCKET int
+    #define ioctlsocket ioctl
 #elif defined Q_OS_WIN32
-#define socklen_t int
-#include <winsock.h>
+    #define socklen_t int
+    #define WSVERS MAKEWORD(2,2)
+    #include <winsock.h>
 #endif
 
 #include <cstdio>
@@ -48,410 +43,350 @@
 #include "Map.h"
 #include "mainwindow.h"
 #include "engine.h"
+#include "forwarder.h"
 
-QMutex tcp_mutex;
 
-int proxy_hangsock;
-fd_set proxy_descr1, proxy_descr2;
-struct sockaddr_in my_net_name, his_net_name;
-
-#if defined Q_OS_LINUX || defined Q_OS_MACX || defined Q_OS_FREEBSD
-
-  void refresh(int)
-  {
-     if (fork()>0)
-        exit(0);
-     signal (SIGXCPU, refresh);
-  }
-
-#endif
-
-#define MAXCONNECTIONS 1
-#define XX() printf ("DBG\n");
-#define NOBODY -1
+class Proxy       proxy;
 
 #ifdef DEBUG
   #define DEBUG_FILE_NAME "completelog.txt"
   FILE *debug_file;
 #endif
 
-struct juzer_s {
-  int sock;
-  int sout;
-  char realident[64];
-} juzer[MAXCONNECTIONS];
-
-/* always works for user 0, since supposedly we have only 1 user */
-void send_line_to_mud(char *line) 
+int Proxy::init()
 {
-  int rd;
-  
-  tcp_mutex.lock();
-  rd = strlen(line);
-  if (rd > PROXY_BUFFER_SIZE) {
-    printf("proxy: I/O BUFFER OVERFLOW!\r\n");
-    return;
-  }
-  
-  send(juzer[0].sout, line, rd, 0);
+    struct sockaddr_in proxy_name;
 
-  tcp_mutex.unlock();
-  return;
-}
+    user.setXmlTogglable( false );
+    mud.setXmlTogglable( true );
 
-/* always works for user 0, since supposedly we have only 1 user */
-int send_line_to_user(char *line) 
-{
-  int rd;
-  
-  tcp_mutex.lock();
-  rd = strlen(line);
-  if (rd > PROXY_BUFFER_SIZE) {
-    printf("proxy: I/O BUFFER OVERFLOW!\r\n");
-    return 1;
-  }
-  
-  send(juzer[0].sock, line, rd, 0);
-
-  tcp_mutex.unlock();
-  return 0;
-}
-
-
-void userinit(void)
-{
-  int i;
-  for (i=0; i<MAXCONNECTIONS; i++)
-      juzer[i].sock=0;
-}
-
-int userfindfree(void)
-{
-  int i;
-  for (i=0; i<MAXCONNECTIONS; i++)
-    if (!juzer[i].sock) return i;
-  return -1;
-}
-
-int useradd(int sock)
-{
-  int newsock;
-
-  if((newsock=userfindfree())== -1) 
-      return -1;
-  
-  juzer[newsock].sock=sock;
-  juzer[newsock].realident[0]=(char)0;
-  juzer[newsock].sout=0;
-  return newsock;
-}
-
-void userdel(int sock)
-{
-  int i;
-  for (i = 0; i < MAXCONNECTIONS; i++)
-    if (juzer[i].sock == sock)
-      {
-        shutdown (sock, 2);
-        closesocket (sock);
-        if (!mud_emulation) {
-          shutdown (juzer[i].sout, 2);
-          closesocket (juzer[i].sout);
+    #ifdef Q_OS_WIN32
+        WSADATA wsadata;
+        if (WSAStartup(WSVERS, &wsadata) != 0)
+        {
+            printf("Failed to initialise Windows Sockets.\n");
+            exit(1);
         }
-        renderer_window->disable_online_actions();
-        dispatcher.setXmlMode( false );
-        juzer[i].sock = 0;
-      }
-}
+    #endif
 
-
-int proxy_init()
-{
-  struct hostent *hent;
-/*  char proxy_s3ng[256];
- */
-
-#ifdef Q_OS_WIN32
-    WSADATA wsadata;
-#define WSVERS MAKEWORD(2,2)
-#endif
-
-    //fprintf(stderr, "Proxy initialising\n");
-    
-#ifdef Q_OS_WIN32
-    if (WSAStartup(WSVERS, &wsadata) != 0)
-    {
-        printf("Failed to initialise Windows Sockets.\n");
+    #ifdef DEBUG
+        debug_file = fopen(DEBUG_FILE_NAME, "w+");
+    #endif
+  
+    printf("proxy: initializing...\r\n");
+    if ((proxy_hangsock = socket (AF_INET, SOCK_STREAM, 0))<0) {
+        fprintf (stderr, "proxy: Cannot open socket\n");
         exit(1);
     }
-#endif
 
+    int opt = 1;
+    if(setsockopt(proxy_hangsock, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)) == -1) {
+        perror("Couldn't set the SO_REUSEADDR.\r\n");
+        exit(1);
+    } 
 
+    proxy_name.sin_family=AF_INET;
+    proxy_name.sin_addr.s_addr=INADDR_ANY;
+    proxy_name.sin_port=htons(conf.get_local_port());
 
-#if defined Q_OS_LINUX || defined Q_OS_MACX || defined Q_OS_FREEBSD
-  signal (SIGXCPU, refresh);
-#endif
-
-  #ifdef DEBUG
-    debug_file = fopen(DEBUG_FILE_NAME, "w+");
-  #endif
-  
-  printf("proxy: initializing...\r\n");
-  if ((proxy_hangsock = socket (PF_INET, SOCK_STREAM, 0))<0)
-  {
-    fprintf (stderr, "proxy: Cannot open socket\n");
-    exit(1);
-  }
-
-  int opt = 1;
-  if(setsockopt(proxy_hangsock, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)) == -1) {
-      perror("Couldn't set the SO_REUSEADDR.\r\n");
-      exit(1);
-  } 
-
-  my_net_name.sin_family=AF_INET;
-  my_net_name.sin_addr.s_addr=INADDR_ANY;
-  my_net_name.sin_port=htons(conf.get_local_port());
-
-  his_net_name.sin_family=AF_INET;
-  his_net_name.sin_port=htons(conf.get_remote_port());
-
-  if ((hent=gethostbyname( (const char*) conf.get_remote_host()  ))==NULL)
-  {
-    fprintf (stderr, "proxy: %s: Unknown host\n", 
-                (const char*) conf.get_remote_host() );
-    exit(1);
-  }
-
-  his_net_name.sin_addr.s_addr=*((unsigned int *)hent->h_addr);
-
-  if (bind(proxy_hangsock, (struct sockaddr *)&my_net_name, sizeof(struct sockaddr_in)))
-  {
-    fprintf (stderr, "proxy: Cannot bind socket\n");
-    exit(1);
-  }
+    if (bind(proxy_hangsock, (struct sockaddr *)&proxy_name, sizeof(struct sockaddr_in))) {
+        fprintf (stderr, "proxy: Cannot bind socket\n");
+        exit(1);
+    }
 
   
-  printf("Proxy: ready and listening...\r\n");
-  listen(proxy_hangsock, MAXCONNECTIONS);
+    printf("Proxy: ready and listening...\r\n");
+    listen(proxy_hangsock, 1);
 
-  /*
-#ifdef NOBODY
-	setreuid (NOBODY, NOBODY);
-#endif
-#ifndef DEBUG
-  switch (fork())
-  {
-      case 0:
-           if (setsid() != -1) break;
-      case -1:
-           fprintf (stderr, "%s: Cannot set to background\n", argv[0]);
-           return -1;
-      default: return 0;
-  }
-#endif
-*/
   return 0;
 }
 
 
-int proxy_loop(void)
+int Proxy::loop(void)
 {
-  int i, n, max;
+  int  max;
+  fd_set   input, exc;
 
   while (1) {
     
-    FD_ZERO(&proxy_descr1);
-    FD_ZERO(&proxy_descr2);
+    FD_ZERO(&input);
+    FD_ZERO(&exc);
 
     max = 0;
-    n = 0;
-    for (i=0; i<MAXCONNECTIONS; i++)
-      if (juzer[i].sock > 0) {
-        n++;
-        FD_SET(juzer[i].sock, &proxy_descr1);
-        FD_SET(juzer[i].sock, &proxy_descr2);
-        if (juzer[i].sock>max) max = juzer[i].sock;
+    if (user.isConnected() > 0) {
+        int sock = user.getSocket();
+        FD_SET(sock, &input);
+        FD_SET(sock, &exc);
+        if (sock > max) 
+            max = sock;
           
-        if (!mud_emulation) {
-          FD_SET(juzer[i].sout, &proxy_descr1);
-          FD_SET(juzer[i].sout, &proxy_descr2);
-          if (juzer[i].sout>max) max = juzer[i].sout;
+        if (!mudEmulation) {
+            int sock = mud.getSocket();
+            FD_SET(sock, &input);
+            FD_SET(sock, &exc);
+            if (sock > max) 
+                max = sock;
         }
-      }
-  
-    FD_SET(proxy_hangsock, &proxy_descr1);
-
-    if (proxy_hangsock>max) 
-      max = proxy_hangsock;
-    
-    n = select (max+1, &proxy_descr1, NULL, &proxy_descr2, NULL);
-    {
-    int x, saddrlen;
-    saddrlen=sizeof(struct sockaddr_in);
-    if (FD_ISSET(proxy_hangsock, &proxy_descr1))
-    {
-      struct sockaddr_in mytempname;
-      int newsock;
-      
-      newsock=accept(proxy_hangsock, (struct sockaddr *)&mytempname, (socklen_t *) &saddrlen);
-      if (mud_emulation) {
-        char emulation_welcome_message[] = "Pandora MUD Emulation.\r\n";
-        useradd(newsock);
-        
-        send(newsock, emulation_welcome_message, strlen(emulation_welcome_message), 0); 
-        
-        send_line_to_user( "-->" );
-
-      }
-      
-      
-      if (newsock>0) {
-        int index, snew;
-        
-        mytempname.sin_family = his_net_name.sin_family;
-        mytempname.sin_addr.s_addr = his_net_name.sin_addr.s_addr;
-        mytempname.sin_port = his_net_name.sin_port;
-
-        if (!mud_emulation) {
-          if ((snew=socket(PF_INET, SOCK_STREAM, 0))>0) {
-            if (!connect(snew, (struct sockaddr *)&mytempname, sizeof(mytempname))) {
-              if ((index=useradd (newsock))>=0)
-                juzer[index].sout=snew;
-              else {
-                send(newsock, "------[ ERROR: Cannot create forward entry\n\r", 29, 0); 
-                shutdown (newsock,2); 
-                closesocket (newsock);
-              }
-            } else {
-              send(newsock, "------[ ERROR: Forwarder cannot connect to remote host.\n\r", 16, 0); 
-              shutdown (newsock,2); 
-              closesocket (newsock);
-            }
-          } else {
-            send(newsock, "------[ ERROR: Cannot create socket\n\r", 22, 0); 
-            shutdown (newsock,2); 
-            closesocket (newsock);
-          }
-        }
-      
-        renderer_window->enable_online_actions();
-/*        if (conf.is_prompt_IAC())
-            conf.send_IAC_prompt_request();    
-*/
-        Engine.clear(); /* clear event pipes */   
-      }
     }
+  
+    FD_SET(proxy_hangsock, &input);
+
+    if (proxy_hangsock > max) 
+        max = proxy_hangsock;
     
-    for (x=0; x<MAXCONNECTIONS; x++)
-      if (juzer[x].sock > 0)
-      {
-        if (FD_ISSET(juzer[x].sock, &proxy_descr2) || FD_ISSET(juzer[x].sout, &proxy_descr2))
-        {
-          userdel(juzer[x].sock);
-        } else {
-          if (FD_ISSET(juzer[x].sock,&proxy_descr1)) {
-            int rd;
-            char intbuff[PROXY_BUFFER_SIZE];
-
+    select (max+1 , &input, NULL, &exc, NULL);
+        
+    if (FD_ISSET(proxy_hangsock, &input)) 
+        incomingConnection();
+                
+    if (user.isConnected()) {
+        if (FD_ISSET(user.getSocket(), &exc) || FD_ISSET(mud.getSocket(), &exc))
+            shutdown();
+    
+        if (FD_ISSET(user.getSocket(),&input)) {
             /* user stream */
+            int size;
             
-            rd = recv(juzer[x].sock, intbuff, sizeof(intbuff), 0);
-            if (rd>0) {
-              #ifdef DEBUG
-                intbuff[rd] = 0;
-                fprintf(debug_file, "\r\n-received_from_user(len %i):\r\n", rd);
-                fwrite(intbuff, rd, 1, debug_file);
-                fflush(debug_file);
-              #endif
-              
-              dispatcher.analyze_user_stream(intbuff, &rd);
-              if (!mud_emulation) {
-                tcp_mutex.lock();
-
-                #ifdef DEBUG
-                  intbuff[rd] = 0;
-                  fprintf(debug_file, "\r\n-sent_to_mud(len %i):\r\n", rd);
-                  fwrite(intbuff, rd, 1, debug_file);
-                  fflush(debug_file);
-                #endif
-
-                send(juzer[x].sout, intbuff, rd, 0);
-              
-                tcp_mutex.unlock();
-              }
-              
+            size = user.read();
+            if (size >= 0) {
+                size = dispatcher.analyze_user_stream(user);
+                if (!mudEmulation) 
+                    mud.write(user.buffer, size);
             } else {
-              userdel(juzer[x].sock);
-            }
-
-          }
+                if (WSAGetLastError() == WSAEWOULDBLOCK) 
+                    continue;
+                shutdown();
+             }
+        }
           
-          if (mud_emulation)
+        if (mudEmulation)
             continue;
           
-          if (FD_ISSET(juzer[x].sout,&proxy_descr1)) {
-            int rd;
-            char intbuff[PROXY_BUFFER_SIZE];
+        if (FD_ISSET(mud.getSocket(),&input)) {
+            int size;
             
-            /* mud stream */
             
-            rd = recv(juzer[x].sout, intbuff, sizeof(intbuff), 0);
-            if (rd>0) {
-              #ifdef DEBUG
-                intbuff[rd] = 0;
-                fprintf(debug_file, "\r\n<-receive_from_mud(len %i)\r\n", rd);
-                fwrite(intbuff, rd, 1, debug_file);
-                fflush(debug_file);
-              #endif
-              
-              dispatcher.analyze_mud_stream(intbuff, &rd);
-              tcp_mutex.lock();
-
-              #ifdef DEBUG
-                intbuff[rd] = 0;
-                fprintf(debug_file, "\r\n<-sent_to_user(len %i)\r\n", rd);
-                fwrite(intbuff, rd, 1, debug_file);
-                fflush(debug_file);
-              #endif
-              
-              send(juzer[x].sock, intbuff, rd, 0);
-
-              tcp_mutex.unlock();
-              
+            size = mud.read();
+            if (size>0) {
+                size = dispatcher.analyze_mud_stream(mud);
+                user.write( mud.buffer, size );               
             } else { 
-              userdel(juzer[x].sock);
+                if (WSAGetLastError() == WSAEWOULDBLOCK) 
+                    continue;
+                shutdown();
             }
 
-          }
         }
-    
-      } /* if in for-cycle ends */
-      
-      
     }
-  }
+    
+  }     /* while loop ends */
+  
   return 0;
+}
 
+void Proxy::run()
+{
+    loop();
 }
 
 
-/* shutdown function to close sockets properly. */
-/* used in userfunc in mquit command */
-void proxy_shutdown()
+void Proxy::send_line_to_mud(char *line) 
 {
-  int i;
+    mud.send_line(line);    
+}
+
+void Proxy::send_line_to_user(char *line) 
+{
+    user.send_line(line);    
+}
+
+void Proxy::sendMudEmulationGreeting()
+{
+    user.send_line( "Pandora MUD Emulation.\r\n" );
+    user.send_line( "-->" );
+}
+
+bool Proxy::connectToMud()
+{
+    if (mud.openConnection(conf.get_remote_host(), conf.get_remote_port()) != true) {
+        user.send_line( "----[ Pandora: Failed to connect to remote host. See terminal log for details.\r\n");
+        return false;
+    } else 
+        return true;        
+        
+}
+
+
+void Proxy::incomingConnection()
+{
+    int newsock, size;
+    struct sockaddr_in networkName;
     
-  for (i=0; i<MAXCONNECTIONS; i++)
-    if (!juzer[i].sock) {
-      userdel(i);
+    
+    newsock = accept(proxy_hangsock, (struct sockaddr *)&networkName, (socklen_t *) &size);
+    if (newsock > 0) {
+        user.setConnection( newsock );
+        user.nonblock();                
+                
+        if (mudEmulation) 
+            sendMudEmulationGreeting();
+        else 
+            if (!connectToMud()) 
+                user.close();
+
+        renderer_window->enable_online_actions();
+        Engine.clear(); /* clear event pipes */   
+    }
+}
+
+
+void Proxy::shutdown()
+{
+    user.close();
+    user.clear();
+    if (!mudEmulation) {
+        mud.close();
+        mud.clear();
+    }
+}
+
+// ----------------------------------  ProxySocket ------------------------------------------
+void ProxySocket::send_line(char *line) 
+{
+    mutex.lock();
+    send(sock, line, strlen(line), 0);
+    mutex.unlock();
+}
+
+void ProxySocket::clear() { 
+    sock = 0;
+    mainState = 0;
+    subState = 0;
+    subchars.clear();
+    fragment.clear();
+    xmlMode = false;
+}
+
+void ProxySocket::close() {
+    printf("Closing the socket.\r\n");
+    ::closesocket(sock);               
+}
+
+ProxySocket::ProxySocket(bool xml) 
+{ 
+    clear(); 
+    setXmlTogglable( xml); 
+}
+
+int ProxySocket::getSocket()     
+{ 
+    return sock; 
+}
+
+bool ProxySocket::isXmlMode()    
+{ 
+    return xmlMode; 
+}
+
+void ProxySocket::setXmlMode( bool b ) 
+{ 
+    if (xmlTogglable && b) 
+        xmlMode = b; 
+}
+
+bool ProxySocket::isXmlTogglable()    
+{ 
+    return xmlTogglable; 
+}
+
+void ProxySocket::setXmlTogglable( bool b ) { 
+    xmlTogglable = b; 
+}
+
+bool ProxySocket::isConnected()
+{
+    if (sock)
+        return true;
+    else 
+        return false;
+}
+
+void ProxySocket::setConnection(int s)
+{
+    sock = s;
+}
+
+bool ProxySocket::openConnection(QByteArray name, int port)
+{
+//    struct sockaddr mytempname;
+    int snew;
+    struct sockaddr_in networkName;
+    struct hostent *h;
+
+    if (!(h = gethostbyname ( (const char*) name) ) ) {
+        fprintf(stderr, "Can't resolve host: %s.\n", (const char*) name);
+        return false;
     }
 
-  shutdown(proxy_hangsock, 2);
-  closesocket(proxy_hangsock);
-      
-#ifdef Q_OS_WIN32
-    WSACleanup();
-#endif
+    networkName.sin_addr.s_addr = *((unsigned int *) h->h_addr);     
+    networkName.sin_family = AF_INET;
+    networkName.sin_port = htons(port);
 
+    snew=socket(AF_INET, SOCK_STREAM, 0);
+    if (snew <= 0) {
+        printf("Cannot create new socket!\r\n");
+        return false;
+    }
+    if (!connect(snew, (struct sockaddr *)&networkName, sizeof(struct sockaddr_in))  )  {
+        sock = snew;
+    } else {
+        printf("Failed to connect to remote host!\r\n");
+        return false;
+    }
+
+    nonblock();                
+
+    return true;
+}
+
+int ProxySocket::read(char * buffer, int len)
+{
+    int rd;
+    
+    mutex.lock();
+    rd = recv(sock, buffer, len, 0);
+    #ifdef DEBUG
+        buffer[rd] = 0;
+        fprintf(debug_file, "<-Received(len %i)", rd);
+        fwrite(buffer, rd, 1, debug_file);
+        fflush(debug_file);
+    #endif
+    mutex.unlock();
+    return rd;
+}
+
+void ProxySocket::write(char *buffer, int len)
+{
+    mutex.lock();
+    #ifdef DEBUG
+        buffer[len] = 0;
+        fprintf(debug_file, "<-Written(len %i)", len);
+        fwrite(buffer, len, 1, debug_file);
+        fflush(debug_file);
+    #endif
+    send(sock, buffer, len, 0);
+    mutex.unlock();
+}
+
+int ProxySocket::read()
+{
+    length = read(buffer, sizeof(buffer) );
+    return length;
+}
+
+void ProxySocket::nonblock()
+{
+    unsigned long on = 1;
+    
+    ioctlsocket(sock, FIONBIO, &on);
 }

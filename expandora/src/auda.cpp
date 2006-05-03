@@ -31,23 +31,10 @@
 
 /* global flags */
 int glredraw = 1;		/* redraw is needed */
-int glquit = 0;			/* quiting ... */
-int mud_emulation = 0;          /* we are in emulation mode */
 
 
 
 
-/* PROXY THREAD DEFINES */
-class ProxyThread : public QThread {
-public:
-        virtual void run();
-} proxy_thread;
-
-void ProxyThread::run()
-{
-    proxy_loop();
-}
-/* PROX THREAD ENDS */
 
 void print_usage()
 {
@@ -75,6 +62,7 @@ int main(int argc, char *argv[])
     char    configfile[MAX_STR_LEN] = "configs/mume.xml"; 
     int     default_local_port = 3000;
     int     default_remote_port = 4242;
+    int     mud_emulation = 0;
 
 #ifdef Q_OS_MACX
     CFURLRef pluginRef = CFBundleCopyBundleURL(CFBundleGetMainBundle());
@@ -191,12 +179,9 @@ int main(int argc, char *argv[])
     }
     printf("Using database file : %s.\r\n", (const char*) conf.get_base_file() );
     
-    printf("Before %s.\r\n. ", (const char*) conf.get_remote_host() );
-
     if (override_remote_host[0] != 0) {
       conf.set_remote_host(override_remote_host);
     } else if ( conf.get_remote_host().isEmpty() ) {
-      printf("There...");
       conf.set_remote_host(default_remote_host);
     }
     printf("Using target hostname : %s.\r\n", (const char*) conf.get_remote_host() );
@@ -232,6 +217,8 @@ int main(int argc, char *argv[])
       stacker.swap();
     }
 
+    proxy.setMudEmulation( mud_emulation );
+
 
     printf("Starting renderer ...\n");
 
@@ -256,8 +243,8 @@ int main(int argc, char *argv[])
 
     renderer_window->show();
 
-    proxy_init();
-    proxy_thread.start();
-
+    proxy.init();
+    proxy.start();
+    
     return app.exec();
 }
