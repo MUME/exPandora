@@ -1,6 +1,13 @@
 #ifndef FORWARDER_H 
 #define FORWARDER_H 
 
+#if defined Q_OS_LINUX || defined Q_OS_MACX || defined Q_OS_FREEBSD
+    #define SOCKET int
+#elif defined Q_OS_WIN32
+    #include <winsock.h>
+#endif
+
+
 #define PROXY_BUFFER_SIZE 8192
 
 
@@ -36,7 +43,7 @@
 
 class ProxySocket {
     /* connection sockets */
-    int sock;
+    SOCKET sock;
     QMutex mutex;
     
 public:
@@ -49,7 +56,8 @@ public:
     ProxySocket(bool xml);
     
     /* xml flags */
-    bool xmlMode;
+    bool xmlMode;  int n;  
+
     bool xmlTogglable;
 
     QByteArray  subchars;
@@ -58,14 +66,14 @@ public:
     void close();
     void clear();
     void send_line(char *line);
-    int getSocket();
+    SOCKET getSocket();
     bool isXmlMode();
     void setXmlMode( bool b );
     bool isXmlTogglable();
     void setXmlTogglable( bool b );
     
     bool isConnected();
-    void setConnection(int sock);
+    void setConnection(SOCKET sock);
     bool openConnection(QByteArray name, int port); 
     
     void nonblock();
@@ -82,7 +90,7 @@ public:
 class Proxy : public QThread {
         ProxySocket             mud;
         ProxySocket             user;
-        int                             proxy_hangsock;
+        SOCKET                    proxy_hangsock;
 
         int      loop();
         bool    mudEmulation;

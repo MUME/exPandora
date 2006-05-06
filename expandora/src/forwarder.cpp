@@ -76,7 +76,7 @@ int Proxy::init()
     #endif
   
     printf("proxy: initializing...\r\n");
-    if ((proxy_hangsock = socket (AF_INET, SOCK_STREAM, 0))<0) {
+    if ((proxy_hangsock = socket (PF_INET, SOCK_STREAM, 0))<0) {
         fprintf (stderr, "proxy: Cannot open socket\n");
         exit(1);
     }
@@ -106,9 +106,9 @@ int Proxy::init()
 
 int Proxy::loop(void)
 {
-  int  max;
+  SOCKET  max;
   fd_set   input, exc;
-
+    
   while (1) {
     
     FD_ZERO(&input);
@@ -116,14 +116,14 @@ int Proxy::loop(void)
 
     max = 0;
     if (user.isConnected() > 0) {
-        int sock = user.getSocket();
+        SOCKET sock = user.getSocket();
         FD_SET(sock, &input);
         FD_SET(sock, &exc);
         if (sock > max) 
             max = sock;
           
         if (!mudEmulation) {
-            int sock = mud.getSocket();
+            SOCKET sock = mud.getSocket();
             FD_SET(sock, &input);
             FD_SET(sock, &exc);
             if (sock > max) 
@@ -138,7 +138,6 @@ int Proxy::loop(void)
     
     select (max+1 , &input, NULL, &exc, NULL);
         
-    printf("Selected!\r\n");
     if (FD_ISSET(proxy_hangsock, &input)) 
         if (!user.isConnected())
             incomingConnection();
@@ -151,13 +150,10 @@ int Proxy::loop(void)
             /* user stream */
             int size;
             
-            printf("Reading from user\r\n");
             size = user.read();
             if (size > 0) {
-                printf("Parsing ....\r\n");
                 size = dispatcher.analyze_user_stream(user);
                 if (!mudEmulation) {
-                    printf("Writing to mud\r\n");
                     mud.write(user.buffer, size);
                 }
             } else {
@@ -173,12 +169,9 @@ int Proxy::loop(void)
         if (FD_ISSET(mud.getSocket(),&input)) {
             int size;
             
-            printf("Reading from mud\r\n");
             size = mud.read();
             if (size>0) {
-                printf("Parsing\r\n");
                 size = dispatcher.analyze_mud_stream(mud);
-                printf("Writing to user\r\n");
                 user.write( mud.buffer, size );               
             } else { 
                 if (WSAGetLastError() == WSAEWOULDBLOCK) 
@@ -232,11 +225,13 @@ bool Proxy::connectToMud()
 
 void Proxy::incomingConnection()
 {
-    int newsock, size;
+    SOCKET newsock;
+    int size;
     struct sockaddr_in networkName;
     
     printf("Incoming connection!\r\n");
     
+    size = sizeof(struct sockaddr_in);
     newsock = accept(proxy_hangsock, (struct sockaddr *)&networkName, (socklen_t *) &size);
     if (newsock != INVALID_SOCKET) {
         user.setConnection( newsock );
@@ -290,6 +285,7 @@ void ProxySocket::clear() {
 }
 
 void ProxySocket::close() {
+    ::shutdown(sock, 2);
     printf("Closing the socket.\r\n");
     ::closesocket(sock);               
 }
@@ -300,7 +296,7 @@ ProxySocket::ProxySocket(bool xml)
     setXmlTogglable( xml); 
 }
 
-int ProxySocket::getSocket()     
+SOCKET ProxySocket::getSocket()     
 { 
     return sock; 
 }
@@ -333,7 +329,7 @@ bool ProxySocket::isConnected()
         return false;
 }
 
-void ProxySocket::setConnection(int s)
+void ProxySocket::setConnection(SOCKET s)
 {
     sock = s;
 }
@@ -341,7 +337,7 @@ void ProxySocket::setConnection(int s)
 bool ProxySocket::openConnection(QByteArray name, int port)
 {
 //    struct sockaddr mytempname;
-    int snew;
+    SOCKET snew;
     struct sockaddr_in networkName;
     struct hostent *h;
 
