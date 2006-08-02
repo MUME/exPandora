@@ -354,6 +354,10 @@ MainWindow::MainWindow(QWidget *parent)
   setCentralWidget( renderer );
   resize(640, 480);
 
+  connect(&proxy, SIGNAL(connectionEstablished()), this, SLOT(enable_online_actions()));
+  connect(&proxy, SIGNAL(connectionLost()), this, SLOT(disable_online_actions()));
+  
+
   /* creating actions and connecting them here */
   newAct = new QAction(tr("&New"), this);
   newAct->setShortcut(tr("Ctrl+N"));
@@ -506,7 +510,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   saveConfigAsAct= new QAction(tr("Save Configuration As ..."), this);
   saveConfigAsAct->setStatusTip(tr("Save current configuration to a different file"));
-  connect(saveConfigAsAct, SIGNAL(triggered()), this, SLOT(saveConfigAs()));    
+  connect(saveConfigAsAct, SIGNAL(triggered()), this, SLOT(saveAsConfig()));    
 
   loadConfigAct= new QAction(tr("Load Configuration"), this);
   loadConfigAct->setStatusTip(tr("Save current configuration to a different file"));
@@ -525,7 +529,7 @@ MainWindow::MainWindow(QWidget *parent)
   optionsMenu->addAction(spellsAct);  
   optionsMenu->addSeparator();
   optionsMenu->addAction(saveConfigAct);
-  optionsMenu->addAction(saveConfigAsAct);
+//  optionsMenu->addAction(saveConfigAsAct);
   optionsMenu->addAction(loadConfigAct);
     
   

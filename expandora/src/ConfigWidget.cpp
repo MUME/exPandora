@@ -17,7 +17,6 @@ ConfigWidget::ConfigWidget (QWidget *parent) : QDialog(parent)
 
 void ConfigWidget::run()
 {
-
     if (conf.get_brief_mode()) 
         checkBox_brief->setChecked(true);
     else 

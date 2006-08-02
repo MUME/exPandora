@@ -210,6 +210,13 @@ const struct user_command_type user_commands[] = {
     "If there is no connection in given direction an undefined connection will\r\n"
     "be created. Any existing doorname will be removed - so take care.\r\n"
     "   Note that remove has to be written fully and not in capitals.\r\n"},
+  
+  {"mnote",             usercmd_mnote,   0,  USERCMD_FLAG_SYNC,
+    "Add a note to the room you are standing in",
+    "   Usage: mdoor <note>\r\n"
+    "   Examples: mnote There is a huge nasty mob living in there! \r\n" 
+    "Adds a note to the room.\r\n"},
+  
   {"mexit",             usercmd_mdoor,   USER_DOOR_EXIT,     USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
     "Add a nonsecret door",
     "   Usage: mdoor <doorname> <dirrection>\r\n"
@@ -644,6 +651,23 @@ USERCMD(usercmd_mdelete)
   stacker.swap();
   
   send_to_user("--[ Removed.\r\n");
+  send_to_user( (const char *) Engine.get_prompt());
+  return USER_PARSE_SKIP;
+}
+
+
+USERCMD(usercmd_mnote)
+{
+  char *p;
+  CRoom *r;
+
+  userfunc_print_debug;
+  
+  r = stacker.first();
+
+  p = skip_spaces(line);
+  r->refresh_note(p);
+  send_to_user("--[ Added.\r\n");
   send_to_user( (const char *) Engine.get_prompt());
   return USER_PARSE_SKIP;
 }

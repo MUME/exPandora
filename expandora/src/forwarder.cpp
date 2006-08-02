@@ -1,4 +1,4 @@
-#define DEBUG
+//#define DEBUG
 
 #include <csignal>
 #include <qglobal.h>
@@ -76,7 +76,7 @@ int Proxy::init()
     #endif
   
     printf("proxy: initializing...\r\n");
-    if ((proxy_hangsock = socket (PF_INET, SOCK_STREAM, 0))<0) {
+    if ((proxy_hangsock = socket (AF_INET, SOCK_STREAM, 0))<0) {
         fprintf (stderr, "proxy: Cannot open socket\n");
         exit(1);
     }
@@ -98,7 +98,7 @@ int Proxy::init()
 
   
     printf("Proxy: ready and listening...\r\n");
-    listen(proxy_hangsock, 1);
+    listen(proxy_hangsock, 3);
 
   return 0;
 }
@@ -106,37 +106,34 @@ int Proxy::init()
 
 int Proxy::loop(void)
 {
-  SOCKET  max;
-  fd_set   input, exc;
-    
+    fd_set   input, exc;
+    int n;
+        
   while (1) {
     
     FD_ZERO(&input);
     FD_ZERO(&exc);
 
-    max = 0;
     if (user.isConnected() > 0) {
         SOCKET sock = user.getSocket();
         FD_SET(sock, &input);
         FD_SET(sock, &exc);
-        if (sock > max) 
-            max = sock;
           
         if (!mudEmulation) {
             SOCKET sock = mud.getSocket();
             FD_SET(sock, &input);
             FD_SET(sock, &exc);
-            if (sock > max) 
-                max = sock;
         }
     }
   
     FD_SET(proxy_hangsock, &input);
 
-    if (proxy_hangsock > max) 
-        max = proxy_hangsock;
-    
-    select (max+1 , &input, NULL, &exc, NULL);
+    n = select (FD_SETSIZE , &input, NULL, &exc, NULL);
+    if (n < 0) {
+        /* .... */
+        printf("Networking error: Select failed.  Quiting.\r\n"); 
+        exit(1);
+    }
         
     if (FD_ISSET(proxy_hangsock, &input)) 
         if (!user.isConnected())
@@ -229,11 +226,11 @@ void Proxy::incomingConnection()
     int size;
     struct sockaddr_in networkName;
     
-    printf("Incoming connection!\r\n");
+//    printf("Incoming connection!\r\n");
     
     size = sizeof(struct sockaddr_in);
     newsock = accept(proxy_hangsock, (struct sockaddr *)&networkName, (socklen_t *) &size);
-    if (newsock != INVALID_SOCKET) {
+    if (newsock > 0) {
         user.setConnection( newsock );
 //        user.nonblock();                
                 
@@ -243,10 +240,14 @@ void Proxy::incomingConnection()
             if (!connectToMud()) 
                 user.close();
 
-        renderer_window->enable_online_actions();
+        emit connectionEstablished();
         Engine.clear(); /* clear event pipes */   
     } else {
-        printf("Connection to user failed! newsocked is not > 0!\r\n");
+//        printf("Connection to user failed! New  socket is not valid.\r\n");
+//          printf(".");
+//        ::shutdown(newsock, 2);
+//        ::closesocket(newsock);
+//        user.close();
     }
 }
 
@@ -262,9 +263,10 @@ void Proxy::shutdown()
         mud.clear();
     }
     
-    #ifdef Q_OS_WIN32
-        WSACleanup();
-    #endif
+    emit connectionLost();
+//    #ifdef Q_OS_WIN32
+//        WSACleanup();
+//    #endif
 }
 
 // ----------------------------------  ProxySocket ------------------------------------------

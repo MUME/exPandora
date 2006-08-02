@@ -7,6 +7,8 @@
     #include <winsock.h>
 #endif
 
+#define SOCKET int
+
 
 #define PROXY_BUFFER_SIZE 8192
 
@@ -52,8 +54,8 @@ public:
     char                          buffer[PROXY_BUFFER_SIZE];
     int                             length;
     
-    ProxySocket() {}
     ProxySocket(bool xml);
+    ProxySocket() {};
     
     /* xml flags */
     bool xmlMode;  int n;  
@@ -82,12 +84,15 @@ public:
     int read();     // read stuff in internal buffer 
     int read(char *buf, int len);
     void write(char *buf, int len);
+
 };
 
 
 
 /* PROXY THREAD DEFINES */
 class Proxy : public QThread {
+        Q_OBJECT
+        
         ProxySocket             mud;
         ProxySocket             user;
         SOCKET                    proxy_hangsock;
@@ -109,6 +114,9 @@ public:
         void setMudEmulation(bool b) { mudEmulation = b; }
         void shutdown();
         
+signals:
+    void connectionEstablished();
+    void connectionLost();
 };
 
 /* PROX THREAD ENDS */

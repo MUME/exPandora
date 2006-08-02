@@ -404,14 +404,15 @@ void Cdispatcher::dispatch_buffer(ProxySocket &c)
 QByteArray Cdispatcher::cutColours(QByteArray line)
 {
     QByteArray res;
-    unsigned int i;
+    int i;
     bool skip = false;
     
-    for (i =0; i < strlen(line); i++) {
-        if (line.at(i+1) == 0x8 && (line.at(i) == '|' || line.at(i) == '-' || line.at(i) == '\\' || line.at(i) == '/')) {
-            i += 1; /*properller char*/
-            continue;   /* and the next one and move on with the same check */
-        }    
+    for (i =0; i < line.length(); i++) {
+        if (line.at(i) == '|' || line.at(i) == '-' || line.at(i) == '\\' || line.at(i) == '/') 
+            if ((i+1) < line.length() && line.at(i+1) == 0x8) {
+                 i += 1; /*properller char*/
+                 continue;   /* and the next one and move on with the same check */
+            }
         
         if (line.at(i) == 0xa || line.at(i) == 0xd)
             continue;                                       /* skip newlines */
@@ -434,7 +435,6 @@ QByteArray Cdispatcher::cutColours(QByteArray line)
 
 #define SEND_EVENT_TO_ENGINE \
                     {   \
-                    printf("SENDING event to analyzer!\r\n");   \
                     awaitingData = false;               \
                     Engine.add_event(event);                            \
                     event.clear();                  \
@@ -450,8 +450,8 @@ int Cdispatcher::analyze_mud_stream(ProxySocket &c)
     char *buf;
     
     
-    printf("---------- mud input -----------\r\n");
-    printf("Buffer size %i\r\n", c.length);
+//    printf("---------- mud input -----------\r\n");
+//    printf("Buffer size %i\r\n", c.length);
 
     dispatch_buffer(c);
     

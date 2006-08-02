@@ -81,8 +81,10 @@ public:
     QAction       *hide_status_action;
     QAction       *hide_menu_action;
     
-    void disable_online_actions();
-    void enable_online_actions();
+
+public slots:
+  void disable_online_actions();
+  void enable_online_actions();
 
     
 private slots:

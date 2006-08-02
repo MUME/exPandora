@@ -38,6 +38,10 @@ USERCMD(usercmd_mdebug);
 USERCMD(usercmd_mdelete);
 USERCMD(usercmd_mrefresh);
 USERCMD(usercmd_maddroom);
+USERCMD(usercmd_mnote);
+
+
+
 
 
 struct user_command_type {
