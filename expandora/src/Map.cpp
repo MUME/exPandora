@@ -35,8 +35,8 @@ int roommanager::try_merge_rooms(CRoom *r, CRoom *copy, int j)
     
     p = getroom(oneway_room_id);
     for (i = 0; i <= 5; i++)
-        if (p->exits[i] == copy->id) 
-            p->exits[i] = r->id;
+        if (p->getExit(i) == copy) 
+            p->setExit(i, r);
     
     small_delete_room(copy);
 
@@ -44,12 +44,12 @@ int roommanager::try_merge_rooms(CRoom *r, CRoom *copy, int j)
     stacker.put(r);
     return 1;
   }
-  if (r->exits[j] == EXIT_UNDEFINED) {
-    r->exits[j] = copy->exits[j];
+  if ( r->isExitUndefined(j) ) {
+    r->setExit(j, copy->getExit(j) );
                       
-    p = getroom(copy->exits[j]);
-    if (p->exits[reversenum(j)] == copy->id)
-        p->exits[reversenum(j)] = r->id;
+    p = copy->getExit(j);
+    if (p->getExit( reversenum(j) ) == copy)
+        p->setExit( reversenum(j), r);
         
     small_delete_room(copy);
 
@@ -86,11 +86,11 @@ CRoom *roommanager::getroom(unsigned int id)
 
 /* ----------- getroom ENDS --------- */
 
-char *roommanager::getname(unsigned int id) 
+QByteArray roommanager::getname(unsigned int id) 
 {     
     if (ids[id])
-        return (*(ids[id])).name;
-    return NULL;
+        return (*(ids[id])).getName();
+    return "";
 }
 
 /* ------------ addroom --------------*/
@@ -105,7 +105,7 @@ void roommanager::addroom_nonsorted(CRoom *room)
 
   rooms.push_back(room);
   ids[room->id] = room;	/* add to the first array */
-  NameMap.addname(room->name, room->id);	/* update name-searhing engine */
+  NameMap.addname(room->getName(), room->id);	/* update name-searhing engine */
 
   fixfree();
   add_to_plane(room);
@@ -186,15 +186,11 @@ void roommanager::delete_room(CRoom *r, int mode)
     /* have to do this because of possible oneways leading in */
     for (i = 0; i < rooms.size(); i++) 
 	for (k = 0; k <= 5; k++)
-	    if (rooms[i]->exits[k] == r->id) {
+	    if (rooms[i]->getExit(k) == r) {
                 if (mode == 0) {
-		    rooms[i]->exits[k] = 0;
-                    if (rooms[i]->doors[k] != NULL) {
-                        delete rooms[i]->doors[k];
-                        rooms[i]->doors[k] = NULL;
-                    }
+                    rooms[i]->removeExit(k);
                 } else if (mode == 1) {
-                    rooms[i]->exits[k] = EXIT_UNDEFINED;
+                    rooms[i]->setExitUndefined(k);
                 }
 	    }
 
@@ -214,10 +210,10 @@ void roommanager::small_delete_room(CRoom *r)
     stacker.remove_room(r->id);
     
     vector<CRoom *>::iterator i;
-    ids[r->id] = NULL;
+    ids[ r->id ] = NULL;
     
     for (i = rooms.begin(); i != rooms.end(); i++)
-        if ((*i)->id == r->id) {
+        if ((*i)->id == r->id ) {
             printf("Deleting the room from rooms vector.\r\n");
             i = rooms.erase(i);
             break;
@@ -355,7 +351,7 @@ void roommanager::remove_from_plane(CRoom *room)
     CPlane *p;
     
     p = planes;
-    while (p->z != room->z) {
+    while (p->z != room->getZ()) {
         if (!p) {
             printf(" FATAL ERROR. remove_fromplane() the given has impossible Z coordinate!\r\n");
             return;     /* no idea what happens next ... */
@@ -377,7 +373,7 @@ void CSquare::remove(CRoom *room)
         if (!p->to_be_passed()) {       
             /* just for check */
             for (i=p->rooms.begin(); i != p->rooms.end(); ++i) {
-                if (room->id == ((*i)->id)) {
+                if ( room->id == ((*i)->id) ) {
                     i = p->rooms.erase(i);
                     return;
                 }
@@ -389,7 +385,7 @@ void CSquare::remove(CRoom *room)
 
 int CSquare::get_mode(CRoom *room)
 {
-    return get_mode(room->x, room->y);
+    return get_mode(room->getX(), room->getY());
 }
 
 int CSquare::get_mode(int x, int y)
@@ -413,8 +409,8 @@ bool CSquare::is_inside(CRoom *room)
 {
     /* note : right and lower borders are inclusive */
     
-    if ((leftx <  room->x) && (rightx >= room->x) &&  
-        (lefty >  room->y) && (righty <= room->y)    )
+    if ((leftx <  room->getX()) && (rightx >= room->getX()) &&  
+        (lefty >  room->getY()) && (righty <= room->getY())    )
         return true;    /* yes the room is inside this square then */
     
     return false; /* else its not */
@@ -438,13 +434,13 @@ CPlane::CPlane(CRoom *room)
 {
     next = NULL;
 
-    z = room->z;
+    z = room->getZ();
 
     
-    squares = new CSquare(  room->x - ( MAX_SQUARE_SIZE - 1) / 2,  
-                            room->y + ( MAX_SQUARE_SIZE - 1 ) / 2,
-                            room->x + ( MAX_SQUARE_SIZE - 1 ) / 2,
-                            room->y - ( MAX_SQUARE_SIZE - 1 ) / 2);
+    squares = new CSquare(  room->getX() - ( MAX_SQUARE_SIZE - 1) / 2,  
+                            room->getY() + ( MAX_SQUARE_SIZE - 1 ) / 2,
+                            room->getX() + ( MAX_SQUARE_SIZE - 1 ) / 2,
+                            room->getY() - ( MAX_SQUARE_SIZE - 1 ) / 2);
 
 /*    printf("Created a new square lx ly: %i %i, rx ry: %i %i, cx cy: %i %i, for room x y: %i %i\r\n",
             squares->leftx, squares->lefty, squares->rightx, squares->righty, 
@@ -468,7 +464,7 @@ void  roommanager::add_to_plane(CRoom *room)
     p = planes;
     prev = NULL;
     while (p) {
-        if (room->z < p->z) {
+        if (room->getZ() < p->z) {
             tmp = new CPlane(room);
             tmp->next = p;
             if (prev)
@@ -478,7 +474,7 @@ void  roommanager::add_to_plane(CRoom *room)
             return;
         }
         /* existing plane with already set borders */
-        if (room->z == p->z) {
+        if (room->getZ() == p->z) {
             expand_plane(p, room);
             return;
         }

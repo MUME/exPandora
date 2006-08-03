@@ -242,9 +242,9 @@ void RendererWidget::glDrawMarkers()
             continue;
         }
     
-        dx = p->x - curx;
-        dy = p->y - cury;
-        dz = (p->z - curz) /* * DIST_Z */;
+        dx = p->getX() - curx;
+        dy = p->getY() - cury;
+        dz = (p->getZ() - curz) /* * DIST_Z */;
     
 
         drawMarker(dx, dy, dz, 1);
@@ -260,9 +260,9 @@ void RendererWidget::glDrawMarkers()
         glColor4f(marker_colour[0] / 1.1, marker_colour[1] / 1.5, marker_colour[2] / 1.5, marker_colour[3] / 1.5);
         p = Map.getroom(last_drawn_trail);
         if (p != NULL) {
-            dx = p->x - curx;
-            dy = p->y - cury;
-            dz = (p->z - curz) ;
+            dx = p->getX() - curx;
+            dy = p->getY() - cury;
+            dz = (p->getZ() - curz) ;
             drawMarker(dx, dy, dz, 2);
         }
     }
@@ -282,9 +282,9 @@ void RendererWidget::glDrawRoom(CRoom *p)
 
     rooms_drawn_csquare++;
     
-    dx = p->x - curx;
-    dy = p->y - cury;
-    dz = (p->z - curz) /* * DIST_Z */;
+    dx = p->getX() - curx;
+    dy = p->getY() - cury;
+    dz = (p->getZ() - curz) /* * DIST_Z */;
     dx2 = 0;
     dy2 = 0;
     dz2 = 0;
@@ -308,10 +308,10 @@ void RendererWidget::glDrawRoom(CRoom *p)
 
     
     glTranslatef(dx, dy, dz);
-    if (p->sector && texture) {
+    if (p->getTerrain() && texture) {
       glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, conf.sectors[ p->sector].texture);
-      glCallList(conf.sectors[ p->sector].gllist);  
+      glBindTexture(GL_TEXTURE_2D, conf.sectors[ p->getTerrain() ].texture);
+      glCallList(conf.sectors[ p->getTerrain() ].gllist);  
       glDisable(GL_TEXTURE_2D);
     } else {
       glCallList(basic_gllist);
@@ -323,16 +323,16 @@ void RendererWidget::glDrawRoom(CRoom *p)
       return;
     
     for (k = 0; k <= 5; k++) 
-      if (p->exits[k] != 0) {
-        if (p->exits[k] < EXIT_UNDEFINED) {
+      if (p->getExit(k) != 0) {
+        if (p->isExitNormal(k)) {
             GLfloat kx, ky, kz;
             GLfloat sx, sy;
 
-            r = Map.ids[p->exits[k]];
+            r = p->getExit(k);
 
-            dx2 = r->x - curx;
-            dy2 = r->y - cury;
-            dz2 = (r->z - curz) /* * DIST_Z */;
+            dx2 = r->getX() - curx;
+            dy2 = r->getY() - cury;
+            dz2 = (r->getZ() - curz) /* * DIST_Z */;
 
             dx2 = (dx + dx2) / 2;
             dy2 = (dy + dy2) / 2;
@@ -375,8 +375,8 @@ void RendererWidget::glDrawRoom(CRoom *p)
                 sx = 0;
                 sy = 0;
             } 
-            if (p->doors[k] != NULL) {
-                if (strcmp(p->doors[k], "exit") == 0) {
+            if (p->getDoor(k) != "") {
+                if (p->getDoor(k) == "exit") {
                     glColor4f(0, 1.0, 0.0, colour[3] + 0.2);
                 } else {
                     glColor4f(1.0, 0.0, 0.0, colour[3] + 0.2);
@@ -443,11 +443,11 @@ void RendererWidget::glDrawRoom(CRoom *p)
             }
 
 
-            if (p->exits[k] == EXIT_UNDEFINED) {
+            if (p->isExitUndefined(k)) {
               glColor4f(1.0, 1.0, 0.0, colour[3] + 0.2);
             } 
             
-            if (p->exits[k] == EXIT_DEATH) {
+            if (p->isExitDeath(k)) {
                 glColor4f(1.0, 0.0, 0.0, colour[3] + 0.2);
             } 
 
@@ -458,7 +458,7 @@ void RendererWidget::glDrawRoom(CRoom *p)
             glEnd();
             
             GLuint death_terrain = conf.get_texture_by_desc("DEATH");
-            if (death_terrain && p->exits[k] == EXIT_DEATH) {
+            if (death_terrain && p->isExitDeath(k)) {
               glTranslatef(dx2 + kx, dy2 + ky, dz2);
               
               glEnable(GL_TEXTURE_2D);
@@ -554,9 +554,9 @@ void RendererWidget::draw(void)
     if (stacker.amount() >= 1) {
 	p = stacker.first();
         if (p != NULL) {
-            curx = p->x;
-            cury = p->y;
-            curz = p->z;
+            curx = p->getX();
+            cury = p->getY();
+            curz = p->getZ();
         } else {
             printf("RENDERER ERROR: cant get base coordinates.\r\n");
         }

@@ -86,7 +86,7 @@ public:
   
   
   CRoom * getroom(unsigned int id); /* get room by id */
-  char *getname(unsigned int id);
+  QByteArray getname(unsigned int id);
   
   
     

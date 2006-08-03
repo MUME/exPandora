@@ -301,9 +301,9 @@ void MainWindow::publish_map()
             r = stacker.get(i);
             mark[r->id] = true;
             for (z = 0; z <= 5; z++) {
-                if (r->is_connected(z) && mark[r->exits[z]] != true ) {
-                    if ( (r->doors[z] == NULL) || (r->doors[z] && (strcmp(r->doors[z], "exit") == 0)) ) {
-                        stacker.put(r->exits[z]);
+                if (r->isConnected(z) && mark[ r->getExit(z)->id  ] != true ) {
+                    if ( r->isDoorSecret(z) == true  ) {
+                        stacker.put(r->getExit(z)->id);
                     }
                 }
             }
@@ -327,9 +327,9 @@ void MainWindow::publish_map()
         r = Map.rooms[i];
         if (r) {
             for (z = 0; z <= 5; z++) {
-                if (r->doors[z] && (strcmp(r->doors[z], "exit") != 0)) {
+                if ( r->isDoorSecret(z) == true ) {
                     printf("Secret door was still in database...\r\n");
-                    r->remove_door(z);
+                    r->removeDoor(z);
                 }
             }
         }

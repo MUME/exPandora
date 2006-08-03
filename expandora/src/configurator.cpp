@@ -134,7 +134,7 @@ QString Cconfigurator::spell_up_for(unsigned int p)
 /* ------------------- DATA ------------------- */
 char Cconfigurator::get_pattern_by_room(CRoom *r)
 {
-    return sectors.at(r->sector).pattern;
+    return sectors.at(r->getTerrain()).pattern;
 }
 
 int Cconfigurator::get_sector_by_desc(QByteArray desc)

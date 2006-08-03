@@ -31,20 +31,20 @@ void do_exits(const char *exits_line)
                     "Exits: Adding exits information to the new room.");
 
     for (i = 0; i <= 5; i++) {
-        if (r->exits[i] > 0) {
+        if (r->getExit(i) != NULL) {
             if (exits[i] == 0) {	/* oneway case */
-                Map.oneway_room_id = r->exits[i];
-                r->exits[i] = 0;
+                Map.oneway_room_id = r->getExit(i)->id;
+                r->setExit(i, (CRoom*) NULL);
             }
                 
             if (exits[i] == E_CLOSEDDOOR) 
-                r->doors[i] = strdup("exit");
+                r->setDoor(i, "exit");
                 
                 
             continue;
         }
         if (exits[i] == E_CLOSEDDOOR) {
-            r->doors[i] = strdup("exit");
+            r->setDoor(i, "exit");
         }
             
         if (exits[i] == E_PORTAL) {
@@ -52,7 +52,7 @@ void do_exits(const char *exits_line)
         }
             
         if ((exits[i] > 0) && (exits[i] != E_PORTAL))
-            r->exits[i] = EXIT_UNDEFINED;
+            r->setExitUndefined(i);
         }
 
         stacker.put(Engine.addedroom);
@@ -64,6 +64,8 @@ int compare_exits(CRoom *p, int exits[])
 {
     int counter;
     int i;
+    CRoom *localExit;
+    QByteArray localDoor;
 
     counter = 0;
     /* for each door there are following situations : */
@@ -74,8 +76,10 @@ int compare_exits(CRoom *p, int exits[])
 
     print_debug(DEBUG_ANALYZER, "compare_exits called.");
     for (i = 0; i <= 5; i++) {
-        if ((exits[i] == 3) && (p->exits[i] > 0) && (p->doors[i] != NULL))
-            if (strcmp("exit", p->doors[i]) != 0)
+        localExit = p->getExit(i);
+        localDoor = p->getDoor(i);
+        if ((exits[i] == 3) && (localExit != NULL) && (localDoor != ""))
+            if (localDoor != "exit")
                 break;		/* situation 0) */
 
             if (exits[i] == 4) {
@@ -83,22 +87,22 @@ int compare_exits(CRoom *p, int exits[])
 	    	continue;
             }
 
-            if ((exits[i] == 2) && (p->exits[i] > 0) && (p->doors[i] == NULL))
+            if ((exits[i] == 2) && (localExit != NULL) && (localDoor != ""))
 	    	break;		/* situation 1) */
 
 
-            if ((exits[i] > 0) && (p->exits[i] > 0)) {
+            if ((exits[i] > 0) && (localExit != NULL)) {
 	    	counter++;
 	    	continue;
             }
 
-            if ((exits[i] == 0) && (p->exits[i] > 0) && (p->doors[i] != NULL))
-	    	if (strcmp("exit", p->doors[i]) != 0) {
+            if ((exits[i] == 0) && (localExit != NULL) && (localDoor != ""))
+	    	if (localDoor != "exit") {
                     counter++;
                     continue;
 	    	}
             
-            if ((exits[i] == 0) && (p->exits[i] == 0)) {
+            if ((exits[i] == 0) && (localExit != NULL)) {
                 counter++;
                 continue;
             }

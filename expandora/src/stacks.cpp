@@ -22,7 +22,7 @@ void stackmanager::get_current(char *str)
     return;
   }
   
-  sprintf(str, "%i", ((*sa)[0])->id);
+  sprintf(str, "%i", ((*sa)[0])->id );
 }
 
 

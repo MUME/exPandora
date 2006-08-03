@@ -473,17 +473,17 @@ USERCMD(usercmd_maddroom)
   
 
   r->id = Map.next_free;
-  r->name = strdup(Engine.get_roomname() );
-  r->desc = strdup(Engine.get_desc() );
-  r->refresh_terrain(Engine.get_terrain() );
+  r->setName( Engine.get_roomname() );
+  r->setDesc(Engine.get_desc() );
+  r->setTerrain(Engine.get_terrain() );
   
   
   Engine.addedroom = r;
   do_exits(Engine.get_exits());
   
-  r->x = 100;
-  r->y = 100;
-  r->z = 100;
+  r->setX(100);
+  r->setY(100);
+  r->setZ(100);
   
   Map.addroom(r);
   
@@ -577,26 +577,26 @@ USERCMD(usercmd_maction)
       int z;
       
       for (z = 0; z <= 5; z++)
-        if (r->doors[z] != NULL && strcmp(r->doors[z], "exit") != 0 ) {
+        if (r->isDoorSecret(z) == true) {
           if (!local) {
             //send_to_mud("%s %s %s\n", arg, r->doors[z] , short_exits[z]);
             if (strlen(original) != 0) strcat(original, "\n");
-            sprintf(original+strlen(original), "%s %s %s", arg, r->doors[z] , short_exits[z]);
+            sprintf(original+strlen(original), "%s %s %s", arg, (const char *) r->getDoor(z) , short_exits[z]);
           }
-          send_to_user("%s %s %s\r\n", arg, r->doors[z] , short_exits[z]);
+          send_to_user("%s %s %s\r\n", arg, (const char *) r->getDoor(z) , short_exits[z]);
         }
         
     } else {
       
-      if (r->doors[dir] == NULL || ( strcmp(r->doors[dir], "exit") == 0 )) {
+      if (r->isDoorSecret(dir) == false) {
         exit = 1;         /* set the flag that 'exit' exit should be opened */
       } else {
         if (!local) {
           //send_to_mud("%s %s %s\n", arg, r->doors[dir] , short_exits[dir]);
           if (strlen(original) != 0) strcat(original, "\n");
-          sprintf(original+strlen(original), "%s %s %s", arg, r->doors[dir] , short_exits[dir]);
+          sprintf(original+strlen(original), "%s %s %s", arg, (const char *) r->getDoor(dir) , short_exits[dir]);
         }
-        send_to_user("%s %s %s\r\n", arg, r->doors[dir] , short_exits[dir]);
+        send_to_user("%s %s %s\r\n", arg, (const char *) r->getDoor(dir) , short_exits[dir]);
       }
       
     }
@@ -666,7 +666,7 @@ USERCMD(usercmd_mnote)
   r = stacker.first();
 
   p = skip_spaces(line);
-  r->refresh_note(p);
+  r->setNote(p);
   send_to_user("--[ Added.\r\n");
   send_to_user( (const char *) Engine.get_prompt());
   return USER_PARSE_SKIP;
@@ -693,9 +693,9 @@ USERCMD(usercmd_mrefresh)
   userfunc_print_debug;
   skip_spaces(line);
 
-  stacker.first()->refresh_roomname(Engine.get_roomname());
-  stacker.first()->refresh_desc(Engine.get_desc());
-  stacker.first()->refresh_terrain(Engine.get_terrain()); 
+  stacker.first()->setName(Engine.get_roomname());
+  stacker.first()->setDesc(Engine.get_desc());
+  stacker.first()->setTerrain(Engine.get_terrain()); 
 
   send_to_user("--[ Refreshed.\r\n");
   send_to_user( (const char *) Engine.get_prompt());
@@ -735,14 +735,14 @@ USERCMD(usercmd_mgoto)
     
     PARSE_DIR_ARGUMENT(dir, arg);
 
-    if ( !r->is_connected(dir) ) {
+    if ( r->isConnected(dir) == false ) {
       send_to_user("--[ Bad direction - there is no connection.\r\n", arg);
       send_to_user( (const char *) Engine.get_prompt());
       return USER_PARSE_SKIP;
     }
 
     Engine.setMgoto(true);  /* ignore prompt while we are in mgoto mode */
-    stacker.put(r->exits[dir]);
+    stacker.put(r->getExit(dir)->id);
     stacker.swap();
   }
     
@@ -782,14 +782,12 @@ USERCMD(usercmd_mdetach)
   }
   
   r = stacker.first();
-  if (r->exits[dir] != 0) {
-    s = Map.getroom(r->exits[dir]);
+  if (r->isExitPresent(dir) == true) {
+    s = r->getExit(dir);
     if (del) {
-      if (r->doors[dir] != NULL)
-        r->remove_door(dir);
-      r->exits[dir] = 0;
+        r->removeExit(dir);
     } else {
-      r->exits[dir] = EXIT_UNDEFINED;
+        r->setExitUndefined(dir);
     }
   } else {
     send_to_user("--[ %s is not marked nor linked.\r\n", exits[dir] );
@@ -797,17 +795,14 @@ USERCMD(usercmd_mdetach)
     return USER_PARSE_SKIP;
   }
 
-  if (!oneway && s!=NULL) {
+  if (!oneway && s != NULL) {
     for (i = 0; i<= 5; i++) 
-      if (s->exits[i] == r->id) {
+      if (s->isExitLeadingTo(i, r) == true) {
         if (del) {
-          s->exits[i] = 0;
-          if (r->doors[i] != NULL)
-            s->remove_door(i);
+            s->removeExit(i);
         } else {
-          s->exits[i] = EXIT_UNDEFINED;
+            s->setExitUndefined(i);
         }
-          
       }
   }
   
@@ -871,33 +866,30 @@ USERCMD(usercmd_mlink)
   } while (*p);
   
   /* first room */
-  if (r->is_connected(dir) && !force) {
+  if (r->isConnected(dir) && !force) {
     send_to_user("--[ There is an existing connection to the %s.\r\n", exits[dir]);
     send_to_user( (const char *) Engine.get_prompt());
     return USER_PARSE_SKIP;
   }
 
-  r->exits[dir] = id;
-  send_to_user("--[ Linked exit %s with %s [%i].\r\n", exits[dir], second->name, id);
+  r->setExit(dir, id);
+  send_to_user("--[ Linked exit %s with %s [%i].\r\n", exits[dir], (const char *) second->getName(), id);
 
-  r->modified();
-  
   /* if oneway option was given - we are done here */
   if (!oneway) {
     /* setup backdir to dummie-opposite if needed */
     if (backdir == -1) 
       backdir = reversenum(dir);
     
-    if (second->is_connected(backdir) && !force) {
+    if (second->isConnected(backdir) && !force) {
       send_to_user("--[ There is an existing connection to the %s in second room.\r\n", exits[backdir]);
       send_to_user( (const char *) Engine.get_prompt());
       return USER_PARSE_SKIP;
     }
     
     
-    second->exits[backdir] = r->id;
+    second->setExit(backdir, r);
     send_to_user("--[ Linked exit %s in second room with this room.\r\n", exits[backdir]);
-      
   }
   
   send_to_user( (const char *) Engine.get_prompt());
@@ -930,12 +922,10 @@ USERCMD(usercmd_mmark)
 
   
   i = 0;
-  while (room_flags[i].name) { 
+  while (room_flags[i].name != "") { 
     if (is_abbrev(arg, room_flags[i].name) ) {
-      r->exits[dir] = room_flags[i].flag;
-      send_to_user("--[Pandora: Marked %s as %s\r\n", exits[dir],  room_flags[i].xml_name);
-      
-      r->modified();
+      r->setExitFlags(dir, room_flags[i].flag);
+      send_to_user("--[Pandora: Marked %s as %s\r\n", exits[dir],  (const char *) room_flags[i].xml_name);
       
       send_to_user( (const char *) Engine.get_prompt());
       return USER_PARSE_SKIP;
@@ -982,14 +972,14 @@ USERCMD(usercmd_mdoor)
   PARSE_DIR_ARGUMENT(i, arg2);
   
   if (strcmp(arg, "remove") == 0) {
-    if (r->doors[i] == NULL) {
+    if (r->isDoorSet(i) == false) {
       send_to_user("--[ There is no door to the %s.\r\n", exits[i]);
     } else {
-      r->remove_door(i);
+      r->removeDoor(i);
       send_to_user("--[Pandora: Removed the door to the %s\n", exits[i]);
     }
   } else {
-    r->add_door(i, arg);
+    r->setDoor(i, arg);
     send_to_user("--[Pandora: Added the door %s to the %s\n", arg, exits[i]);
   }
   send_to_user( (const char *) Engine.get_prompt());
@@ -1011,7 +1001,7 @@ USERCMD(usercmd_mcoord)
     
   p = skip_spaces(line);
   if (!*p) {
-    send_to_user("--[ Current coordinates : X %i, Y %i, Z %i.\r\n", r->x, r->y, r->z);
+    send_to_user("--[ Current coordinates : X %i, Y %i, Z %i.\r\n", r->getX(), r->getY(), r->getZ());
     send_to_user( (const char *) Engine.get_prompt());
     return USER_PARSE_SKIP;
   }
@@ -1019,8 +1009,8 @@ USERCMD(usercmd_mcoord)
   p = one_argument(p, arg, 0);
   
   GET_INT_ARGUMENT(arg, value);
-  r->setx(value);
-  send_to_user("--[ X set to %i.\r\n", r->x);
+  r->setX(value);
+  send_to_user("--[ X set to %i.\r\n", r->getX());
   
   p = skip_spaces(p);
   if (!*p) {
@@ -1031,8 +1021,8 @@ USERCMD(usercmd_mcoord)
   p = one_argument(p, arg, 0);
   
   GET_INT_ARGUMENT(arg, value);
-  r->sety(value);
-  send_to_user("--[ Y set to %i.\r\n", r->y);
+  r->setY(value);
+  send_to_user("--[ Y set to %i.\r\n", r->getY());
   
   p = skip_spaces(p);
   if (!*p) {
@@ -1042,8 +1032,8 @@ USERCMD(usercmd_mcoord)
   
   p = one_argument(p, arg, 0);
   GET_INT_ARGUMENT(arg, value);
-  r->setz(value);
-  send_to_user("--[ Z set to %i.\r\n", r->z);
+  r->setZ(value);
+  send_to_user("--[ Z set to %i.\r\n", r->getZ());
 
   send_to_user( (const char *) Engine.get_prompt());
   return USER_PARSE_SKIP;
@@ -1073,22 +1063,22 @@ USERCMD(usercmd_mdec)
   switch (subcmd)
   {
 	case  USER_DEC_X:
-                r->setx(r->x - value);
+                r->setX(r->getX() - value);
 		break;
 	case  USER_INC_X:
-                r->setx(r->x + value);
+                r->setX(r->getX() + value);
 		break;
 	case  USER_DEC_Y:
-                r->sety(r->y - value);
+                r->setY(r->getY() - value);
 		break;
 	case  USER_INC_Y:
-                r->sety(r->y + value);
+                r->setY(r->getY() + value);
 		break;
 	case  USER_DEC_Z:
-                r->setz(r->z - value);
+                r->setZ(r->getZ() - value);
 		break;
 	case  USER_INC_Z:
-                r->setz(r->z + value);
+                r->setZ(r->getZ() + value);
 		break;
   }
 
@@ -1372,7 +1362,7 @@ USERCMD(usercmd_mmerge)
 
   /* find the only defined exit in new room - the one we came from */
   for (i = 0; i <= 5; i++)
-    if (Engine.addedroom->exits[i] > 0 && Engine.addedroom->exits[i] < MAX_ROOMS) {
+    if (Engine.addedroom->isExitNormal(i) == true) {
       j = i;
       break;
     }
@@ -1382,23 +1372,22 @@ USERCMD(usercmd_mmerge)
   if (!*p) {
     /* no arguments at all - so, find ID */
 
-    id = EXIT_UNDEFINED;
+    id = 0;
     
     for (i = 0; i < Map.size(); i++) {
         t = Map.rooms[i];
-        if (Engine.addedroom->id == t->id || t->desc == NULL || t->name == NULL) {
+        if (Engine.addedroom->id == t->id || t->isDescSet() == false || t->isNameSet() == false ) {
           continue;
         }
         
         /* in this case we do an exact match for both roomname and description */
-        if (strcmp(Engine.addedroom->desc, t->desc) == 0) 
-            if (strcmp(Engine.addedroom->name, t->name) == 0) {
-                id = t->id;
-                break;
-            }	
+        if (Engine.addedroom->isEqualNameAndDesc(t) == true)  {
+            id = t->id;
+            break;
+        }	
     }
 
-    if (id == EXIT_UNDEFINED) {
+    if (id == 0) {
       send_to_user("--[ No matching room found.\r\n");
       send_to_user( (const char *) Engine.get_prompt());
       return USER_PARSE_SKIP;
@@ -1431,8 +1420,7 @@ USERCMD(usercmd_mmerge)
     }
     
     if (!force) 
-      if ((strcmp(Engine.addedroom->desc, t->desc) != 0) || 
-          (strcmp(Engine.addedroom->name, t->name) != 0) ) 
+      if (Engine.addedroom->isEqualNameAndDesc(t) == false) 
       {
         send_to_user("--[ Roomname or description do not match.\r\n");
         send_to_user( (const char *) Engine.get_prompt());
@@ -1499,7 +1487,7 @@ USERCMD(usercmd_minfo)
       return USER_PARSE_SKIP;
     }      
     
-    t->send_room();
+    t->sendRoom();
     send_to_user( (const char *) Engine.get_prompt());
     return USER_PARSE_SKIP;
   }  
@@ -1508,7 +1496,7 @@ USERCMD(usercmd_minfo)
 
    for (i = 0; i < stacker.amount(); i++) {
      t = stacker.get(i);
-     t->send_room();
+     t->sendRoom();
    }
    
    send_to_user( (const char *) Engine.get_prompt());
@@ -1554,7 +1542,7 @@ USERCMD(usercmd_move)
                   break;
           case USER_MOVE_LOOK:
           case USER_MOVE_EXAMINE:
-                  r->send_room();
+                  r->sendRoom();
                   send_to_user( (const char *) Engine.get_prompt());
                   return USER_PARSE_SKIP;
 
@@ -1563,16 +1551,16 @@ USERCMD(usercmd_move)
     
     if (dir == -1) 
       return USER_PARSE_NONE;
-    if ( !r->is_connected(dir) ) {
+    if ( r->isConnected(dir)  == false ) {
       send_to_user("Alas, you cannot go this way.\r\n\r\n");
     } else {
-      stacker.put(r->exits[dir]);
+      stacker.put(r->getExit(dir)->id);
       stacker.swap();
     
       r = stacker.first();
       toggle_renderer_reaction();
     
-      r->send_room();
+      r->sendRoom();
     }
             
     

@@ -97,29 +97,12 @@ bool StructureParser::characters( const QString& ch)
     return TRUE;
     
   if (flag == XML_ROOMNAME) {
-    strncpy( data, qPrintable( ch) , ch.length() );
-    data[ ch.length() ] = 0;
-    r->name = strdup(data);
+    r->setName(ch.toAscii());
   } else if (flag == XML_DESC) {
-    strncpy( data, qPrintable( ch) , ch.length() );
-    data[ ch.length() ] = 0;
-    if (ch == "" || ch == NULL) {
-      r->desc = NULL;
-    } else {       
-      r->desc = strdup(data);
-    }
-            
+      r->setDesc(ch.toAscii());
   } else if (flag == XML_NOTE) {
-    strncpy( data, qPrintable( ch) , ch.length() );
-    data[ ch.length() ] = 0;
-    if (ch == "" || ch == NULL) {
-      r->desc = NULL;
-    } else {       
-      r->note = strdup(data);
-    }
+      r->setNote(ch.toAscii());
   }
-
-    
   return TRUE;
 } 
 
@@ -128,11 +111,6 @@ bool StructureParser::startElement( const QString& , const QString& ,
                                     const QString& qName, 
                                     const QXmlAttributes& attributes)
 {
-
-    
-  /*    if (qName == "map") {
-	}
-  */ 
   if (qName == "exit") {
     unsigned int dir;
     unsigned int to;
@@ -145,39 +123,27 @@ bool StructureParser::startElement( const QString& , const QString& ,
     }        
       
     s = attributes.value("dir");
-    strncpy( data, qPrintable(s), s.length() );
-    data[ s.length() ] = 0;
-    dir = numbydir(data[0]);
+    dir = numbydir(s.toAscii().at(0));
       
     s = attributes.value("to");
-    strncpy( data, qPrintable(s), s.length() );
-    data[ s.length() ] = 0;
-      
       
     i = 0;
-    to = atoi( (const char *) data);
-    if (to == 0) 
-        while (room_flags[i].name) { 
-          if (strcmp(data, room_flags[i].xml_name) == 0) { 
-            to = room_flags[i].flag;
+    bool error;
+    to = s.toInt(&error);
+    if (error) {
+        while (room_flags[i].name != "") { 
+          if (s == room_flags[i].xml_name) { 
+              r->setExitFlags(dir, room_flags[i].flag);
+              break;
           }
           i++;
         }
-    r->exits[dir] = to;
-      
-    s = attributes.value("door");
-    strncpy( data, qPrintable( s), s.length() );
-    data[ s.length() ] = 0;
-      
-    if (s.length() != 0) {
-      r->doors[dir] = strdup(data);
-      if (!r->doors[dir]) {
-	printf("XML: Error while allocating memory in readbase function!");
-	exit(1);
-      }
+    } else {
+        r->setExit(dir, to);    
     }
       
-        
+    s = attributes.value("door");
+    r->setDoor(dir, s.toAscii());
   } else if (qName == "roomname") {
     flag = XML_ROOMNAME;
     return TRUE;
@@ -194,16 +160,16 @@ bool StructureParser::startElement( const QString& , const QString& ,
       r->id = s.toInt();
       
       s = attributes.value("x");
-      r->x = s.toInt();
+      r->setX( s.toInt() );
 
       s = attributes.value("y");
-      r->y = s.toInt();
+      r->setY( s.toInt() );
 
       s = attributes.value("z");
-      r->z = s.toInt();
+      r->simpleSetZ( s.toInt() );
 
       s = attributes.value("terrain");
-      r->sector = conf.get_sector_by_desc(s.toAscii());
+      r->setSector( conf.get_sector_by_desc(s.toAscii()) );
   }  
     
   return TRUE;
@@ -233,30 +199,33 @@ void xml_writebase(QString filename)
     
         fprintf(f,  "  <room id=\"%i\" x=\"%i\" y=\"%i\" z=\"%i\" "
                 "terrain=\"%s\">\n",
-                p->id, p->x, p->y, p->z, 
-                (const char *) conf.sectors[p->sector].desc);
+                p->id, p->getX(), p->getY(), p->getZ(), 
+                (const char *) conf.sectors[ p->getTerrain() ].desc);
             
             
-        fprintf(f, "    <roomname>%s</roomname>\n", p->name ? p->name : "");
-        fprintf(f, "    <desc>%s</desc>\n", p->desc ? p->desc : "");
-        fprintf(f, "    <note>%s</note>\n", p->note ? p->note : "");
+        fprintf(f, "    <roomname>%s</roomname>\n", (const char *) p->getName());
+        fprintf(f, "    <desc>%s</desc>\n",  (const char *) p->getDesc() );
+        fprintf(f, "    <note>%s</note>\n",  (const char *) p->getNote() );
             
         fprintf(f, "    <exits>\n");
     
     
             
         for (i = 0; i <= 5; i++) {
-        if (p->exits[i] != 0) {
+            if (p->isExitPresent(i) == true) {
     
-            sprintf(tmp, "%d", p->exits[i]);
-            if (p->exits[i] == EXIT_UNDEFINED)
-            sprintf(tmp, "%s", "UNDEFINED");
-            if (p->exits[i] == EXIT_DEATH)
-            sprintf(tmp, "%s", "DEATH");
-                    
-            fprintf(f, "      <exit dir=\"%c\" to=\"%s\" door=\"%s\"/>\n",
-                    exitnames[i][0], tmp, p->doors[i] ? p->doors[i] : ""); 
-        }
+                if (p->isExitNormal(i) == true) {
+                    sprintf(tmp, "%d", p->getExit(i)->id);
+                } else {
+                    if (p->isExitUndefined(i) == true)
+                        sprintf(tmp, "%s", "UNDEFINED");
+                    else if (p->isExitDeath(i) == true)
+                        sprintf(tmp, "%s", "DEATH");
+                }
+                                    
+                fprintf(f, "      <exit dir=\"%c\" to=\"%s\" door=\"%s\"/>\n",
+                        exitnames[i][0], tmp, (const char *) p->getDoor(i) ); 
+            }   
     
         }
             
