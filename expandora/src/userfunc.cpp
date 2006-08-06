@@ -637,6 +637,7 @@ USERCMD(usercmd_mdelete)
   char arg[MAX_STR_LEN];
   CRoom *r;
   int remove;
+    
 
   userfunc_print_debug;
   
@@ -651,12 +652,20 @@ USERCMD(usercmd_mdelete)
   
   r = stacker.first();
 
+  if (r->id == 1) {
+      send_to_user("Sorry, you can not delete the base (first, id == 1) room!\r\n");
+      send_to_user( (const char *) Engine.getPrompt());
+      return USER_PARSE_SKIP;
+  }
+
   if (remove) 
     Map.deleteRoom(r, 0);
   else 
     Map.deleteRoom(r, 1);
   
   stacker.swap();
+  
+  
   
   send_to_user("--[ Removed.\r\n");
   send_to_user( (const char *) Engine.getPrompt());
@@ -675,6 +684,7 @@ USERCMD(usercmd_mnote)
 
   p = skip_spaces(line);
   r->setNote(p);
+  toggle_renderer_reaction();
   send_to_user("--[ Added.\r\n");
   send_to_user( (const char *) Engine.getPrompt());
   return USER_PARSE_SKIP;
@@ -1523,7 +1533,16 @@ USERCMD(usercmd_move)
   /* used commands - it wont be automatically send futher */
   
   if (proxy.isMudEmulation()) {
+    
+    if (stacker.amount() == 0) {
+        send_to_user( "You are in an undefined position.\r\n");
+        send_to_user( "Use mgoto <room_id> to go to some place...\r\n");
+        
+        send_to_user( (const char *) Engine.getPrompt());
+        return USER_PARSE_SKIP;
+    }
     r = stacker.first();
+    
 
     dir = -1;
     

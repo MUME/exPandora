@@ -140,6 +140,8 @@ public:
     CRegion *getRegion();
     void setRegion(QByteArray name);
     void setRegion(CRegion *reg);
+    QByteArray getSecretsInfo();
+    QByteArray getDoorAlias(int i);
     
     char dirbynum(int dir);
 };

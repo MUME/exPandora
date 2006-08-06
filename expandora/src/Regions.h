@@ -20,6 +20,7 @@ public:
     
     QMap<QByteArray, QByteArray> getAllDoors();
     
+    QByteArray getAliasByDoor(QByteArray door, int dir);
     
     void showRegion();
 };

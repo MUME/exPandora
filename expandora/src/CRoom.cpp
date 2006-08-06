@@ -13,6 +13,7 @@
 #include <QString>
 
 #include "forwarder.h"
+#include "engine.h"
 #include "CRoom.h"
 #include "Map.h"
 #include "configurator.h"
@@ -86,6 +87,8 @@ int CRoom::roomnameCmp(QByteArray n)
     else
         return 0;
 }
+
+
 
 /* --------------- check if exit in room is connected --------------- */
 bool CRoom::isConnected(int dir)
@@ -254,7 +257,25 @@ void CRoom::setDesc(QByteArray newdesc)
     setModified(true);    
 }
       
+QByteArray CRoom::getSecretsInfo()
+{
+    int i;
+    QByteArray res;
+    QByteArray alias;
+    
+    res.clear();
+    
+    for (i = 0; i <= 5; i++) 
+        if (isDoorSecret( i ) == true) {
+            res.append(dirbynum( i ));
+            res = res + ": " + doors[i];
+            alias = Engine.get_users_region()->getAliasByDoor(doors[i], i);
+            if (alias.isEmpty() == false) 
+                res += "[" + alias + "]";
+        }
 
+    return res;
+}
 
 void CRoom::setName(QByteArray newname)
 {

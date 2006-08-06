@@ -49,6 +49,22 @@ void ConfigWidget::run()
         checkBox_angrylinker->setChecked(true);
     else
         checkBox_angrylinker->setChecked(false);
+        
+    if (conf.get_show_notes_renderer()) 
+        checkShowNotes->setChecked(true);    
+    else 
+        checkShowNotes->setChecked(false);    
+
+    if (conf.get_display_regions_renderer()) 
+        checkShowRegions->setChecked(true);    
+    else 
+        checkShowRegions->setChecked(false);    
+
+    if (conf.get_show_regions_info()) 
+        checkShowSecrets->setChecked(true);    
+    else 
+        checkShowSecrets->setChecked(false);    
+
 
     if (conf.get_exits_check()) 
         checkBox_exits->setChecked(true);
@@ -143,6 +159,18 @@ void ConfigWidget::accept()
         
     if (conf.get_terrain_check() != checkBox_terrain->isChecked() )
         conf.set_terrain_check( checkBox_terrain->isChecked() );
+        
+        
+    if (conf.get_show_regions_info() != checkShowSecrets->isChecked() )
+        conf.set_show_regions_info( checkShowSecrets->isChecked() );
+        
+        
+    if (conf.get_show_notes_renderer() != checkShowNotes->isChecked() )
+        conf.set_show_notes_renderer( checkShowNotes->isChecked() );
+        
+    if (conf.get_display_regions_renderer() != checkShowRegions->isChecked() )
+        conf.set_display_regions_renderer( checkShowRegions->isChecked() );
+    
     
     i = lineEdit_visrange->text().toInt();
     if (i == 0) {

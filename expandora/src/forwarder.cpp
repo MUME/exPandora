@@ -202,7 +202,13 @@ void Proxy::send_line_to_user(char *line)
 
 void Proxy::sendMudEmulationGreeting()
 {
-    user.send_line( "Pandora MUD Emulation.\r\n" );
+    CRoom *r;
+    
+    user.send_line( "Welcome to Pandora MUD Emulation!\r\n\r\n" );
+    
+    r = Map.getRoom( 1 );
+    r->sendRoom();
+    
     user.send_line( "-->" );
 }
 

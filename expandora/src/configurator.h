@@ -69,6 +69,7 @@ class Cconfigurator {
     bool        regions_auto_replace;
     bool        display_regions_renderer;
     bool        show_regions_info;
+    bool        show_notes_renderer;
 
     
     int texture_visibilit_range;
@@ -149,6 +150,7 @@ public:
     void set_display_regions_renderer(bool b);
     void set_show_regions_info(bool b);
     
+    void set_show_notes_renderer(bool b);
     /*--*/
     bool get_data_mod() { return db_modified; } 
     QByteArray get_base_file() { return base_file; } 
@@ -172,6 +174,8 @@ public:
     bool get_regions_auto_replace();
     bool get_display_regions_renderer();
     bool get_show_regions_info();
+    
+    bool get_show_notes_renderer() { return show_notes_renderer; }
 
     
     int get_desc_quote() { return desc_quote; }

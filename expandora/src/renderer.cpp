@@ -315,16 +315,23 @@ void RendererWidget::glDrawRoom(CRoom *p)
             glRectf(-ROOM_SIZE*2, -ROOM_SIZE*2, 2*ROOM_SIZE, 2*ROOM_SIZE);   
             glColor4f(colour[0], colour[1], colour[2], colour[3]);
         }    
-
     } else {
         glCallList(basic_gllist);
     }              
     
     glTranslatef(-dx, -dy, -dz);
 
+
+
     if (details == 0)
       return;
     
+    if (conf.get_show_notes_renderer() == true) {
+        glColor4f(0.90, 0.5, 0.1, colour[3]);
+        renderText(dx, dy, dz + ROOM_SIZE / 2, p->getNote());    
+        glColor4f(colour[0], colour[1], colour[2], colour[3]);
+    }
+
     for (k = 0; k <= 5; k++) 
       if (p->isExitPresent(k) == true) {
         if (p->isExitNormal(k)) {
@@ -379,9 +386,23 @@ void RendererWidget::glDrawRoom(CRoom *p)
                 sy = 0;
             } 
             if (p->getDoor(k) != "") {
-                if (p->getDoor(k) == "exit") {
+                if (p->isDoorSecret(k) == false) {
                     glColor4f(0, 1.0, 0.0, colour[3] + 0.2);
                 } else {
+                    // Draw the secret door ...
+                    QByteArray info;
+                    QByteArray alias;                    
+                    info = p->getDoor(k);
+                    if (conf.get_display_regions_renderer() == true) {
+                        alias = Engine.get_users_region()->getAliasByDoor( info, k);
+                        if (alias != "") {
+                            info += " [";
+                            info += alias;
+                            info += "]";  
+                        }
+                    }
+                    renderText((dx + dx2) / 2, (dy + dy2) / 2 , (dz +dz)/2 + ROOM_SIZE / 2 , info);    
+                
                     glColor4f(1.0, 0.0, 0.0, colour[3] + 0.2);
                 }
             }

@@ -72,3 +72,22 @@ QMap<QByteArray, QByteArray> CRegion::getAllDoors()
     return doors;
 }
 
+QByteArray CRegion::getAliasByDoor(QByteArray door, int dir)
+{
+    QByteArray fulldoor;
+    
+    fulldoor = door + " ";
+    fulldoor.append( dirbynum(dir) );
+
+    QMapIterator<QByteArray, QByteArray> i(doors);
+    while (i.hasNext()) {
+        i.next();
+        printf("Checking ...%s...\r\n", (const char *) i.value() );
+        if (i.value() == door || i.value() == fulldoor)
+            return i.key();
+    }
+    return "";    
+}
+
+
+

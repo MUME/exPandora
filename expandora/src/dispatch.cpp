@@ -549,6 +549,7 @@ int Cdispatcher::analyzeMudStream(ProxySocket &c)
         if (mbrief_state == STATE_DESC && conf.get_brief_mode()) 
             continue;
         
+        
         if (buffer[i].type == IS_NORMAL && buffer[i].line.indexOf("\r\n") != -1) {
             QByteArray a_line = cutColours( buffer[i].line );          
           

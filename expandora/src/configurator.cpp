@@ -48,6 +48,7 @@ Cconfigurator::Cconfigurator()
     
     set_show_regions_info( true );
     set_display_regions_renderer( true );
+    set_show_notes_renderer( true );
 
     
     
@@ -234,6 +235,13 @@ void Cconfigurator::set_regions_auto_replace(bool b)
     regions_auto_replace = b;
     set_conf_mod(true);
 }
+
+void Cconfigurator::set_show_notes_renderer(bool b)
+{
+    show_notes_renderer = b;
+    set_conf_mod(true);
+}
+
 
 
 void Cconfigurator::set_remote_host(QByteArray str)
@@ -427,8 +435,8 @@ int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
   fprintf(f, "  <basefile filename=\"%s\">\r\n", 
                   (const char *) get_base_file() );
   
-  fprintf(f, "  <GLvisibility textures=\"%i\" details=\"%i\">\r\n", 
-                  get_texture_vis(),  get_details_vis() );
+  fprintf(f, "  <GLvisibility textures=\"%i\" details=\"%i\" shownotes=\"%s\">\r\n", 
+                  get_texture_vis(),  get_details_vis(), ON_OFF(get_show_notes_renderer()) );
   
   fprintf(f, "  <analyzers desc=\"%s\" exits=\"%s\"  terrain=\"%s\">\r\n", 
                   "ON", ON_OFF(get_exits_check() ), ON_OFF(get_terrain_check() ) );
@@ -566,6 +574,14 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         conf.set_texture_vis(s.toInt() );
         s = attributes.value("details");
         conf.set_details_vis(s.toInt() );
+        
+        s = attributes.value("shownotes");
+        s = s.toLower();
+        if (s == "on") 
+            conf.set_show_notes_renderer( true);
+        else 
+            conf.set_show_notes_renderer( false);
+        
         
         printf("OpenGL visibility ranges set to %i (texture) and %i (details).\r\n",
                     conf.get_texture_vis(), conf.get_details_vis() );

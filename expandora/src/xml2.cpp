@@ -101,8 +101,6 @@ bool StructureParser::endElement( const QString& , const QString& , const QStrin
       Map.addRoomNonsorted(r);	/* tada! */
   }  
   if (qName == "region" && readingRegion)  {
-      printf("Loaded region. Name %s\r\n", (const char*) region->getName() );
-
       Map.addRegion( region );
       region = NULL;      
       readingRegion = false;
@@ -144,8 +142,6 @@ bool StructureParser::startElement( const QString& , const QString& ,
             
             if (door != "" && alias != "")
                 region->addDoor(alias, door);
-                
-            printf("Added door %s, alias %s\r\n", (const char*) door, (const char *) alias );
             return TRUE;
         } 
    }
@@ -222,8 +218,6 @@ bool StructureParser::startElement( const QString& , const QString& ,
      readingRegion = true;
      s = attributes.value("name");
      region->setName(s.toAscii());
-     
-     printf("Loading region named %s\r\n", (const char *) region->getName() );
   }   
   
   return TRUE;
