@@ -4,6 +4,7 @@
 #include <vector>
 #include "defines.h"
 #include "CRoom.h"
+#include "Regions.h"
 using namespace std;
 
 
@@ -29,19 +30,18 @@ public:
     /* amount of rooms in this square, -1 for empty */
     vector<CRoom *> rooms;
 
-    
     CSquare(int leftx, int lefty, int rightx, int righty);
     CSquare();
     ~CSquare();
 
     /* mode == SquareType */
-    int         get_mode(CRoom *room);
-    int         get_mode(int x, int y);
-    bool        to_be_passed();
-    bool        is_inside(CRoom *room);  
+    int         getMode(CRoom *room);
+    int         getMode(int x, int y);
+    bool        toBePassed();
+    bool        isInside(CRoom *room);  
     
-    void        add_subsquare_by_mode(int mode);
-    void        add_room_by_mode(CRoom *room, int mode);
+    void        addSubsquareByMode(int mode);
+    void        addRoomByMode(CRoom *room, int mode);
         
     void        add(CRoom *room);
     void        remove(CRoom *room);
@@ -61,6 +61,8 @@ public:
 };
 
 class roommanager {
+
+    QList<CRegion *>    regions;
 public:
   vector<CRoom *> rooms;   		/* rooms */
   CRoom *ids[MAX_ROOMS];	/* array of pointers */
@@ -73,32 +75,39 @@ public:
 
   /* plane support */  
   CPlane        *planes;        /* planes/levels of the map, sorted by the Z coordinate, lower at first */
-  void          add_to_plane(CRoom *room);
-  void          remove_from_plane(CRoom *room);
-  void          expand_plane(CPlane *plane, CRoom *room);
+  void          addToPlane(CRoom *room);
+  void          removeFromPlane(CRoom *room);
+  void          expandPlane(CPlane *plane, CRoom *room);
 
   roommanager();
   void init();
   void reinit();			/* reinitializer/utilizer */
   
-  void addroom_nonsorted(CRoom *room);   /* use only at loading */
-  void addroom(CRoom *room);
+  void addRoomNonsorted(CRoom *room);   /* use only at loading */
+  void addRoom(CRoom *room);
   
   
-  CRoom * getroom(unsigned int id); /* get room by id */
-  QByteArray getname(unsigned int id);
+  CRoom * getRoom(unsigned int id); /* get room by id */
+  QByteArray getName(unsigned int id);
   
   
     
-  int try_merge_rooms(CRoom *room, CRoom *copy, int j);
+  int tryMergeRooms(CRoom *room, CRoom *copy, int j);
     
 
 
-  void fixfree();
+  void fixFreeRooms();
+  CRegion *getRegionByName(QByteArray name);
+  bool addRegion(QByteArray name);
+  void addRegion(CRegion *reg);
+  
+  void sendRegionsList();  
+  
+  QList<CRegion *> getAllRegions();
   
   
-  void delete_room(CRoom *r, int mode);  /* user interface function */
-  void small_delete_room(CRoom *r);  /* user interface function */
+  void deleteRoom(CRoom *r, int mode);  /* user interface function */
+  void smallDeleteRoom(CRoom *r);  /* user interface function */
 };
 
 extern class roommanager Map;/* room manager */

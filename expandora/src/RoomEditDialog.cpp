@@ -71,7 +71,7 @@ int RoomEditDialog::updateExitsInfo(int dir, CRoom *r)
             r->setExitDeath(dir);
         } else  {        
             lead = leads->text().toInt();
-            if (Map.getroom(lead) == NULL) {
+            if (Map.getRoom(lead) == NULL) {
                 QMessageBox::critical(this, "Room Info Edit",
                               QString("Bad door to the north!"));
                 return -1;
@@ -188,7 +188,7 @@ void RoomEditDialog::setup_exit_widgets(int dir, CRoom *r)
             changedExitsFlag(dir, ROOMFLAG_DEATH);
         } else {
             changedExitsFlag(dir, ROOMFLAG_NONE);
-            leads->setText(QString("%1").arg(r->getExit(dir)->id) );
+            leads->setText(QString("%1").arg(r->exits[dir]->id) );
             leads->setEnabled(true);
         }
         
@@ -220,7 +220,7 @@ void RoomEditDialog::load_room_data(unsigned int id)
     unsigned int i;
     
     /* stuff dialog with room data */    
-    r = Map.getroom(id);
+    r = Map.getRoom(id);
     setup_exit_widgets(NORTH, r);
     setup_exit_widgets(EAST, r);
     setup_exit_widgets(SOUTH, r);
@@ -263,7 +263,7 @@ void RoomEditDialog::accept()
     id = label_roomid->text().toInt();
     printf("Room id : %i\r\n", id);
     
-    r = Map.getroom(id);
+    r = Map.getRoom(id);
     if (r == NULL) {
         QMessageBox::critical(this, "Room Info Edit",
                               QString("The room with this ID does not exist anymore."));

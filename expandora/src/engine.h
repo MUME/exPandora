@@ -61,6 +61,9 @@ class CEngine {
     int   nameMatch;
     int   descMatch;
     
+    CRegion  *users_region;
+    CRegion  *last_region;
+    
     QByteArray last_name;
     QByteArray last_desc;
     QByteArray last_exits;
@@ -71,43 +74,42 @@ class CEngine {
 
     Event        event;
 
-    void engine_init(); /* init flags */
-
-    void parse_event();
+    void parseEvent();
     void tryAllDirs();
     void tryDir();
     void swap();
     void resync();
-    void mappingoff();
+    void mappingOff();
     
     bool testRoom(CRoom *room);
+    
 public:
     CEngine();
     ~CEngine();
 
     CRoom *addedroom;	/* new room, contains new data is addinrroom==1 */
     
-    void add_event(Event e);
+    void addEvent(Event e);
 
-    int parse_command_line(char cause, char result, char *line);
+    int parseCommandLine(char cause, char result, char *line);
 
     void exec();       
     
-    int check_roomdesc();
-    void angrylinker(CRoom *r);
-    void printstacks();
+    int checkRoomDesc();
+    void angryLinker(CRoom *r);
+    void printStacks();
     
-    QByteArray get_roomname() { return last_name; }
-    QByteArray get_desc() { return last_desc; }
-    QByteArray get_exits() { return last_exits; }
-    QByteArray get_prompt() { return last_prompt; }
-    char get_terrain() { return last_terrain; }
+    QByteArray getRoomName() { return last_name; }
+    QByteArray getDesc() { return last_desc; }
+    QByteArray getExits() { return last_exits; }
+    QByteArray getPrompt() { return last_prompt; }
+    char getTerrain() { return last_terrain; }
 
-    void set_roomname(QByteArray s) { last_name = s; }
-    void set_desc(QByteArray s) { last_desc = s; }
-    void set_exits(QByteArray s) { last_exits = s; }
-    void set_prompt(QByteArray s) { last_prompt = s; }
-    void set_terrain(char c) { last_terrain = c; }
+    void setRoomname(QByteArray s) { last_name = s; }
+    void setDesc(QByteArray s) { last_desc = s; }
+    void setExits(QByteArray s) { last_exits = s; }
+    void setPrompt(QByteArray s) { last_prompt = s; }
+    void setTerrain(char c) { last_terrain = c; }
 
     bool isMapping() { return mapping; }
     void setMapping(bool b) { mapping = b; }
@@ -117,6 +119,12 @@ public:
     bool empty();                      /* are pipes empty? */
     void clear();                      /* clears events pipes */
     
+    void set_users_region(CRegion *reg);
+    void set_last_region(CRegion *reg);
+    CRegion *get_users_region();
+    CRegion *get_last_region();
+
+    void updateRegions();
 };
 
 extern class CEngine Engine;

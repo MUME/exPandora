@@ -65,6 +65,10 @@ class Cconfigurator {
     bool brief_mode;
     bool always_on_top;           /* keep Pandora window on top of others */
         
+    bool        regions_auto_set;
+    bool        regions_auto_replace;
+    bool        display_regions_renderer;
+    bool        show_regions_info;
 
     
     int texture_visibilit_range;
@@ -140,6 +144,11 @@ public:
     void set_desc_quote(int i);
     void set_name_quote(int i);
     
+    void set_regions_auto_set(bool b);
+    void set_regions_auto_replace(bool b);
+    void set_display_regions_renderer(bool b);
+    void set_show_regions_info(bool b);
+    
     /*--*/
     bool get_data_mod() { return db_modified; } 
     QByteArray get_base_file() { return base_file; } 
@@ -158,6 +167,12 @@ public:
     
     int get_details_vis() { return details_visibility_range; }
     int get_texture_vis() { return texture_visibilit_range; }
+    
+    bool get_regions_auto_set();
+    bool get_regions_auto_replace();
+    bool get_display_regions_renderer();
+    bool get_show_regions_info();
+
     
     int get_desc_quote() { return desc_quote; }
     int get_name_quote() { return name_quote; }

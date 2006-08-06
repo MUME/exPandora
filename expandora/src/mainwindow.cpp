@@ -255,7 +255,7 @@ void MainWindow::emulation_mode()
             return;        
         }
         proxy.setMudEmulation( true );
-        Engine.set_prompt("-->");
+        Engine.setPrompt("-->");
         stacker.put(1);
         stacker.swap();
     } else {
@@ -301,9 +301,9 @@ void MainWindow::publish_map()
             r = stacker.get(i);
             mark[r->id] = true;
             for (z = 0; z <= 5; z++) {
-                if (r->isConnected(z) && mark[ r->getExit(z)->id  ] != true ) {
+                if (r->isConnected(z) && mark[ r->exits[z]->id  ] != true ) {
                     if ( r->isDoorSecret(z) == true  ) {
-                        stacker.put(r->getExit(z)->id);
+                        stacker.put(r->exits[z]->id);
                     }
                 }
             }
@@ -316,7 +316,7 @@ void MainWindow::publish_map()
         r = Map.rooms[i];
         if (r) {
             if (!mark[r->id]) {
-                Map.delete_room(r, 0);
+                Map.deleteRoom(r, 0);
                 continue;        
             }
         }
@@ -570,7 +570,7 @@ void MainWindow::update_status_bar()
     modLabel->setText(tr("Data: --- "));
   
 
-  stacker.get_current(str);
+  stacker.getCurrent(str);
   locationLabel->setText(tr(str));
 }
 

@@ -99,21 +99,16 @@ class Cdispatcher
         T_SKIP,
      };
 
-    char parse_terrain(QByteArray prompt);
+    char parseTerrain(QByteArray prompt);
 
 
-    void parse_xml(QByteArray tag);
+    void parseXml(QByteArray tag);
+    void dispatchBuffer(ProxySocket &c);
+    QByteArray cutColours(QByteArray line);
 public:
     
-    int  analyze_mud_stream(ProxySocket &c);
-    int  analyze_user_stream(ProxySocket &c);
-    
-    QByteArray cutColours(QByteArray line);
-    QByteArray get_colour(QByteArray str);      
-    QByteArray get_colour_name(QByteArray str);
-
-    void  dispatch_buffer(ProxySocket &c);
-
+    int  analyzeMudStream(ProxySocket &c);
+    int  analyzeUserStream(ProxySocket &c);
     
     Cdispatcher();
 };

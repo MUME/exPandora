@@ -22,7 +22,7 @@ class CEngine Engine;
 
 
 /*---------------- * MAPPING OFF ---------------------------- */
-void CEngine::mappingoff()
+void CEngine::mappingOff()
 {
     if (mapping) {
         send_to_user("--[ Mapping is now OFF!\r\n");
@@ -38,7 +38,7 @@ void CEngine::swap()
     stacker.swap();
     
     if (mapping && stacker.amount() != 1)
-        mappingoff();
+        mappingOff();
 }
 /*---------------- * SWAP  ------------------------- */
 
@@ -49,13 +49,13 @@ void CEngine::resync()
   unsigned int j;
   TTree *n;
   
-  mappingoff();
+  mappingOff();
   
   print_debug(DEBUG_ANALYZER, "FULL RESYNC");
-  n = NameMap.find_by_name(last_name);
+  n = NameMap.findByName(last_name);
   if (n != NULL)
     for (j = 0; j < n->ids.size(); j++) {
-      if (last_name == Map.getname( n->ids[j] )) {
+      if (last_name == Map.getName( n->ids[j] )) {
 //        print_debug(DEBUG_ANALYZER, "Adding matches");
         stacker.put( n->ids[j] );
       } 
@@ -102,7 +102,7 @@ void CEngine::tryDir()
     for (i = 0; i < stacker.amount(); i++) {
         room = stacker.get(i);
         if (room->isConnected(dir)) {
-            candidate = room->getExit(dir);
+            candidate = room->exits[dir];
             if  (testRoom(candidate) )
                 stacker.put(candidate);
                 
@@ -112,35 +112,36 @@ void CEngine::tryDir()
                 /* casual checks for data */
                 if (event.blind) {
                     send_to_user( "--[Pandora: Failed to add new room. Blind !\r\n");                
-                    mappingoff();
+                    mappingOff();
                     return;
                 } else if (event.name == "") {
                     send_to_user( "--[Pandora: Failed to add new room. Missing roomname!\r\n");                
-                    mappingoff();
+                    mappingOff();
                     return;
                 } else if (event.desc == "") {
                     send_to_user( "--[Pandora: Failed to add new room. Missing description!\r\n");                
-                    mappingoff();
+                    mappingOff();
                     return;
                 } else if (event.exits == "") {
                     send_to_user( "--[Pandora: Failed to add new room. Missing exits data!\r\n");                
-                    mappingoff();
+                    mappingOff();
                     return;
                 } 
                 send_to_user("--[ Adding new room!\n");
                 
-                Map.fixfree();	// making this call just for more safety - might remove 
+                Map.fixFreeRooms();	// making this call just for more safety - might remove 
         
                 addedroom = new CRoom;
         
                 addedroom->id = Map.next_free;
                 addedroom->setName(event.name);
                 addedroom->setDesc(event.desc);
+                addedroom->setRegion( users_region );
                 
                 room->setExit(dir, addedroom);
                 addedroom->setExit(reversenum(dir), room);
                 
-                set_exits(event.exits);
+                setExits(event.exits);
                 do_exits((const char *) event.exits);
                 
         
@@ -160,11 +161,11 @@ void CEngine::tryDir()
                 addedroom->setZ(z);
 
                 
-                Map.addroom(addedroom);
+                Map.addRoom(addedroom);
                 stacker.put(addedroom);
                 
-                if (check_roomdesc() != 1)
-                    angrylinker(addedroom);
+                if (checkRoomDesc() != 1)
+                    angryLinker(addedroom);
                 
                 return;
             }	
@@ -182,7 +183,7 @@ void CEngine::tryDir()
         }
         if (conf.get_autorefresh() && descMatch > 0) {
             send_to_user("--[ (AutoRefreshed) not exact room desc match: %i errors.\r\n", descMatch);
-            stacker.next_first()->setDesc(event.desc);  
+            stacker.nextFirst()->setDesc(event.desc);  
         } else if (!conf.get_autorefresh() && descMatch > 0) {
             send_to_user("--[ not exact room desc match: %i errors.\r\n", descMatch);
         }
@@ -200,7 +201,7 @@ void CEngine::tryAllDirs()
     unsigned int i;
     
     print_debug(DEBUG_ANALYZER, "in try_all_dirs");
-//    mappingoff();
+//    mappingOff();
     if (stacker.amount() == 0) {
         return;
     }
@@ -225,7 +226,7 @@ void CEngine::tryAllDirs()
 }
 
 
-void CEngine::parse_event()
+void CEngine::parseEvent()
 {
     if (event.name != "")
         last_name = event.name;
@@ -266,6 +267,17 @@ void CEngine::parse_event()
 
 CEngine::CEngine()
 {
+  /* setting defaults */
+  
+  printf("Engine INIT.\r\n");
+  mapping =                0;
+  mgoto             =      0;
+
+  last_name.clear();
+  last_desc.clear();
+  last_exits.clear();
+  last_terrain = 0;
+  last_prompt.clear();
 }
 
 CEngine::~CEngine()
@@ -287,28 +299,46 @@ void CEngine::exec()
 
     
     event = Pipe.dequeue();
-    parse_event();
+    parseEvent();
+    
+    updateRegions();
+    
     
     print_debug(DEBUG_ANALYZER, "done. Time elapsed %d ms", t.elapsed());
     return;        
 }
 
-/* load config and init engine */
-void CEngine::engine_init()
+void CEngine::updateRegions()
 {
-     
-  /* setting defaults */
-  mapping =                0;
-  mgoto             =      0;
-
-  last_name.clear();
-  last_desc.clear();
-  last_exits.clear();
-  last_terrain = 0;
-  last_prompt.clear();
+    CRoom *r;
+    
+    // update Regions info only if we are in full sync 
+    if (stacker.amount() == 1) {
+        r = stacker.first();
+        
+        last_region = r->getRegion();
+        
+        if (last_region != users_region && conf.get_regions_auto_replace() == false) {
+            send_to_user("--[ Moved to another region: new region %s\r\n", (const char *)  last_region->getName() );
+            if (conf.get_regions_auto_set()) 
+                users_region = last_region;            
+        }
+        
+        if (conf.get_regions_auto_replace() && last_region != users_region) {
+                // update is required ...
+                send_to_user( "--[ Regions update: Room region changed from %s to %s\r\n", 
+                                        (const char *) last_region->getName(),  
+                                        (const char *) users_region->getName()); 
+                r->setRegion(users_region);
+                last_region = users_region;
+                toggle_renderer_reaction();
+        }
+    
+    }
 }
 
-int CEngine::check_roomdesc()
+
+int CEngine::checkRoomDesc()
 {
     CRoom *r;
     unsigned int i;
@@ -336,7 +366,7 @@ int CEngine::check_roomdesc()
 
     if (addedroom->getName().isEmpty()) {
         /* now thats sounds bad ... */
-        Map.delete_room(addedroom, 0);
+        Map.deleteRoom(addedroom, 0);
         printf("ERROR: in check_description() - empty roomname in new room.\r\n");
         return 0;
     }
@@ -364,7 +394,7 @@ int CEngine::check_roomdesc()
         /* in this case we do an exact match for both roomname and description */
         if (addedroom->getDesc() == r->getDesc()) {
             if (addedroom->getName() == r->getName()) {
-              if (Map.try_merge_rooms(r, addedroom, j)) {
+              if (Map.tryMergeRooms(r, addedroom, j)) {
                 send_to_user("--[Pandora: Twin rooms merged!\n");
                 send_to_user(last_prompt);
                 print_debug(DEBUG_ANALYZER, "Twins merged");
@@ -382,7 +412,7 @@ int CEngine::check_roomdesc()
 }
 
 
-void CEngine::angrylinker(CRoom *r)
+void CEngine::angryLinker(CRoom *r)
 {
   CRoom *p;
   unsigned int i;
@@ -533,7 +563,7 @@ void CEngine::angrylinker(CRoom *r)
 }
 
 
-void CEngine::printstacks()
+void CEngine::printStacks()
 {
     char line[MAX_DATA_LEN];
     QByteArray s;
@@ -550,10 +580,10 @@ void CEngine::printstacks()
             ON_OFF(conf.get_angrylinker() )             );
     
     send_to_user(line);
-    stacker.printstacks();
+    stacker.printStacks();
 }
 
-void CEngine::add_event(Event e)
+void CEngine::addEvent(Event e)
 {
     Pipe.enqueue(e); 
 }
@@ -568,3 +598,22 @@ void CEngine::clear()
     Pipe.clear();
 }
 
+void CEngine::set_users_region(CRegion *reg)
+{
+    users_region = reg;
+}
+
+void CEngine::set_last_region(CRegion *reg)
+{
+    last_region = reg;
+}
+
+CRegion *CEngine::get_users_region()
+{
+    return users_region;
+}
+
+CRegion *CEngine::get_last_region()
+{
+    return last_region;
+}

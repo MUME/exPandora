@@ -21,14 +21,14 @@ struct levels_data_type {
 };
 
 class CTree {
-  int diving_delete(TTree *p, char *part, unsigned int id);
-  void genhash(const char *name, char *hash);
-  void delete_all(TTree *t);
+  int divingDelete(TTree *p, char *part, unsigned int id);
+  void genHash(const char *name, char *hash);
+  void deleteAll(TTree *t);
     
   /* for gathering debug info only*/
   struct levels_data_type levels_data[MAX_HASH_LEN];
-  void calculate_info(TTree *t, int level, int single);
-  long debug_singles;
+  void calculateInfo(TTree *t, int level, int single);
+  long debugSingles;
 
 public:
   TTree *root;
@@ -36,13 +36,13 @@ public:
 
   CTree();
 
-  void addname(const char *name, unsigned int id);	
-  void reset_TTree(TTree *t);
-  TTree * find_by_name(const char *name);
-  void delete_item(const char *name, unsigned int id);
+  void addName(const char *name, unsigned int id);	
+  void resetTTree(TTree *t);
+  TTree * findByName(const char *name);
+  void deleteItem(const char *name, unsigned int id);
   void reinit();
-  void print_tree_stats();
-  void remove_id(unsigned int id, TTree *t);
+  void printTreeStats();
+  void removeId(unsigned int id, TTree *t);
 };
 
 extern class CTree NameMap;

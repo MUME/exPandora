@@ -18,6 +18,7 @@ FORMS +=	spellsdialog.ui
 
 HEADERS		+=configurator.h
 HEADERS		+=CRoom.h
+HEADERS		+=Regions.h
 HEADERS		+=defines.h
 HEADERS		+=dispatch.h
 HEADERS		+=engine.h
@@ -38,6 +39,7 @@ HEADERS		+=mainwindow.h
 
 SOURCES		+=auda.cpp
 SOURCES		+=CRoom.cpp
+SOURCES		+=Regions.cpp
 SOURCES		+=configurator.cpp
 SOURCES		+=dispatch.cpp
 SOURCES		+=engine.cpp

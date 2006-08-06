@@ -11,6 +11,7 @@
 
 #include "renderer.h"
 #include "configurator.h"
+#include "engine.h"
 
 
 #include "stacks.h"
@@ -107,14 +108,7 @@ void RendererWidget::initializeGL()
     basic_gllist = glGenLists(1);
     if (basic_gllist != 0) {
       glNewList(basic_gllist, GL_COMPILE);
-
-      glBegin(GL_QUADS);
-      glVertex3f( ROOM_SIZE,  ROOM_SIZE, 0.0f);
-      glVertex3f( ROOM_SIZE, -ROOM_SIZE, 0.0f);
-      glVertex3f(-ROOM_SIZE, -ROOM_SIZE, 0.0f);
-      glVertex3f(-ROOM_SIZE,  ROOM_SIZE, 0.0f);
-      glEnd();
-      
+      glRectf( -ROOM_SIZE, -ROOM_SIZE, ROOM_SIZE, ROOM_SIZE);          
       glEndList();
     }
 
@@ -258,7 +252,7 @@ void RendererWidget::glDrawMarkers()
 
     if (last_drawn_trail) {
         glColor4f(marker_colour[0] / 1.1, marker_colour[1] / 1.5, marker_colour[2] / 1.5, marker_colour[3] / 1.5);
-        p = Map.getroom(last_drawn_trail);
+        p = Map.getRoom(last_drawn_trail);
         if (p != NULL) {
             dx = p->getX() - curx;
             dy = p->getY() - cury;
@@ -278,7 +272,7 @@ void RendererWidget::glDrawRoom(CRoom *p)
     CRoom *r;
     int k;
     float distance;
-    bool lines, texture;    
+    bool details, texture;    
 
     rooms_drawn_csquare++;
     
@@ -288,7 +282,7 @@ void RendererWidget::glDrawRoom(CRoom *p)
     dx2 = 0;
     dy2 = 0;
     dz2 = 0;
-    lines = 1;
+    details = 1;
     texture = 1;
     
     if (PointInFrustum(dx, dy, dz) != true)
@@ -301,7 +295,7 @@ void RendererWidget::glDrawRoom(CRoom *p)
                m_Frustum[FRONT][C] * dz + m_Frustum[FRONT][D];
     
     if (distance >= conf.get_details_vis()) 
-      lines = 0;
+      details = 0;
 
     if (distance >= conf.get_texture_vis()) 
       texture = 0;
@@ -309,26 +303,35 @@ void RendererWidget::glDrawRoom(CRoom *p)
     
     glTranslatef(dx, dy, dz);
     if (p->getTerrain() && texture) {
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, conf.sectors[ p->getTerrain() ].texture);
-      glCallList(conf.sectors[ p->getTerrain() ].gllist);  
-      glDisable(GL_TEXTURE_2D);
+                
+    
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, conf.sectors[ p->getTerrain() ].texture);
+        glCallList(conf.sectors[ p->getTerrain() ].gllist);  
+        glDisable(GL_TEXTURE_2D);
+        
+       if (conf.get_display_regions_renderer() &&  Engine.get_last_region() == p->getRegion()  ) {                
+            glColor4f(0.20, 0.20, 0.20, colour[3]-0.1);
+            glRectf(-ROOM_SIZE*2, -ROOM_SIZE*2, 2*ROOM_SIZE, 2*ROOM_SIZE);   
+            glColor4f(colour[0], colour[1], colour[2], colour[3]);
+        }    
+
     } else {
-      glCallList(basic_gllist);
+        glCallList(basic_gllist);
     }              
     
     glTranslatef(-dx, -dy, -dz);
 
-    if (lines == 0)
+    if (details == 0)
       return;
     
     for (k = 0; k <= 5; k++) 
-      if (p->getExit(k) != 0) {
+      if (p->isExitPresent(k) == true) {
         if (p->isExitNormal(k)) {
             GLfloat kx, ky, kz;
             GLfloat sx, sy;
 
-            r = p->getExit(k);
+            r = p->exits[k];
 
             dx2 = r->getX() - curx;
             dy2 = r->getY() - cury;
@@ -501,7 +504,7 @@ void RendererWidget::glDrawCSquare(CSquare *p)
         return; // this square is not in view 
     }
         
-    if (p->to_be_passed()) {
+    if (p->toBePassed()) {
 //         go deeper 
         if (p->subsquares[ Left_Upper ])
             glDrawCSquare( p->subsquares[ Left_Upper ]);

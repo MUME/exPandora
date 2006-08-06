@@ -57,8 +57,7 @@ CRoom::~CRoom()
 {
     int i;
     
-    printf("DESTRUCTOR!\r\n");
-    NameMap.delete_item(name, id);
+    NameMap.deleteItem(name, id);
     
     for (i = 0; i <= 5; i++) {
         doors[i].clear();
@@ -129,8 +128,8 @@ int CRoom::setDoor(int dir, QByteArray d)
     
     doors[dir] = d;
   
-  setModified(true);
-  return 1;
+    setModified(true);
+    return 1;
 }
 
 /* ------------------------ remove_door() ------------------------*/
@@ -142,7 +141,6 @@ void CRoom::removeDoor(int dir)
 
 QByteArray CRoom::getDoor(int dir)
 {
-// TODO 
     return doors[dir];
 }
 
@@ -198,9 +196,9 @@ void CRoom::setY(int ny)
 
 void CRoom::setZ(int nz)
 {
-    Map.remove_from_plane(this);
+    Map.removeFromPlane(this);
     z = nz;
-    Map.add_to_plane(this);
+    Map.addToPlane(this);
     setModified(true);
 }
 
@@ -260,9 +258,9 @@ void CRoom::setDesc(QByteArray newdesc)
 
 void CRoom::setName(QByteArray newname)
 {
-    NameMap.delete_item(name, id);
+    NameMap.deleteItem(name, id);
     name = newname;
-    NameMap.addname(newname, id);
+    NameMap.addName(newname, id);
     setModified(true);
 }
 
@@ -288,17 +286,21 @@ void CRoom::setNote(QByteArray newnote)
 void CRoom::setExit(int dir, CRoom *room)
 {
     exits[dir] = room;
+    exitFlags[dir] = EXIT_NONE;
 }
 
-void CRoom::setExit(int dir, unsigned int id)
+void CRoom::setExit(int dir, unsigned int value)
 {
-    exits[dir]=Map.getroom(id);
+    exits[dir]=Map.getRoom(value);
+    exitFlags[dir] = EXIT_NONE;
 }
 
+/*
 CRoom *CRoom::getExit(int dir)
 {
     return exits[dir];
 }
+*/
 
 bool CRoom::isExitUndefined(int dir)
 {
@@ -401,6 +403,29 @@ bool CRoom::isDoorSecret(int dir)
         return false;
 }
 
+QByteArray CRoom::getRegionName()
+{
+    return region->getName();
+}
+
+void CRoom::setRegion(QByteArray name)
+{
+    if (name == "")
+        setRegion(Map.getRegionByName("default"));
+    else 
+        setRegion(Map.getRegionByName(name)); 
+}
+
+void CRoom::setRegion(CRegion *reg)
+{
+    if (reg != NULL)
+        region = reg;
+}
+    
+CRegion *CRoom::getRegion()
+{
+    return region;
+}
 
 void CRoom::disconnectExit(int dir)
 {
@@ -422,8 +447,10 @@ void CRoom::sendRoom()
     unsigned int i, pos;
     char line[MAX_STR_LEN];
     
-    send_to_user(" Id: %i, Flags: %s, Coord: %i,%i,%i\r\n", id,
-	    (const char *) conf.sectors[sector].desc, x, y, z);
+    send_to_user(" Id: %i, Flags: %s, Region: %s, Coord: %i,%i,%i\r\n", id,
+	    (const char *) conf.sectors[sector].desc, 
+	    (const char *) region->getName(),
+	    x, y, z);
     send_to_user(" [32m%s[0m\n", (const char *) name);
 
     line[0] = 0;
@@ -455,7 +482,7 @@ void CRoom::sendRoom()
     if (conf.get_brief_mode() && proxy.isMudEmulation()) {
       sprintf(line, "Exits: ");
       for (i = 0; i <= 5; i++)
-          if (exitFlags[i] > 0) {
+          if (isExitPresent(i) == true) {
               if ( isExitUndefined(i) ) {
                   sprintf(line + strlen(line), " #%s#", exitnames[i]);
                   continue;
@@ -483,7 +510,7 @@ void CRoom::sendRoom()
       sprintf(line, " exits:");
   
       for (i = 0; i <= 5; i++)
-          if (exits[i] > 0) {
+          if (isExitPresent(i) == true) {
               if (isExitUndefined(i) ) {
                   sprintf(line + strlen(line), " #%s#", exitnames[i]);
                   continue;
@@ -577,3 +604,5 @@ int Strings_Comparator::strcmp_desc(QByteArray name, QByteArray text)
 {
     return compare_with_quote(name, text, conf.get_desc_quote());
 }
+
+

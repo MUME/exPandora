@@ -2,8 +2,6 @@
 
 
 class stackmanager {
-private:
-
   vector<CRoom *> stacka;
   vector<CRoom *> stackb;
   
@@ -17,7 +15,7 @@ public:
   unsigned int next()    { return sb->size(); }
   
   CRoom * first()  { return (*sa)[0]; }
-  CRoom * next_first()  { return (*sb)[0]; }
+  CRoom * nextFirst()  { return (*sb)[0]; }
   
   void swap();
   stackmanager();
@@ -25,17 +23,17 @@ public:
   
   CRoom * get(unsigned int i);
 
-  CRoom * get_next(unsigned int i);
+  CRoom * getNext(unsigned int i);
   
   void put(unsigned int id);
   void put(CRoom *r);
-  void remove_room(unsigned int id);    /* swaps */
+  void removeRoom(unsigned int id);    /* swaps */
 
 
   /* DEBUG */
-  void printstacks();
+  void printStacks();
 
-  void get_current(char *);
+  void getCurrent(char *);
 
 };
 

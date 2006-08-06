@@ -212,7 +212,12 @@ int main(int argc, char *argv[])
     if (mud_emulation) {
       printf("Starting in MUD emulation mode...\r\n");
       
-      Engine.set_prompt("-->");
+      if (Map.size() == 0) {
+        printf("ERROR: Cannot start in emulation mode without database!\r\n");
+        exit(1);
+      }
+      
+      Engine.setPrompt("-->");
       stacker.put(1);
       stacker.swap();
     }

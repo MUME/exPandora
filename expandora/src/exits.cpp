@@ -31,10 +31,10 @@ void do_exits(const char *exits_line)
                     "Exits: Adding exits information to the new room.");
 
     for (i = 0; i <= 5; i++) {
-        if (r->getExit(i) != NULL) {
+        if (r->isExitPresent(i) == true) {
             if (exits[i] == 0) {	/* oneway case */
-                Map.oneway_room_id = r->getExit(i)->id;
-                r->setExit(i, (CRoom*) NULL);
+                Map.oneway_room_id = r->exits[i]->id;
+                r->removeExit(i);
             }
                 
             if (exits[i] == E_CLOSEDDOOR) 
@@ -76,7 +76,7 @@ int compare_exits(CRoom *p, int exits[])
 
     print_debug(DEBUG_ANALYZER, "compare_exits called.");
     for (i = 0; i <= 5; i++) {
-        localExit = p->getExit(i);
+        localExit = p->exits[i];
         localDoor = p->getDoor(i);
         if ((exits[i] == 3) && (localExit != NULL) && (localDoor != ""))
             if (localDoor != "exit")

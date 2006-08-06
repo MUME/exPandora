@@ -9,7 +9,7 @@
 class CTree NameMap;
 
 
-void CTree::remove_id(unsigned int id, TTree *p)
+void CTree::removeId(unsigned int id, TTree *p)
 {
   vector<unsigned int>::iterator i;
 
@@ -22,7 +22,7 @@ void CTree::remove_id(unsigned int id, TTree *p)
 }
 
 
-void CTree::calculate_info(TTree *t, int level, int single)
+void CTree::calculateInfo(TTree *t, int level, int single)
 {
   unsigned int i;
   int l;
@@ -43,24 +43,24 @@ void CTree::calculate_info(TTree *t, int level, int single)
       
       levels_data[level].leads++;
       
-      calculate_info(t->leads[i], level+1, t->ids.size() ? single + 1 : 0);
+      calculateInfo(t->leads[i], level+1, t->ids.size() ? single + 1 : 0);
     }
     
   if (l == 0 && single > 0) 
-    debug_singles += (single+1);
+    debugSingles += (single+1);
   
 }
 
-void CTree::print_tree_stats()
+void CTree::printTreeStats()
 {
   unsigned int i;
 
   memset(levels_data, 0, sizeof(struct levels_data_type) * MAX_HASH_LEN );
-  debug_singles = 0;
+  debugSingles = 0;
   
-  calculate_info(root, 0, 0);  
+  calculateInfo(root, 0, 0);  
   
-  print_debug(DEBUG_TREE, "Single rooms: %i", debug_singles);
+  print_debug(DEBUG_TREE, "Single rooms: %i", debugSingles);
   
   for (i = 0; levels_data[i].nodes; i++) 
     print_debug(DEBUG_TREE, "Level %-3li, nodes %-5li, leads %-5li, items %-5li.", 
@@ -70,14 +70,14 @@ void CTree::print_tree_stats()
 void CTree::reinit()
 {
     print_debug(DEBUG_TREE, "clearing the whole tree");
-    delete_all(root);
+    deleteAll(root);
 
     root = new TTree;
-    reset_TTree(root);
+    resetTTree(root);
 }
 
 /* recursive deletion of this element and all elements below */
-void CTree::delete_all(TTree *t) 
+void CTree::deleteAll(TTree *t) 
 {
     int i;
   
@@ -86,24 +86,24 @@ void CTree::delete_all(TTree *t)
 
     for (i = 0; i < A_SIZE; i++)
         if (t->leads[i] != NULL) {	
-            delete_all(t->leads[i]);
+            deleteAll(t->leads[i]);
         }
 
     delete t;
 }
 
-int CTree::diving_delete(TTree * p, char *part, unsigned int id)
+int CTree::divingDelete(TTree * p, char *part, unsigned int id)
 {
     int i;
 
     if (strlen(part) == 0) {	/* we've found our item */
 	for (i = 0; i < A_SIZE; i++)
             if (p->leads[i] != NULL) {	/* shall not delete this item */
-                remove_id(id, p);
+                removeId(id, p);
                 return -1;	/* return state DID NOT DELETE - its used */
             }
 
-            remove_id(id, p);
+            removeId(id, p);
             if (p->ids.empty()) {
                 delete p;
                 return 1;
@@ -116,7 +116,7 @@ int CTree::diving_delete(TTree * p, char *part, unsigned int id)
     /* ending part of recursion is over */
     /* diving-cycling part */
     /* given the path exist (see delete_room func.) call is easier */
-    i = diving_delete(p->leads[(int) part[0]], &part[1], id);
+    i = divingDelete(p->leads[(int) part[0]], &part[1], id);
     if (i == -1)		/* did NOT delete the lower item */
 	return -1;		/* so we do not delete this one also ! */
 
@@ -136,14 +136,14 @@ int CTree::diving_delete(TTree * p, char *part, unsigned int id)
     return 1;			/* deleted ! so ... */
 }
 
-void CTree::delete_item(const char *name, unsigned int id)
+void CTree::deleteItem(const char *name, unsigned int id)
 {
     TTree *p;
     unsigned int i;
     char hash[MAX_HASH_LEN];	
 	
-    genhash(name, hash);
-    p = find_by_name(name);
+    genHash(name, hash);
+    p = findByName(name);
     if (p == NULL) {
 	printf("Error in TREE module - attempt to delete not existing items (at all)\n");
 	return;
@@ -151,7 +151,7 @@ void CTree::delete_item(const char *name, unsigned int id)
 
     for (i = 0; i < p->ids.size(); i++)
         if (p->ids[i] == id) {
-            if (diving_delete(root, hash, id) == 1) {
+            if (divingDelete(root, hash, id) == 1) {
                 /* meaning - occasioanly freed our ROOT element */
                 CTree();	/* reinit */
                 return;
@@ -159,7 +159,7 @@ void CTree::delete_item(const char *name, unsigned int id)
         }
 }
 
-void CTree::reset_TTree(TTree * t)
+void CTree::resetTTree(TTree * t)
 {
     int i;
 
@@ -170,16 +170,16 @@ void CTree::reset_TTree(TTree * t)
 CTree::CTree()
 {
     root = new TTree;
-    reset_TTree(root);
+    resetTTree(root);
 }
 
-void CTree::addname(const char *name, unsigned int id)
+void CTree::addName(const char *name, unsigned int id)
 {
   TTree *p, *n;
   unsigned int i;
   char hash[MAX_HASH_LEN];
       
-  genhash(name, hash);
+  genHash(name, hash);
   p = root;
 
   for (i = 0; i < strlen(hash); i++) {
@@ -190,7 +190,7 @@ void CTree::addname(const char *name, unsigned int id)
     } else {
       /* there is no line like this in tree yet - we have to create new lead */
       n = new TTree;
-      reset_TTree(n);
+      resetTTree(n);
     
       p->leads[(int) hash[i]] = n;
       p = n;
@@ -201,13 +201,13 @@ void CTree::addname(const char *name, unsigned int id)
   p->ids.push_back(id);
 }
 
-TTree *CTree::find_by_name(const char *name)
+TTree *CTree::findByName(const char *name)
 {
   unsigned int i;
   TTree *p;
   char hash[MAX_HASH_LEN];
     
-  genhash(name, hash);
+  genHash(name, hash);
     
     
   p = root;
@@ -221,7 +221,7 @@ TTree *CTree::find_by_name(const char *name)
   return p;
 }
 
-void CTree::genhash(const char *name, char *hash)
+void CTree::genHash(const char *name, char *hash)
 {
   unsigned int i;
   unsigned int z;

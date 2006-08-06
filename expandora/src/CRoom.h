@@ -13,6 +13,7 @@
 #define CROOM_H
 
 #include "defines.h"
+#include "Regions.h"
 #include <QByteArray>
 
 //#define EXIT_UNDEFINED  (MAX_ROOMS+1)
@@ -46,11 +47,6 @@ class Strings_Comparator {
 
 extern Strings_Comparator comparator;
 
-class CRegion {
-
-public:
-
-};
 
 class CRoom {
     unsigned int    flags;          
@@ -62,7 +58,6 @@ class CRoom {
     CRegion           *region;               /* region of this room */
     
     
-    CRoom           *exits[6];
     QByteArray    doors[6];		/* if the door is secret */
     unsigned  char exitFlags[6];
     
@@ -74,6 +69,7 @@ public:
     enum ExitFlags { EXIT_NONE = 0, EXIT_UNDEFINED, EXIT_DEATH};
   
     unsigned int    id; 		        /* identifier, public for speed up - its very often used  */
+    CRoom           *exits[6];              /* very often used in places where performance matters */
   
   
     CRoom();
@@ -111,7 +107,7 @@ public:
     void removeExit(int dir);           /* also removes the door */
     void setExit(int dir, CRoom *room);
     void setExit(int dir, unsigned int id);
-    CRoom *getExit(int dir);
+//    CRoom *getExit(int dir);
     bool isExitLeadingTo(int dir, CRoom *room);
     
     bool isExitDeath(int dir);
@@ -138,6 +134,12 @@ public:
     
     int descCmp(QByteArray desc);
     int roomnameCmp(QByteArray name);
+    
+    
+    QByteArray getRegionName();
+    CRegion *getRegion();
+    void setRegion(QByteArray name);
+    void setRegion(CRegion *reg);
     
     char dirbynum(int dir);
 };
