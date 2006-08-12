@@ -4,7 +4,7 @@ TEMPLATE	= app
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
 
-CONFIG		+= qt opengl warn_on thread debug
+CONFIG		+= qt opengl warn_on thread release
 
 QT += xml opengl gui network
 

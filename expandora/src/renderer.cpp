@@ -327,7 +327,7 @@ void RendererWidget::glDrawRoom(CRoom *p)
       return;
     
     if (conf.get_show_notes_renderer() == true) {
-        glColor4f(0.90, 0.5, 0.1, colour[3]);
+        glColor4f(0.60, 0.4, 0.3, colour[3]);
         renderText(dx, dy, dz + ROOM_SIZE / 2, p->getNote());    
         glColor4f(colour[0], colour[1], colour[2], colour[3]);
     }
@@ -393,7 +393,7 @@ void RendererWidget::glDrawRoom(CRoom *p)
                     QByteArray info;
                     QByteArray alias;                    
                     info = p->getDoor(k);
-                    if (conf.get_display_regions_renderer() == true) {
+                    if (conf.get_show_regions_info() == true) {
                         alias = Engine.get_users_region()->getAliasByDoor( info, k);
                         if (alias != "") {
                             info += " [";

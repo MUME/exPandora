@@ -211,7 +211,6 @@ bool StructureParser::startElement( const QString& , const QString& ,
       
       s = attributes.value("region");
       r->setRegion(s.toAscii());
-      
   } else if (qName == "region") {
      region = new CRegion;
             
@@ -264,7 +263,7 @@ void xml_writebase(QString filename)
             QMapIterator<QByteArray, QByteArray> i(doors);
             while (i.hasNext()) {
                 i.next();
-                fprintf(f, "      <exit alias=\"%s\" door=\"%s\"/>\n",  (const char *)  i.key(), (const char *) i.value() );
+                fprintf(f, "      <alias name=\"%s\" door=\"%s\"/>\n",  (const char *)  i.key(), (const char *) i.value() );
             }
             fprintf(f, "    </region>\n");
         }

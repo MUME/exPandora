@@ -40,7 +40,7 @@ QByteArray CRegion::getName()
 
 void CRegion::addDoor(QByteArray alias, QByteArray name)
 {
-    doors.insert(alias, name);
+    doors.insert(alias.trimmed(), name.simplified());
 }
 
 QByteArray CRegion::getDoor(QByteArray alias)
@@ -62,7 +62,7 @@ void CRegion::showRegion()
     QMapIterator<QByteArray, QByteArray> i(doors);
     while (i.hasNext()) {
         i.next();
-        send_to_user("Alias: %-15s, Door: %-40s\r\n", (const char *)  i.key(), (const char *) i.value() );
+        send_to_user("Alias: %-15s Door: %-40s\r\n", (const char *)  i.key(), (const char *) i.value() );
     }
     send_to_user("\r\n");
 }

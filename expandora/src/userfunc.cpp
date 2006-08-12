@@ -211,7 +211,7 @@ const struct user_command_type user_commands[] = {
     "be created. Any existing doorname will be removed - so take care.\r\n"
     "   Note that remove has to be written fully and not in capitals.\r\n"},
   
-  {"mnote",             usercmd_mnote,   0,  USERCMD_FLAG_SYNC,
+  {"mnote",             usercmd_mnote,   0,  USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
     "Add a note to the room you are standing in",
     "   Usage: mdoor <note>\r\n"
     "   Examples: mnote There is a huge nasty mob living in there! \r\n" 
@@ -284,7 +284,7 @@ const struct user_command_type user_commands[] = {
     "    Uses last seen roomdesc and all other information (e.g terrain flags).\r\n"
     "Use together with mgoto.\r\n"},
   
-  {"mregion",              usercmd_mregion,        0,      0,
+  {"mregion",              usercmd_mregion,        0,      USERCMD_FLAG_REDRAW,
     "Region's system subcommands entry point",
     "    Usage: mregion \r\n\r\n"
     "    blabla.\r\n"
@@ -684,7 +684,8 @@ USERCMD(usercmd_mnote)
 
   p = skip_spaces(line);
   r->setNote(p);
-  toggle_renderer_reaction();
+  
+  
   send_to_user("--[ Added.\r\n");
   send_to_user( (const char *) Engine.getPrompt());
   return USER_PARSE_SKIP;
@@ -1000,6 +1001,7 @@ USERCMD(usercmd_mdoor)
     r->setDoor(i, arg);
     send_to_user("--[Pandora: Added the door %s to the %s\n", arg, exits[i]);
   }
+  
   send_to_user( (const char *) Engine.getPrompt());
   return USER_PARSE_SKIP;
 }
@@ -1696,6 +1698,7 @@ USERCMD(usercmd_mregion)
             
             Engine.get_users_region()->addDoor(arg, p);
             send_to_user( "Ok. Added %s (alias %s) to the region %s\r\n", p, arg, (const char *) Engine.get_users_region()->getName() );
+            
             send_to_user( (const char *) Engine.getPrompt());
             return USER_PARSE_SKIP;
         } else  if (is_abbrev(arg, "action")) {
@@ -1749,9 +1752,11 @@ USERCMD(usercmd_mregion)
                 send_to_user( "Ok. Removed.\r\n");
             else
                 send_to_user( "Sorry, failed.\r\n");
+            
+            send_to_user( (const char *) Engine.getPrompt());
+            return USER_PARSE_SKIP;
         } else if (is_abbrev(arg, "list")) {
             Engine.get_users_region()->showRegion();
-        
             send_to_user( (const char *) Engine.getPrompt());
             return USER_PARSE_SKIP;
         }
@@ -1823,10 +1828,10 @@ USERCMD(usercmd_mregion)
             Engine.set_users_region( reg );
             
             
-            toggle_renderer_reaction();
         } else {
             send_to_user( "Failed. No such region!\r\n");
         }
+    
     
         send_to_user( (const char *) Engine.getPrompt());
         return USER_PARSE_SKIP;
@@ -1876,7 +1881,6 @@ USERCMD(usercmd_mregion)
             send_to_user("----[ 'Display regions in renderer' Mode is now %s.\r\n", 
                                     ON_OFF(conf.get_display_regions_renderer()) );
                                     
-            toggle_renderer_reaction();                                    
                                     
         } else if (is_abbrev(arg, "info")) {
             desired = get_input_boolean(arg);
@@ -1889,7 +1893,6 @@ USERCMD(usercmd_mregion)
                                     ON_OFF(conf.get_show_regions_info()) );
         }
     
-	
 	send_to_user( (const char *) Engine.getPrompt());
         return USER_PARSE_SKIP;
     }
