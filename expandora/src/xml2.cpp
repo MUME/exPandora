@@ -91,6 +91,7 @@ void xml_readbase( QString filename)
 StructureParser::StructureParser()
   : QXmlDefaultHandler()
 {
+    flag = 0;
     readingRegion = false;
 }
 
