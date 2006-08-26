@@ -1,8 +1,13 @@
+#include "ExampleApplication.h"
+#include "SceneManager.h"
+
 #include <QApplication>
 #include <QMessageBox>
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QFileDialog>
+
+
 
 #include "mainwindow.h"
 #include "utils.h"
@@ -10,21 +15,18 @@
 #include "engine.h"
 #include "userfunc.h"
 #include "forwarder.h"
+#include "Map.h"
+#include "xml2.h"
 
+
+class MainWindow *renderer_window;
 
 /* global classless */
-
-void toggle_renderer_reaction()
-{
-//    print_debug(DEBUG_RENDERER, "toggle_renderer_reaction called()");
-    QKeyEvent *k = new QKeyEvent(QEvent::KeyPress, Qt::Key_R,0, "r", false , 1);
-    QApplication::postEvent( renderer_window->renderer, k );
-}
 
 void notify_analyzer()
 {
     QKeyEvent *k = new QKeyEvent(QEvent::KeyPress, Qt::Key_C,0, "c", false , 1);
-    QApplication::postEvent( renderer_window->renderer, k );
+    QApplication::postEvent( renderer_window, k );
 }
 
 
@@ -42,7 +44,6 @@ void MainWindow::disable_online_actions()
   mappingAct->setEnabled(false);
   automergeAct->setEnabled(false);
   angryLinkerAct->setEnabled(false);
-  calibrateColoursAct->setEnabled(false);
 }
 
 
@@ -51,7 +52,6 @@ void MainWindow::enable_online_actions()
     mappingAct->setEnabled(true);
     automergeAct->setEnabled(true);
     angryLinkerAct->setEnabled(true);
-    calibrateColoursAct->setEnabled(true);
 }
 
 
@@ -65,6 +65,7 @@ void MainWindow::merge_room()
     userland_parser.parse_user_input_line("mmerge");
 }
 
+
 void MainWindow::open()
 {
   QString s = QFileDialog::getOpenFileName(
@@ -75,6 +76,9 @@ void MainWindow::open()
   char data[MAX_STR_LEN];
     
   strcpy(data, qPrintable(s));
+    
+    
+  usercmd_mload(0, 0,  data, data);  
     
   if (!s.isEmpty()) { 
     usercmd_mload(0, 0,  data, data);  
@@ -312,30 +316,56 @@ void MainWindow::publish_map()
     }
     
     
-    for (i = 0; i < Map.size(); i++) {
-        r = Map.rooms[i];
-        if (r) {
-            if (!mark[r->id]) {
-                Map.deleteRoom(r, 0);
-                continue;        
-            }
-        }
-        
-    }
+    // Stage 1
+    {
+        int size = Map.size();
+        QProgressDialog progress("Removing all secrets, stage 1/2...", "Abort", 0, Map.size(), this);
+        for (i = 0; i < Map.size(); i++) {
+            progress.setValue(i);
+            qApp->processEvents();
     
-    for (i = 0; i < Map.size(); i++) {
-        r = Map.rooms[i];
-        if (r) {
-            for (z = 0; z <= 5; z++) {
-                if ( r->isDoorSecret(z) == true ) {
-                    printf("Secret door was still in database...\r\n");
-                    r->removeDoor(z);
+            if (progress.wasCanceled())
+                return;
+            
+            
+            
+            r = Map.rooms[i];
+            if (r) {
+                if (!mark[r->id]) {
+                    Map.deleteRoom(r, 0);
+                    continue;        
                 }
             }
+            
+        }
+        progress.setValue(size);
+    }
+        
+    // Stage 2
+    {        
+        int size = Map.size();
+        QProgressDialog progress("Removing all secrets, stage 2/2...", "Abort", 0, size, this);
+        for (i = 0; i < Map.size(); i++) {
+            progress.setValue(i);
+            qApp->processEvents();
+    
+            if (progress.wasCanceled())
+                return;
+            
+            r = Map.rooms[i];
+            if (r) {
+                for (z = 0; z <= 5; z++) {
+                    if ( r->isDoorSecret(z) == true ) {
+                        printf("Secret door was still in database...\r\n");
+                        r->removeDoor(z);
+                    }
+                }
+            }
+            
         }
         
+        progress.setValue(size);
     }
-
     
     
     
@@ -345,14 +375,15 @@ void MainWindow::publish_map()
     //    QMessageBox::information(this, "Removing secrets...", "Done!\n", QMessageBox::Ok);
 }
 
-
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget *parent, Qt::WFlags f)
     : QMainWindow( parent)
 {
-  setWindowTitle("Pandora");
-  renderer =  new RendererWidget( this );
-  setCentralWidget( renderer );
-  resize(640, 480);
+    setWindowTitle("Pandora");
+  	
+    resize(640, 480);
+
+
+
 
   connect(&proxy, SIGNAL(connectionEstablished()), this, SLOT(enable_online_actions()));
   connect(&proxy, SIGNAL(connectionLost()), this, SLOT(disable_online_actions()));
@@ -383,10 +414,6 @@ MainWindow::MainWindow(QWidget *parent)
   saveAsAct->setStatusTip(tr("Save the map As"));
   connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
-  publishAct= new QAction(tr("Clear secrets"), this);
-  publishAct->setStatusTip(tr("Removes all secret exits and rooms behind them"));
-  connect(publishAct, SIGNAL(triggered()), this, SLOT(publish_map()));    
-
     
   quitAct =  new QAction(tr("&Exit..."), this);
   quitAct->setShortcut(tr("Ctrl+Q"));
@@ -396,7 +423,6 @@ MainWindow::MainWindow(QWidget *parent)
   /* now building a menu and adding actions to menu */
   fileMenu = menuBar()->addMenu(tr("&File"));
   fileMenu->addAction(newAct);
-  fileMenu->addAction(publishAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openAct);  
   fileMenu->addAction(reloadAct);  
@@ -429,6 +455,18 @@ MainWindow::MainWindow(QWidget *parent)
   actionsMenu->addAction(mergeAct);
 
 
+/* Map menu */
+
+  
+  
+  publishAct= new QAction(tr("Remove All Secrets"), this);
+  publishAct->setStatusTip(tr("Removes all secret exits and rooms behind them"));
+  connect(publishAct, SIGNAL(triggered()), this, SLOT(publish_map()));    
+
+  mapMenu = menuBar()->addMenu(tr("&Map"));
+  mapMenu->addAction(publishAct);
+
+
 
   /* Mapping menu */
   
@@ -452,7 +490,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(angryLinkerAct, SIGNAL(triggered()), this, SLOT(angrylinker()));    
 
   
-  mappingMenu = menuBar()->addMenu(tr("&Mapping"));
+  mappingMenu = menuBar()->addMenu(tr("M&apping"));
   mappingMenu->addAction(mappingAct);
   mappingMenu->addAction(automergeAct);
   mappingMenu->addAction(angryLinkerAct);
@@ -476,15 +514,10 @@ MainWindow::MainWindow(QWidget *parent)
   connect(hide_menu_action, SIGNAL(triggered()), this, SLOT(hide_menu()));    
   
   
-  calibrateColoursAct= new QAction(tr("Calibrate Colours"), this);
-  calibrateColoursAct->setStatusTip(tr("Sends change colour command and parses the output"));
-  connect(calibrateColoursAct, SIGNAL(triggered()), this, SLOT(calibrateColours()));    
-
   always_on_top_action= new QAction(tr("Always on Top"), this);
   always_on_top_action->setStatusTip(tr("Always on Top"));
   always_on_top_action->setCheckable(true);
   connect(always_on_top_action, SIGNAL(toggled(bool)), this, SLOT(always_on_top(bool)));
-  always_on_top_action->setChecked(conf.get_always_on_top());
 
   emulationAct= new QAction(tr("Emulation Mode"), this);
   emulationAct->setStatusTip(tr("Offline MUME Emulation"));
@@ -523,7 +556,6 @@ MainWindow::MainWindow(QWidget *parent)
   optionsMenu->addAction(always_on_top_action);  
   optionsMenu->addAction(emulationAct);  
   optionsMenu->addSeparator();
-  optionsMenu->addAction(calibrateColoursAct);  
   optionsMenu->addSeparator();
   optionsMenu->addAction(setupGeneralAct);  
   optionsMenu->addAction(spellsAct);  
@@ -551,13 +583,11 @@ MainWindow::MainWindow(QWidget *parent)
   statusBar()->addWidget(modLabel); 
 
   
-
-
-  LeftButtonPressed = false;
-  RightButtonPressed = false;
-  
+  setUpdatesEnabled(true);
   
   disable_online_actions();
+  
+  
 }
 
 void MainWindow::update_status_bar()
@@ -572,6 +602,7 @@ void MainWindow::update_status_bar()
 
   stacker.getCurrent(str);
   locationLabel->setText(tr(str));
+  
 }
 
 
@@ -643,78 +674,15 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
 
          case Qt::CTRL+Qt::Key_Q:
 		QApplication::quit();
-//            renderer_window->hide();
+            renderer_window->hide();
             break;	
          
-        case Qt::Key_X :
-            renderer->userz += 1;
-            glredraw = 1;
-            break;
-    
-         case Qt::Key_Y:
-            renderer->userz -= 1;
-            glredraw = 1;
-            break;
-    
-         case Qt::Key_Q:
-            renderer->userx -= 1;
-            glredraw = 1;
-            break;
-         
-         case Qt::Key_W:
-            renderer->userx += 1;
-            glredraw = 1;
-            break;
-         
-         case Qt::Key_A:
-            renderer->usery += 1;
-            glredraw = 1;
-            break;
-    
-         case Qt::Key_S:
-            renderer->usery -= 1;
-            glredraw = 1;
-            break;
-    
+/*    
          case Qt::Key_R:
            print_debug(DEBUG_RENDERER, "got R (redraw) keypress event");
-           glredraw = 1;
+           update();
            break;
-        case Qt::Key_Up:
-          renderer->anglex += 5;
-          glredraw = 1;
-          break;
-        case Qt::Key_Down:
-          renderer->anglex -= 5;
-          glredraw = 1;
-          break;
-        case Qt::Key_Left:
-          renderer->angley -= 5;
-          glredraw = 1;
-          break;
-        case Qt::Key_Right:
-          renderer->angley += 5;
-          glredraw = 1;
-          break;
-        case Qt::Key_PageUp:
-          renderer->anglez += 5;
-          glredraw = 1;
-          break;
-        case Qt::Key_PageDown:
-          renderer->anglez -= 5;
-          glredraw = 1;
-          break;
-        
-         case Qt::Key_Escape:           
-            renderer->angley = 0;
-            renderer->anglex = 0;
-            renderer->anglez = 0;
-            renderer->userx = 0;
-            renderer->usery = 0;
-            renderer->userz = BASE_Z;		
-            glredraw = 1;
-            break;				
-
+*/           
          case Qt::Key_F12:
 	    hide_menu_action->setChecked(!hide_menu_action->isChecked());
             hide_menu();
@@ -731,74 +699,9 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
 //            renderer_window->hide();
             break;	
     }
-    renderer_window->renderer->display();
-}
-
-void MainWindow::mousePressEvent( QMouseEvent *e)
-{
-  
-  if (e->button() == Qt::LeftButton) {
-    LeftButtonPressed = true;
-  } else {
-    RightButtonPressed = true;
-  }
-  old_pos = e->pos();
-  
-  
-}
-
-void MainWindow::mouseReleaseEvent( QMouseEvent *e)
-{
-  if (e->button() == Qt::LeftButton) {
-    LeftButtonPressed = false;
-  } else {
-    RightButtonPressed = false;
-  }
-}
-
-void MainWindow::mouseMoveEvent( QMouseEvent *e)
-{
-  QPoint pos;
-  int dist_x, dist_y;
-
-  pos = e->pos();
-  dist_x = pos.x() - old_pos.x();
-  dist_y = pos.y() - old_pos.y();
-/*  
-  print_debug(DEBUG_INTERFACE, "mouseEvent. LeftMouse %s, RightMouse %s. Dist_x %i, dist_y %i.",
-      ON_OFF(LeftButtonPressed), ON_OFF(RightButtonPressed), dist_x, dist_y);
-*/  
-  if (LeftButtonPressed) {
-      renderer->userx += (float) dist_x / 10.0;
-      renderer->usery -= (float) dist_y / 10.0;
-      glredraw = 1;
-
-      renderer->display();
-      old_pos = pos;
-  } else if (RightButtonPressed) {
-    renderer->anglex += dist_y;
-    renderer->angley += dist_x;
-    glredraw = 1;
     
-    
-    renderer->display();
-    old_pos = pos;
-
-  }
-
-  
-  
-}
-
-void MainWindow::wheelEvent(QWheelEvent *e)
-{
-  int delta;
-
-  delta = e->delta();
-
-  renderer->userz += delta / 120;
-  glredraw = 1;
-  renderer->display();
+    renderer->keyPressEvent( k );
+//    renderer->display();
 }
 
 void MainWindow::edit_current_room()

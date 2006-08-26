@@ -1,10 +1,10 @@
 
 
 /* configuration reader/saver and handler */
-#include <QFile>
-#include <QImage>
+//#include <QFile>
+//#include <QImage>
 #include <QXmlDefaultHandler>
-#include <QGLWidget>
+//#include <QGLWidget>
 #include <QMutex>
 
 #include "defines.h"
@@ -61,8 +61,6 @@ Cconfigurator::Cconfigurator()
         
     first.pattern = 0;
     first.desc = "NONE";
-    first.texture = 1;
-    first.gllist = 1;
     sectors.push_back(first);
     
     spells_pattern = "Affected by:";
@@ -78,8 +76,6 @@ void Cconfigurator::reset_current_config()
         
     first.pattern = 0;
     first.desc = "NONE";
-    first.texture = 1;
-    first.gllist = 1;
     sectors.push_back(first);
 }
 
@@ -154,22 +150,13 @@ int Cconfigurator::get_sector_by_desc(QByteArray desc)
     return 0;
 }
 
-GLuint Cconfigurator::get_texture_by_desc(QByteArray desc)
-{
-    int i;
-    i = get_sector_by_desc(desc);
-    if (i == -1)
-        return 0;
-    return sectors[i].texture;
-}
 
 
-void Cconfigurator::add_texture(QByteArray desc, QByteArray filename, char pattern)
+void Cconfigurator::add_texture(QByteArray desc, char pattern)
 {
     struct room_sectors_data s;
         
     s.desc = desc;
-    s.filename = filename;
     s.pattern = pattern;
 
     sectors.push_back(s);
@@ -330,58 +317,6 @@ void Cconfigurator::set_desc_quote(int i)
 }
 
 
-int Cconfigurator::load_texture(struct room_sectors_data *p)
-{
-    QImage tex1, buf1;
-
-    glGenTextures(1, &p->texture);
-    print_debug(DEBUG_RENDERER, "loading texture %s", (const char *) p->filename);
-    if (p->filename == "")
-        return -1;
-    if (!buf1.load( p->filename )) {
-        printf("Failed to load the %s!\r\n", (const char *) p->filename);
-        return -1;
-    }
-    tex1 = QGLWidget::convertToGLFormat( buf1 );
-    glGenTextures(1, &p->texture );
-    glBindTexture(GL_TEXTURE_2D, p->texture );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex1.width(), tex1.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, tex1.bits() );
-    
-    
-    
-    p->gllist = glGenLists(1);
-    if (p->gllist != 0) {
-        glNewList(p->gllist, GL_COMPILE);
-        
-        glEnable(GL_TEXTURE_2D);
-        
-        glBindTexture(GL_TEXTURE_2D, p->texture);
-        
-        glBegin(GL_QUADS);
-            glTexCoord2f(0.0, 1.0);
-            glVertex3f(-ROOM_SIZE,  ROOM_SIZE, 0.0f);
-            glTexCoord2f(0.0, 0.0);
-            glVertex3f(-ROOM_SIZE, -ROOM_SIZE, 0.0f);
-            glTexCoord2f(1.0, 0.0);
-            glVertex3f( ROOM_SIZE, -ROOM_SIZE, 0.0f);
-            glTexCoord2f(1.0, 1.0);
-            glVertex3f( ROOM_SIZE,  ROOM_SIZE, 0.0f);
-            
-        glEnd();
-        glDisable(GL_TEXTURE_2D);
-        
-        
-        
-        glEndList();
-    }
-    return 1;
-}
-
 
 int Cconfigurator::load_config(QByteArray path, QByteArray filename)
 {
@@ -472,9 +407,8 @@ int Cconfigurator::save_config_as(QByteArray path, QByteArray filename)
       else
           ch = sectors[i].pattern;
       
-      fprintf(f, "  <texture handle=\"%s\" file=\"%s\" pattern=\"%s\">\r\n",
-                  (const char *) sectors[i].desc, 
-                  (const char *) sectors[i].filename, qPrintable(ch));
+      fprintf(f, "  <texture handle=\"%s\" pattern=\"%s\">\r\n",
+                  (const char *) sectors[i].desc, qPrintable(ch));
   }
   
   for (i = 0; i < spells.size(); i++) {
@@ -717,13 +651,10 @@ bool ConfigParser::startElement( const QString& , const QString& ,
         s.toUpper();
         texture.desc = s.toAscii();
         
-        s = attributes.value("file");
-        texture.filename = s.toAscii();
-
         s = attributes.value("pattern");
         texture.pattern = s[0].toAscii();
 
-        conf.add_texture(texture.desc, texture.filename, texture.pattern);
+        conf.add_texture(texture.desc, texture.pattern);
 //        printf("Added texture: desc %s, file %s, pattern %c.\r\n", 
 //              (const char *) texture.desc, (const char *) texture.filename, texture.pattern);
 

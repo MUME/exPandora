@@ -22,7 +22,6 @@ struct boolean_struct {
   int   state;
 };
 
-
 #define DEBUG_GENERAL           (1 << 0)
 #define DEBUG_ANALYZER          (1 << 1)
 #define DEBUG_SYSTEM            (1 << 2)

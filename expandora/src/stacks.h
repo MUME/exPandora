@@ -1,3 +1,5 @@
+#ifndef STACKERFILE_H 
+#define STACKERFILE_H 
 
 
 
@@ -40,3 +42,4 @@ public:
 extern class stackmanager stacker;
 
 
+#endif 

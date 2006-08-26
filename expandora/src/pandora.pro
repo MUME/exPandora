@@ -1,16 +1,23 @@
+CONFIG += qt thread warn_off exceptions link_pkgconfig compile_pkgconfig 
+QT += xml gui
+#network
+PKGCONFIG += OGRE 
+
+CONFIG += debug
+
+win32 {
+	CONFIG	+= console
+}
+
+QMAKE_CXXFLAGS_RELEASE += -IOgre -O0 -g
+QMAKE_CXXFLAGS_DEBUG += -IOgre -O0 -g
+
+
 
 
 TEMPLATE	= app
 OBJECTS_DIR	= obj
 MOC_DIR		= moc
-
-CONFIG		+= qt opengl warn_on thread debug
-
-QT += xml opengl gui network
-
-win32 {
-	CONFIG	+= console
-}
 
 FORMS +=	configedit.ui
 FORMS +=        roomedit.ui
@@ -24,7 +31,6 @@ HEADERS		+=dispatch.h
 HEADERS		+=engine.h
 HEADERS		+=exits.h
 HEADERS		+=forwarder.h
-HEADERS		+=renderer.h
 HEADERS		+=Map.h
 HEADERS		+=stacks.h
 HEADERS		+=tree.h
@@ -35,7 +41,9 @@ HEADERS		+=RoomEditDialog.h
 HEADERS		+=ConfigWidget.h
 HEADERS		+=SpellsDialog.h
 HEADERS		+=mainwindow.h
-
+HEADERS 	+=QOgreWidget.h
+HEADERS 	+=ExampleApplication.h
+HEADERS		+=SceneManager.h
 
 SOURCES		+=auda.cpp
 SOURCES		+=CRoom.cpp
@@ -45,7 +53,6 @@ SOURCES		+=dispatch.cpp
 SOURCES		+=engine.cpp
 SOURCES		+=exits.cpp
 SOURCES		+=forwarder.cpp
-SOURCES		+=renderer.cpp
 SOURCES		+=Map.cpp
 SOURCES		+=stacks.cpp
 SOURCES		+=tree.cpp
@@ -56,6 +63,9 @@ SOURCES		+=mainwindow.cpp
 SOURCES		+=RoomEditDialog.cpp
 SOURCES		+=ConfigWidget.cpp
 SOURCES		+=SpellsDialog.cpp
+SOURCES 	+=QOgreWidget.cpp
+SOURCES 	+=ExampleApplication.cpp
+SOURCES		+=SceneManager.cpp
 
 
 TARGET		= ../pandora
@@ -65,13 +75,8 @@ macx {
 }
 
 win32:LIBS	+= -lwsock32
-unix:LIBS		+= -lm 
+unix:LIBS		+= -lm
 !debug {
 	unix:QMAKE_POST_LINK=strip $(TARGET)
 }
 
-#CFLAGS_VAR	= $$system(pkg-config --cflags OGRE)
-#CLIBS_VAR	= $$system(pkg-config --libs OGRE)
-#QMAKE_CXXFLAGS_RELEASE	+=  $$CFLAGS_VAR
-#QMAKE_CXXFLAGS_DEBUG	+=  -O2 $$CFLAGS_VAR
-#LIBS 		+= $$CLIBS_VAR

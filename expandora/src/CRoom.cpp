@@ -31,17 +31,14 @@ const struct room_flag_data room_flags[] = {
 };
 
 
-CRoom::CRoom()
+CRoom::CRoom(unsigned int newid)
 {
     int i;
     
-    id = 0;
+    id = newid;
     name = NULL;
     note = NULL;
     desc = NULL;
-    x = 0;
-    y = 0;
-    z = 0;
     sector = 0;
     region = NULL;
     flags = 0;
@@ -51,6 +48,8 @@ CRoom::CRoom()
 	exitFlags[i] = 0;
 	doors[i].clear();
     }
+    
+    node = renderer->addRoom( this );
 }
 
 
@@ -59,10 +58,21 @@ CRoom::~CRoom()
     int i;
     
     NameMap.deleteItem(name, id);
+    renderer->removeRoom( this );
     
     for (i = 0; i <= 5; i++) {
         doors[i].clear();
     }
+}
+
+void CRoom::setRoomNode(Ogre::SceneNode *newNode)
+{
+    node = newNode;
+}
+
+Ogre::SceneNode *CRoom::getRoomNode()
+{
+    return node;
 }
 
 
@@ -186,45 +196,50 @@ char CRoom::dirbynum(int dir)
 
 void CRoom::setX(int nx)
 {
-    x = nx;
+    Ogre::Vector3 pos;
+    
+    pos = node->getPosition();
+    pos.x = nx;
+    node->setPosition(pos);
     setModified(true);
 }
 
 void CRoom::setY(int ny)
 {
-    y = ny;
+    Ogre::Vector3 pos;
+    
+    pos = node->getPosition();
+    pos.y = ny;
+    node->setPosition(pos);
     setModified(true);
 }
 
 
 void CRoom::setZ(int nz)
 {
-    Map.removeFromPlane(this);
-    z = nz;
-    Map.addToPlane(this);
+    Ogre::Vector3 pos;
+    
+    pos = node->getPosition();
+    pos.z = nz;
+    node->setPosition(pos);
     setModified(true);
 }
 
 
-void CRoom::simpleSetZ(int nz)
-{
-    z = nz;
-    setModified(true);
-}
 
 int CRoom::getX()
 {
-    return x;
+    return node->getPosition().x;
 }
 
 int CRoom::getY()
 {
-    return y;
+    return node->getPosition().y;
 }
 
 int CRoom::getZ()
 {
-    return z;
+    return node->getPosition().z;
 }
 
 
@@ -471,7 +486,7 @@ void CRoom::sendRoom()
     send_to_user(" Id: %i, Flags: %s, Region: %s, Coord: %i,%i,%i\r\n", id,
 	    (const char *) conf.sectors[sector].desc, 
 	    (const char *) region->getName(),
-	    x, y, z);
+	    node->getPosition().x, node->getPosition().y, node->getPosition().z);
     send_to_user(" [32m%s[0m\n", (const char *) name);
 
     line[0] = 0;

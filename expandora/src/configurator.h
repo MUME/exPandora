@@ -6,7 +6,7 @@
 #include <QRegExp>
 #include <vector>
 #include <QXmlDefaultHandler>
-#include <QGLWidget>
+//#include <QGLWidget>
 #include <map>
 #include <QTime>
 
@@ -23,8 +23,6 @@ struct room_sectors_data {
   QByteArray desc;             /* name of this flag */
   QByteArray filename;         /* appropriate texture's filename */
   char   pattern;           /* appropriate pattern */
-  GLuint texture;          /* and texture handler for renderer */
-  GLuint gllist;            /* OpenGL display list */
 };
 
 
@@ -100,8 +98,7 @@ public:
 
     int load_texture(struct room_sectors_data *p);
     char get_pattern_by_room(CRoom *r);
-    GLuint get_texture_by_desc(QByteArray desc);
-    void add_texture(QByteArray desc, QByteArray filename, char pattern);
+    void add_texture(QByteArray desc, char pattern);
     
     /* */
     

@@ -313,7 +313,6 @@ void RoomEditDialog::accept()
     if (updateExitsInfo(UP, r) == -1) return;
     if (updateExitsInfo(DOWN, r) == -1) return;
             
-    toggle_renderer_reaction();
     done(Accepted);
 }
 

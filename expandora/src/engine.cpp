@@ -131,9 +131,8 @@ void CEngine::tryDir()
                 
                 Map.fixFreeRooms();	// making this call just for more safety - might remove 
         
-                addedroom = new CRoom;
+                addedroom = new CRoom(Map.next_free);
         
-                addedroom->id = Map.next_free;
                 addedroom->setName(event.name);
                 addedroom->setDesc(event.desc);
                 addedroom->setRegion( users_region );
@@ -149,7 +148,7 @@ void CEngine::tryDir()
                 int y = room->getY();
                 int z = room->getZ();
                 
-                if (dir == NORTH)	    x += 2;
+                if (dir == NORTH)	    y += 2;
                 if (dir == SOUTH)       y -= 2;
                 if (dir == EAST)          x+= 2;
                 if (dir == WEST)         x -= 2;
@@ -228,6 +227,7 @@ void CEngine::tryAllDirs()
 
 void CEngine::parseEvent()
 {
+
     if (event.name != "")
         last_name = event.name;
     if (event.desc != "")
@@ -260,7 +260,6 @@ void CEngine::parseEvent()
     if (stacker.amount() == 0)
         resync();
         
-    toggle_renderer_reaction();
 }
 
 
@@ -288,33 +287,46 @@ CEngine::~CEngine()
 
 void CEngine::exec()
 {
-
     print_debug(DEBUG_ANALYZER, "in main cycle");
     QTime t;
     t.start();
     
     
+    
     if (Pipe.empty()) 
         return;
 
+    updateLastRoom();
     
     event = Pipe.dequeue();
     parseEvent();
     
     updateRegions();
     
-    
     print_debug(DEBUG_ANALYZER, "done. Time elapsed %d ms", t.elapsed());
     return;        
 }
+
+void CEngine::updateLastRoom()
+{
+    if (stacker.amount() == 0) 
+        lastRoom = NULL;
+    else
+        lastRoom =  stacker.get(1);
+}
+
 
 void CEngine::updateRegions()
 {
     CRoom *r;
     
+    
     // update Regions info only if we are in full sync 
     if (stacker.amount() == 1) {
         r = stacker.first();
+        
+        if (lastRoom && lastRoom->id == r->id)
+            return; // the ID of the room we are examining did not change since the last call to engine->exec
         
         last_region = r->getRegion();
         
@@ -331,7 +343,6 @@ void CEngine::updateRegions()
                                         (const char *) users_region->getName()); 
                 r->setRegion(users_region);
                 last_region = users_region;
-                toggle_renderer_reaction();
         }
     
     }

@@ -1,11 +1,12 @@
 
-#include "renderer.h"
+//#include "renderer.h"
 #include "defines.h"
 #include "dispatch.h"
 #include "forwarder.h"
 #include "utils.h"
 #include "stacks.h"
 #include "mainwindow.h"
+#include "Map.h"
 
 class stackmanager stacker;
 

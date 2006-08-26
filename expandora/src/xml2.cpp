@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QXmlDefaultHandler>
 #include <QString>
+#include <QProgressDialog>
 
 #include "defines.h"
 
@@ -16,7 +17,7 @@
 #include "Map.h"
 #include "utils.h"
 #include "dispatch.h"
-
+#include "mainwindow.h"
 
 #define XML_ROOMNAME    (1 << 0)
 #define XML_DESC        (1 << 1)
@@ -35,6 +36,7 @@ private:
   /* some flags */
   int flag;
   bool readingRegion;
+  float version;
 
   char data[MAX_DATA_LEN];
   QString s;
@@ -43,7 +45,6 @@ private:
   int i;
   CRoom *r;
   CRegion *region;
-    
 };
 
 
@@ -66,8 +67,7 @@ void xml_readbase( QString filename)
   reader.setContentHandler( handler );
     
 	
-    
-  printf("reading xml ...");
+  
   fflush(stdout);
   reader.parse( source );
   
@@ -79,11 +79,6 @@ void xml_readbase( QString filename)
             if (r->exits[ exit ] > 0)
                 r->exits[exit] = Map.getRoom( (unsigned long) r->exits[exit] );
   }
-
-  
-  printf("done.\r\n");
-
-
   return;
 }
 
@@ -93,6 +88,7 @@ StructureParser::StructureParser()
 {
     flag = 0;
     readingRegion = false;
+    version = 1.0;
 }
 
 
@@ -193,19 +189,30 @@ bool StructureParser::startElement( const QString& , const QString& ,
     flag = XML_NOTE;
     return TRUE;
   } else if (qName == "room") {
-      r = new CRoom;
 
       s = attributes.value("id");
-      r->id = s.toInt();
+      r = new CRoom( s.toInt() );
       
       s = attributes.value("x");
-      r->setX( s.toInt() );
-
+      if (version == 1.0) {
+        r->setX( s.toInt() * 10);
+      } else {
+        r->setX( s.toInt() );        
+      }
+        
       s = attributes.value("y");
-      r->setY( s.toInt() );
+      if (version == 1.0) {
+        r->setY( s.toInt() * 10);
+      } else {
+        r->setY( s.toInt() );        
+      }
 
       s = attributes.value("z");
-      r->simpleSetZ( s.toInt() );
+      if (version == 1.0) {
+        r->setZ( s.toInt() * 10);
+      } else {
+        r->setZ( s.toInt() );        
+      }
 
       s = attributes.value("terrain");
       r->setSector( conf.get_sector_by_desc(s.toAscii()) );
@@ -218,7 +225,12 @@ bool StructureParser::startElement( const QString& , const QString& ,
      readingRegion = true;
      s = attributes.value("name");
      region->setName(s.toAscii());
-  }   
+  }  else if (qName == "map") {
+     s = attributes.value("name");
+     if (s != "") 
+        version = s.toFloat();
+  }
+  
   
   return TRUE;
 }
@@ -242,7 +254,7 @@ void xml_writebase(QString filename)
 
   
 
-  fprintf(f, "<map>\n");
+  fprintf(f, "<map version=\"2.0\">\n");
   
   
   

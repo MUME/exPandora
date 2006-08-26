@@ -9,13 +9,15 @@
 #include <QWheelEvent>
 #include <QKeyEvent>
 
-
 #include "RoomEditDialog.h"
 #include "ConfigWidget.h"
 #include "SpellsDialog.h"
-#include "renderer.h"
+//#include "renderer.h"
 
-void toggle_renderer_reaction();
+
+
+class CameraTrackWidget;
+
 void notify_analyzer();
 
 class MainWindow : public QMainWindow
@@ -35,12 +37,15 @@ class MainWindow : public QMainWindow
   QAction       *saveAct;
   QAction       *saveAsAct;
   QAction       *quitAct;
-  QAction       *publishAct;
   
-    QMenu       *mappingMenu;
+    QMenu      *mappingMenu;
   QAction       *mappingAct;
   QAction       *automergeAct;
   QAction       *angryLinkerAct;
+  
+
+    QMenu      *mapMenu;
+  QAction       *publishAct;
   
   
     QMenu       *actionsMenu;
@@ -50,7 +55,6 @@ class MainWindow : public QMainWindow
     
     QMenu       *optionsMenu;
   QAction       *always_on_top_action;
-  QAction       *calibrateColoursAct;  
   QAction       *saveConfigAct;
   QAction       *saveConfigAsAct;
   QAction       *loadConfigAct;
@@ -60,11 +64,6 @@ class MainWindow : public QMainWindow
   QAction       *emulationAct;
   
 
-
-  bool          LeftButtonPressed;
-  bool          RightButtonPressed;
-  QPoint        old_pos;
-
   void edit_room(unsigned int id);
 
 private:
@@ -73,24 +72,23 @@ private:
   SpellsDialog      *spells_dialog;
 
 public:
-    MainWindow(QWidget *parent = 0);
-
-    RendererWidget *renderer;
+    explicit MainWindow(QWidget *parent=0, Qt::WFlags f=0);
+    virtual ~MainWindow() {}
 
     void update_status_bar();
     QAction       *hide_status_action;
     QAction       *hide_menu_action;
     
-
+    
 public slots:
   void disable_online_actions();
   void enable_online_actions();
+  void always_on_top(bool);
 
     
 private slots:
   void hide_menu();
   void hide_status();
-  void always_on_top(bool);
   void newFile();
   void open();
   void reload();
@@ -111,12 +109,6 @@ private slots:
   void edit_current_room();
   void publish_map();
   void spellsSettings();
-
-  void mousePressEvent( QMouseEvent *);
-  void mouseReleaseEvent( QMouseEvent *);
-  void mouseMoveEvent( QMouseEvent *);
-  void wheelEvent(QWheelEvent *);
-
 
   void keyPressEvent( QKeyEvent * );
   void hide();                              /* hide all extra widgets */

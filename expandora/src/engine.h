@@ -68,6 +68,7 @@ class CEngine {
     QByteArray last_desc;
     QByteArray last_exits;
     QByteArray last_prompt;
+    CRoom        *lastRoom;
     char last_terrain;
   
     QQueue<Event> Pipe;
@@ -83,6 +84,7 @@ class CEngine {
     
     bool testRoom(CRoom *room);
     
+    void updateLastRoom();
 public:
     CEngine();
     ~CEngine();

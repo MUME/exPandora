@@ -1,11 +1,12 @@
 /* automapper/database module for powwow. Part of the Pandora Project (c) 2003 */
 
+#include "SceneManager.h"
+
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <QThread>
-#include <QMutex>
+#include <QSplashScreen>
 
 
 
@@ -53,6 +54,8 @@ void print_usage()
 
 int main(int argc, char *argv[])
 {
+
+
     int i;
     char *  resPath = 0;
     char    override_base_file[MAX_STR_LEN] = "";
@@ -87,6 +90,14 @@ int main(int argc, char *argv[])
     char    default_remote_host[MAX_STR_LEN] = "129.241.210.221";
 #endif
 
+    QApplication::setColorSpec( QApplication::CustomColor );
+    QApplication app( argc, argv );
+
+    QPixmap pixmap("resources/logo.png");
+    QSplashScreen *splash = new QSplashScreen(pixmap);
+    splash->show();
+
+    splash->showMessage("Loading configuration and database...");
 
   
     for (i=1; i < argc; i++) {
@@ -168,7 +179,8 @@ int main(int argc, char *argv[])
     /* set analyzer engine defaults */
     //engine_init();
     
-    printf("Using config file : %s.\r\n", configfile);
+    splash->showMessage(QString("Loading the configuration ") + configfile);
+    app.processEvents();
     conf.load_config(resPath, configfile);
     
     
@@ -177,43 +189,38 @@ int main(int argc, char *argv[])
     } else if ( conf.get_base_file() == "") {
       conf.set_base_file(default_base_file);
     }
-    printf("Using database file : %s.\r\n", (const char*) conf.get_base_file() );
     
     if (override_remote_host[0] != 0) {
       conf.set_remote_host(override_remote_host);
     } else if ( conf.get_remote_host().isEmpty() ) {
       conf.set_remote_host(default_remote_host);
     }
-    printf("Using target hostname : %s.\r\n", (const char*) conf.get_remote_host() );
 
     if (override_local_port != 0) {
       conf.set_local_port(override_local_port);
     } else if ( conf.get_local_port() == 0) {
       conf.set_local_port(default_local_port);
     }
-    printf("Using local port : %i.\r\n", conf.get_local_port());
 
     if (override_remote_port != 0) {
       conf.set_remote_port(override_remote_port);
     } else if (conf.get_remote_port() == 0) {
       conf.set_remote_port(default_remote_port);
     }
-    printf("Using target port : %i.\r\n", conf.get_remote_port());
 
     conf.set_conf_mod( false );
 
-    printf("-- Starting Pandora\n");
-  
-    printf("Loading the database ... \r\n");
-    xml_readbase( conf.get_base_file() );
-    printf("Successfuly loaded %i rooms!\n", Map.size());
+//    printf("Loading the database ... \r\n");
+//    xml_readbase( conf.get_base_file() );
+//    printf("Successfuly loaded %i rooms!\n", Map.size());
 
     /* special init for the mud emulation */
     if (mud_emulation) {
-      printf("Starting in MUD emulation mode...\r\n");
+      splash->showMessage("Starting in MUD emulation mode...\r\n");
+      app.processEvents();
+
       
       if (Map.size() == 0) {
-        printf("ERROR: Cannot start in emulation mode without database!\r\n");
         exit(1);
       }
       
@@ -226,30 +233,29 @@ int main(int argc, char *argv[])
 
 
     printf("Starting renderer ...\n");
-
-    QApplication::setColorSpec( QApplication::CustomColor );
-    QApplication app( argc, argv );
-
-    if ( !QGLFormat::hasOpenGL() ) {
-        qWarning( "This system has no OpenGL support. Exiting." );
-        return -1;
-    }
+    splash->showMessage("Starting the renderer...");
+    app.processEvents();
+    
+    
 
     renderer_window = new MainWindow( 0 );
+    renderer =  new MySceneManager( renderer_window );
+    renderer->show();
+    renderer_window->setCentralWidget( renderer );
+    
+    
+    splash->showMessage("Reading the database...");
+    app.processEvents();
+    xml_readbase( conf.get_base_file() );
 
-    QGLFormat f;
-    f.setDoubleBuffer( TRUE );
-    f.setDirectRendering( TRUE );
-    f.setRgba( TRUE );
-    f.setDepth( TRUE );
-
-    QGLFormat::setDefaultFormat( f );
-
-
-    renderer_window->show();
-
+    splash->showMessage("Starting proxy...\r\n");
+    app.processEvents();
     proxy.init();
     proxy.start();
     
+    renderer_window->always_on_top( conf.get_always_on_top() );
+    renderer_window->show();
+    splash->finish(renderer_window);
+    delete splash;
     return app.exec();
 }

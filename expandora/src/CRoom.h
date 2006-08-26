@@ -12,6 +12,8 @@
 #ifndef CROOM_H
 #define CROOM_H
 
+#include <Ogre.h>
+
 #include "defines.h"
 #include "Regions.h"
 #include <QByteArray>
@@ -62,8 +64,7 @@ class CRoom {
     unsigned  char exitFlags[6];
     
   
-    int x, y, z;		/* coordinates on our map */
-
+    Ogre::SceneNode     *node;
 
 public:
     enum ExitFlags { EXIT_NONE = 0, EXIT_UNDEFINED, EXIT_DEATH};
@@ -72,7 +73,7 @@ public:
     CRoom           *exits[6];              /* very often used in places where performance matters */
   
   
-    CRoom();
+    CRoom(unsigned int id);
     ~CRoom();
     
     QByteArray getName();
@@ -87,6 +88,9 @@ public:
     void setSector(char val);
     void setNote(QByteArray note);
     
+    void setRoomNode(Ogre::SceneNode *node);
+    Ogre::SceneNode *getRoomNode();
+
     bool isDescSet();
     bool isNameSet();
     bool isEqualNameAndDesc(CRoom *room);

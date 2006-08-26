@@ -21,7 +21,6 @@ class Userland userland_parser;
 
 /* ================= ENCHANCED USER FUNCTIONS VERSIONS =============== */
 #define USERCMD_FLAG_SYNC       (1 << 0)       /* sync is required */
-#define USERCMD_FLAG_REDRAW     (1 << 1)       /* redraw after executing */
 #define USERCMD_FLAG_INSTANT    (1 << 2)       /* commands flagged with instant flag */
                                                /* get executed in dispatcher thread */
                                                /* all others are executed in interface thread */
@@ -77,7 +76,7 @@ class Userland userland_parser;
 void display_debug_settings();     
   
 const struct user_command_type user_commands[] = {
-  {"maddroom",     usercmd_maddroom,          0,                        USERCMD_FLAG_REDRAW,   
+  {"maddroom",     usercmd_maddroom,          0,                        0,   
     "Add current room to database [READ HELP]",
    "    Usage: maddroom \r\n"
    "    Examples: maddroom \r\n\r\n"
@@ -134,13 +133,13 @@ const struct user_command_type user_commands[] = {
    "    Examples: msave / msave warpmap.xml\r\n\r\n"
    "    This command saves the database stored in memory in an xml file. Without arguments\r\n"
    "it saves to the default file.\r\n"},
-  {"mload",         usercmd_mload,         0,           USERCMD_FLAG_REDRAW,   
+  {"mload",         usercmd_mload,         0,           0,   
     "Load file/Reload the database from disk.",
    "    Usage: mload [filename]\r\n"
    "    Examples: mload / mload mume.xml\r\n\r\n"
    "    Without arguments this command reloads the currently opened database.\r\n"
    "As argument you can specify some other database-file to load.\r\n"},
-  {"mreset",         usercmd_mreset,         0,           USERCMD_FLAG_REDRAW,   
+  {"mreset",         usercmd_mreset,         0,           0,   
     "Reset mappers state stacks.",
    "    Usage: mreset\r\n"
    "    Examples: mreset\r\n\r\n"
@@ -167,41 +166,41 @@ const struct user_command_type user_commands[] = {
   {"down",          usercmd_move,         DOWN,           USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"look",          usercmd_move,         USER_MOVE_LOOK, USERCMD_FLAG_INSTANT,   NULL, NULL},
   {"examine",       usercmd_move,         USER_MOVE_EXAMINE, USERCMD_FLAG_INSTANT,   NULL, NULL},
-  {"mmerge",        usercmd_mmerge,       0,    USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
+  {"mmerge",        usercmd_mmerge,       0,    USERCMD_FLAG_SYNC,   
     "Merge twin rooms - manual launch.",
    "    Usage: mmerge [id] [force]\r\n"
    "    Examples: mmerge / mmerge 120 / mmerge 120 force\r\n\r\n"
    "    Without arguments this command will try to merge the last added room with either\r\n"
    "found twin room or given (by id) room. Force argument disables the roomname and desc checks.\r\n"},
-  {"mdecx",             usercmd_mdec,        USER_DEC_X,   USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
+  {"mdecx",             usercmd_mdec,        USER_DEC_X,   USERCMD_FLAG_SYNC,   
     "Decrease the X coordinate.",
    "    Usage: mdecx [integer]\r\n"
    "    Examples: mdecx / mdecx 2\r\n\r\n"
    "mdecx substracts 1 from the X coordinate. If you give an integer argument X, X will be substracted.\r\n"},
-  {"mincx",             usercmd_mdec,        USER_INC_X,    USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
+  {"mincx",             usercmd_mdec,        USER_INC_X,    USERCMD_FLAG_SYNC,   
     "Increase the X coordinate.",
    "    Usage: mincx [integer]\r\n"
    "    Examples: mincx / mincx 2\r\n\r\n"
    "mdecx adds 1 to the X coordinate. If you give an integer argument X, X will be added.\r\n"},
-  {"mdecy",             usercmd_mdec,        USER_DEC_Y,     USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
+  {"mdecy",             usercmd_mdec,        USER_DEC_Y,     USERCMD_FLAG_SYNC,   
     "Decrease the Y coordinate.",
    "    See mdecx.\r\n"},
-  {"mincy",             usercmd_mdec,        USER_INC_Y,     USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
+  {"mincy",             usercmd_mdec,        USER_INC_Y,     USERCMD_FLAG_SYNC,   
     "Increase the Y coordinate.",
    "    See mdecx.\r\n"},
-  {"mdecz",             usercmd_mdec,        USER_DEC_Z,     USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
+  {"mdecz",             usercmd_mdec,        USER_DEC_Z,     USERCMD_FLAG_SYNC,   
     "Decrease the Z coordinate.",
    "    See mdecx.\r\n"},
-  {"mincz",             usercmd_mdec,        USER_INC_Z,     USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
+  {"mincz",             usercmd_mdec,        USER_INC_Z,     USERCMD_FLAG_SYNC,   
     "Increase the Z coordinate.",
    "    See mdecx.\r\n"},
-  {"mcoord",            usercmd_mcoord,       0,           USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,   
+  {"mcoord",            usercmd_mcoord,       0,           USERCMD_FLAG_SYNC,   
     "Set the coordinates for current room.",
    "    Usage: mcoord [X] [Y] [Z]\r\n"
    "    Examples: mcoord -2 4 5 / mcoord -2 / mcoord -2 4 / mcoord -2 4 5 \r\n\r\n"
    "Set the coordinates of the current room to the given values.\r\n"},
 
-  {"mdoor",             usercmd_mdoor,   USER_DOOR_NORMAL,  USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
+  {"mdoor",             usercmd_mdoor,   USER_DOOR_NORMAL,  USERCMD_FLAG_SYNC,
     "Add a door in direction",
     "   Usage: mdoor <doorname|remove> <dirrection>\r\n"
     "   Examples: mdoor stonedoor east\r\n" 
@@ -211,25 +210,25 @@ const struct user_command_type user_commands[] = {
     "be created. Any existing doorname will be removed - so take care.\r\n"
     "   Note that remove has to be written fully and not in capitals.\r\n"},
   
-  {"mnote",             usercmd_mnote,   0,  USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
+  {"mnote",             usercmd_mnote,   0,  USERCMD_FLAG_SYNC,
     "Add a note to the room you are standing in",
     "   Usage: mdoor <note>\r\n"
     "   Examples: mnote There is a huge nasty mob living in there! \r\n" 
     "Adds a note to the room.\r\n"},
   
-  {"mexit",             usercmd_mdoor,   USER_DOOR_EXIT,     USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
+  {"mexit",             usercmd_mdoor,   USER_DOOR_EXIT,     USERCMD_FLAG_SYNC,
     "Add a nonsecret door",
     "   Usage: mdoor <doorname> <dirrection>\r\n"
     "    Examples: mdoor stonedoor east / mdoor stonedoor w\r\n\r\n"
     "If there is no connection in given direction an undefined connection will\r\n"
     "Any existing doorname will be removed - so take care. Door name \"exit\" is\r\n"
     "reserved word and basicly means - nonsecret exit. Use \"mexit\" to mark secret doors.\r\n"},
-  {"mmark",             usercmd_mmark,          0,      USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
+  {"mmark",             usercmd_mmark,          0,      USERCMD_FLAG_SYNC,
     "Mark/Flag some direction.",
     "    Usage: mmark <dir> <flag>\r\n"
     "    Examples: mmark west undefined / mmark w death\r\n\r\n"
     "    Possible flags: undefined, death\r\n"},
-  {"mlink",             usercmd_mlink,          0,      USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
+  {"mlink",             usercmd_mlink,          0,      USERCMD_FLAG_SYNC,
     "Link current room with some other.",
     "    Usage: mlink <dirrection> <id> [backdir] [force|oneway]\r\n"
     "    Examples: \r\n"
@@ -240,7 +239,7 @@ const struct user_command_type user_commands[] = {
     "                           already takes(busy)they will be overwritten. Doornames will stay.\r\n"
     "   mlink w 120 o force     link west to 120 and force connections.\r\n\r\n"
     "    Link two rooms.\r\n"},
-  {"mdetach",             usercmd_mdetach,          0,      USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
+  {"mdetach",             usercmd_mdetach,          0,      USERCMD_FLAG_SYNC,
     "Detach connections in 2 rooms.",
     "    Usage: mdetach <dirrection> [oneway|delete]\r\n"
     "    Examples: \r\n"
@@ -250,7 +249,7 @@ const struct user_command_type user_commands[] = {
     "   mdetach w one d         detach link west and delete the exit only in this room.\r\n" 
     "                           Leave oneway in second room.\r\n\r\n"
     "    Disconnect two rooms.\r\n"},
-  {"mgoto",               usercmd_mgoto,        0,       USERCMD_FLAG_REDRAW, 
+  {"mgoto",               usercmd_mgoto,        0,       0, 
     "Set some room as current (using id or direction).",
     "    Usage: mgoto <id|direction>\r\n"
     "    Examples: mgoto 120 / mgoto west /mgoto w\r\n\r\n"
@@ -274,7 +273,7 @@ const struct user_command_type user_commands[] = {
     "     mdebug                        display current config and available options\r\n"
     "     mdebug analyzer on            allow analyzers debug messages\r\n\r\n"
     "   Configure your debug messages.\r\n"},
-  {"mdelete",               usercmd_mdelete,        0,       USERCMD_FLAG_SYNC | USERCMD_FLAG_REDRAW,
+  {"mdelete",               usercmd_mdelete,        0,       USERCMD_FLAG_SYNC,
     "Delete current room.",
     "    Usage: mdelete [remove]\r\n"
     "   Deletes current room. Option remove forces exits and doors removal in other rooms.\r\n"},
@@ -284,7 +283,7 @@ const struct user_command_type user_commands[] = {
     "    Uses last seen roomdesc and all other information (e.g terrain flags).\r\n"
     "Use together with mgoto.\r\n"},
   
-  {"mregion",              usercmd_mregion,        0,      USERCMD_FLAG_REDRAW,
+  {"mregion",              usercmd_mregion,        0,      0,
     "Region's system subcommands entry point",
     "    Usage: mregion \r\n\r\n"
     "    blabla.\r\n"
@@ -357,10 +356,6 @@ int Userland::parse_user_input_line(char *line)
         userland_parser.add_command(i, p);
       }
 
-      
-      if (IS_SET(user_commands[i].flags, USERCMD_FLAG_REDRAW)) 
-        toggle_renderer_reaction();
-      
       if (renderer_window)
         renderer_window->update_status_bar();
       
@@ -477,10 +472,8 @@ USERCMD(usercmd_maddroom)
   
   Map.fixFreeRooms();	/* making this call just for more safety - might remove */
 
-  r = new CRoom;
+  r = new CRoom( Map.next_free );
   
-
-  r->id = Map.next_free;
   r->setName( Engine.getRoomName() );
   r->setDesc(Engine.getDesc() );
   r->setTerrain(Engine.getTerrain() );
@@ -1590,8 +1583,6 @@ USERCMD(usercmd_move)
       r = stacker.first();
       Engine.updateRegions();
       
-      toggle_renderer_reaction();
-    
       r->sendRoom();
     }
             
